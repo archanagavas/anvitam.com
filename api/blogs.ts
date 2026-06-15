@@ -1,11 +1,24 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { sql } from '../lib/db';
+import { sql, isDbConfigured } from '../lib/db';
 import { verifyAdminToken, extractToken } from '../lib/auth';
+import { INITIAL_BLOGS } from '../constants';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const urlParts = (req.url || '').split('?')[0].split('/');
   const lastPart = urlParts[urlParts.length - 1];
   const id = (req.query.id as string | undefined) || (lastPart !== 'blogs' ? lastPart : undefined);
+
+  if (!isDbConfigured) {
+    if (req.method === 'GET') {
+      if (id) {
+        const blog = INITIAL_BLOGS.find(b => b.id === id || b.slug === id);
+        if (!blog) return res.status(404).json({ error: 'Blog not found' });
+        return res.status(200).json(blog);
+      }
+      return res.status(200).json(INITIAL_BLOGS);
+    }
+    return res.status(503).json({ error: 'Database connection not configured' });
+  }
 
   if (req.method === 'GET') {
     if (id) {

@@ -1,11 +1,37 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { sql } from '../lib/db';
+import { sql, isDbConfigured } from '../lib/db';
 import { verifyAdminToken, extractToken } from '../lib/auth';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const urlParts = (req.url || '').split('?')[0].split('/');
   const lastPart = urlParts[urlParts.length - 1];
   const id = (req.query.id as string | undefined) || (lastPart !== 'messages' ? lastPart : undefined);
+
+  if (!isDbConfigured) {
+    if (req.method === 'GET') {
+      const token = extractToken(req.headers.authorization);
+      if (!token || !verifyAdminToken(token)) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      return res.status(200).json([]);
+    }
+    if (req.method === 'POST') {
+      const { name, email, message } = req.body ?? {};
+      if (!name || !email || !message) {
+        return res.status(400).json({ error: 'name, email and message are required.' });
+      }
+      console.log(`[Mock Message] From: ${name} (${email}) - Msg: ${message}`);
+      return res.status(201).json({ success: true, mocked: true });
+    }
+    if (req.method === 'DELETE') {
+      const token = extractToken(req.headers.authorization);
+      if (!token || !verifyAdminToken(token)) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      return res.status(200).json({ success: true, mocked: true });
+    }
+    return res.status(503).json({ error: 'Database connection not configured' });
+  }
 
   if (req.method === 'GET') {
     const token = extractToken(req.headers.authorization);

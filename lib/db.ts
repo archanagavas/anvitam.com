@@ -12,6 +12,7 @@ if (!process.env.DATABASE_URL) {
 }
 
 export const sql = neon(dbUrl);
+export const isDbConfigured = !!process.env.DATABASE_URL;
 
 /**
  * Run once on first deploy (or via /api/db-init) to create all tables.

@@ -1,11 +1,24 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { sql } from '../lib/db';
+import { sql, isDbConfigured } from '../lib/db';
 import { verifyAdminToken, extractToken } from '../lib/auth';
+import { SERVICES } from '../constants';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const urlParts = (req.url || '').split('?')[0].split('/');
   const lastPart = urlParts[urlParts.length - 1];
   const id = (req.query.id as string | undefined) || (lastPart !== 'services' ? lastPart : undefined);
+
+  if (!isDbConfigured) {
+    if (req.method === 'GET') {
+      if (id) {
+        const service = SERVICES.find(s => s.id === id);
+        if (!service) return res.status(404).json({ error: 'Service not found' });
+        return res.status(200).json(service);
+      }
+      return res.status(200).json(SERVICES);
+    }
+    return res.status(503).json({ error: 'Database connection not configured' });
+  }
 
   if (req.method === 'GET') {
     if (id) {

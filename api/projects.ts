@@ -1,11 +1,24 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { sql } from '../lib/db';
+import { sql, isDbConfigured } from '../lib/db';
 import { verifyAdminToken, extractToken } from '../lib/auth';
+import { INITIAL_PROJECTS } from '../constants';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const urlParts = (req.url || '').split('?')[0].split('/');
   const lastPart = urlParts[urlParts.length - 1];
   const id = (req.query.id as string | undefined) || (lastPart !== 'projects' ? lastPart : undefined);
+
+  if (!isDbConfigured) {
+    if (req.method === 'GET') {
+      if (id) {
+        const project = INITIAL_PROJECTS.find(p => p.id === id || p.slug === id);
+        if (!project) return res.status(404).json({ error: 'Project not found' });
+        return res.status(200).json(project);
+      }
+      return res.status(200).json(INITIAL_PROJECTS);
+    }
+    return res.status(503).json({ error: 'Database connection not configured' });
+  }
 
   if (req.method === 'GET') {
     if (id) {
