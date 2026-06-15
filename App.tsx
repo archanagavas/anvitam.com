@@ -39,14 +39,23 @@ const ScrollToTop = () => {
 }
 
 const App: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !sessionStorage.getItem('anvitam_loaded');
+    }
+    return true;
+  });
 
   useEffect(() => {
+    if (!isLoading) return;
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 2500);
+      try {
+        sessionStorage.setItem('anvitam_loaded', 'true');
+      } catch (e) {}
+    }, 1100);
     return () => clearTimeout(timer);
-  }, []);
+  }, [isLoading]);
 
   return (
     <HelmetProvider>

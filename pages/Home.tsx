@@ -7,13 +7,13 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 
 
 /* ─── HERO BACKGROUND VIDEO/IMAGE URL ─── */
-const HERO_BG = 'https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=2000&auto=format&fit=crop';
-const FEATURE_1 = 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=2000&auto=format&fit=crop';
-const FEATURE_2 = 'https://images.unsplash.com/photo-1571771019784-3ff35f4f4277?q=80&w=2000&auto=format&fit=crop';
-const FEATURE_3 = 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=2000&auto=format&fit=crop';
-const SERVICE_1 = 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=80&w=800&auto=format&fit=crop';
-const SERVICE_2 = 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=80&w=800&auto=format&fit=crop';
-const SERVICE_3 = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=800&auto=format&fit=crop';
+const HERO_BG = 'https://images.unsplash.com/photo-1449844908441-8829872d2607?q=75&w=1200&auto=format&fit=crop';
+const FEATURE_1 = 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=75&w=1200&auto=format&fit=crop';
+const FEATURE_2 = 'https://images.unsplash.com/photo-1571771019784-3ff35f4f4277?q=75&w=1200&auto=format&fit=crop';
+const FEATURE_3 = 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=75&w=1200&auto=format&fit=crop';
+const SERVICE_1 = 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=75&w=600&auto=format&fit=crop';
+const SERVICE_2 = 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=75&w=600&auto=format&fit=crop';
+const SERVICE_3 = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=75&w=600&auto=format&fit=crop';
 
 /* ── Scroll-reveal wrapper ── */
 const FadeUp = React.forwardRef<HTMLDivElement, { children: React.ReactNode; delay?: number }>(

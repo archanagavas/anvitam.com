@@ -4,10 +4,10 @@ import { motion } from 'motion/react';
 const Loader: React.FC = () => {
   const [progress, setProgress] = useState(0);
 
-  // Simulate loading progress over 2.5 seconds (to match App.tsx timeout)
+  // Simulate loading progress over 0.8 seconds (to match App.tsx timeout)
   useEffect(() => {
-    const totalDuration = 2000; // 2 seconds to reach 100%
-    const updateInterval = 50; 
+    const totalDuration = 800; // 0.8 seconds to reach 100%
+    const updateInterval = 40; 
     const steps = totalDuration / updateInterval;
     const increment = 100 / steps;
 
