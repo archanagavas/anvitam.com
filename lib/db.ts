@@ -6,13 +6,28 @@
 import { neon } from '@neondatabase/serverless';
 import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES } from '../constants';
 
-const dbUrl = process.env.DATABASE_URL || 'postgresql://placeholder_for_startup_validation@localhost/db';
-if (!process.env.DATABASE_URL) {
-  console.warn('[db] DATABASE_URL is not set in environment. Database connection will fail when queried.');
+let sql: any;
+let isDbConfigured = false;
+
+try {
+  const dbUrl = process.env.DATABASE_URL;
+  if (dbUrl && (dbUrl.startsWith('postgres://') || dbUrl.startsWith('postgresql://'))) {
+    sql = neon(dbUrl);
+    isDbConfigured = true;
+  } else {
+    console.warn('[db] DATABASE_URL is not set or is invalid. Falling back to static mock data.');
+    sql = async () => {
+      throw new Error('Database connection is not configured or uses an invalid protocol.');
+    };
+  }
+} catch (err) {
+  console.error('[db] Fail-safe error initializing neon client:', err);
+  sql = async () => {
+    throw new Error('Database client initialization failed.');
+  };
 }
 
-export const sql = neon(dbUrl);
-export const isDbConfigured = !!process.env.DATABASE_URL;
+export { sql, isDbConfigured };
 
 /**
  * Run once on first deploy (or via /api/db-init) to create all tables.

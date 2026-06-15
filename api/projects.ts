@@ -21,38 +21,50 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'GET') {
-    if (id) {
+    try {
+      if (id) {
+        const rows = await sql`
+          SELECT id, title, slug, category, location, year, image, hero_image, description,
+                 full_description, gallery, specs, story, is_featured, tags, faqs, videos, created_at
+          FROM projects WHERE id = ${id}
+        `;
+        if (rows.length === 0) {
+          const mockProj = INITIAL_PROJECTS.find(p => p.id === id || p.slug === id);
+          if (mockProj) return res.status(200).json(mockProj);
+          return res.status(404).json({ error: 'Project not found' });
+        }
+        const r = rows[0];
+        return res.status(200).json({
+          id: r.id, title: r.title, slug: r.slug || r.id, category: r.category, location: r.location,
+          year: r.year, image: r.image, heroImage: r.hero_image || '', description: r.description,
+          fullDescription: r.full_description || '', gallery: r.gallery ?? [],
+          specs: r.specs ?? [], story: r.story ?? [], isFeatured: r.is_featured,
+          tags: r.tags ?? [], faqs: r.faqs ?? [], videos: r.videos ?? []
+        });
+      }
+
       const rows = await sql`
         SELECT id, title, slug, category, location, year, image, hero_image, description,
                full_description, gallery, specs, story, is_featured, tags, faqs, videos, created_at
-        FROM projects WHERE id = ${id}
+        FROM projects ORDER BY created_at DESC
       `;
-      if (rows.length === 0) {
-        return res.status(404).json({ error: 'Project not found' });
-      }
-      const r = rows[0];
-      return res.status(200).json({
+      const projects = rows.map(r => ({
         id: r.id, title: r.title, slug: r.slug || r.id, category: r.category, location: r.location,
         year: r.year, image: r.image, heroImage: r.hero_image || '', description: r.description,
         fullDescription: r.full_description || '', gallery: r.gallery ?? [],
         specs: r.specs ?? [], story: r.story ?? [], isFeatured: r.is_featured,
         tags: r.tags ?? [], faqs: r.faqs ?? [], videos: r.videos ?? []
-      });
+      }));
+      return res.status(200).json(projects);
+    } catch (dbError) {
+      console.warn('[projects API] Database query failed, falling back to static constants:', dbError);
+      if (id) {
+        const project = INITIAL_PROJECTS.find(p => p.id === id || p.slug === id);
+        if (!project) return res.status(404).json({ error: 'Project not found' });
+        return res.status(200).json(project);
+      }
+      return res.status(200).json(INITIAL_PROJECTS);
     }
-
-    const rows = await sql`
-      SELECT id, title, slug, category, location, year, image, hero_image, description,
-             full_description, gallery, specs, story, is_featured, tags, faqs, videos, created_at
-      FROM projects ORDER BY created_at DESC
-    `;
-    const projects = rows.map(r => ({
-      id: r.id, title: r.title, slug: r.slug || r.id, category: r.category, location: r.location,
-      year: r.year, image: r.image, heroImage: r.hero_image || '', description: r.description,
-      fullDescription: r.full_description || '', gallery: r.gallery ?? [],
-      specs: r.specs ?? [], story: r.story ?? [], isFeatured: r.is_featured,
-      tags: r.tags ?? [], faqs: r.faqs ?? [], videos: r.videos ?? []
-    }));
-    return res.status(200).json(projects);
   }
 
   // Admin verification for mutate methods

@@ -55,16 +55,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'GET') {
-    if (id) {
+    try {
+      if (id) {
+        const rows = await sql`
+          SELECT id, title, description, price, link, image, tags, category, created_at
+          FROM digital_products WHERE id = ${id}
+        `;
+        if (rows.length === 0) {
+          const mockProd = ALL_MOCK_PRODUCTS.find(p => p.id === id);
+          if (mockProd) return res.status(200).json(mockProd);
+          return res.status(404).json({ error: 'Product not found' });
+        }
+        const r = rows[0];
+        return res.status(200).json({
+          id: r.id,
+          title: r.title,
+          description: r.description || '',
+          price: r.price || '',
+          link: r.link || '',
+          image: r.image || '',
+          tags: r.tags ?? [],
+          category: r.category || 'E-Books'
+        });
+      }
+
       const rows = await sql`
         SELECT id, title, description, price, link, image, tags, category, created_at
-        FROM digital_products WHERE id = ${id}
+        FROM digital_products ORDER BY created_at DESC
       `;
-      if (rows.length === 0) {
-        return res.status(404).json({ error: 'Product not found' });
-      }
-      const r = rows[0];
-      return res.status(200).json({
+      const products = rows.map(r => ({
         id: r.id,
         title: r.title,
         description: r.description || '',
@@ -73,24 +92,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         image: r.image || '',
         tags: r.tags ?? [],
         category: r.category || 'E-Books'
-      });
+      }));
+      return res.status(200).json(products);
+    } catch (dbError) {
+      console.warn('[products API] Database query failed, falling back to static constants:', dbError);
+      if (id) {
+        const prod = ALL_MOCK_PRODUCTS.find(p => p.id === id);
+        if (!prod) return res.status(404).json({ error: 'Product not found' });
+        return res.status(200).json(prod);
+      }
+      return res.status(200).json(ALL_MOCK_PRODUCTS);
     }
-
-    const rows = await sql`
-      SELECT id, title, description, price, link, image, tags, category, created_at
-      FROM digital_products ORDER BY created_at DESC
-    `;
-    const products = rows.map(r => ({
-      id: r.id,
-      title: r.title,
-      description: r.description || '',
-      price: r.price || '',
-      link: r.link || '',
-      image: r.image || '',
-      tags: r.tags ?? [],
-      category: r.category || 'E-Books'
-    }));
-    return res.status(200).json(products);
   }
 
   // Admin verification for mutate methods

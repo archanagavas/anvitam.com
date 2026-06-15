@@ -21,17 +21,45 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'GET') {
-    if (id) {
+    try {
+      if (id) {
+        const rows = await sql`
+          SELECT id, title, description, icon, value_props, hero_image, what_it_is,
+                 who_its_for, case_study_id, case_study_ids, process, pricing, faq, booking_link, gallery, videos, created_at
+          FROM services WHERE id = ${id}
+        `;
+        if (rows.length === 0) {
+          const mockSvc = SERVICES.find(s => s.id === id);
+          if (mockSvc) return res.status(200).json(mockSvc);
+          return res.status(404).json({ error: 'Service not found' });
+        }
+        const r = rows[0];
+        return res.status(200).json({
+          id: r.id,
+          title: r.title,
+          description: r.description,
+          icon: r.icon,
+          valueProps: r.value_props ?? [],
+          heroImage: r.hero_image || '',
+          whatItIs: r.what_it_is ?? [],
+          whoItsFor: r.who_its_for ?? [],
+          caseStudyId: r.case_study_id || '',
+          caseStudyIds: r.case_study_ids ?? [],
+          process: r.process ?? [],
+          pricing: r.pricing || '',
+          faq: r.faq ?? [],
+          bookingLink: r.booking_link || '',
+          gallery: r.gallery ?? [],
+          videos: r.videos ?? []
+        });
+      }
+
       const rows = await sql`
         SELECT id, title, description, icon, value_props, hero_image, what_it_is,
                who_its_for, case_study_id, case_study_ids, process, pricing, faq, booking_link, gallery, videos, created_at
-        FROM services WHERE id = ${id}
+        FROM services ORDER BY created_at ASC
       `;
-      if (rows.length === 0) {
-        return res.status(404).json({ error: 'Service not found' });
-      }
-      const r = rows[0];
-      return res.status(200).json({
+      const services = rows.map(r => ({
         id: r.id,
         title: r.title,
         description: r.description,
@@ -48,33 +76,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         bookingLink: r.booking_link || '',
         gallery: r.gallery ?? [],
         videos: r.videos ?? []
-      });
+      }));
+      return res.status(200).json(services);
+    } catch (dbError) {
+      console.warn('[services API] Database query failed, falling back to static constants:', dbError);
+      if (id) {
+        const service = SERVICES.find(s => s.id === id);
+        if (!service) return res.status(404).json({ error: 'Service not found' });
+        return res.status(200).json(service);
+      }
+      return res.status(200).json(SERVICES);
     }
-
-    const rows = await sql`
-      SELECT id, title, description, icon, value_props, hero_image, what_it_is,
-             who_its_for, case_study_id, case_study_ids, process, pricing, faq, booking_link, gallery, videos, created_at
-      FROM services ORDER BY created_at ASC
-    `;
-    const services = rows.map(r => ({
-      id: r.id,
-      title: r.title,
-      description: r.description,
-      icon: r.icon,
-      valueProps: r.value_props ?? [],
-      heroImage: r.hero_image || '',
-      whatItIs: r.what_it_is ?? [],
-      whoItsFor: r.who_its_for ?? [],
-      caseStudyId: r.case_study_id || '',
-      caseStudyIds: r.case_study_ids ?? [],
-      process: r.process ?? [],
-      pricing: r.pricing || '',
-      faq: r.faq ?? [],
-      bookingLink: r.booking_link || '',
-      gallery: r.gallery ?? [],
-      videos: r.videos ?? []
-    }));
-    return res.status(200).json(services);
   }
 
   // Admin verification for mutate methods

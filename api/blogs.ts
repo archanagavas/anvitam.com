@@ -21,17 +21,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'GET') {
-    if (id) {
+    try {
+      if (id) {
+        const rows = await sql`
+          SELECT id, title, slug, date, excerpt, content, image, author,
+                 meta_description, meta_title, cover_image_alt, faqs, tags, status, toc, author_bio, author_image, created_at
+          FROM blogs WHERE id = ${id}
+        `;
+        if (rows.length === 0) {
+          const mockBlog = INITIAL_BLOGS.find(b => b.id === id || b.slug === id);
+          if (mockBlog) return res.status(200).json(mockBlog);
+          return res.status(404).json({ error: 'Blog not found' });
+        }
+        const r = rows[0];
+        return res.status(200).json({
+          id: r.id, title: r.title, slug: r.slug, date: r.date,
+          excerpt: r.excerpt, content: r.content, image: r.image,
+          author: r.author, metaDescription: r.meta_description,
+          metaTitle: r.meta_title, coverImageAlt: r.cover_image_alt,
+          faqs: r.faqs ?? [],
+          tags: r.tags ?? [], status: r.status, toc: r.toc ?? [],
+          authorBio: r.author_bio || '',
+          authorImage: r.author_image || '',
+        });
+      }
+
       const rows = await sql`
         SELECT id, title, slug, date, excerpt, content, image, author,
                meta_description, meta_title, cover_image_alt, faqs, tags, status, toc, author_bio, author_image, created_at
-        FROM blogs WHERE id = ${id}
+        FROM blogs ORDER BY created_at DESC
       `;
-      if (rows.length === 0) {
-        return res.status(404).json({ error: 'Blog not found' });
-      }
-      const r = rows[0];
-      return res.status(200).json({
+      const blogs = rows.map(r => ({
         id: r.id, title: r.title, slug: r.slug, date: r.date,
         excerpt: r.excerpt, content: r.content, image: r.image,
         author: r.author, metaDescription: r.meta_description,
@@ -40,25 +60,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         tags: r.tags ?? [], status: r.status, toc: r.toc ?? [],
         authorBio: r.author_bio || '',
         authorImage: r.author_image || '',
-      });
+      }));
+      return res.status(200).json(blogs);
+    } catch (dbError) {
+      console.warn('[blogs API] Database query failed, falling back to static constants:', dbError);
+      if (id) {
+        const blog = INITIAL_BLOGS.find(b => b.id === id || b.slug === id);
+        if (!blog) return res.status(404).json({ error: 'Blog not found' });
+        return res.status(200).json(blog);
+      }
+      return res.status(200).json(INITIAL_BLOGS);
     }
-
-    const rows = await sql`
-      SELECT id, title, slug, date, excerpt, content, image, author,
-             meta_description, meta_title, cover_image_alt, faqs, tags, status, toc, author_bio, author_image, created_at
-      FROM blogs ORDER BY created_at DESC
-    `;
-    const blogs = rows.map(r => ({
-      id: r.id, title: r.title, slug: r.slug, date: r.date,
-      excerpt: r.excerpt, content: r.content, image: r.image,
-      author: r.author, metaDescription: r.meta_description,
-      metaTitle: r.meta_title, coverImageAlt: r.cover_image_alt,
-      faqs: r.faqs ?? [],
-      tags: r.tags ?? [], status: r.status, toc: r.toc ?? [],
-      authorBio: r.author_bio || '',
-      authorImage: r.author_image || '',
-    }));
-    return res.status(200).json(blogs);
   }
 
   // Admin verification for mutate methods
