@@ -1,32 +1,21 @@
 /**
- * scripts/dev-server.ts
- * 
- * Lightweight local API runner for development.
- * Maps Vercel serverless function handlers in api/ to a native Node HTTP server on port 3005.
- */
+* scripts/dev-server.ts
+* 
+* Lightweight local API runner for development.
+* Maps Vercel serverless function handlers in api/ to a native Node HTTP server on port 3005.
+*/
 import './load-env';
 import { createServer } from 'http';
 import { parse } from 'url';
 
-
-// ── Import handlers ───────────────────────────────────────────────────
-import loginHandler from '../api/admin/login';
-import verifyHandler from '../api/admin/verify';
-import dbInitHandler from '../api/db-init';
+// ── Import consolidated handlers ──────────────────────────────────────
+import adminHandler from '../api/admin';
 import generateHandler from '../api/generate';
-import blogsIndexHandler from '../api/blogs/index';
-import blogsIdHandler from '../api/blogs/[id]';
-import projectsIndexHandler from '../api/projects/index';
-import projectsIdHandler from '../api/projects/[id]';
-import messagesIndexHandler from '../api/messages/index';
-import messagesIdHandler from '../api/messages/[id]';
-import servicesIndexHandler from '../api/services/index';
-import servicesIdHandler from '../api/services/[id]';
-import sitemapHandler from '../api/sitemap';
-import llmsHandler from '../api/llms';
-import llmsFullHandler from '../api/llms-full';
-import productsIndexHandler from '../api/products/index';
-import productsIdHandler from '../api/products/[id]';
+import blogsHandler from '../api/blogs';
+import projectsHandler from '../api/projects';
+import messagesHandler from '../api/messages';
+import servicesHandler from '../api/services';
+import productsHandler from '../api/products';
 
 const PORT = 3005;
 
@@ -88,45 +77,42 @@ const server = createServer(async (req, res) => {
     const servicesIdMatch = pathname.match(/^\/api\/services\/([^/]+)$/);
     const productsIdMatch = pathname.match(/^\/api\/products\/([^/]+)$/);
 
-    if (pathname === '/api/admin/login') {
-      await loginHandler(vercelReq, vercelRes);
-    } else if (pathname === '/api/admin/verify') {
-      await verifyHandler(vercelReq, vercelRes);
-    } else if (pathname === '/api/db-init') {
-      await dbInitHandler(vercelReq, vercelRes);
+    if (pathname.startsWith('/api/admin') || pathname === '/api/db-init') {
+      await adminHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/generate') {
       await generateHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/blogs' || pathname === '/api/blogs/') {
-      await blogsIndexHandler(vercelReq, vercelRes);
+      await blogsHandler(vercelReq, vercelRes);
     } else if (blogsIdMatch) {
       vercelReq.query.id = blogsIdMatch[1];
-      await blogsIdHandler(vercelReq, vercelRes);
+      await blogsHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/projects' || pathname === '/api/projects/') {
-      await projectsIndexHandler(vercelReq, vercelRes);
+      await projectsHandler(vercelReq, vercelRes);
     } else if (projectsIdMatch) {
       vercelReq.query.id = projectsIdMatch[1];
-      await projectsIdHandler(vercelReq, vercelRes);
+      await projectsHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/messages' || pathname === '/api/messages/') {
-      await messagesIndexHandler(vercelReq, vercelRes);
+      await messagesHandler(vercelReq, vercelRes);
     } else if (messagesIdMatch) {
       vercelReq.query.id = messagesIdMatch[1];
-      await messagesIdHandler(vercelReq, vercelRes);
+      await messagesHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/services' || pathname === '/api/services/') {
-      await servicesIndexHandler(vercelReq, vercelRes);
+      await servicesHandler(vercelReq, vercelRes);
     } else if (servicesIdMatch) {
       vercelReq.query.id = servicesIdMatch[1];
-      await servicesIdHandler(vercelReq, vercelRes);
+      await servicesHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/products' || pathname === '/api/products/') {
-      await productsIndexHandler(vercelReq, vercelRes);
+      await productsHandler(vercelReq, vercelRes);
     } else if (productsIdMatch) {
       vercelReq.query.id = productsIdMatch[1];
-      await productsIdHandler(vercelReq, vercelRes);
+      await productsHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/sitemap' || pathname === '/api/sitemap/' || pathname === '/api/sitemap.xml') {
-      await sitemapHandler(vercelReq, vercelRes);
-    } else if (pathname === '/api/llms' || pathname === '/api/llms/' || pathname === '/api/llms.txt') {
-      await llmsHandler(vercelReq, vercelRes);
-    } else if (pathname === '/api/llms-full' || pathname === '/api/llms-full/' || pathname === '/api/llms-full.txt') {
-      await llmsFullHandler(vercelReq, vercelRes);
+      // Served as static pre-generated sitemap.xml on Vercel; dev-server mocks it
+      res.setHeader('Content-Type', 'application/xml');
+      res.end('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>');
+    } else if (pathname === '/api/llms' || pathname === '/api/llms/' || pathname === '/api/llms.txt' || pathname === '/api/llms-full') {
+      res.setHeader('Content-Type', 'text/plain');
+      res.end('# LLMs documentation (Mocked in dev server)');
     } else {
       res.statusCode = 404;
       res.end(JSON.stringify({ error: 'Route not found' }));

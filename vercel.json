@@ -16,6 +16,18 @@
     }
   ],
   "rewrites": [
+    { "source": "/api/admin/:path*", "destination": "/api/admin.ts" },
+    { "source": "/api/db-init", "destination": "/api/admin.ts" },
+    { "source": "/api/blogs", "destination": "/api/blogs.ts" },
+    { "source": "/api/blogs/:id", "destination": "/api/blogs.ts" },
+    { "source": "/api/products", "destination": "/api/products.ts" },
+    { "source": "/api/products/:id", "destination": "/api/products.ts" },
+    { "source": "/api/projects", "destination": "/api/projects.ts" },
+    { "source": "/api/projects/:id", "destination": "/api/projects.ts" },
+    { "source": "/api/services", "destination": "/api/services.ts" },
+    { "source": "/api/services/:id", "destination": "/api/services.ts" },
+    { "source": "/api/messages", "destination": "/api/messages.ts" },
+    { "source": "/api/messages/:id", "destination": "/api/messages.ts" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
