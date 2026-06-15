@@ -4,6 +4,7 @@
  * The DATABASE_URL must be set in Vercel Dashboard → Project → Settings → Environment Variables.
  */
 import { neon } from '@neondatabase/serverless';
+import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES } from '../constants';
 
 const dbUrl = process.env.DATABASE_URL || 'postgresql://placeholder_for_startup_validation@localhost/db';
 if (!process.env.DATABASE_URL) {
@@ -159,6 +160,42 @@ export async function initDatabase() {
       await sql`
         INSERT INTO digital_products (id, title, description, price, link, image, tags, category)
         VALUES (${c.id}, ${c.title}, ${c.description}, ${c.price}, ${c.link}, ${c.image}, ${JSON.stringify(c.tags)}, ${c.category})
+        ON CONFLICT (id) DO NOTHING
+      `;
+    }
+  }
+
+  // Seed initial projects if none exist
+  const existingProjects = await sql`SELECT id FROM projects LIMIT 1`;
+  if (existingProjects.length === 0) {
+    for (const p of INITIAL_PROJECTS) {
+      await sql`
+        INSERT INTO projects (id, title, category, location, year, image, description, full_description, is_featured, specs)
+        VALUES (${p.id}, ${p.title}, ${p.category}, ${p.location}, ${p.year}, ${p.image}, ${p.description}, ${p.fullDescription}, ${p.isFeatured ?? false}, ${JSON.stringify(p.specs ?? [])})
+        ON CONFLICT (id) DO NOTHING
+      `;
+    }
+  }
+
+  // Seed initial blogs if none exist
+  const existingBlogs = await sql`SELECT id FROM blogs LIMIT 1`;
+  if (existingBlogs.length === 0) {
+    for (const b of INITIAL_BLOGS) {
+      await sql`
+        INSERT INTO blogs (id, slug, title, date, author, status, meta_description, tags, excerpt, image, toc, author_image, author_bio, content)
+        VALUES (${b.id}, ${b.slug}, ${b.title}, ${b.date}, ${b.author}, ${b.status}, ${b.metaDescription ?? null}, ${JSON.stringify(b.tags ?? [])}, ${b.excerpt}, ${b.image}, ${JSON.stringify(b.toc ?? [])}, ${b.authorImage ?? null}, ${b.authorBio ?? null}, ${b.content})
+        ON CONFLICT (id) DO NOTHING
+      `;
+    }
+  }
+
+  // Seed initial services if none exist
+  const existingServices = await sql`SELECT id FROM services LIMIT 1`;
+  if (existingServices.length === 0) {
+    for (const s of SERVICES) {
+      await sql`
+        INSERT INTO services (id, title, description, icon, value_props, hero_image, what_it_is, who_its_for, case_study_id, process, pricing, faq, booking_link, gallery, case_study_ids, videos)
+        VALUES (${s.id}, ${s.title}, ${s.description}, ${s.icon}, ${JSON.stringify(s.valueProps ?? [])}, ${s.heroImage ?? null}, ${JSON.stringify(s.whatItIs ?? [])}, ${JSON.stringify(s.whoItsFor ?? [])}, ${s.caseStudyId ?? null}, ${JSON.stringify(s.process ?? [])}, ${s.pricing ?? null}, ${JSON.stringify(s.faq ?? [])}, ${s.bookingLink ?? null}, '[]', '[]', '[]')
         ON CONFLICT (id) DO NOTHING
       `;
     }
