@@ -1,0 +1,38 @@
+{
+  "name": "anvitam-architects",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "npx tsx scripts/start-dev.ts",
+    "build": "npx tsx scripts/generate-seo.ts && vite build",
+    "preview": "vite preview",
+    "generate-seo": "npx tsx scripts/generate-seo.ts",
+    "db-hash": "node -e \"const b=require('bcryptjs');b.hash(process.argv[1],12).then(h=>console.log(h))\" "
+  },
+  "dependencies": {
+    "@google/genai": "^1.31.0",
+    "@neondatabase/serverless": "^1.1.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/dompurify": "^3.0.5",
+    "@types/jsonwebtoken": "^9.0.10",
+    "bcryptjs": "^3.0.3",
+    "dompurify": "^3.4.0",
+    "jsonwebtoken": "^9.0.3",
+    "lucide-react": "^0.556.0",
+    "motion": "^12.38.0",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "react-helmet-async": "^3.0.0",
+    "react-router-dom": "^7.10.1",
+    "recharts": "^3.5.1",
+    "tsx": "^4.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@vercel/node": "^5.8.17",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  }
+}

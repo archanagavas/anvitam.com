@@ -1,0 +1,242 @@
+/*
+ * blog-prose.css
+ * Scoped styles for blog body content rendered from Quill WYSIWYG.
+ * ALL selectors are under .blog-prose — cannot leak into site layout.
+ */
+
+/* ── Base Typography ─────────────────────────────────────────────────── */
+.blog-prose {
+  color: #444;
+  font-size: 1.0625rem;
+  line-height: 1.85;
+  font-family: inherit;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.blog-prose > * + * {
+  margin-top: 1.5em;
+}
+
+/* ── Headings ────────────────────────────────────────────────────────── */
+.blog-prose h1,
+.blog-prose h2,
+.blog-prose h3,
+.blog-prose h4,
+.blog-prose h5,
+.blog-prose h6 {
+  color: #111111;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  margin-top: 2.5em;
+  margin-bottom: 0.6em;
+}
+
+.blog-prose h2 { font-size: 1.65rem; }
+.blog-prose h3 { font-size: 1.35rem; }
+.blog-prose h4 { font-size: 1.15rem; }
+
+/* ── Paragraphs ───────────────────────────────────────────────────────── */
+.blog-prose p {
+  margin: 0 0 1.25em;
+  color: #555;
+  font-size: 1.0625rem;
+  font-weight: 500;
+}
+
+/* ── Links ──────────────────────────────────────────────────────────── */
+.blog-prose a {
+  color: #8bc34a;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+.blog-prose a:hover { border-color: #8bc34a; }
+
+/* ── Bold / Italic / Underline / Strike ─────────────────────────────── */
+.blog-prose strong { color: #111; font-weight: 700; }
+.blog-prose em     { font-style: italic; }
+.blog-prose s      { text-decoration: line-through; color: #888; }
+.blog-prose u      { text-decoration: underline; }
+
+/* ── Lists ──────────────────────────────────────────────────────────── */
+.blog-prose ul,
+.blog-prose ol {
+  padding-left: 1.75em;
+  margin: 1em 0 1.25em;
+}
+.blog-prose ul { list-style: disc; }
+.blog-prose ol { list-style: decimal; }
+
+.blog-prose li {
+  color: #555;
+  font-weight: 500;
+  margin-bottom: 0.4em;
+}
+.blog-prose li::marker { color: #8bc34a; }
+
+/* ── Blockquote ─────────────────────────────────────────────────────── */
+.blog-prose blockquote {
+  border-left: 4px solid #8bc34a;
+  background: #f8fdf4;
+  margin: 2em 0;
+  padding: 1.25em 1.75em;
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: #333;
+}
+.blog-prose blockquote p { margin: 0; color: #333; }
+
+/* ── Code ───────────────────────────────────────────────────────────── */
+.blog-prose code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.88em;
+  background: #1e1e2e;
+  color: #a6e3a1;
+  padding: 0.15em 0.45em;
+  border-radius: 4px;
+}
+
+.blog-prose pre {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  padding: 1.5em 1.75em;
+  border-radius: 10px;
+  overflow-x: auto;
+  margin: 2em 0;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  -webkit-overflow-scrolling: touch;
+}
+
+.blog-prose pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+/* ── Tables ─────────────────────────────────────────────────────────── */
+.blog-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  margin: 2em 0;
+}
+
+/* Responsive table wrapper — Quill wraps in <div class="ql-table-wrap"> */
+.blog-prose .ql-table-wrap,
+.blog-prose .overflow-x-auto {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.blog-prose th {
+  background: #111;
+  color: #fff;
+  padding: 0.75em 1em;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.blog-prose td {
+  padding: 0.7em 1em;
+  border-bottom: 1px solid #e5e7eb;
+  color: #555;
+}
+.blog-prose tr:last-child td { border-bottom: none; }
+.blog-prose tr:nth-child(even) td { background: #f9fafb; }
+
+/* ── Images ─────────────────────────────────────────────────────────── */
+.blog-prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+  margin: 1.5em auto;
+}
+
+.blog-prose figure { margin: 2em 0; }
+.blog-prose figcaption {
+  text-align: center;
+  font-size: 0.825rem;
+  color: #888;
+  margin-top: 0.5em;
+}
+
+/* ── Embedded iFrames (YouTube, Twitter, etc.) ────────────────────────*/
+.blog-prose iframe {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 10px;
+  border: none;
+}
+
+.blog-prose .embed-block {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 */
+  height: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  margin: 2em 0;
+}
+.blog-prose .embed-block iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* ── Horizontal Rule ────────────────────────────────────────────────── */
+.blog-prose hr {
+  border: none;
+  border-top: 2px solid #e5e7eb;
+  margin: 3em 0;
+}
+
+/* ── CTA Button ─────────────────────────────────────────────────────── */
+.blog-prose .cta-button {
+  display: inline-block;
+  background: #8bc34a;
+  color: #111 !important;
+  border: none !important;
+  padding: 0.75em 2em;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  text-decoration: none !important;
+  margin: 1em 0;
+}
+.blog-prose .cta-button:hover {
+  background: #7ab843;
+  transform: translateY(-1px);
+}
+
+/* ── Quill-generated alignment classes ───────────────────────────────── */
+.blog-prose .ql-align-center  { text-align: center; }
+.blog-prose .ql-align-right   { text-align: right; }
+.blog-prose .ql-align-justify { text-align: justify; }
+
+/* ── Tag chips ────────────────────────────────────────────────────────*/
+.blog-tag {
+  display: inline-block;
+  background: #f0f9e8;
+  color: #5a8a2d;
+  border: 1px solid #c3e88d;
+  padding: 0.2em 0.75em;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  margin: 0 0.25em 0.25em 0;
+}

@@ -1,0 +1,65 @@
+User-agent: *
+Allow: /
+
+# Disallow admin and API paths from all crawlers
+Disallow: /admin
+Disallow: /#/admin
+Disallow: /api/
+
+# Crawl-delay for polite bots
+Crawl-delay: 10
+
+# Google
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+# Bing
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+# Yahoo (uses Bingbot)
+User-agent: Slurp
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+# DuckDuckGo (uses Bingbot for crawling)
+User-agent: DuckDuckBot
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+# Yandex
+User-agent: YandexBot
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+# Baidu
+User-agent: Baiduspider
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+# AI crawlers - allowed for llms.txt support
+User-agent: GPTBot
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /sitemap.xml
+Disallow: /admin
+Disallow: /api/
+
+User-agent: ClaudeBot
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /sitemap.xml
+Disallow: /admin
+Disallow: /api/
+
+# Sitemap references (all major engines read this)
+Sitemap: https://anvitam.com/sitemap.xml
+Sitemap: https://anvitam.com/llms.txt
