@@ -1,9 +1,9 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
 import { ArrowRight, MapPin, Globe, Trees } from 'lucide-react';
-import { motion, useScroll, useTransform } from 'motion/react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 
 
 /* ─── HERO BACKGROUND VIDEO/IMAGE URL ─── */
@@ -31,7 +31,7 @@ const FadeUp = React.forwardRef<HTMLDivElement, { children: React.ReactNode; del
 );
 
 const Home: React.FC = () => {
-  const { projects, blogs } = useContent();
+  const { projects, blogs, services } = useContent();
   const navigate = useNavigate();
   const heroRef = useRef<HTMLDivElement>(null);
 
@@ -235,28 +235,23 @@ const Home: React.FC = () => {
           </FadeUp>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { img: SERVICE_1, icon: '🌿', title: 'Farm Retreat Architecture', desc: 'Sustainable farmstay designed to deepens the relationship between guests, land, and local culture.', cta: 'Get a Design Consultation', id: 'farm-retreats' },
-              { img: SERVICE_2, icon: '🌱', title: 'Food Forest & Permaculture', desc: 'Site planning rooted in permaculture, creating productive gardens and food forests at every scale.', cta: 'Get a  Design Consultation', id: 'food-forests' },
-              { img: SERVICE_3, icon: '🏡', title: 'Airbnb & Homestay Design', desc: 'Thoughtfully designed Airbnbs and homestays that encourage repeat stays and long-term value.', cta: 'Get a Design Consultation', id: 'airbnb-homestays' },
-            ].map((s, i) => (
-              <FadeUp key={i} delay={i * 0.1}>
+            {services.slice(0, 3).map((s, i) => (
+              <FadeUp key={s.id} delay={i * 0.1}>
                 <div className="bg-white rounded-2xl overflow-hidden flex flex-col h-full group cursor-pointer border border-black/5 hover:shadow-xl transition-shadow duration-300" onClick={() => navigate(`/services/${s.id}`)}>
                   <div className="relative h-72 overflow-hidden">
-                    {/* neon circle icon top-left like Biogax */}
                     <div className="absolute top-4 left-4 z-10 w-12 h-12 bg-[#CCFF00] rounded-full flex items-center justify-center text-2xl shadow-md">
-                      {s.icon}
+                      {['🌿', '🌱', '🏡'][i] || '🏗️'}
                     </div>
-                    <img src={s.img} alt={s.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                    <img src={s.heroImage || [SERVICE_1, SERVICE_2, SERVICE_3][i]} alt={s.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                     <div className="absolute bottom-0 left-0 p-6">
                       <h3 className="text-white text-2xl font-bold leading-tight mb-2">{s.title}</h3>
-                      <p className="text-white/75 text-sm leading-relaxed">{s.desc}</p>
+                      <p className="text-white/75 text-sm leading-relaxed">{s.description}</p>
                     </div>
                   </div>
                   <div className="p-6 mt-auto">
                     <Link to="/contact" className={neonBtn}>
-                      {s.cta} <ArrowRight size={16} />
+                      Get a Design Consultation <ArrowRight size={16} />
                     </Link>
                   </div>
                 </div>
@@ -512,58 +507,13 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* ══ TESTIMONIALS / CLIENT WORK ══ */}
+      {/* ══ TESTIMONIALS — LOOPING CAROUSEL ══ */}
       <section className="bg-white py-24 px-6 md:px-16 lg:px-24">
         <div className="max-w-screen-xl mx-auto">
           <FadeUp>
             <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-[#111] text-center mb-12">Trusted by Our Clients</h2>
           </FadeUp>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-            {/* Left col */}
-            <div className="flex flex-col gap-4">
-              <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0 }} className="bg-[#CCFF00] rounded-2xl p-7">
-                <p className="text-xs font-bold uppercase tracking-widest mb-4">yourweb3guy</p>
-                <p className="text-lg font-bold leading-snug mb-5">"We’re grateful for how thoughtfully the home was designed and executed. The use of natural materials and climate-responsive strategies made the space comfortable, honest, and deeply connected to its surroundings."</p>
-                <div className="flex items-center gap-3 mt-auto"><div className="w-8 h-8 rounded-full bg-[#111] flex items-center justify-center text-white text-xs font-bold">AJ</div><span className="text-sm font-semibold">Akash Jha</span></div>
-              </motion.div>
-              <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }} className="bg-[#F5F5F2] rounded-2xl p-7">
-                <p className="text-xs font-bold uppercase tracking-widest mb-4">Unique School of Science</p>
-                <p className="text-sm text-[#444] leading-relaxed mb-5">"Thank you for engaging our students in such a meaningful way. The hands-on workshop and creative use of waste materials truly inspired them and brought new life to our campus spaces."</p>
-                <div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-[#888] flex items-center justify-center text-white text-xs font-bold">US</div><span className="text-sm font-semibold">Unique School of Science</span></div>
-              </motion.div>
-            </div>
-            {/* Middle col */}
-            <div className="flex flex-col gap-4">
-              <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }} className="bg-[#F5F5F2] rounded-2xl p-7">
-                <p className="text-xs font-bold uppercase tracking-widest mb-4">Carpa Lupa</p>
-                <p className="text-sm text-[#444] leading-relaxed mb-5">"The cottages feel beautifully rooted in the landscape. Guests constantly appreciate the connection to nature, views, and the calm atmosphere you helped create. We’re thankful for the care put into every detail."</p>
-                <div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-[#888] flex items-center justify-center text-white text-xs font-bold">US</div><span className="text-sm font-semibold">Unique School of Science</span></div>
-              </motion.div>
-              <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }} className="bg-[#F5F5F2] rounded-2xl p-7">
-                <p className="text-xs font-bold uppercase tracking-widest mb-4">Beer Bar</p>
-                <p className="text-sm text-[#444] leading-relaxed mb-5">"We loved how the design opened up the space. The outdoor seating, walkways, and canal-facing views have completely changed how people experience the place. Thank you for the thoughtful planning."</p>
-                <div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-[#888] flex items-center justify-center text-white text-xs font-bold">US</div><span className="text-sm font-semibold">Unique School of Science</span></div>
-              </motion.div>
-              <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }} className="bg-[#F5F5F2] rounded-2xl p-7">
-                <p className="text-xs font-bold uppercase tracking-widest mb-4">Shalimar</p>
-                <p className="text-sm text-[#444] leading-relaxed mb-5">"The terrace garden has become one of our favourite spaces. We really appreciate how reclaimed materials were used so creatively and sustainably."</p>
-                <div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-[#888] flex items-center justify-center text-white text-xs font-bold">NB</div><span className="text-sm font-semibold">Naveen Bhagchandani</span></div>
-              </motion.div>
-            </div>
-            {/* Right col */}
-            <div className="flex flex-col gap-4">
-              <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }} className="bg-[#F5F5F2] rounded-2xl p-6">
-                <p className="text-xs font-bold uppercase tracking-widest mb-3">The Batukaru Yurt</p>
-                <p className="text-sm text-[#444] leading-relaxed mb-4">"Thank you for designing such a peaceful and well-considered retreat. Every element, from the yurt to the wellness spaces, feels intentional and deeply calming for our guests"</p>
-                <div className="flex items-center gap-3"><div className="w-7 h-7 rounded-full bg-[#aaa] flex items-center justify-center text-white text-xs">D</div><span className="text-sm font-semibold">Dennis</span></div>
-              </motion.div>
-              <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.15 }} className="bg-[#03160E] rounded-2xl p-7">
-                <p className="text-xs font-bold uppercase tracking-widest mb-4 text-[#CCFF00]">vanvagado Farm</p>
-                <p className="text-lg font-bold text-white leading-snug mb-5">"We’re thankful for how the farm has evolved through your design. The natural pond and food forest have added life, balance, and a sense of harmony that guests genuinely feel."</p>
-                <div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-[#CCFF00] flex items-center justify-center text-[#111] text-xs font-bold">MS</div><span className="text-sm font-semibold text-white">Mahandra sinh Solanki</span></div>
-              </motion.div>
-            </div>
-          </div>
+          <TestimonialCarousel />
         </div>
       </section>
 
@@ -622,6 +572,117 @@ const Home: React.FC = () => {
   );
 };
 
+
+/* ══ TESTIMONIAL CAROUSEL ══ */
+
+const testimonials = [
+  {
+    name: 'Akash Jha',
+    initials: 'AJ',
+    client: 'yourweb3guy',
+    text: "We're grateful for how thoughtfully the home was designed and executed. The use of natural materials and climate-responsive strategies made the space comfortable, honest, and deeply connected to its surroundings.",
+    bg: 'bg-[#CCFF00]',
+    textStyle: 'text-lg font-bold leading-snug text-[#111]',
+    initialsBg: 'bg-[#111]',
+    initialsText: 'text-white',
+    nameStyle: 'text-[#111]',
+  },
+  {
+    name: 'Unique School of Science',
+    initials: 'US',
+    client: 'Unique School of Science',
+    text: "Thank you for engaging our students in such a meaningful way. The hands-on workshop and creative use of waste materials truly inspired them and brought new life to our campus spaces.",
+    bg: 'bg-[#F5F5F2]',
+    textStyle: 'text-[#444] text-sm leading-relaxed',
+    initialsBg: 'bg-[#888]',
+    initialsText: 'text-white',
+    nameStyle: 'text-[#111]',
+  },
+  {
+    name: 'Dennis',
+    initials: 'D',
+    client: 'The Batukaru Yurt',
+    text: "Thank you for designing such a peaceful and well-considered retreat. Every element, from the yurt to the wellness spaces, feels intentional and deeply calming for our guests.",
+    bg: 'bg-[#F5F5F2]',
+    textStyle: 'text-[#444] text-sm leading-relaxed',
+    initialsBg: 'bg-[#aaa]',
+    initialsText: 'text-white',
+    nameStyle: 'text-[#111]',
+  },
+  {
+    name: 'Mahandra sinh Solanki',
+    initials: 'MS',
+    client: 'vanvagado Farm',
+    text: "We're thankful for how the farm has evolved through your design. The natural pond and food forest have added life, balance, and a sense of harmony that guests genuinely feel.",
+    bg: 'bg-[#03160E]',
+    textStyle: 'text-lg font-bold text-white leading-snug',
+    initialsBg: 'bg-[#CCFF00]',
+    initialsText: 'text-[#111]',
+    nameStyle: 'text-white',
+  },
+  {
+    name: 'Naveen Bhagchandani',
+    initials: 'NB',
+    client: 'Shalimar',
+    text: "The terrace garden has become one of our favourite spaces. We really appreciate how reclaimed materials were used so creatively and sustainably.",
+    bg: 'bg-[#F5F5F2]',
+    textStyle: 'text-[#444] text-sm leading-relaxed',
+    initialsBg: 'bg-[#888]',
+    initialsText: 'text-white',
+    nameStyle: 'text-[#111]',
+  },
+];
+
+const TestimonialCarousel: React.FC = () => {
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrent(prev => (prev + 1) % testimonials.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const t = testimonials[current];
+
+  return (
+    <div className="flex flex-col items-center">
+      <div className="w-full max-w-2xl relative min-h-[280px] flex items-center justify-center">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={current}
+            initial={{ opacity: 0, x: 60 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -60 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            className={`${t.bg} rounded-2xl p-8 md:p-10 w-full`}
+          >
+            <p className="text-xs font-bold uppercase tracking-widest mb-4">{t.client}</p>
+            <p className={t.textStyle + ' mb-6'}>{'"'}{t.text}{'"'}</p>
+            <div className="flex items-center gap-3">
+              <div className={`w-8 h-8 rounded-full ${t.initialsBg} flex items-center justify-center ${t.initialsText} text-xs font-bold`}>
+                {t.initials}
+              </div>
+              <span className={`text-sm font-semibold ${t.nameStyle}`}>{t.name}</span>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      {/* Dots */}
+      <div className="flex gap-2 mt-6">
+        {testimonials.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrent(i)}
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              i === current ? 'bg-[#111] w-6' : 'bg-[#ccc] hover:bg-[#999]'
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
 
 /* ══ FAQ COMPONENT ══ */
 
