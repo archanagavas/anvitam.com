@@ -4,7 +4,7 @@
  * The DATABASE_URL must be set in Vercel Dashboard → Project → Settings → Environment Variables.
  */
 import { neon } from '@neondatabase/serverless';
-import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES } from '../constants';
+import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES } from '../constants.js';
 
 let sql: any;
 let isDbConfigured = false;

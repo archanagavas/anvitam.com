@@ -8,7 +8,7 @@
  * Set GEMINI_API_KEY in Vercel Dashboard → Project → Settings → Environment Variables.
  */
 
-import { extractToken, verifyAdminToken } from '../lib/auth';
+import { extractToken, verifyAdminToken } from '../lib/auth.js';
 
 export default async function handler(req: any, res: any) {
   // Enforce JWT validation to prevent API abuse

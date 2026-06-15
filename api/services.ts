@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { sql, isDbConfigured } from '../lib/db';
-import { verifyAdminToken, extractToken } from '../lib/auth';
-import { SERVICES } from '../constants';
+import { sql, isDbConfigured } from '../lib/db.js';
+import { verifyAdminToken, extractToken } from '../lib/auth.js';
+import { SERVICES } from '../constants.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const urlParts = (req.url || '').split('?')[0].split('/');

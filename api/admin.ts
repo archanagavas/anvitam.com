@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import bcrypt from 'bcryptjs';
-import { signAdminToken, verifyAdminToken, extractToken } from '../lib/auth';
-import { initDatabase } from '../lib/db';
+import { signAdminToken, verifyAdminToken, extractToken } from '../lib/auth.js';
+import { initDatabase } from '../lib/db.js';
 
 const attempts: Record<string, { count: number; until: number }> = {};
 
