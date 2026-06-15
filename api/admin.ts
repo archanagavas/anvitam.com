@@ -6,8 +6,9 @@ import { initDatabase } from '../lib/db';
 const attempts: Record<string, { count: number; until: number }> = {};
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const urlParts = (req.url || '').split('?')[0].split('/');
-  const action = urlParts[urlParts.length - 1];
+  const urlPath = (req.url || '').split('?')[0];
+  const queryPath = req.query.path;
+  const action = (Array.isArray(queryPath) ? queryPath[0] : queryPath) || urlPath.split('/').pop() || '';
 
   // 1. Database Initialization
   if (action === 'db-init' || req.url?.includes('db-init')) {

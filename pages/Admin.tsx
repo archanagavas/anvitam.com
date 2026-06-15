@@ -926,7 +926,17 @@ const Admin: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim(), password }),
       });
-      const data = await res.json();
+      
+      let data: any = {};
+      const contentType = res.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        console.error('[Admin Login] Server returned non-JSON response:', text);
+        throw new Error(`Server Error (${res.status}): ${text.slice(0, 100) || 'Internal Gateway Error'}`);
+      }
+
       if (res.ok && data.token) {
         setAuthToken(data.token);
         setIsAuthenticated(true);
@@ -937,8 +947,9 @@ const Admin: React.FC = () => {
         setLoginError(data.error || 'Invalid credentials.');
         setPassword('');
       }
-    } catch {
-      setLoginError('Network error. Please try again.');
+    } catch (err: any) {
+      console.error('[Admin Login] Exception:', err);
+      setLoginError(err.message || 'Network error. Please try again.');
     } finally {
       setLoginLoading(false);
     }

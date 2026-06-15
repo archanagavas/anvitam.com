@@ -5,11 +5,12 @@
  */
 import { neon } from '@neondatabase/serverless';
 
+const dbUrl = process.env.DATABASE_URL || 'postgresql://placeholder_for_startup_validation@localhost/db';
 if (!process.env.DATABASE_URL) {
-  console.warn('[db] DATABASE_URL is not set. Database operations will fail.');
+  console.warn('[db] DATABASE_URL is not set in environment. Database connection will fail when queried.');
 }
 
-export const sql = neon(process.env.DATABASE_URL!);
+export const sql = neon(dbUrl);
 
 /**
  * Run once on first deploy (or via /api/db-init) to create all tables.
