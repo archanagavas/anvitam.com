@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { TESTIMONIALS } from '../constants';
 
 const Services: React.FC = () => {
-  const { services } = useContent();
+  const { services, testimonials } = useContent();
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
@@ -159,7 +159,7 @@ const Services: React.FC = () => {
           </h2>
         </div>
         <div className="max-w-screen-xl mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {TESTIMONIALS.map((t, i) => (
+          {testimonials.slice(0, 4).map((t, i) => (
              <div 
                key={t.id} 
                className={`p-8 rounded-2xl flex flex-col justify-between ${
@@ -174,7 +174,13 @@ const Services: React.FC = () => {
                  "{t.text}"
                </p>
                <div className="flex items-center gap-3">
-                 <img src={t.image} alt={t.author} className="w-10 h-10 rounded-full object-cover" />
+                 {t.image ? (
+                   <img src={t.image} alt={t.author} className="w-10 h-10 rounded-full object-cover" />
+                 ) : (
+                   <div className="w-10 h-10 rounded-full bg-black/10 flex items-center justify-center text-xs font-bold text-black/60">
+                     {t.author ? t.author.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'C'}
+                   </div>
+                 )}
                  <div>
                    <p className={`text-xs font-bold ${i === 3 ? 'text-white' : 'text-[#0a0a0a]'}`}>{t.author}</p>
                    <p className={`text-[10px] ${i === 3 ? 'text-white/60' : 'text-[#0a0a0a]/50'}`}>{t.role}</p>
