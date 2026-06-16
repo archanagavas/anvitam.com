@@ -116,9 +116,9 @@ const Why: React.FC = () => {
                   <div className="flex -space-x-3">
                     {[
                       'https://topmate.io/cdn-cgi/image/width=640,quality=90/https://static.topmate.io/da2bLpNHf3cETP6EKEtsXL.jpeg',
-                      'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&q=80',
-                      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&q=80',
-                      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&q=80',
+                      '/uploads/akash.jpg',
+                      '/uploads/rucha.jpg',
+                      '/uploads/navin.jpg',
                     ].map((src, i) => (
                       <img
                         key={i}

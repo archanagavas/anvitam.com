@@ -282,7 +282,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <ul className="space-y-3">
                 <li><a href="mailto:anvitamarchitects@gmail.com" className="text-sm text-white/70 hover:text-[#CCFF00] transition-colors">anvitamarchitects@gmail.com</a></li>
                 <li><a href="tel:+917990657190" className="text-sm text-white/70 hover:text-[#CCFF00] transition-colors">+91 7990657190</a></li>
-                <li><Link to="/contact" className="text-sm text-white/70 hover:text-[#CCFF00] transition-colors">Send us a message →</Link></li>
+                <li><Link to="/contact" className="text-sm text-white/70 hover:text-[#CCFF00] transition-colors">Send us a message</Link></li>
                 <li><Link to="/shop" className="text-sm text-white/70 hover:text-[#CCFF00] transition-colors">Shop & Resources</Link></li>
               </ul>
             </div>

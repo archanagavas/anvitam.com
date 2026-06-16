@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
 import { ArrowRight, MapPin, Globe, Trees } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
+import TestimonialCarousel from '../components/TestimonialCarousel';
 
 
 /* ─── HERO BACKGROUND VIDEO/IMAGE URL ─── */
@@ -117,9 +118,9 @@ const Home: React.FC = () => {
             { num: 'Permaculture', label: 'Grounded in Principles' },
             { num: '100%', label: 'Climate-Aware Design' },
           ].map((s, i) => (
-            <div key={i} className="py-6 text-center text-white border-r last:border-r-0 border-white/20 bg-black/30 backdrop-blur-sm">
-              <p className="text-2xl md:text-4xl font-bold">{s.num}</p>
-              <p className="text-xs text-white/70 mt-1 uppercase tracking-wider">{s.label}</p>
+            <div key={i} className="py-4 md:py-6 px-1 md:px-4 text-center text-white border-r last:border-r-0 border-white/20 bg-black/30 backdrop-blur-sm flex flex-col justify-center items-center overflow-hidden">
+              <p className="text-lg sm:text-2xl md:text-4xl font-bold truncate w-full">{s.num}</p>
+              <p className="text-[9px] sm:text-[10px] md:text-xs text-white/70 mt-1 uppercase tracking-wider truncate w-full">{s.label}</p>
             </div>
           ))}
         </div>
@@ -572,117 +573,6 @@ const Home: React.FC = () => {
   );
 };
 
-
-/* ══ TESTIMONIAL CAROUSEL ══ */
-
-const testimonials = [
-  {
-    name: 'Akash Jha',
-    initials: 'AJ',
-    client: 'yourweb3guy',
-    text: "We're grateful for how thoughtfully the home was designed and executed. The use of natural materials and climate-responsive strategies made the space comfortable, honest, and deeply connected to its surroundings.",
-    bg: 'bg-[#CCFF00]',
-    textStyle: 'text-lg font-bold leading-snug text-[#111]',
-    initialsBg: 'bg-[#111]',
-    initialsText: 'text-white',
-    nameStyle: 'text-[#111]',
-  },
-  {
-    name: 'Unique School of Science',
-    initials: 'US',
-    client: 'Unique School of Science',
-    text: "Thank you for engaging our students in such a meaningful way. The hands-on workshop and creative use of waste materials truly inspired them and brought new life to our campus spaces.",
-    bg: 'bg-[#F5F5F2]',
-    textStyle: 'text-[#444] text-sm leading-relaxed',
-    initialsBg: 'bg-[#888]',
-    initialsText: 'text-white',
-    nameStyle: 'text-[#111]',
-  },
-  {
-    name: 'Dennis',
-    initials: 'D',
-    client: 'The Batukaru Yurt',
-    text: "Thank you for designing such a peaceful and well-considered retreat. Every element, from the yurt to the wellness spaces, feels intentional and deeply calming for our guests.",
-    bg: 'bg-[#F5F5F2]',
-    textStyle: 'text-[#444] text-sm leading-relaxed',
-    initialsBg: 'bg-[#aaa]',
-    initialsText: 'text-white',
-    nameStyle: 'text-[#111]',
-  },
-  {
-    name: 'Mahandra sinh Solanki',
-    initials: 'MS',
-    client: 'vanvagado Farm',
-    text: "We're thankful for how the farm has evolved through your design. The natural pond and food forest have added life, balance, and a sense of harmony that guests genuinely feel.",
-    bg: 'bg-[#03160E]',
-    textStyle: 'text-lg font-bold text-white leading-snug',
-    initialsBg: 'bg-[#CCFF00]',
-    initialsText: 'text-[#111]',
-    nameStyle: 'text-white',
-  },
-  {
-    name: 'Naveen Bhagchandani',
-    initials: 'NB',
-    client: 'Shalimar',
-    text: "The terrace garden has become one of our favourite spaces. We really appreciate how reclaimed materials were used so creatively and sustainably.",
-    bg: 'bg-[#F5F5F2]',
-    textStyle: 'text-[#444] text-sm leading-relaxed',
-    initialsBg: 'bg-[#888]',
-    initialsText: 'text-white',
-    nameStyle: 'text-[#111]',
-  },
-];
-
-const TestimonialCarousel: React.FC = () => {
-  const [current, setCurrent] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrent(prev => (prev + 1) % testimonials.length);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const t = testimonials[current];
-
-  return (
-    <div className="flex flex-col items-center">
-      <div className="w-full max-w-2xl relative min-h-[280px] flex items-center justify-center">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={current}
-            initial={{ opacity: 0, x: 60 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -60 }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            className={`${t.bg} rounded-2xl p-8 md:p-10 w-full`}
-          >
-            <p className="text-xs font-bold uppercase tracking-widest mb-4">{t.client}</p>
-            <p className={t.textStyle + ' mb-6'}>{'"'}{t.text}{'"'}</p>
-            <div className="flex items-center gap-3">
-              <div className={`w-8 h-8 rounded-full ${t.initialsBg} flex items-center justify-center ${t.initialsText} text-xs font-bold`}>
-                {t.initials}
-              </div>
-              <span className={`text-sm font-semibold ${t.nameStyle}`}>{t.name}</span>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-      </div>
-      {/* Dots */}
-      <div className="flex gap-2 mt-6">
-        {testimonials.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrent(i)}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              i === current ? 'bg-[#111] w-6' : 'bg-[#ccc] hover:bg-[#999]'
-            }`}
-          />
-        ))}
-      </div>
-    </div>
-  );
-};
 
 /* ══ FAQ COMPONENT ══ */
 

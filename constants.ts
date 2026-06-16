@@ -1,5 +1,43 @@
 import { Project, BlogPost, TeamMember, Award, Testimonial, ProcessStep, Service, DigitalProduct } from './types';
 
+export const INITIAL_TESTIMONIALS: Testimonial[] = [
+  {
+    id: 't1',
+    author: 'Akash Jha',
+    role: 'yourweb3guy',
+    text: "We're grateful for how thoughtfully the home was designed and executed. The use of natural materials and climate-responsive strategies made the space comfortable, honest, and deeply connected to its surroundings.",
+    image: '',
+  },
+  {
+    id: 't2',
+    author: 'Unique School of Science',
+    role: 'Unique School of Science',
+    text: "Thank you for engaging our students in such a meaningful way. The hands-on workshop and creative use of waste materials truly inspired them and brought new life to our campus spaces.",
+    image: '',
+  },
+  {
+    id: 't3',
+    author: 'Dennis',
+    role: 'The Batukaru Yurt',
+    text: "Thank you for designing such a peaceful and well-considered retreat. Every element, from the yurt to the wellness spaces, feels intentional and deeply calming for our guests.",
+    image: '',
+  },
+  {
+    id: 't4',
+    author: 'Mahandra sinh Solanki',
+    role: 'vanvagado Farm',
+    text: "We're thankful for how the farm has evolved through your design. The natural pond and food forest have added life, balance, and a sense of harmony that guests genuinely feel.",
+    image: '',
+  },
+  {
+    id: 't5',
+    author: 'Naveen Bhagchandani',
+    role: 'Shalimar',
+    text: "The terrace garden has become one of our favourite spaces. We really appreciate how reclaimed materials were used so creatively and sustainably.",
+    image: '',
+  }
+];
+
 export const PROCESS_STEPS: ProcessStep[] = [
   {
     id: 'understand',

@@ -4,7 +4,7 @@
  * The DATABASE_URL must be set in Vercel Dashboard → Project → Settings → Environment Variables.
  */
 import { neon } from '@neondatabase/serverless';
-import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES } from '../constants.js';
+import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES, INITIAL_TESTIMONIALS } from '../constants.js';
 
 let sql: any;
 let isDbConfigured = false;
@@ -137,6 +137,17 @@ export async function initDatabase() {
     );
   `;
 
+  await sql`
+    CREATE TABLE IF NOT EXISTS testimonials (
+      id          TEXT PRIMARY KEY,
+      author      TEXT NOT NULL,
+      role        TEXT NOT NULL DEFAULT '',
+      text        TEXT NOT NULL,
+      image       TEXT NOT NULL DEFAULT '',
+      created_at  TIMESTAMPTZ DEFAULT now()
+    );
+  `;
+
   // Seed initial online courses if none exist
   const existingCourses = await sql`SELECT id FROM digital_products WHERE category = 'Online Courses' LIMIT 1`;
   if (existingCourses.length === 0) {
@@ -212,6 +223,18 @@ export async function initDatabase() {
       await sql`
         INSERT INTO services (id, title, description, icon, value_props, hero_image, what_it_is, who_its_for, case_study_id, process, pricing, faq, booking_link, gallery, case_study_ids, videos)
         VALUES (${s.id}, ${s.title}, ${s.description}, ${s.icon}, ${JSON.stringify(s.valueProps ?? [])}, ${s.heroImage ?? null}, ${JSON.stringify(s.whatItIs ?? [])}, ${JSON.stringify(s.whoItsFor ?? [])}, ${s.caseStudyId ?? null}, ${JSON.stringify(s.process ?? [])}, ${s.pricing ?? null}, ${JSON.stringify(s.faq ?? [])}, ${s.bookingLink ?? null}, '[]', '[]', '[]')
+        ON CONFLICT (id) DO NOTHING
+      `;
+    }
+  }
+
+  // Seed initial testimonials if none exist
+  const existingTestimonials = await sql`SELECT id FROM testimonials LIMIT 1`;
+  if (existingTestimonials.length === 0) {
+    for (const t of INITIAL_TESTIMONIALS) {
+      await sql`
+        INSERT INTO testimonials (id, author, role, text, image)
+        VALUES (${t.id}, ${t.author}, ${t.role}, ${t.text}, ${t.image})
         ON CONFLICT (id) DO NOTHING
       `;
     }

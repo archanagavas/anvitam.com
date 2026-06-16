@@ -7,11 +7,11 @@ import {
   Layout as LayoutIcon, ShoppingBag, Briefcase, MessageSquare, Mail,
   Globe, Download, CheckCircle, RefreshCw, Edit2, X, Eye, EyeOff,
   Image as ImageIcon, Tag, Save, ArrowLeft, Type, Hash, AlertCircle, Menu,
-  Database, Wifi, WifiOff, Shield, Lock, Zap, Activity
+  Database, Wifi, WifiOff, Shield, Lock, Zap, Activity, MessageCircle
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { generateSitemapXml, generateLlmsTxt, generateLlmsFullTxt, downloadFile } from '../utils/seoGenerator';
-import { BlogPost, Project, Service, DigitalProduct } from '../types';
+import { BlogPost, Project, Service, DigitalProduct, Testimonial } from '../types';
 import ProjectEditor from '../components/ProjectEditor';
 import ServiceEditor from '../components/ServiceEditor';
 import ProductEditor from '../components/ProductEditor';
@@ -863,7 +863,7 @@ const Admin: React.FC = () => {
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
-  const [activeTab, setActiveTab] = useState<'projects' | 'blog' | 'analytics' | 'shop' | 'services' | 'messages' | 'seo'>('analytics');
+  const [activeTab, setActiveTab] = useState<'projects' | 'blog' | 'analytics' | 'shop' | 'services' | 'messages' | 'seo' | 'testimonials'>('analytics');
   const [seoStatus, setSeoStatus] = useState<null | 'generating' | 'done'>(null);
   const [previewFile, setPreviewFile] = useState<{ name: string; content: string } | null>(null);
   const [blogView, setBlogView] = useState<'list' | 'editor'>('list');
@@ -879,13 +879,16 @@ const Admin: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<DigitalProduct | null>(null);
   const [selectedProductCategory, setSelectedProductCategory] = useState<string>('All');
 
+  const [testimonialView, setTestimonialView] = useState<'list' | 'editor'>('list');
+  const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const {
-    projects, blogs, services, digitalProducts, messages, isDbConnected,
+    projects, blogs, services, digitalProducts, messages, testimonials, isDbConnected,
     addProject, updateProject, addBlog, updateBlog, addService, updateService, 
     addDigitalProduct, updateDigitalProduct, deleteProject, deleteBlog, deleteService, 
-    deleteDigitalProduct, deleteMessage, refreshFromDb
+    deleteDigitalProduct, deleteMessage, addTestimonial, updateTestimonial, deleteTestimonial, refreshFromDb
   } = useContent();
 
   const [newItemTitle, setNewItemTitle] = useState('');
@@ -1177,6 +1180,7 @@ const Admin: React.FC = () => {
           <NavButton id="blog" icon={FileText} label="Journal / Blog" />
           <NavButton id="shop" icon={ShoppingBag} label="Shop / Products" />
           <NavButton id="services" icon={Briefcase} label="Services" />
+          <NavButton id="testimonials" icon={MessageCircle} label="Testimonials" />
           <NavButton id="seo" icon={Globe} label="SEO Files" />
         </nav>
         <div className="p-3 border-t border-gray-100 space-y-1">
@@ -1742,6 +1746,114 @@ const Admin: React.FC = () => {
                 onSave={handleServiceSave}
                 onCancel={() => { setServiceView('list'); setEditingService(null); }}
               />
+            )}
+          </div>
+        )}
+
+        {/* ── Testimonials ── */}
+        {activeTab === 'testimonials' && (
+          <div className="space-y-6 animate-fade-in">
+            {testimonialView === 'list' ? (
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-2xl font-bold">Client Testimonials</h2>
+                    <p className="text-sm text-gray-400 mt-0.5">{testimonials.length} total testimonials</p>
+                  </div>
+                  <button
+                    onClick={() => { setEditingTestimonial(null); setTestimonialView('editor'); }}
+                    className="flex items-center gap-2 bg-black text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-800 transition"
+                  >
+                    <Plus size={15} /> New Testimonial
+                  </button>
+                </div>
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                  {testimonials.length === 0 ? (
+                    <div className="text-center py-20 text-gray-400">
+                      <MessageCircle size={32} className="mx-auto mb-3 opacity-30" />
+                      <p className="text-sm">No testimonials yet. Click "New Testimonial" to get started.</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-gray-100">
+                      {testimonials.map(t => (
+                        <div key={t.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition">
+                          <div>
+                            <h4 className="font-bold text-sm text-gray-850 flex items-center gap-2">
+                              {t.author}
+                            </h4>
+                            <p className="text-xs text-gray-400 mt-0.5">{t.role}</p>
+                            <p className="text-xs text-gray-500 mt-1 line-clamp-1">{t.text}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => { setEditingTestimonial(t); setTestimonialView('editor'); }}
+                              className="flex items-center gap-1 text-xs border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition font-medium text-gray-650 bg-white"
+                            >
+                              <Edit2 size={11} /> Edit
+                            </button>
+                            <button onClick={() => deleteTestimonial(t.id)} className="text-red-400 hover:text-red-600 p-1.5 hover:bg-red-50 rounded-lg transition">
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 max-w-2xl">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="font-bold text-lg">{editingTestimonial ? 'Edit Testimonial' : 'New Testimonial'}</h3>
+                  <button onClick={() => setTestimonialView('list')} className="text-gray-400 hover:text-gray-700">
+                    <X size={20} />
+                  </button>
+                </div>
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.currentTarget);
+                    const t: Testimonial = {
+                      id: editingTestimonial?.id || 't' + Date.now(),
+                      author: formData.get('author') as string,
+                      role: formData.get('role') as string,
+                      text: formData.get('text') as string,
+                      image: formData.get('image') as string || '',
+                    };
+                    if (editingTestimonial) {
+                      updateTestimonial(t);
+                    } else {
+                      addTestimonial(t);
+                    }
+                    setTestimonialView('list');
+                    setEditingTestimonial(null);
+                  }}
+                  className="space-y-4"
+                >
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-gray-600">Client Name</label>
+                      <input name="author" defaultValue={editingTestimonial?.author} required className="w-full border rounded-lg px-3 py-2 text-sm" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-gray-600">Role / Company</label>
+                      <input name="role" defaultValue={editingTestimonial?.role} required className="w-full border rounded-lg px-3 py-2 text-sm" />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-600">Testimonial Text</label>
+                    <textarea name="text" defaultValue={editingTestimonial?.text} required rows={4} className="w-full border rounded-lg px-3 py-2 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-600">Image URL (Optional)</label>
+                    <input name="image" defaultValue={editingTestimonial?.image} className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="https://..." />
+                  </div>
+                  <div className="pt-4 border-t flex justify-end gap-2">
+                    <button type="button" onClick={() => setTestimonialView('list')} className="px-4 py-2 text-sm font-semibold border rounded-lg">Cancel</button>
+                    <button type="submit" className="px-4 py-2 text-sm font-bold bg-black text-white rounded-lg hover:bg-gray-800">Save Testimonial</button>
+                  </div>
+                </form>
+              </div>
             )}
           </div>
         )}

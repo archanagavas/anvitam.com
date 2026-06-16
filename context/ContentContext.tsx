@@ -7,8 +7,8 @@
  *  3. Admin mutations hit the API and update local state
  */
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Project, BlogPost, Service, DigitalProduct, ContactMessage } from '../types';
-import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES, DIGITAL_PRODUCTS } from '../constants';
+import { Project, BlogPost, Service, DigitalProduct, ContactMessage, Testimonial } from '../types';
+import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES, DIGITAL_PRODUCTS, INITIAL_TESTIMONIALS } from '../constants';
 
 // ── Auth token helpers (JWT stored in sessionStorage — auto-clears on tab close) ──
 export const getAuthToken = (): string | null => sessionStorage.getItem('anvitam_admin_token');
@@ -25,6 +25,7 @@ interface ContentContextType {
   services: Service[];
   digitalProducts: DigitalProduct[];
   messages: ContactMessage[];
+  testimonials: Testimonial[];
   isDbConnected: boolean;
   addProject: (project: Project) => Promise<void>;
   updateProject: (project: Project) => Promise<void>;
@@ -40,6 +41,9 @@ interface ContentContextType {
   deleteService: (id: string) => Promise<void>;
   deleteDigitalProduct: (id: string) => Promise<void>;
   deleteMessage: (id: string) => Promise<void>;
+  addTestimonial: (t: Testimonial) => Promise<void>;
+  updateTestimonial: (t: Testimonial) => Promise<void>;
+  deleteTestimonial: (id: string) => Promise<void>;
   refreshFromDb: () => Promise<void>;
 }
 
@@ -74,16 +78,20 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [messages, setMessages] = useState<ContactMessage[]>(() =>
     loadFromStorage<ContactMessage>('anvitam_messages', [])
   );
+  const [testimonials, setTestimonials] = useState<Testimonial[]>(() =>
+    loadFromStorage<Testimonial>('anvitam_testimonials', INITIAL_TESTIMONIALS)
+  );
   const [isDbConnected, setIsDbConnected] = useState(false);
 
   // ── Fetch from Neon DB ────────────────────────────────────────────
   const refreshFromDb = async () => {
     try {
-      const [blogsRes, projectsRes, servicesRes, productsRes] = await Promise.all([
+      const [blogsRes, projectsRes, servicesRes, productsRes, testimonialsRes] = await Promise.all([
         fetch('/api/blogs'),
         fetch('/api/projects'),
         fetch('/api/services'),
         fetch('/api/products'),
+        fetch('/api/testimonials')
       ]);
 
       if (blogsRes.ok) {
@@ -115,6 +123,14 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
         if (dbProducts.length > 0) {
           setDigitalProducts(dbProducts);
           localStorage.setItem('anvitam_products', JSON.stringify(dbProducts));
+        }
+      }
+
+      if (testimonialsRes.ok) {
+        const dbTestimonials: Testimonial[] = await testimonialsRes.json();
+        if (dbTestimonials.length > 0) {
+          setTestimonials(dbTestimonials);
+          localStorage.setItem('anvitam_testimonials', JSON.stringify(dbTestimonials));
         }
       }
 
@@ -156,6 +172,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   useEffect(() => { localStorage.setItem('anvitam_products', JSON.stringify(digitalProducts)); }, [digitalProducts]);
   useEffect(() => { localStorage.setItem('anvitam_projects', JSON.stringify(projects)); }, [projects]);
   useEffect(() => { localStorage.setItem('anvitam_blogs', JSON.stringify(blogs)); }, [blogs]);
+  useEffect(() => { localStorage.setItem('anvitam_testimonials', JSON.stringify(testimonials)); }, [testimonials]);
 
   // ── CRUD Operations ──────────────────────────────────────────────────────
   const addProject = async (project: Project) => {
@@ -375,12 +392,48 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
+  const addTestimonial = async (t: Testimonial) => {
+    setTestimonials(prev => [t, ...prev]);
+    const token = getAuthToken();
+    if (token) {
+      try {
+        await fetch('/api/testimonials', { method: 'POST', headers: authHeaders(), body: JSON.stringify(t) });
+      } catch (err) {
+        console.error('Failed to save testimonial:', err);
+      }
+    }
+  };
+
+  const updateTestimonial = async (t: Testimonial) => {
+    setTestimonials(prev => prev.map(item => item.id === t.id ? t : item));
+    const token = getAuthToken();
+    if (token) {
+      try {
+        await fetch(`/api/testimonials/${t.id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(t) });
+      } catch (err) {
+        console.error('Failed to update testimonial:', err);
+      }
+    }
+  };
+
+  const deleteTestimonial = async (id: string) => {
+    setTestimonials(prev => prev.filter(t => t.id !== id));
+    const token = getAuthToken();
+    if (token) {
+      try {
+        await fetch(`/api/testimonials/${id}`, { method: 'DELETE', headers: authHeaders() });
+      } catch (err) {
+        console.error('Failed to delete testimonial:', err);
+      }
+    }
+  };
+
   return (
     <ContentContext.Provider value={{
-      projects, blogs, services, digitalProducts, messages,
+      projects, blogs, services, digitalProducts, messages, testimonials,
       isDbConnected,
-      addProject, updateProject, addBlog, updateBlog, addService, updateService, addDigitalProduct, updateDigitalProduct, addMessage,
-      deleteProject, deleteBlog, deleteService, deleteDigitalProduct, deleteMessage,
+      addProject, updateProject, addBlog, updateBlog, addService, updateService, addDigitalProduct, updateDigitalProduct, addMessage, addTestimonial, updateTestimonial,
+      deleteProject, deleteBlog, deleteService, deleteDigitalProduct, deleteMessage, deleteTestimonial,
       refreshFromDb,
     }}>
       {children}

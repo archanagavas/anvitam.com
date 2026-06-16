@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
 import { Project } from '../types';
 import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardList, PenTool, Wrench, Sprout, Check, HelpCircle, Images, ZoomIn, X } from 'lucide-react';
+import TestimonialCarousel from '../components/TestimonialCarousel';
 
 const ServiceDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -363,6 +364,12 @@ const ServiceDetail: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* 7.5. Testimonial Carousel */}
+      <div className="max-w-4xl mx-auto px-6 mt-12 mb-12">
+        <h3 className="text-xl md:text-2xl font-bold text-[#111] mb-6 tracking-tight text-center">What Our Clients Say</h3>
+        <TestimonialCarousel />
+      </div>
 
       {/* 8. Pre-Footer CTA */}
       <div className="bg-[#0a0a0a] text-white pt-20 pb-20 px-6 rounded-t-3xl md:rounded-t-[3rem] mt-10">
