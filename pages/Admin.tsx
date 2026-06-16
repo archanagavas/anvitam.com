@@ -861,6 +861,7 @@ const TestimonialEditorForm: React.FC<{
 }> = ({ initial, onSave, onCancel }) => {
   const [imageMode, setImageMode] = useState<'url' | 'upload'>('url');
   const [image, setImage] = useState(initial?.image || '');
+  const [error, setError] = useState<string | null>(null);
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 max-w-2xl">
@@ -870,12 +871,18 @@ const TestimonialEditorForm: React.FC<{
           <X size={20} />
         </button>
       </div>
+      {error && (
+        <div className="mb-4 bg-red-50 text-red-600 text-sm p-3 rounded-lg flex justify-between items-center">
+          <span>{error}</span>
+          <button onClick={() => setError(null)}><X size={14} /></button>
+        </div>
+      )}
       <form 
         onSubmit={(e) => {
           e.preventDefault();
           const formData = new FormData(e.currentTarget);
           const t: Testimonial = {
-            id: initial?.id || 't' + Date.now(),
+            id: initial?.id || crypto.randomUUID(),
             author: formData.get('author') as string,
             role: formData.get('role') as string,
             text: formData.get('text') as string,
@@ -923,10 +930,11 @@ const TestimonialEditorForm: React.FC<{
                   const file = e.target.files?.[0];
                   if (file) {
                     try {
+                      setError(null);
                       const dataUrl = await compressImage(file);
                       setImage(dataUrl);
                     } catch (err) {
-                      alert('Failed to process image');
+                      setError('Failed to process image. Please try a different file.');
                     }
                   }
                 }}
@@ -969,6 +977,12 @@ const Admin: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   const [activeTab, setActiveTab] = useState<'projects' | 'blog' | 'analytics' | 'shop' | 'services' | 'messages' | 'seo' | 'testimonials'>('analytics');
   const [seoStatus, setSeoStatus] = useState<null | 'generating' | 'done'>(null);
@@ -2025,7 +2039,7 @@ const Admin: React.FC = () => {
                         <button 
                           onClick={() => {
                             navigator.clipboard.writeText(f.url);
-                            alert('Link copied to clipboard!');
+                            showToast('Link copied to clipboard!');
                           }}
                           className="border border-gray-200 text-gray-700 text-xs font-semibold py-2 rounded-lg hover:bg-gray-50 transition"
                         >
@@ -2066,7 +2080,7 @@ const Admin: React.FC = () => {
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(previewFile.content);
-                    alert('Copied raw file content to clipboard!');
+                    showToast('Copied raw file content to clipboard!');
                   }}
                   className="bg-black hover:bg-gray-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition"
                 >
@@ -2090,6 +2104,16 @@ const Admin: React.FC = () => {
         </div>
       )}
 
+      {/* Global Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 bg-gray-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 z-[200] animate-fade-in">
+          <CheckCircle size={16} className="text-[#CCFF00]" />
+          <span className="text-sm font-semibold">{toastMessage}</span>
+          <button onClick={() => setToastMessage(null)} className="ml-2 text-gray-400 hover:text-white">
+            <X size={14} />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
