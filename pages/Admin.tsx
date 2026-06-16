@@ -1925,11 +1925,13 @@ const Admin: React.FC = () => {
             ) : (
               <TestimonialEditorForm
                 initial={editingTestimonial}
-                onSave={(t) => {
+                onSave={async (t) => {
                   if (editingTestimonial) {
-                    updateTestimonial(t);
+                    await updateTestimonial(t);
+                    showToast('Testimonial updated successfully!');
                   } else {
-                    addTestimonial(t);
+                    await addTestimonial(t);
+                    showToast('Testimonial added successfully!');
                   }
                   setTestimonialView('list');
                   setEditingTestimonial(null);

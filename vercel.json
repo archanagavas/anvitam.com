@@ -28,6 +28,8 @@
     { "source": "/api/services/:id", "destination": "/api/services.ts" },
     { "source": "/api/messages", "destination": "/api/messages.ts" },
     { "source": "/api/messages/:id", "destination": "/api/messages.ts" },
+    { "source": "/api/testimonials", "destination": "/api/testimonials.ts" },
+    { "source": "/api/testimonials/:id", "destination": "/api/testimonials.ts" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
