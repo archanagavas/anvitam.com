@@ -853,6 +853,113 @@ const StatusBadge: React.FC<{ status: BlogPost['status'] }> = ({ status }) => (
   </span>
 );
 
+// ── Testimonial Editor Component ──────────────────────────────────────
+const TestimonialEditorForm: React.FC<{
+  initial: Testimonial | null;
+  onSave: (t: Testimonial) => void;
+  onCancel: () => void;
+}> = ({ initial, onSave, onCancel }) => {
+  const [imageMode, setImageMode] = useState<'url' | 'upload'>('url');
+  const [image, setImage] = useState(initial?.image || '');
+
+  return (
+    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 max-w-2xl">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="font-bold text-lg">{initial ? 'Edit Testimonial' : 'New Testimonial'}</h3>
+        <button onClick={onCancel} className="text-gray-400 hover:text-gray-700">
+          <X size={20} />
+        </button>
+      </div>
+      <form 
+        onSubmit={(e) => {
+          e.preventDefault();
+          const formData = new FormData(e.currentTarget);
+          const t: Testimonial = {
+            id: initial?.id || 't' + Date.now(),
+            author: formData.get('author') as string,
+            role: formData.get('role') as string,
+            text: formData.get('text') as string,
+            image: image,
+          };
+          onSave(t);
+        }}
+        className="space-y-4"
+      >
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-600">Client Name</label>
+            <input name="author" defaultValue={initial?.author} required className="w-full border rounded-lg px-3 py-2 text-sm" />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-600">Role / Company</label>
+            <input name="role" defaultValue={initial?.role} required className="w-full border rounded-lg px-3 py-2 text-sm" />
+          </div>
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-bold text-gray-600">Testimonial Text</label>
+          <textarea name="text" defaultValue={initial?.text} required rows={4} className="w-full border rounded-lg px-3 py-2 text-sm" />
+        </div>
+        
+        <div className="space-y-1">
+          <label className="text-xs font-bold text-gray-600 block mb-2">Image (Optional)</label>
+          <div className="flex bg-gray-50 p-1 rounded-lg w-fit mb-3">
+            <button type="button" onClick={() => setImageMode('url')} className={`px-4 py-1.5 text-xs font-bold rounded-md transition ${imageMode === 'url' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}>URL</button>
+            <button type="button" onClick={() => setImageMode('upload')} className={`px-4 py-1.5 text-xs font-bold rounded-md transition ${imageMode === 'upload' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}>Upload</button>
+          </div>
+          {imageMode === 'url' ? (
+            <input 
+              type="url" 
+              value={image} 
+              onChange={e => setImage(e.target.value)} 
+              placeholder="https://..." 
+              className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:border-black" 
+            />
+          ) : (
+            <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:bg-gray-50 transition cursor-pointer relative">
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    try {
+                      const dataUrl = await compressImage(file);
+                      setImage(dataUrl);
+                    } catch (err) {
+                      alert('Failed to process image');
+                    }
+                  }
+                }}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+              <ImageIcon size={24} className="mx-auto mb-2 text-gray-400" />
+              <p className="text-sm font-semibold text-gray-700">Click to upload or drag image</p>
+              <p className="text-xs text-gray-400 mt-1">JPEG, PNG, WebP (auto-compressed)</p>
+            </div>
+          )}
+          {image && (
+            <div className="mt-4 relative inline-block">
+              <img src={image} alt="Preview" className="w-16 h-16 rounded-full object-cover border border-gray-200" />
+              <button 
+                type="button" 
+                onClick={() => setImage('')}
+                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition shadow-sm"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="pt-4 border-t flex justify-end gap-2">
+          <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-semibold border rounded-lg">Cancel</button>
+          <button type="submit" className="px-4 py-2 text-sm font-bold bg-black text-white rounded-lg hover:bg-gray-800">Save Testimonial</button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
 // ── Main Admin Component ──────────────────────────────────────────────
 const Admin: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -1802,58 +1909,22 @@ const Admin: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 max-w-2xl">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="font-bold text-lg">{editingTestimonial ? 'Edit Testimonial' : 'New Testimonial'}</h3>
-                  <button onClick={() => setTestimonialView('list')} className="text-gray-400 hover:text-gray-700">
-                    <X size={20} />
-                  </button>
-                </div>
-                <form 
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    const formData = new FormData(e.currentTarget);
-                    const t: Testimonial = {
-                      id: editingTestimonial?.id || 't' + Date.now(),
-                      author: formData.get('author') as string,
-                      role: formData.get('role') as string,
-                      text: formData.get('text') as string,
-                      image: formData.get('image') as string || '',
-                    };
-                    if (editingTestimonial) {
-                      updateTestimonial(t);
-                    } else {
-                      addTestimonial(t);
-                    }
-                    setTestimonialView('list');
-                    setEditingTestimonial(null);
-                  }}
-                  className="space-y-4"
-                >
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-gray-600">Client Name</label>
-                      <input name="author" defaultValue={editingTestimonial?.author} required className="w-full border rounded-lg px-3 py-2 text-sm" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-gray-600">Role / Company</label>
-                      <input name="role" defaultValue={editingTestimonial?.role} required className="w-full border rounded-lg px-3 py-2 text-sm" />
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-600">Testimonial Text</label>
-                    <textarea name="text" defaultValue={editingTestimonial?.text} required rows={4} className="w-full border rounded-lg px-3 py-2 text-sm" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-600">Image URL (Optional)</label>
-                    <input name="image" defaultValue={editingTestimonial?.image} className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="https://..." />
-                  </div>
-                  <div className="pt-4 border-t flex justify-end gap-2">
-                    <button type="button" onClick={() => setTestimonialView('list')} className="px-4 py-2 text-sm font-semibold border rounded-lg">Cancel</button>
-                    <button type="submit" className="px-4 py-2 text-sm font-bold bg-black text-white rounded-lg hover:bg-gray-800">Save Testimonial</button>
-                  </div>
-                </form>
-              </div>
+              <TestimonialEditorForm
+                initial={editingTestimonial}
+                onSave={(t) => {
+                  if (editingTestimonial) {
+                    updateTestimonial(t);
+                  } else {
+                    addTestimonial(t);
+                  }
+                  setTestimonialView('list');
+                  setEditingTestimonial(null);
+                }}
+                onCancel={() => {
+                  setTestimonialView('list');
+                  setEditingTestimonial(null);
+                }}
+              />
             )}
           </div>
         )}
