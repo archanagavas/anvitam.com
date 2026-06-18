@@ -27,6 +27,7 @@ export interface Project {
   story?: StorySection[]; // New: Detailed start-to-finish story
   tags?: string[]; // Tag list
   faqs?: { question: string; answer: string }[]; // FAQ Schema builder items
+  status?: 'ongoing' | 'delivered'; // New: Project status
 }
 
 export interface BlogPost {

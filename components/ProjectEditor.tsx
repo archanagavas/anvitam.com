@@ -123,6 +123,7 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
   // FAQs
   const [faqs, setFaqs] = useState<{ question: string; answer: string }[]>(initial?.faqs || []);
 
+  const [status, setStatus] = useState<'ongoing' | 'delivered' | ''>(initial?.status || '');
   const [isFeatured, setIsFeatured] = useState(initial?.isFeatured || false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [slugManual, setSlugManual] = useState(!!initial?.slug);
@@ -271,6 +272,7 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
       gallery,
       videos,
       isFeatured,
+      status: status || undefined,
       tags,
       faqs,
       specs: initial?.specs || [],
@@ -657,6 +659,20 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-black transition bg-white"
                 />
               </div>
+            </div>
+
+            {/* Status Dropdown */}
+            <div>
+              <label className="block text-xxs font-bold uppercase tracking-widest text-gray-700 mb-1">Project Status</label>
+              <select
+                value={status}
+                onChange={e => setStatus(e.target.value as 'ongoing' | 'delivered' | '')}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-black transition bg-white"
+              >
+                <option value="">Not specified</option>
+                <option value="ongoing">Ongoing</option>
+                <option value="delivered">Delivered</option>
+              </select>
             </div>
 
             {/* Featured Checkbox */}

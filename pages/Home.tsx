@@ -105,22 +105,22 @@ const Home: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.8 }}
             className="flex flex-wrap items-center justify-center gap-6 text-white text-sm"
           >
-            {['Permaculture Design', 'Farm retreat', 'Airbnb', 'Homestay', 'Community Center', 'Weekend Villa', 'Eco Resort', 'Wellness Retreat Center', 'Food Forest', 'Agrotourism', 'Landscape Design', 'Terrece Garden', 'Backyard Design'].map(b => (
+            {['Permaculture Design', 'Farm retreat', 'Airbnb', 'Homestay', 'Community Center', 'Weekend Villa', 'Eco Resort', 'Wellness Retreat Center', 'Food Forest', 'Agrotourism', 'Landscape Design', 'Terrece Garden'].map(b => (
               <span key={b} className="flex items-center gap-1.5"><span className="text-[#CCFF00]">✓</span> {b}</span>
             ))}
           </motion.div>
         </motion.div>
 
         {/* Stats bar at the bottom of hero */}
-        <div className="absolute bottom-0 left-0 right-0 z-10 flex overflow-x-auto no-scrollbar sm:grid sm:grid-cols-3 border-t border-white/20 bg-black/40 backdrop-blur-md snap-x">
+        <div className="absolute bottom-0 left-0 right-0 z-10 grid grid-cols-3 border-t border-white/20 bg-black/40 backdrop-blur-md">
           {[
             { num: '12+', label: 'Projects Completed' },
             { num: 'Permaculture', label: 'Grounded in Principles' },
             { num: '100%', label: 'Climate-Aware Design' },
           ].map((s, i) => (
-            <div key={i} className="min-w-[160px] sm:min-w-0 flex-1 py-4 md:py-6 px-3 md:px-4 text-center text-white border-r last:border-r-0 border-white/20 flex flex-col justify-center items-center overflow-hidden shrink-0 snap-center">
-              <p className="text-base sm:text-2xl md:text-4xl font-bold leading-tight">{s.num}</p>
-              <p className="text-[10px] md:text-xs text-white/80 mt-1 uppercase tracking-wider">{s.label}</p>
+            <div key={i} className="py-3 md:py-6 px-1 sm:px-3 text-center text-white border-r last:border-r-0 border-white/20 flex flex-col justify-center items-center">
+              <p className="text-sm sm:text-2xl md:text-4xl font-bold leading-tight break-words">{s.num}</p>
+              <p className="text-[8px] sm:text-[10px] md:text-xs text-white/80 mt-1 uppercase tracking-wider text-center">{s.label}</p>
             </div>
           ))}
         </div>
@@ -335,6 +335,7 @@ const Home: React.FC = () => {
                       {[
                         { icon: '📍', label: 'Location', val: project.location },
                         { icon: '🏁', label: 'Type', val: project.category },
+                        ...(project.status ? [{ icon: '⏳', label: 'Status', val: project.status === 'ongoing' ? 'Ongoing' : 'Delivered' }] : []),
                         ...(project.specs?.slice(0, 2).map((s, idx) => ({ 
                            icon: idx === 0 ? '♻️' : '✨', 
                            label: s.label, 

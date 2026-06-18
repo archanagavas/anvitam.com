@@ -57,6 +57,11 @@ const ProjectDetail: React.FC = () => {
     { label: 'Category', value: project.category }
   ];
 
+  const displaySpecs = [
+    ...(project.status ? [{ label: 'Status', value: project.status === 'ongoing' ? 'Ongoing' : 'Delivered' }] : []),
+    ...specsList
+  ];
+
   // FAQ Schema JSON-LD (AEO/SEO/GEO Engine)
   const faqSchema = project.faqs && project.faqs.length > 0 ? {
     "@context": "https://schema.org",
@@ -234,8 +239,8 @@ const ProjectDetail: React.FC = () => {
             {ctaButton}
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {specsList.map((spec, i) => (
+        <div className={`grid grid-cols-2 ${displaySpecs.length >= 4 ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-6`}>
+          {displaySpecs.map((spec, i) => (
             <div key={i} className="bg-gray-50/50 p-5 rounded-xl border border-gray-100">
               <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest block mb-1">{spec.label}</span>
               <span className="text-sm font-semibold text-gray-800">{spec.value}</span>

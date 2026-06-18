@@ -130,6 +130,16 @@ const Projects: React.FC = () => {
                             </span>
                             <span className="text-[#0a0a0a]/60 font-medium">{project.year}</span>
                          </div>
+                         {/* Status */}
+                         {project.status && (
+                            <div className="flex justify-between items-center border-b border-gray-200 py-3">
+                               <span className="font-bold flex items-center gap-2.5 text-[#0a0a0a]">
+                                  <ChevronRight size={16} strokeWidth={2.5} className="text-[#0a0a0a] shrink-0" /> 
+                                  Status
+                               </span>
+                               <span className="text-[#0a0a0a]/60 font-medium">{project.status === 'ongoing' ? 'Ongoing' : 'Delivered'}</span>
+                            </div>
+                         )}
                          {/* Dynamic Specs */}
                          {project.specs?.slice(0, 4).map(spec => (
                             <div key={spec.label} className="flex justify-between items-center border-b border-gray-200 py-3">
