@@ -1,61 +1,42 @@
-User-agent: *
-Allow: /
-
-# Disallow admin and API paths from all crawlers
-Disallow: /admin
-Disallow: /api/
-
-# Crawl-delay for polite bots
-Crawl-delay: 10
-
-# Google
+# Allow Google's AI & Search (Gemini/Search)
 User-agent: Googlebot
 Allow: /
 Disallow: /admin
 Disallow: /api/
 
-# Bing
-User-agent: Bingbot
+# Allow Google's Training (needed for long-term Gemini knowledge)
+User-agent: Google-Extended
 Allow: /
 Disallow: /admin
 Disallow: /api/
 
-# Yahoo (uses Bingbot)
-User-agent: Slurp
+# Allow OpenAI Search (ChatGPT Search)
+User-agent: OAI-SearchBot
 Allow: /
 Disallow: /admin
 Disallow: /api/
 
-# DuckDuckGo (uses Bingbot for crawling)
-User-agent: DuckDuckBot
-Allow: /
-Disallow: /admin
-Disallow: /api/
-
-# Yandex
-User-agent: YandexBot
-Allow: /
-Disallow: /admin
-Disallow: /api/
-
-# Baidu
-User-agent: Baiduspider
-Allow: /
-Disallow: /admin
-Disallow: /api/
-
-# AI crawlers - allowed for llms.txt support
+# Allow OpenAI Training (helps ChatGPT "know" you long-term)
 User-agent: GPTBot
-Allow: /llms.txt
-Allow: /llms-full.txt
-Allow: /sitemap.xml
+Allow: /
 Disallow: /admin
 Disallow: /api/
 
+# Allow Anthropic (Claude)
 User-agent: ClaudeBot
-Allow: /llms.txt
-Allow: /llms-full.txt
-Allow: /sitemap.xml
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+# Allow Perplexity AI
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+# General Fallback
+User-agent: *
+Allow: /
 Disallow: /admin
 Disallow: /api/
 
