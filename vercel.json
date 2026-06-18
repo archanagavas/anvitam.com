@@ -30,6 +30,6 @@
     { "source": "/api/messages/:id", "destination": "/api/messages.ts" },
     { "source": "/api/testimonials", "destination": "/api/testimonials.ts" },
     { "source": "/api/testimonials/:id", "destination": "/api/testimonials.ts" },
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    { "source": "/((?!api/|.*\\.[a-zA-Z0-9]+$).*)", "destination": "/index.html" }
   ]
 }
