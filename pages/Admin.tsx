@@ -1103,8 +1103,10 @@ const Admin: React.FC = () => {
   const handleBlogSave = (post: BlogPost, status: 'published' | 'draft') => {
     if (editingBlog) {
       updateBlog({ ...post, status });
+      showToast('Blog post updated successfully!');
     } else {
       addBlog({ ...post, status });
+      showToast('Blog post created successfully!');
     }
     setBlogView('list');
     setEditingBlog(null);
@@ -1113,8 +1115,10 @@ const Admin: React.FC = () => {
   const handleProjectSave = (project: Project) => {
     if (editingProject) {
       updateProject(project);
+      showToast('Project updated successfully!');
     } else {
       addProject(project);
+      showToast('Project created successfully!');
     }
     setProjectView('list');
     setEditingProject(null);
@@ -1123,8 +1127,10 @@ const Admin: React.FC = () => {
   const handleServiceSave = (service: Service) => {
     if (editingService) {
       updateService(service);
+      showToast('Service updated successfully!');
     } else {
       addService(service);
+      showToast('Service created successfully!');
     }
     setServiceView('list');
     setEditingService(null);
@@ -1133,8 +1139,10 @@ const Admin: React.FC = () => {
   const handleProductSave = (product: DigitalProduct) => {
     if (editingProduct) {
       updateDigitalProduct(product);
+      showToast('Product updated successfully!');
     } else {
       addDigitalProduct(product);
+      showToast('Product created successfully!');
     }
     setProductView('list');
     setEditingProduct(null);
@@ -1538,7 +1546,12 @@ const Admin: React.FC = () => {
                           <Mail size={11} /> Reply
                         </a>
                       )}
-                      <button onClick={() => deleteMessage(msg.id)} className="text-red-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-lg transition">
+                      <button onClick={() => {
+                        if (confirm('Are you sure you want to delete this inquiry?')) {
+                          deleteMessage(msg.id);
+                          showToast('Inquiry deleted successfully!');
+                        }
+                      }} className="text-red-400 hover:text-red-650 p-2 hover:bg-red-50 rounded-lg transition">
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -1590,7 +1603,12 @@ const Admin: React.FC = () => {
                             >
                               <Edit2 size={11} /> Edit
                             </button>
-                            <button onClick={() => deleteProject(p.id)} className="text-red-400 hover:text-red-600 p-1.5 hover:bg-red-50 rounded-lg transition">
+                            <button onClick={() => {
+                              if (confirm(`Are you sure you want to delete "${p.title}"?`)) {
+                                deleteProject(p.id);
+                                showToast('Project deleted successfully!');
+                              }
+                            }} className="text-red-400 hover:text-red-650 p-1.5 hover:bg-red-50 rounded-lg transition">
                               <Trash2 size={15} />
                             </button>
                           </div>
@@ -1666,7 +1684,12 @@ const Admin: React.FC = () => {
                                 >
                                   <Edit2 size={11} /> Edit
                                 </button>
-                                <button onClick={() => deleteBlog(b.id)} className="text-red-400 hover:text-red-600 p-1.5 hover:bg-red-50 rounded-lg transition">
+                                <button onClick={() => {
+                                  if (confirm(`Are you sure you want to delete "${b.title}"?`)) {
+                                    deleteBlog(b.id);
+                                    showToast('Blog post deleted successfully!');
+                                  }
+                                }} className="text-red-400 hover:text-red-650 p-1.5 hover:bg-red-50 rounded-lg transition">
                                   <Trash2 size={15} />
                                 </button>
                               </div>
@@ -1786,9 +1809,10 @@ const Admin: React.FC = () => {
                                 onClick={() => {
                                   if (confirm(`Are you sure you want to delete "${p.title}"?`)) {
                                     deleteDigitalProduct(p.id);
+                                    showToast('Product deleted successfully!');
                                   }
                                 }} 
-                                className="text-red-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-lg transition"
+                                className="text-red-400 hover:text-red-650 p-2 hover:bg-red-50 rounded-lg transition"
                               >
                                 <Trash2 size={16}/>
                               </button>
@@ -1851,7 +1875,12 @@ const Admin: React.FC = () => {
                             >
                               <Edit2 size={11} /> Edit
                             </button>
-                            <button onClick={() => deleteService(s.id)} className="text-red-400 hover:text-red-600 p-1.5 hover:bg-red-50 rounded-lg transition">
+                            <button onClick={() => {
+                              if (confirm(`Are you sure you want to delete "${s.title}"?`)) {
+                                deleteService(s.id);
+                                showToast('Service deleted successfully!');
+                              }
+                            }} className="text-red-400 hover:text-red-650 p-1.5 hover:bg-red-50 rounded-lg transition">
                               <Trash2 size={15} />
                             </button>
                           </div>
@@ -1912,7 +1941,12 @@ const Admin: React.FC = () => {
                             >
                               <Edit2 size={11} /> Edit
                             </button>
-                            <button onClick={() => deleteTestimonial(t.id)} className="text-red-400 hover:text-red-600 p-1.5 hover:bg-red-50 rounded-lg transition">
+                            <button onClick={() => {
+                              if (confirm(`Are you sure you want to delete testimonial by "${t.author}"?`)) {
+                                deleteTestimonial(t.id);
+                                showToast('Testimonial deleted successfully!');
+                              }
+                            }} className="text-red-400 hover:text-red-650 p-1.5 hover:bg-red-50 rounded-lg transition">
                               <Trash2 size={15} />
                             </button>
                           </div>

@@ -107,7 +107,18 @@ const Projects: React.FC = () => {
                    
                    {/* Text Block */}
                    <div className="flex flex-col">
-                      <h3 className="text-2xl md:text-[1.75rem] font-medium text-[#0a0a0a] mb-4 leading-tight">{project.title}</h3>
+                      <div className="flex flex-wrap items-center gap-3 mb-4">
+                         <h3 className="text-2xl md:text-[1.75rem] font-medium text-[#0a0a0a] leading-tight">{project.title}</h3>
+                         {project.status && (
+                            <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+                               project.status === 'ongoing' 
+                                  ? 'bg-amber-100 text-amber-800 border border-amber-200' 
+                                  : 'bg-green-100 text-green-800 border border-green-200'
+                            }`}>
+                               {project.status === 'ongoing' ? 'Ongoing' : 'Delivered'}
+                            </span>
+                         )}
+                      </div>
                       <p className="text-[#0a0a0a]/60 text-sm md:text-base leading-relaxed mb-10 pb-4 border-b border-transparent">
                          {project.description}
                       </p>
@@ -182,8 +193,17 @@ const Projects: React.FC = () => {
                          onClick={() => navigate(`/projects/${project.id}`)} 
                          className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 items-center border-b border-gray-200 py-5 hover:bg-gray-50 transition-colors cursor-pointer group px-4 -mx-4 rounded-xl"
                       >
-                         <div className="md:col-span-4">
+                         <div className="md:col-span-4 flex items-center gap-2">
                             <h4 className="font-bold text-sm text-[#0a0a0a] group-hover:text-black transition-colors">{project.title}</h4>
+                            {project.status && (
+                               <span className={`px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider shrink-0 ${
+                                  project.status === 'ongoing' 
+                                     ? 'bg-amber-100 text-amber-800 border border-amber-200' 
+                                     : 'bg-green-100 text-green-800 border border-green-200'
+                               }`}>
+                                  {project.status === 'ongoing' ? 'Ongoing' : 'Delivered'}
+                               </span>
+                            )}
                          </div>
                          <div className="md:col-span-2 text-xs text-[#0a0a0a]/50 flex items-center gap-1.5 font-medium">
                             <MapPin size={12} className="shrink-0 text-gray-400" /> {project.location}

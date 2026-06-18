@@ -47,6 +47,7 @@ export async function initDatabase() {
       specs       JSONB,
       story       JSONB,
       is_featured BOOLEAN DEFAULT false,
+      status      TEXT,
       created_at  TIMESTAMPTZ DEFAULT now()
     );
   `;
@@ -108,6 +109,7 @@ export async function initDatabase() {
   await sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS tags JSONB DEFAULT '[]';`;
   await sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS faqs JSONB DEFAULT '[]';`;
   await sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS videos JSONB DEFAULT '[]';`;
+  await sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS status TEXT;`;
   await sql`ALTER TABLE services ADD COLUMN IF NOT EXISTS gallery JSONB DEFAULT '[]';`;
   await sql`ALTER TABLE services ADD COLUMN IF NOT EXISTS case_study_ids JSONB DEFAULT '[]';`;
   await sql`ALTER TABLE services ADD COLUMN IF NOT EXISTS videos JSONB DEFAULT '[]';`;

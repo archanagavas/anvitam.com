@@ -105,7 +105,7 @@ const Home: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.8 }}
             className="flex flex-wrap items-center justify-center gap-6 text-white text-sm"
           >
-            {['Permaculture Design', 'Farm retreat', 'Airbnb', 'Homestay', 'Community Center', 'Weekend Villa', 'Eco Resort', 'Wellness Retreat Center', 'Food Forest', 'Agrotourism', 'Landscape Design', 'Terrece Garden'].map(b => (
+            {['Permaculture Design', 'Farm retreat', 'Airbnb', 'Homestay', 'Community Center', 'Weekend Villa', 'Eco Resort', 'Wellness Retreat Center', 'Food Forest', 'Agrotourism', 'Landscape Design', 'Terrace Garden'].map(b => (
               <span key={b} className="flex items-center gap-1.5"><span className="text-[#CCFF00]">✓</span> {b}</span>
             ))}
           </motion.div>
@@ -327,7 +327,18 @@ const Home: React.FC = () => {
                   </div>
                   <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-between">
                     <div>
-                      <span className="text-[#CCFF00] bg-[#111] text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full">{project.category}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#CCFF00] bg-[#111] text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full">{project.category}</span>
+                        {project.status && (
+                          <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
+                            project.status === 'ongoing' 
+                              ? 'bg-amber-100 text-amber-800 border border-amber-200' 
+                              : 'bg-green-150 text-green-800 border border-green-250'
+                          }`}>
+                            {project.status === 'ongoing' ? 'Ongoing' : 'Delivered'}
+                          </span>
+                        )}
+                      </div>
                       <h3 className="text-2xl md:text-3xl font-bold mt-5 mb-4">{project.title}</h3>
                       <p className="text-[#555] text-sm leading-relaxed mb-6">{project.description}</p>
                     </div>

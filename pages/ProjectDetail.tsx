@@ -97,8 +97,17 @@ const ProjectDetail: React.FC = () => {
           <span className="text-gray-300">|</span>
           <span className="text-[#111]">{project.title}</span>
         </div>
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-medium text-[#111] mb-6 tracking-tight">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-medium text-[#111] mb-6 tracking-tight flex flex-col items-center gap-3">
           {project.title}
+          {project.status && (
+            <span className={`text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ${
+              project.status === 'ongoing' 
+                ? 'bg-amber-100 text-amber-800 border border-amber-200' 
+                : 'bg-green-150 text-green-800 border border-green-250'
+            }`}>
+              {project.status === 'ongoing' ? 'Ongoing' : 'Delivered'}
+            </span>
+          )}
         </h1>
         <p className="text-gray-500 max-w-2xl mx-auto mb-8 text-sm md:text-base leading-relaxed font-light">
           {project.description}
