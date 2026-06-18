@@ -1248,7 +1248,7 @@ const Admin: React.FC = () => {
           </div>
 
           <p className="text-center text-xs text-gray-400 mt-6">
-            <a href="/#/" className="hover:text-[#111] transition">← Back to Anvitam</a>
+            <a href="/" className="hover:text-[#111] transition">← Back to Anvitam</a>
           </p>
         </div>
       </div>

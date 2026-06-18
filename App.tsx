@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import Layout from './components/Layout';
 import Home from './pages/Home';
@@ -63,7 +63,7 @@ const App: React.FC = () => {
         {isLoading ? (
           <Loader />
         ) : (
-          <HashRouter>
+          <BrowserRouter>
             <ScrollToTop />
             <AnimatePresence mode="wait">
               <Routes>
@@ -100,7 +100,7 @@ const App: React.FC = () => {
                 } />
               </Routes>
             </AnimatePresence>
-          </HashRouter>
+          </BrowserRouter>
         )}
       </ContentProvider>
     </HelmetProvider>

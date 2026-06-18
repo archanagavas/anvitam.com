@@ -3,7 +3,6 @@ Allow: /
 
 # Disallow admin and API paths from all crawlers
 Disallow: /admin
-Disallow: /#/admin
 Disallow: /api/
 
 # Crawl-delay for polite bots
