@@ -16,6 +16,8 @@
     }
   ],
   "rewrites": [
+    { "source": "/llm.txt", "destination": "/llms.txt" },
+    { "source": "/robot.txt", "destination": "/robots.txt" },
     { "source": "/api/admin/:path*", "destination": "/api/admin.ts" },
     { "source": "/api/db-init", "destination": "/api/admin.ts" },
     { "source": "/api/blogs", "destination": "/api/blogs.ts" },
@@ -30,6 +32,7 @@
     { "source": "/api/messages/:id", "destination": "/api/messages.ts" },
     { "source": "/api/testimonials", "destination": "/api/testimonials.ts" },
     { "source": "/api/testimonials/:id", "destination": "/api/testimonials.ts" },
+    { "source": "/api/analytics", "destination": "/api/analytics.ts" },
     { "source": "/((?!api/|.*\\.[a-zA-Z0-9]+$).*)", "destination": "/index.html" }
   ]
 }

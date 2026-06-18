@@ -1005,6 +1005,40 @@ const Admin: React.FC = () => {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  const [analyticsStats, setAnalyticsStats] = useState<{
+    blogCount: number;
+    projectCount: number;
+    serviceCount: number;
+    messageCount: number;
+    testimonialCount: number;
+    analyticsData: { name: string; visitors: number }[];
+    totalWeeklyVisitors: number;
+    performanceScore: number;
+    lcp: string;
+    cls: string;
+    fcp: string;
+  } | null>(null);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
+
+  const fetchAnalytics = useCallback(async () => {
+    const token = getAuthToken();
+    if (!token) return;
+    setLoadingAnalytics(true);
+    try {
+      const res = await fetch('/api/analytics', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAnalyticsStats(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch analytics:', err);
+    } finally {
+      setLoadingAnalytics(false);
+    }
+  }, []);
+
   const {
     projects, blogs, services, digitalProducts, messages, testimonials, isDbConnected,
     addProject, updateProject, addBlog, updateBlog, addService, updateService, 
@@ -1021,6 +1055,13 @@ const Admin: React.FC = () => {
   const [newItemIcon, setNewItemIcon] = useState('PenTool');
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // ── Fetch analytics when authenticated ──
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchAnalytics();
+    }
+  }, [isAuthenticated, fetchAnalytics]);
+
   // ── Check existing JWT session on mount ───────────────────────────
   useEffect(() => {
     const token = getAuthToken();
@@ -1031,13 +1072,14 @@ const Admin: React.FC = () => {
         if (data.valid) {
           setIsAuthenticated(true);
           refreshFromDb();
+          fetchAnalytics();
         } else {
           clearAuthToken();
         }
       })
       .catch(() => clearAuthToken())
       .finally(() => setIsCheckingAuth(false));
-  }, []);
+  }, [fetchAnalytics]);
 
   // ── Login: server-side bcrypt + JWT (credentials never in browser bundle) ──
   const handleLogin = async (e: React.FormEvent) => {
@@ -1362,12 +1404,19 @@ const Admin: React.FC = () => {
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100" style={{ height: 320 }}>
               <h3 className="text-sm font-bold text-gray-600 mb-4 uppercase tracking-wider flex items-center gap-2">
                 Visitor Traffic (week)
-                <span className="text-amber-500 text-xs font-normal normal-case border border-amber-200 bg-amber-50 px-2 py-0.5 rounded-full">
-                  Demo data — connect an analytics API
-                </span>
+                {analyticsStats ? (
+                  <span className="text-green-600 text-xs font-normal normal-case border border-green-200 bg-green-50 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <CheckCircle size={12} className="inline text-green-500" />
+                    Live: {analyticsStats.totalWeeklyVisitors} weekly visits (Vercel & Google Analytics tag telemetry)
+                  </span>
+                ) : (
+                  <span className="text-amber-500 text-xs font-normal normal-case border border-amber-200 bg-amber-50 px-2 py-0.5 rounded-full">
+                    {loadingAnalytics ? 'Loading analytics...' : 'Demo data — connect an analytics API'}
+                  </span>
+                )}
               </h3>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={ANALYTICS_DATA}>
+                <BarChart data={analyticsStats?.analyticsData || ANALYTICS_DATA}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
                   <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
@@ -1397,17 +1446,23 @@ const Admin: React.FC = () => {
                 <div className="grid grid-cols-3 gap-3">
                   <div className="bg-gray-50 p-3 rounded-lg text-center space-y-1">
                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Performance</span>
-                    <span className="text-2xl font-black text-green-600 block">98%</span>
+                    <span className="text-2xl font-black text-green-600 block">
+                      {analyticsStats ? `${analyticsStats.performanceScore}%` : '98%'}
+                    </span>
                     <span className="text-[9px] font-semibold text-green-600 bg-green-50 px-1 py-0.5 rounded border border-green-100">Excellent</span>
                   </div>
                   <div className="bg-gray-50 p-3 rounded-lg text-center space-y-1">
                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">LCP (Load)</span>
-                    <span className="text-2xl font-black text-green-600 block">1.2s</span>
+                    <span className="text-2xl font-black text-green-600 block">
+                      {analyticsStats ? analyticsStats.lcp : '1.2s'}
+                    </span>
                     <span className="text-[9px] font-semibold text-green-600 bg-green-50 px-1 py-0.5 rounded border border-green-100">Good (&lt;2.5s)</span>
                   </div>
                   <div className="bg-gray-50 p-3 rounded-lg text-center space-y-1">
                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">CLS (Shift)</span>
-                    <span className="text-2xl font-black text-green-600 block">0.02</span>
+                    <span className="text-2xl font-black text-green-600 block">
+                      {analyticsStats ? analyticsStats.cls : '0.02'}
+                    </span>
                     <span className="text-[9px] font-semibold text-green-600 bg-green-50 px-1 py-0.5 rounded border border-green-100">Good (&lt;0.1)</span>
                   </div>
                 </div>
@@ -1415,10 +1470,12 @@ const Admin: React.FC = () => {
                 <div className="space-y-2.5 pt-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-gray-500 font-medium">First Contentful Paint (FCP)</span>
-                    <span className="font-bold text-gray-700">0.8s</span>
+                    <span className="font-bold text-gray-700">
+                      {analyticsStats ? analyticsStats.fcp : '0.8s'}
+                    </span>
                   </div>
                   <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                    <div className="bg-green-500 h-full rounded-full" style={{ width: '88%' }}></div>
+                    <div className="bg-green-500 h-full rounded-full" style={{ width: analyticsStats ? `${analyticsStats.performanceScore - 10}%` : '88%' }}></div>
                   </div>
                   
                   <div className="flex items-center justify-between text-xs">
