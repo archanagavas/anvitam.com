@@ -1,3 +1,4 @@
+import './load-env';
 import { initDatabase } from '../lib/db';
 
 async function run() {
