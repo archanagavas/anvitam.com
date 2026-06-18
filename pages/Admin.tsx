@@ -2025,10 +2025,24 @@ const Admin: React.FC = () => {
                   >
                     Preview llms.txt
                   </button>
+                  <button 
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/robots.txt');
+                        const text = await res.text();
+                        setPreviewFile({ name: 'robots.txt', content: text });
+                      } catch (e) {
+                        setPreviewFile({ name: 'robots.txt', content: 'Error loading robots.txt: ' + String(e) });
+                      }
+                    }}
+                    className="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition"
+                  >
+                    Preview robots.txt
+                  </button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
                   { 
                     name: 'sitemap.xml', 
@@ -2051,6 +2065,13 @@ const Admin: React.FC = () => {
                     desc: 'Complete markdown mirror containing all articles, projects, and services for deep AI reasoning.', 
                     gen: () => generateLlmsFullTxt(blogs, projects, services)
                   },
+                  { 
+                    name: 'robots.txt', 
+                    path: '/robots.txt',
+                    url: `${window.location.protocol}//${window.location.host}/robots.txt`,
+                    desc: 'Defines crawler rules for search engines and AI scraper bots.', 
+                    gen: () => ''
+                  },
                 ].map(f => (
                   <div key={f.name} className="bg-white border border-gray-150 shadow-sm p-6 rounded-xl space-y-4 flex flex-col justify-between">
                     <div>
@@ -2064,8 +2085,18 @@ const Admin: React.FC = () => {
 
                     <div className="space-y-2 pt-2">
                       <button 
-                        onClick={() => {
-                          setPreviewFile({ name: f.name, content: f.gen() });
+                        onClick={async () => {
+                          if (f.name === 'robots.txt') {
+                            try {
+                              const res = await fetch('/robots.txt');
+                              const text = await res.text();
+                              setPreviewFile({ name: f.name, content: text });
+                            } catch (e) {
+                              setPreviewFile({ name: f.name, content: 'Error loading robots.txt: ' + String(e) });
+                            }
+                          } else {
+                            setPreviewFile({ name: f.name, content: f.gen() });
+                          }
                         }}
                         className="w-full bg-black hover:bg-gray-850 text-white text-xs font-bold py-2 rounded-lg transition"
                       >
