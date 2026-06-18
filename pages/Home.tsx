@@ -359,7 +359,7 @@ const Home: React.FC = () => {
                         </div>
                       ))}
                     </div>
-                    <Link to={`/projects/${project.id}`} className={neonBtn}>
+                    <Link to={`/projects/${project.slug || project.id}`} className={neonBtn}>
                       View Details <ArrowRight size={16} />
                     </Link>
                   </div>
@@ -426,7 +426,7 @@ const Home: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {recentBlogs.length > 0 ? recentBlogs.map((post, i) => (
               <FadeUp key={post.id} delay={i * 0.1}>
-                <Link to={`/blog/${post.id}`} className="bg-white rounded-2xl overflow-hidden flex flex-col border border-black/5 hover:shadow-xl transition-shadow group cursor-pointer">
+                <Link to={`/blog/${post.slug || post.id}`} className="bg-white rounded-2xl overflow-hidden flex flex-col border border-black/5 hover:shadow-xl transition-shadow group cursor-pointer">
                   {post.image && (
                     <div className="h-52 overflow-hidden">
                       <img src={post.image} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />

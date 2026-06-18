@@ -86,7 +86,7 @@ const Blog: React.FC = () => {
               <article
                 key={blog.id}
                 className="group cursor-pointer flex flex-col h-full"
-                onClick={() => navigate(`/blog/${blog.id}`)}
+                onClick={() => navigate(`/blog/${blog.slug || blog.id}`)}
               >
                 <div className="w-full aspect-[16/9] mb-6 overflow-hidden rounded-sm bg-gray-50">
                   <img

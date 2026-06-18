@@ -96,7 +96,7 @@ const Projects: React.FC = () => {
                    {/* Image */}
                    <div 
                       className="w-full aspect-square bg-gray-100 cursor-pointer overflow-hidden" 
-                      onClick={() => navigate(`/projects/${project.id}`)}
+                      onClick={() => navigate(`/projects/${project.slug || project.id}`)}
                    >
                       <img 
                          src={project.image} 
@@ -165,7 +165,7 @@ const Projects: React.FC = () => {
 
                       <div className="mt-10">
                          <button 
-                            onClick={() => navigate(`/projects/${project.id}`)} 
+                            onClick={() => navigate(`/projects/${project.slug || project.id}`)} 
                             className="bg-[#ccff00] text-[#0a0a0a] px-6 py-3 rounded-full text-xs font-bold hover:bg-[#bce600] inline-flex items-center gap-2 transition-colors"
                          >
                             View full study <ArrowRight size={14} />
@@ -190,7 +190,7 @@ const Projects: React.FC = () => {
                    {archivedProjects.map(project => (
                       <div 
                          key={project.id} 
-                         onClick={() => navigate(`/projects/${project.id}`)} 
+                         onClick={() => navigate(`/projects/${project.slug || project.id}`)} 
                          className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 items-center border-b border-gray-200 py-5 hover:bg-gray-50 transition-colors cursor-pointer group px-4 -mx-4 rounded-xl"
                       >
                          <div className="md:col-span-4 flex items-center gap-2">

@@ -83,8 +83,24 @@ async function fetchSlugsFromDB(): Promise<string[]> {
   }
 }
 
+async function fetchProjectPathsFromDB(): Promise<string[]> {
+  if (!process.env.DATABASE_URL) {
+    console.warn('⚠️ [generate-seo] DATABASE_URL is not set. Sitemap won\'t include dynamic projects.');
+    return PROJECT_IDS;
+  }
+  try {
+    const sql = neon(process.env.DATABASE_URL);
+    const rows = await sql`SELECT id, slug FROM projects`;
+    if (rows.length === 0) return PROJECT_IDS;
+    return rows.map((r: any) => r.slug || r.id).filter(Boolean);
+  } catch (error) {
+    console.error('❌ [generate-seo] Failed to fetch project paths from database:', error);
+    return PROJECT_IDS;
+  }
+}
+
 // ── Generate sitemap.xml ──────────────────────────────────────────────
-function makeSitemap(blogSlugs: string[]): string {
+function makeSitemap(blogSlugs: string[], projectPaths: string[]): string {
   const entries: string[] = [];
 
   const add = (path: string, priority: string, changefreq: string) => {
@@ -98,7 +114,7 @@ function makeSitemap(blogSlugs: string[]): string {
 
   STATIC_ROUTES.forEach(r => add(r.path, r.priority, r.changefreq));
   SERVICE_IDS.forEach(id => add(`/services/${id}`, '0.8', 'monthly'));
-  PROJECT_IDS.forEach(id => add(`/projects/${id}`, '0.7', 'monthly'));
+  projectPaths.forEach(path => add(`/projects/${path}`, '0.7', 'monthly'));
   blogSlugs.forEach(slug => add(`/blog/${slug}`, '0.8', 'weekly'));
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -109,9 +125,9 @@ ${entries.join('\n')}
 }
 
 // ── Generate llms.txt ─────────────────────────────────────────────────
-function makeLlms(blogSlugs: string[]): string {
+function makeLlms(blogSlugs: string[], projectPaths: string[]): string {
   const serviceList = SERVICE_IDS.map(id => `- [${id.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}](${SITE_URL}/services/${id})`).join('\n');
-  const projectList = PROJECT_IDS.map(id => `- [${id.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}](${SITE_URL}/projects/${id})`).join('\n');
+  const projectList = projectPaths.map(id => `- [${id.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}](${SITE_URL}/projects/${id})`).join('\n');
   const blogList = blogSlugs.map(slug => `- [${slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}](${SITE_URL}/blog/${slug})`).join('\n');
 
   return `# Anvitam — Architecture & Ecological Design Studio
@@ -174,8 +190,9 @@ This file follows the llms.txt standard (https://llmstxt.org). Last updated: ${T
 // ── Main Execution ────────────────────────────────────────────────────
 async function main() {
   const blogSlugs = await fetchSlugsFromDB();
-  const sitemap = makeSitemap(blogSlugs);
-  const llms = makeLlms(blogSlugs);
+  const projectPaths = await fetchProjectPathsFromDB();
+  const sitemap = makeSitemap(blogSlugs, projectPaths);
+  const llms = makeLlms(blogSlugs, projectPaths);
 
   writeFileSync(join(PUBLIC_DIR, 'sitemap.xml'), sitemap, 'utf8');
   writeFileSync(join(PUBLIC_DIR, 'llms.txt'), llms, 'utf8');

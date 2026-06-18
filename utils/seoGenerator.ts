@@ -62,12 +62,12 @@ export function generateSitemapXml(
 
   // Dynamic: blog posts
   blogs.forEach(blog => {
-    addUrl(`/blog/${blog.id}`, '0.8', 'monthly');
+    addUrl(`/blog/${blog.slug || blog.id}`, '0.8', 'monthly');
   });
 
   // Dynamic: projects
   projects.forEach(project => {
-    addUrl(`/projects/${project.id}`, '0.7', 'monthly');
+    addUrl(`/projects/${project.slug || project.id}`, '0.7', 'monthly');
   });
 
   // Dynamic: service detail pages
@@ -90,8 +90,8 @@ export function generateLlmsTxt(
   services: Service[]
 ): string {
   const serviceList = services.map(s => `- **${s.title}**: ${s.description}`).join('\n');
-  const blogList = blogs.slice(0, 10).map(b => `- [${b.title}](${SITE_URL}/blog/${b.id}) — ${b.excerpt || b.date}`).join('\n');
-  const projectList = projects.slice(0, 10).map(p => `- [${p.title}](${SITE_URL}/projects/${p.id}) — ${p.category}, ${p.location}`).join('\n');
+  const blogList = blogs.slice(0, 10).map(b => `- [${b.title}](${SITE_URL}/blog/${b.slug || b.id}) — ${b.excerpt || b.date}`).join('\n');
+  const projectList = projects.slice(0, 10).map(p => `- [${p.title}](${SITE_URL}/projects/${p.slug || p.id}) — ${p.category}, ${p.location}`).join('\n');
 
   return `# Anvitam — Architecture & Ecological Design Studio
 
@@ -251,7 +251,7 @@ Anvitam is a boutique architecture and ecological design studio led by Ar. Archa
 **Location:** ${p.location || 'India'}  
 **Year:** ${p.year || 'Recent'}  
 **Description:** ${p.description}  
-**URL:** ${SITE_URL}/projects/${p.id}
+**URL:** ${SITE_URL}/projects/${p.slug || p.id}
 
 `;
     if (p.fullDescription) {
@@ -273,7 +273,7 @@ Anvitam is a boutique architecture and ecological design studio led by Ar. Archa
 
 **Author:** ${b.author || 'Anvitam Team'}  
 **Date:** ${b.date}  
-**URL:** ${SITE_URL}/blog/${b.id}  
+**URL:** ${SITE_URL}/blog/${b.slug || b.id}  
 **Excerpt:** ${b.excerpt || ''}
 
 `;

@@ -240,7 +240,7 @@ const BlogDetail: React.FC = () => {
           <h3 className="text-xl font-bold text-[#111] mb-8 tracking-tight">Related Blogs</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {related.slice(0, 2).map(rb => (
-              <Link key={rb.id} to={`/blog/${rb.id}`} className="flex items-center space-x-5 group p-2 hover:bg-gray-50 rounded-sm transition-colors">
+              <Link key={rb.id} to={`/blog/${rb.slug || rb.id}`} className="flex items-center space-x-5 group p-2 hover:bg-gray-50 rounded-sm transition-colors">
                 <img src={rb.image} alt={rb.title} className="w-24 h-24 object-cover rounded-sm flex-shrink-0" />
                 <div>
                   <h4 className="font-bold text-[#111] text-sm md:text-base leading-tight group-hover:text-[#8bc34a] transition-colors mb-2 line-clamp-2">{rb.title}</h4>
