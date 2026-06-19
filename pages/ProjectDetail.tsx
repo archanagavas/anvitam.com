@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
-import { ArrowLeft, ArrowRight, HelpCircle, Expand } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, HelpCircle, Expand } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import ImageLightbox from '../components/ImageLightbox';
 
@@ -10,12 +10,14 @@ const ProjectDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { projects } = useContent();
 
+  const [activeSlide, setActiveSlide] = useState(0);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    setActiveSlide(0);
     setOpenFaq(null);
     setLightboxOpen(false);
   }, [id]);
@@ -130,34 +132,63 @@ const ProjectDetail: React.FC = () => {
         </div>
       </div>
 
-        {/* 2. Clickable Gallery Grid — opens full-screen lightbox */}
+        {/* 2. Slideshow — object-contain shows portrait & landscape fully, click image for full-screen */}
         <div className="max-w-6xl mx-auto px-6 mb-16">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {galleryItems.map((item, idx) => (
-              <button
-                key={idx}
-                onClick={() => { setLightboxIndex(idx); setLightboxOpen(true); }}
-                className="group relative overflow-hidden rounded-xl bg-gray-50 border border-gray-100 text-left focus:outline-none focus:ring-2 focus:ring-[#CCFF00]"
-              >
-                <img
-                  src={item.url}
-                  alt={item.caption || `Gallery image ${idx + 1}`}
-                  className="w-full object-contain block"
-                  style={{ maxHeight: '220px', background: '#f9f9f9' }}
-                />
-                {item.caption && (
-                  <div className="px-2 py-1.5 border-t border-gray-100 bg-white">
-                    <p className="text-[10px] text-gray-400 font-light line-clamp-1">{item.caption}</p>
-                  </div>
+          <div className="relative w-full bg-gray-50 border border-gray-100 rounded-2xl overflow-hidden group shadow-lg">
+            <img
+              src={galleryItems[activeSlide].url}
+              alt={galleryItems[activeSlide].caption || 'Project showcase image'}
+              className="w-full object-contain block cursor-pointer"
+              style={{ maxHeight: '85vh', background: '#f9f9f9', minHeight: '400px' }}
+              onClick={() => { setLightboxIndex(activeSlide); setLightboxOpen(true); }}
+            />
+
+            {galleryItems.length > 1 && (
+              <>
+                <button
+                  onClick={() => setActiveSlide(prev => prev === 0 ? galleryItems.length - 1 : prev - 1)}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black p-2.5 rounded-full shadow-md transition opacity-0 group-hover:opacity-100 focus:opacity-100"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  onClick={() => setActiveSlide(prev => prev === galleryItems.length - 1 ? 0 : prev + 1)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black p-2.5 rounded-full shadow-md transition opacity-0 group-hover:opacity-100 focus:opacity-100"
+                  aria-label="Next image"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </>
+            )}
+
+            {(galleryItems[activeSlide].caption || galleryItems.length > 1) && (
+              <div className="flex items-center justify-between px-4 py-2.5 border-t border-gray-100 bg-white">
+                <p className="text-xs text-gray-500 font-light">{galleryItems[activeSlide].caption || ''}</p>
+                {galleryItems.length > 1 && (
+                  <span className="text-[10px] font-mono text-gray-400">{activeSlide + 1} / {galleryItems.length}</span>
                 )}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 text-black p-2 rounded-full shadow-md">
-                    <Expand size={16} />
-                  </div>
-                </div>
-              </button>
-            ))}
+              </div>
+            )}
           </div>
+
+          {/* Thumbnail strip */}
+          {galleryItems.length > 1 && (
+            <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
+              {galleryItems.map((item, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => { setActiveSlide(idx); setLightboxIndex(idx); setLightboxOpen(true); }}
+                  className={`w-16 h-11 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all ${
+                    activeSlide === idx ? 'border-[#CCFF00] scale-105 shadow' : 'border-transparent opacity-50 hover:opacity-80'
+                  }`}
+                  aria-label={`Go to image ${idx + 1}`}
+                >
+                  <img src={item.url} className="w-full h-full object-cover" alt="" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
       {/* 3. Project Videos (YouTube / Instagram embeds) */}
