@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, HelpCircle, X, ZoomIn } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
 const ProjectDetail: React.FC = () => {
@@ -12,6 +12,7 @@ const ProjectDetail: React.FC = () => {
 
   const [activeSlide, setActiveSlide] = useState(0);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [lightboxImg, setLightboxImg] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -78,6 +79,27 @@ const ProjectDetail: React.FC = () => {
 
   return (
     <div className="bg-white text-[#111] min-h-screen font-sans selection:bg-[#CCFF00]">
+      {/* Lightbox Modal */}
+      {lightboxImg && (
+        <div
+          className="fixed inset-0 bg-black/92 z-[300] flex items-center justify-center p-4"
+          onClick={() => setLightboxImg(null)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white/70 hover:text-white bg-black/40 rounded-full p-2 transition-colors"
+            onClick={() => setLightboxImg(null)}
+            aria-label="Close lightbox"
+          >
+            <X size={26} />
+          </button>
+          <img
+            src={lightboxImg}
+            alt="Full size preview"
+            className="max-w-full max-h-[92vh] object-contain rounded-xl shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          />
+        </div>
+      )}
       <Helmet>
         <title>{project.title} | Anvitam Sustainable Architecture</title>
         <meta name="description" content={project.description} />
@@ -132,12 +154,19 @@ const ProjectDetail: React.FC = () => {
       {/* 2. Interactive Slideshow Showcase (Premium Slider) */}
       <div className="max-w-5xl mx-auto px-6 mb-20">
         <div className="relative aspect-[16/10] md:aspect-[16/9] w-full bg-gray-50 border border-gray-100 rounded-2xl overflow-hidden group shadow-lg">
-          {/* Main Slide Image */}
+          {/* Main Slide Image — click to open lightbox */}
           <img 
             src={galleryItems[activeSlide].url} 
-            className="w-full h-full object-cover transition-opacity duration-500" 
+            className="w-full h-full object-cover transition-opacity duration-500 cursor-zoom-in" 
             alt={galleryItems[activeSlide].caption || "Slideshow showcase"} 
+            onClick={() => setLightboxImg(galleryItems[activeSlide].url)}
           />
+          {/* Zoom hint icon */}
+          <div
+            className="absolute top-4 right-4 bg-black/50 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+          >
+            <ZoomIn size={18} />
+          </div>
           
           {/* Gradients */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
@@ -181,13 +210,21 @@ const ProjectDetail: React.FC = () => {
               <button
                 key={idx}
                 onClick={() => setActiveSlide(idx)}
-                className={`w-16 h-10 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
+                className={`w-16 h-10 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 group/thumb relative ${
                   activeSlide === idx ? 'border-[#CCFF00] scale-105 shadow' : 'border-transparent opacity-60 hover:opacity-100'
                 }`}
               >
                 <img src={item.url} className="w-full h-full object-cover" alt="" />
               </button>
             ))}
+            {/* Full-size view button */}
+            <button
+              onClick={() => setLightboxImg(galleryItems[activeSlide].url)}
+              className="w-16 h-10 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 flex items-center justify-center flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors bg-gray-50"
+              title="View full size"
+            >
+              <ZoomIn size={16} />
+            </button>
           </div>
         )}
       </div>
