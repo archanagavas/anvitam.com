@@ -2,9 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, HelpCircle, Expand } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react';
 import DOMPurify from 'dompurify';
-import ImageLightbox from '../components/ImageLightbox';
 
 const ProjectDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,14 +11,11 @@ const ProjectDetail: React.FC = () => {
 
   const [activeSlide, setActiveSlide] = useState(0);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     setActiveSlide(0);
     setOpenFaq(null);
-    setLightboxOpen(false);
   }, [id]);
 
   // Find project by slug or ID
@@ -138,9 +134,8 @@ const ProjectDetail: React.FC = () => {
             <img
               src={galleryItems[activeSlide].url}
               alt={galleryItems[activeSlide].caption || 'Project showcase image'}
-              className="w-full object-contain block cursor-pointer"
+              className="w-full object-contain block"
               style={{ maxHeight: '85vh', background: '#f9f9f9', minHeight: '400px' }}
-              onClick={() => { setLightboxIndex(activeSlide); setLightboxOpen(true); }}
             />
 
             {galleryItems.length > 1 && (
@@ -178,7 +173,7 @@ const ProjectDetail: React.FC = () => {
               {galleryItems.map((item, idx) => (
                 <button
                   key={idx}
-                  onClick={() => { setActiveSlide(idx); setLightboxIndex(idx); setLightboxOpen(true); }}
+                  onClick={() => setActiveSlide(idx)}
                   className={`w-16 h-11 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all ${
                     activeSlide === idx ? 'border-[#CCFF00] scale-105 shadow' : 'border-transparent opacity-50 hover:opacity-80'
                   }`}
@@ -365,16 +360,6 @@ const ProjectDetail: React.FC = () => {
           </Link>
         </div>
       </div>
-
-      {/* Full-Screen Gallery Lightbox */}
-      {lightboxOpen && (
-        <ImageLightbox
-          images={galleryItems}
-          activeIndex={lightboxIndex}
-          onClose={() => setLightboxOpen(false)}
-          onNavigate={(i) => setLightboxIndex(i)}
-        />
-      )}
 
       {/* 9. Pre-Footer CTA */}
       <div className="bg-[#0a0a0a] text-white pt-20 pb-20 px-6 rounded-t-3xl md:rounded-t-[3rem] mt-10">

@@ -3,9 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
 import { Project } from '../types';
-import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardList, PenTool, Wrench, Sprout, Check, HelpCircle, Expand } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardList, PenTool, Wrench, Sprout, Check, HelpCircle } from 'lucide-react';
 import TestimonialCarousel from '../components/TestimonialCarousel';
-import ImageLightbox from '../components/ImageLightbox';
 
 const ServiceDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -70,8 +69,7 @@ const ServiceDetail: React.FC = () => {
     }))
   } : null;
 
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxIndex, setLightboxIndex] = useState(0);
+
 
   // Combine custom service gallery + related case study galleries
   const allRelatedGalleries = showcaseProjects.flatMap(p => p.gallery || []);
@@ -147,20 +145,17 @@ const ServiceDetail: React.FC = () => {
         </div>
       </div>
 
-      {/* 2b. Clickable Gallery Grid — opens full-screen lightbox */}
+      {/* 2b. Gallery Grid */}
       {galleryImages.length > 1 && (
         <div className="max-w-5xl mx-auto px-6 mb-20">
           <div className="flex items-center gap-2 mb-5">
             <span className="text-xs font-mono text-gray-400 font-bold">{galleryImages.length} images</span>
-            <span className="text-gray-300">·</span>
-            <span className="text-[10px] text-gray-400 font-light">Click to open full-screen gallery</span>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {galleryImages.map((img, i) => (
-              <button
+              <div
                 key={i}
-                onClick={() => { setLightboxIndex(i); setLightboxOpen(true); }}
-                className="group relative overflow-hidden rounded-xl bg-gray-50 border border-gray-100 text-left focus:outline-none focus:ring-2 focus:ring-[#CCFF00]"
+                className="group relative overflow-hidden rounded-xl bg-gray-50 border border-gray-100"
               >
                 <img
                   src={img.url}
@@ -173,12 +168,7 @@ const ServiceDetail: React.FC = () => {
                     <p className="text-[10px] text-gray-400 font-light line-clamp-1">{img.caption}</p>
                   </div>
                 )}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 text-black p-2 rounded-full shadow-md">
-                    <Expand size={16} />
-                  </div>
-                </div>
-              </button>
+              </div>
             ))}
           </div>
         </div>
@@ -374,16 +364,6 @@ const ServiceDetail: React.FC = () => {
         <h3 className="text-xl md:text-2xl font-bold text-[#111] mb-6 tracking-tight text-center">What Our Clients Say</h3>
         <TestimonialCarousel />
       </div>
-
-      {/* Full-Screen Gallery Lightbox */}
-      {lightboxOpen && (
-        <ImageLightbox
-          images={galleryImages}
-          activeIndex={lightboxIndex}
-          onClose={() => setLightboxOpen(false)}
-          onNavigate={(i) => setLightboxIndex(i)}
-        />
-      )}
 
       {/* 8. Pre-Footer CTA */}
       <div className="bg-[#0a0a0a] text-white pt-20 pb-20 px-6 rounded-t-3xl md:rounded-t-[3rem] mt-10">
