@@ -33,6 +33,23 @@ const ServiceDetail: React.FC = () => {
     setOpenFaq(null);
   }, [id]);
 
+  // Keyboard Escape handler for lightbox accessibility
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightboxImg(null);
+    };
+    if (lightboxImg) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [lightboxImg]);
+
   if (!service) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white text-[#111] font-sans">
@@ -69,7 +86,7 @@ const ServiceDetail: React.FC = () => {
     }))
   } : null;
 
-  // Gallery lightbox state
+  // Gallery lightbox state — must be declared before early return
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
 
   // Combine custom service gallery + related case study galleries
@@ -114,9 +131,26 @@ const ServiceDetail: React.FC = () => {
 
       {/* Lightbox */}
       {lightboxImg && (
-        <div className="fixed inset-0 bg-black/90 z-[200] flex items-center justify-center p-4" onClick={() => setLightboxImg(null)}>
-          <button className="absolute top-4 right-4 text-white/70 hover:text-white" onClick={() => setLightboxImg(null)}><X size={28}/></button>
-          <img src={lightboxImg} alt="Gallery" className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl" onClick={e => e.stopPropagation()} />
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Image lightbox"
+          className="fixed inset-0 bg-black/90 z-[200] flex items-center justify-center p-4"
+          onClick={() => setLightboxImg(null)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white/70 hover:text-white bg-black/40 rounded-full p-2 transition-colors z-10"
+            onClick={() => setLightboxImg(null)}
+            aria-label="Close lightbox (or press Escape)"
+          >
+            <X size={28}/>
+          </button>
+          <img
+            src={lightboxImg}
+            alt="Full size image preview"
+            className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          />
         </div>
       )}
       
@@ -145,8 +179,12 @@ const ServiceDetail: React.FC = () => {
         <img 
           src={service.heroImage || "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=2000"} 
           alt={service.title} 
-          className="w-full h-[350px] md:h-[550px] object-cover rounded-2xl shadow-md border border-gray-100 cursor-pointer hover:opacity-95 transition-opacity" 
+          className="w-full h-[350px] md:h-[550px] object-cover rounded-2xl shadow-md border border-gray-100 cursor-zoom-in hover:opacity-95 transition-opacity" 
           onClick={() => setLightboxImg(service.heroImage || "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=2000")}
+          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setLightboxImg(service.heroImage || ''); } }}
+          role="button"
+          tabIndex={0}
+          aria-label={`View full size: ${service.title}`}
         />
       </div>
 
@@ -164,9 +202,14 @@ const ServiceDetail: React.FC = () => {
                 key={i}
                 className="group relative aspect-square overflow-hidden rounded-xl bg-gray-50 cursor-pointer border border-gray-100 hover:border-gray-300 transition-all"
                 onClick={() => setLightboxImg(img.url)}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setLightboxImg(img.url); } }}
+                role="button"
+                tabIndex={0}
+                aria-label={`View full size: ${img.caption || `Gallery image ${i + 1}`}`}
               >
                 <img src={img.url} alt={img.caption || `Gallery image ${i + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
+                {/* Zoom overlay — pointer-events-none so clicks reach the parent div */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center pointer-events-none" aria-hidden="true">
                   <ZoomIn size={24} className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
                 </div>
                 {img.caption && (

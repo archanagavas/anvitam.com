@@ -20,6 +20,23 @@ const ProjectDetail: React.FC = () => {
     setOpenFaq(null);
   }, [id]);
 
+  // Keyboard Escape handler for lightbox accessibility
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightboxImg(null);
+    };
+    if (lightboxImg) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [lightboxImg]);
+
   // Find project by slug or ID
   const projectIndex = projects.findIndex(p => p.id === id || p.slug === id);
   const project = projects[projectIndex];
@@ -82,19 +99,22 @@ const ProjectDetail: React.FC = () => {
       {/* Lightbox Modal */}
       {lightboxImg && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Image lightbox"
           className="fixed inset-0 bg-black/92 z-[300] flex items-center justify-center p-4"
           onClick={() => setLightboxImg(null)}
         >
           <button
-            className="absolute top-4 right-4 text-white/70 hover:text-white bg-black/40 rounded-full p-2 transition-colors"
+            className="absolute top-4 right-4 text-white/70 hover:text-white bg-black/40 rounded-full p-2 transition-colors z-10"
             onClick={() => setLightboxImg(null)}
-            aria-label="Close lightbox"
+            aria-label="Close lightbox (or press Escape)"
           >
             <X size={26} />
           </button>
           <img
             src={lightboxImg}
-            alt="Full size preview"
+            alt="Full size image preview"
             className="max-w-full max-h-[92vh] object-contain rounded-xl shadow-2xl"
             onClick={e => e.stopPropagation()}
           />
@@ -160,16 +180,21 @@ const ProjectDetail: React.FC = () => {
             className="w-full h-full object-cover transition-opacity duration-500 cursor-zoom-in" 
             alt={galleryItems[activeSlide].caption || "Slideshow showcase"} 
             onClick={() => setLightboxImg(galleryItems[activeSlide].url)}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setLightboxImg(galleryItems[activeSlide].url); } }}
+            role="button"
+            tabIndex={0}
+            aria-label={`View full size: ${galleryItems[activeSlide].caption || 'project image'}`}
           />
-          {/* Zoom hint icon */}
+          {/* Zoom hint icon — pointer-events-none so it never blocks click */}
           <div
-            className="absolute top-4 right-4 bg-black/50 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+            className="absolute top-4 right-4 bg-black/50 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10"
+            aria-hidden="true"
           >
             <ZoomIn size={18} />
           </div>
           
-          {/* Gradients */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+          {/* Gradients — pointer-events-none so clicks pass through to image */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none"></div>
 
           {/* Navigation Buttons */}
           {galleryItems.length > 1 && (
