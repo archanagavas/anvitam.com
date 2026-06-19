@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, HelpCircle, X, ZoomIn } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, HelpCircle, ZoomIn } from 'lucide-react';
 import DOMPurify from 'dompurify';
+import ImageLightbox from '../components/ImageLightbox';
 
 const ProjectDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,30 +13,14 @@ const ProjectDetail: React.FC = () => {
 
   const [activeSlide, setActiveSlide] = useState(0);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [lightboxImg, setLightboxImg] = useState<string | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     setActiveSlide(0);
     setOpenFaq(null);
+    setLightboxIndex(null);
   }, [id]);
-
-  // Keyboard Escape handler for lightbox accessibility
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setLightboxImg(null);
-    };
-    if (lightboxImg) {
-      document.addEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
-    };
-  }, [lightboxImg]);
 
   // Find project by slug or ID
   const projectIndex = projects.findIndex(p => p.id === id || p.slug === id);
@@ -96,29 +81,14 @@ const ProjectDetail: React.FC = () => {
 
   return (
     <div className="bg-white text-[#111] min-h-screen font-sans selection:bg-[#CCFF00]">
-      {/* Lightbox Modal */}
-      {lightboxImg && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Image lightbox"
-          className="fixed inset-0 bg-black/92 z-[300] flex items-center justify-center p-4"
-          onClick={() => setLightboxImg(null)}
-        >
-          <button
-            className="absolute top-4 right-4 text-white/70 hover:text-white bg-black/40 rounded-full p-2 transition-colors z-10"
-            onClick={() => setLightboxImg(null)}
-            aria-label="Close lightbox (or press Escape)"
-          >
-            <X size={26} />
-          </button>
-          <img
-            src={lightboxImg}
-            alt="Full size image preview"
-            className="max-w-full max-h-[92vh] object-contain rounded-xl shadow-2xl"
-            onClick={e => e.stopPropagation()}
-          />
-        </div>
+      {/* Full-screen Gallery Lightbox */}
+      {lightboxIndex !== null && (
+        <ImageLightbox
+          images={galleryItems}
+          activeIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onNavigate={setLightboxIndex}
+        />
       )}
       <Helmet>
         <title>{project.title} | Anvitam Sustainable Architecture</title>
@@ -179,8 +149,8 @@ const ProjectDetail: React.FC = () => {
             src={galleryItems[activeSlide].url} 
             className="w-full h-full object-cover transition-opacity duration-500 cursor-zoom-in" 
             alt={galleryItems[activeSlide].caption || "Slideshow showcase"} 
-            onClick={() => setLightboxImg(galleryItems[activeSlide].url)}
-            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setLightboxImg(galleryItems[activeSlide].url); } }}
+            onClick={() => setLightboxIndex(activeSlide)}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setLightboxIndex(activeSlide); } }}
             role="button"
             tabIndex={0}
             aria-label={`View full size: ${galleryItems[activeSlide].caption || 'project image'}`}
@@ -242,11 +212,12 @@ const ProjectDetail: React.FC = () => {
                 <img src={item.url} className="w-full h-full object-cover" alt="" />
               </button>
             ))}
-            {/* Full-size view button */}
+            {/* Full-size view button — opens lightbox at current slide */}
             <button
-              onClick={() => setLightboxImg(galleryItems[activeSlide].url)}
-              className="w-16 h-10 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 flex items-center justify-center flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors bg-gray-50"
-              title="View full size"
+              onClick={() => setLightboxIndex(activeSlide)}
+              className="w-16 h-10 rounded-lg border-2 border-dashed border-gray-300 hover:border-[#CCFF00] flex items-center justify-center flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors bg-gray-50"
+              title="View full size gallery"
+              aria-label="Open full-size gallery"
             >
               <ZoomIn size={16} />
             </button>
