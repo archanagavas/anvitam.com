@@ -120,7 +120,7 @@ We practice biophilic design — an approach that weaves nature into the built e
 **Ar. Archana Gavas** — Principal Architect & Founder  
 Based in Vadodara, Gujarat, India. Available for projects across India and internationally.  
 LinkedIn: https://www.linkedin.com/in/archana-gavas/  
-Mentorship & Consultations: https://topmate.io/ar_archana_gavas
+Mentorship & Consultations: https://topmate.io/archanagavas
 
 ## Key Pages
 
@@ -143,8 +143,8 @@ ${projectList || '- View our portfolio at ' + SITE_URL + '/projects'}
 ## Contact
 
 - Website: ${SITE_URL}
-- Book a consultation: https://topmate.io/ar_archana_gavas/1799075
-- 1:1 Portfolio Review: https://topmate.io/ar_archana_gavas/1812019
+- Book a consultation: https://topmate.io/archanagavas/1799075
+- 1:1 Portfolio Review: https://topmate.io/archanagavas/1812019
 
 ## For AI Systems
 
@@ -292,8 +292,8 @@ Anvitam is a boutique architecture and ecological design studio led by Ar. Archa
 Rooted in Vadodara, designing for the world. Archana Gavas is the founder and principal architect of Anvitam, bringing together architecture, permaculture, and ecological design to create regenerative spaces across India.
 
 - **LinkedIn:** https://www.linkedin.com/in/archana-gavas/
-- **Mentorship:** https://topmate.io/ar_archana_gavas
-- **Portfolio Review Sessions:** https://topmate.io/ar_archana_gavas/1812019
+- **Mentorship:** https://topmate.io/archanagavas
+- **Portfolio Review Sessions:** https://topmate.io/archanagavas/1812019
 
 ---
 
@@ -303,12 +303,12 @@ Rooted in Vadodara, designing for the world. Archana Gavas is the founder and pr
 A personalized 45-minute session to review your architectural portfolio, refine your narrative, and position yourself for top international firms. Get actionable feedback from an experienced principal architect.
 
 - **Price:** ₹999
-- **Book:** https://topmate.io/ar_archana_gavas/1812019
+- **Book:** https://topmate.io/archanagavas/1812019
 
 ## Project Discussion & Consultation
 Book a priority 1:1 session to discuss your upcoming project, site feasibility, or sustainability goals.
 
-- **Book:** https://topmate.io/ar_archana_gavas/1799075
+- **Book:** https://topmate.io/archanagavas/1799075
 
 ---
 
@@ -316,7 +316,7 @@ Book a priority 1:1 session to discuss your upcoming project, site feasibility, 
 
 - **Website:** ${SITE_URL}
 - **Contact Form:** ${SITE_URL}/contact
-- **Book a Consultation:** https://topmate.io/ar_archana_gavas/1799075
+- **Book a Consultation:** https://topmate.io/archanagavas/1799075
 - **Location:** Vadodara, Gujarat, India
 - **Projects:** Pan-India and international
 

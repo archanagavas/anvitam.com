@@ -4,7 +4,7 @@ import { useContent } from '../context/ContentContext';
 import { ExternalLink, ShoppingBag, BookOpen, FileText, Layers, Video, ArrowRight, Star, Users, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const TOPMATE_BASE = 'https://topmate.io/ar_archana_gavas';
+const TOPMATE_BASE = 'https://topmate.io/archanagavas';
 
 // ── Static course data (Topmate-hosted) ──────────────────────────────────
 const COURSES = [

@@ -33,7 +33,7 @@ const updatedServices = [
       { question: 'Do you design wellness programs?', answer: 'We design the architecture to house your wellness vision.' },
       { question: 'Can we utilize natural power?', answer: 'Yes, we heavily integrate off-grid and sustainable energy solutions.' }
     ],
-    bookingLink: 'https://topmate.io/ar_archana_gavas'
+    bookingLink: 'https://topmate.io/archanagavas'
   },
   {
     id: 'airbnb',
@@ -66,7 +66,7 @@ const updatedServices = [
       { question: 'How does design affect cleaning?', answer: 'We specify layouts that prevent wear and drastically reduce cleaning times.' },
       { question: 'Are experiences dependent on architecture?', answer: 'Yes. Design-led properties frame the entire guest experience.' }
     ],
-    bookingLink: 'https://topmate.io/ar_archana_gavas'
+    bookingLink: 'https://topmate.io/archanagavas'
   },
   {
     id: 'homestay',
@@ -99,7 +99,7 @@ const updatedServices = [
       { question: 'Can you design a riverside property safely?', answer: 'Absolutely. We seamlessly integrate proper mitigating foundations.' },
       { question: 'What makes a homestay successful?', answer: 'Authenticity. Guests seek a genuine connection to the place.' }
     ],
-    bookingLink: 'https://topmate.io/ar_archana_gavas'
+    bookingLink: 'https://topmate.io/archanagavas'
   },
   {
     id: 'community-center',
@@ -132,7 +132,7 @@ const updatedServices = [
       { question: 'Can health services share the space?', answer: 'Yes, we often co-locate diverse services to maximize civic impact.' },
       { question: 'Are these spaces durable?', answer: 'Absolutely. We utilize robust, upcycled, and natural materials for heavy use.' }
     ],
-    bookingLink: 'https://topmate.io/ar_archana_gavas'
+    bookingLink: 'https://topmate.io/archanagavas'
   },
   {
     id: 'weekend-villa',
@@ -165,7 +165,7 @@ const updatedServices = [
       { question: 'Are these designs good for rentals?', answer: 'Yes, the premium aesthetic makes them highly desirable and lucrative.' },
       { question: 'Can I build off-grid?', answer: 'Absolutely, we can integrate solar and rainwater harvesting for self-sustenance.' }
     ],
-    bookingLink: 'https://topmate.io/ar_archana_gavas'
+    bookingLink: 'https://topmate.io/archanagavas'
   },
   {
     id: 'eco-resort',
@@ -198,7 +198,7 @@ const updatedServices = [
       { question: 'Are eco resorts profitable?', answer: 'Highly. Travelers increasingly prioritize verifiable sustainability.' },
       { question: 'Can luxury exist in these resorts?', answer: 'Yes. The new luxury is profound silence, space, and pure, non-toxic materials.' }
     ],
-    bookingLink: 'https://topmate.io/ar_archana_gavas'
+    bookingLink: 'https://topmate.io/archanagavas'
   },
   {
     id: 'wellness-retreat',
@@ -231,7 +231,7 @@ const updatedServices = [
       { question: 'How do you design for yoga?', answer: 'We ensure specific acoustic and thermal comfort using grounding earth materials.' },
       { question: 'Why is air quality so crucial?', answer: 'Healing spaces must emit zero VOCs to provide a genuinely pure environment.' }
     ],
-    bookingLink: 'https://topmate.io/ar_archana_gavas'
+    bookingLink: 'https://topmate.io/archanagavas'
   },
   {
     id: 'food-forest',
@@ -264,7 +264,7 @@ const updatedServices = [
       { question: 'Does this help reduce food waste?', answer: 'Yes! Localizing production eliminates supply chain losses.' },
       { question: 'Is it high maintenance?', answer: 'Initially yes, but once established, it requires a fraction of the labor.' }
     ],
-    bookingLink: 'https://topmate.io/ar_archana_gavas'
+    bookingLink: 'https://topmate.io/archanagavas'
   },
   {
     id: 'agrotourism',
@@ -297,7 +297,7 @@ const updatedServices = [
       { question: 'Is it safe for a commercial farm?', answer: 'Yes, intelligent architecture zones out hazards completely.' },
       { question: 'Does it disrupt farming?', answer: 'We specialize in layouts that strictly protect and enhance the agricultural workflow.' }
     ],
-    bookingLink: 'https://topmate.io/ar_archana_gavas'
+    bookingLink: 'https://topmate.io/archanagavas'
   },
   {
     id: 'landscape-design',
@@ -330,7 +330,7 @@ const updatedServices = [
       { question: 'Do you offer remote design?', answer: 'Yes, our online portal allows us to deliver profound plans globally.' },
       { question: 'Is this more expensive upfront?', answer: 'No, but you save massively on water and future upkeep.' }
     ],
-    bookingLink: 'https://topmate.io/ar_archana_gavas'
+    bookingLink: 'https://topmate.io/archanagavas'
   },
   {
     id: 'terrace-garden',
@@ -363,7 +363,7 @@ const updatedServices = [
       { question: 'Why do I need a shade structure?', answer: 'Roofs face extreme elements; protection ensures the garden is actually usable.' },
       { question: 'Can I grow food up there?', answer: 'Absolutely. It is fantastic for raised, protected vegetable beds.' }
     ],
-    bookingLink: 'https://topmate.io/ar_archana_gavas'
+    bookingLink: 'https://topmate.io/archanagavas'
   },
   {
     id: 'backyard-design',
@@ -396,7 +396,7 @@ const updatedServices = [
       { question: 'Can you work with very small yards?', answer: 'Yes, our ideas are highly space-efficient.' },
       { question: 'Do you offer natural pools?', answer: 'Absolutely. We specialize in chemical-free swimming environments.' }
     ],
-    bookingLink: 'https://topmate.io/ar_archana_gavas'
+    bookingLink: 'https://topmate.io/archanagavas'
   }
 ];
 
@@ -430,7 +430,7 @@ const permacultureObjStr = `{
       { question: 'What does pricing depend on?', answer: 'Land size, climatic complexity, and required design depth.' },
       { question: 'What is included?', answer: 'Site analysis, concept plans, system diagrams, and land-use visions.' }
     ],
-    bookingLink: 'https://topmate.io/ar_archana_gavas'
+    bookingLink: 'https://topmate.io/archanagavas'
   }`;
 
 const constantsPath = './constants.ts';

@@ -279,7 +279,7 @@ const Contact: React.FC = () => {
           </h2>
           <div className="flex-shrink-0">
             <a 
-              href="https://topmate.io/ar_archana_gavas" 
+              href="https://topmate.io/archanagavas" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="inline-flex items-center bg-[#D1F0AA] text-[#111] px-5 py-2.5 rounded-full text-[13px] font-semibold transition-colors hover:bg-[#bceb81]"

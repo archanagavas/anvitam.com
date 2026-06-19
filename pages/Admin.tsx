@@ -277,7 +277,7 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initial, onSave, onCancel }) =>
     quillRef.current.clipboard.dangerouslyPasteHTML(
       range.index,
       DOMPurify.sanitize(
-        `<p><a class="cta-button" href="https://topmate.io/ar_archana_gavas" target="_blank" rel="noopener noreferrer">Book a Consultation →</a></p>`,
+        `<p><a class="cta-button" href="https://topmate.io/archanagavas" target="_blank" rel="noopener noreferrer">Book a Consultation →</a></p>`,
         RICH_TEXT_CONFIG
       )
     );

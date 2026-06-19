@@ -96,7 +96,7 @@ export const SERVICES: Service[] = [
       { question: 'What does pricing depend on?', answer: 'Land size, climatic complexity, and required design depth.' },
       { question: 'What is included?', answer: 'Site analysis, concept plans, system diagrams, and land-use visions.' }
     ],
-    bookingLink: 'https://topmate.io/ar_archana_gavas'
+    bookingLink: 'https://topmate.io/archanagavas'
   },
   {
   id: "farm-retreat",
@@ -161,7 +161,7 @@ export const SERVICES: Service[] = [
       answer: "Yes, we heavily integrate off-grid and sustainable energy solutions."
     }
   ],
-  bookingLink: "https://topmate.io/ar_archana_gavas"
+  bookingLink: "https://topmate.io/archanagavas"
 },
   {
   id: "airbnb",
@@ -222,7 +222,7 @@ export const SERVICES: Service[] = [
       answer: "Yes. Design-led properties frame the entire guest experience."
     }
   ],
-  bookingLink: "https://topmate.io/ar_archana_gavas"
+  bookingLink: "https://topmate.io/archanagavas"
 },
   {
   id: "homestay",
@@ -283,7 +283,7 @@ export const SERVICES: Service[] = [
       answer: "Authenticity. Guests seek a genuine connection to the place."
     }
   ],
-  bookingLink: "https://topmate.io/ar_archana_gavas"
+  bookingLink: "https://topmate.io/archanagavas"
 },
   {
   id: "community-center",
@@ -344,7 +344,7 @@ export const SERVICES: Service[] = [
       answer: "Absolutely. We utilize robust, upcycled, and natural materials for heavy use."
     }
   ],
-  bookingLink: "https://topmate.io/ar_archana_gavas"
+  bookingLink: "https://topmate.io/archanagavas"
 },
   {
   id: "weekend-villa",
@@ -405,7 +405,7 @@ export const SERVICES: Service[] = [
       answer: "Absolutely, we can integrate solar and rainwater harvesting for self-sustenance."
     }
   ],
-  bookingLink: "https://topmate.io/ar_archana_gavas"
+  bookingLink: "https://topmate.io/archanagavas"
 },
   {
   id: "eco-resort",
@@ -466,7 +466,7 @@ export const SERVICES: Service[] = [
       answer: "Yes. The new luxury is profound silence, space, and pure, non-toxic materials."
     }
   ],
-  bookingLink: "https://topmate.io/ar_archana_gavas"
+  bookingLink: "https://topmate.io/archanagavas"
 },
   {
   id: "wellness-retreat",
@@ -527,7 +527,7 @@ export const SERVICES: Service[] = [
       answer: "Healing spaces must emit zero VOCs to provide a genuinely pure environment."
     }
   ],
-  bookingLink: "https://topmate.io/ar_archana_gavas"
+  bookingLink: "https://topmate.io/archanagavas"
 },
   {
   id: "food-forest",
@@ -588,7 +588,7 @@ export const SERVICES: Service[] = [
       answer: "Initially yes, but once established, it requires a fraction of the labor."
     }
   ],
-  bookingLink: "https://topmate.io/ar_archana_gavas"
+  bookingLink: "https://topmate.io/archanagavas"
 },
   {
   id: "agrotourism",
@@ -649,7 +649,7 @@ export const SERVICES: Service[] = [
       answer: "We specialize in layouts that strictly protect and enhance the agricultural workflow."
     }
   ],
-  bookingLink: "https://topmate.io/ar_archana_gavas"
+  bookingLink: "https://topmate.io/archanagavas"
 },
   {
   id: "landscape-design",
@@ -710,7 +710,7 @@ export const SERVICES: Service[] = [
       answer: "No, but you save massively on water and future upkeep."
     }
   ],
-  bookingLink: "https://topmate.io/ar_archana_gavas"
+  bookingLink: "https://topmate.io/archanagavas"
 },
   {
   id: "terrace-garden",
@@ -771,7 +771,7 @@ export const SERVICES: Service[] = [
       answer: "Absolutely. It is fantastic for raised, protected vegetable beds."
     }
   ],
-  bookingLink: "https://topmate.io/ar_archana_gavas"
+  bookingLink: "https://topmate.io/archanagavas"
 },
   {
   id: "backyard-design",
@@ -832,7 +832,7 @@ export const SERVICES: Service[] = [
       answer: "Absolutely. We specialize in chemical-free swimming environments."
     }
   ],
-  bookingLink: "https://topmate.io/ar_archana_gavas"
+  bookingLink: "https://topmate.io/archanagavas"
 }
 ];
 
@@ -842,7 +842,7 @@ export const DIGITAL_PRODUCTS: DigitalProduct[] = [
     title: '1:1 Portfolio Review & Career Guidance',
     description: 'A personalized 45-minute session to review your architectural portfolio, refine your narrative, and position yourself for top international firms. Get actionable feedback from an experienced principal architect.',
     price: '₹999',
-    link: 'https://topmate.io/ar_archana_gavas/1812019?utm_source=public_profile&utm_campaign=ar_archana_gavas',
+    link: 'https://topmate.io/archanagavas/1812019?utm_source=public_profile&utm_campaign=archanagavas',
     // Using founder image/session image
     image: 'https://topmate.io/cdn-cgi/image/width=640,quality=90/https://static.topmate.io/da2bLpNHf3cETP6EKEtsXL.jpeg',
     tags: ['Mentorship', 'Career', 'Architecture']
@@ -852,7 +852,7 @@ export const DIGITAL_PRODUCTS: DigitalProduct[] = [
     title: 'Project Discussion & Consultation',
     description: 'Book a priority 1:1 session to discuss your upcoming project, site feasibility, or sustainability goals. A focused discussion to bring clarity to your vision before you build.',
     price: 'Book Now',
-    link: 'https://topmate.io/ar_archana_gavas/1799075?utm_source=public_profile&utm_campaign=ar_archana_gavas',
+    link: 'https://topmate.io/archanagavas/1799075?utm_source=public_profile&utm_campaign=archanagavas',
     image: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=1200&auto=format&fit=crop',
     tags: ['Consultation', 'Project Planning', 'Strategy']
   }

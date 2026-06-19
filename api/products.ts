@@ -10,7 +10,7 @@ const ALL_MOCK_PRODUCTS = [
     title: 'Farm Retreat Design Masterclass',
     description: 'A comprehensive online course covering site analysis, bioclimatic design, permaculture zoning, and how to create profitable eco-retreat experiences from scratch.',
     price: '₹3,999',
-    link: 'https://topmate.io/ar_archana_gavas',
+    link: 'https://topmate.io/archanagavas',
     image: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=800&auto=format&fit=crop',
     tags: ['Architecture', 'Permaculture', 'Business'],
     category: 'Online Courses'
@@ -20,7 +20,7 @@ const ALL_MOCK_PRODUCTS = [
     title: 'Food Forest Design Blueprint',
     description: 'Design productive food forests and edible gardens for farm stays, community spaces, and personal properties using proven permaculture techniques.',
     price: '₹2,499',
-    link: 'https://topmate.io/ar_archana_gavas',
+    link: 'https://topmate.io/archanagavas',
     image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=80&w=800&auto=format&fit=crop',
     tags: ['Food Forest', 'Landscape', 'Sustainability'],
     category: 'Online Courses'
@@ -30,7 +30,7 @@ const ALL_MOCK_PRODUCTS = [
     title: 'Airbnb & Homestay Design for Revenue',
     description: 'Learn how to design, style, and position your Airbnb or homestay for maximum occupancy, guest satisfaction, and profitable returns.',
     price: '₹1,999',
-    link: 'https://topmate.io/ar_archana_gavas',
+    link: 'https://topmate.io/archanagavas',
     image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=800&auto=format&fit=crop',
     tags: ['Airbnb', 'Interior', 'Hospitality'],
     category: 'Online Courses'

@@ -250,7 +250,7 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ initial, onSave, onCancel
                   <input 
                     type="url" 
                     required
-                    placeholder="https://topmate.io/ar_archana_gavas/..."
+                    placeholder="https://topmate.io/archanagavas/..."
                     className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-3 text-sm outline-none focus:border-black transition text-gray-800"
                     value={link}
                     onChange={e => setLink(e.target.value)}

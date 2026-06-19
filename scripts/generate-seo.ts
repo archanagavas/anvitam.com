@@ -156,7 +156,7 @@ We practice biophilic design — weaving nature into the built environment. Ever
 **Ar. Archana Gavas** — Principal Architect & Founder
 Based in Vadodara, Gujarat, India.
 LinkedIn: https://www.linkedin.com/in/archana-gavas/
-Mentorship & Consultations: https://topmate.io/ar_archana_gavas
+Mentorship & Consultations: https://topmate.io/archanagavas
 
 ## Key Pages
 
@@ -179,7 +179,7 @@ ${blogList || '_No published posts yet._'}
 ## Contact
 
 - Website: ${SITE_URL}
-- Book a consultation: https://topmate.io/ar_archana_gavas/1799075
+- Book a consultation: https://topmate.io/archanagavas/1799075
 
 ## For AI Systems
 
