@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
 import { Project } from '../types';
-import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardList, PenTool, Wrench, Sprout, Check, HelpCircle, Images, ZoomIn, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardList, PenTool, Wrench, Sprout, Check, HelpCircle, Expand } from 'lucide-react';
 import TestimonialCarousel from '../components/TestimonialCarousel';
 import ImageLightbox from '../components/ImageLightbox';
 
@@ -70,8 +70,8 @@ const ServiceDetail: React.FC = () => {
     }))
   } : null;
 
-  // Gallery lightbox state — index-based for full nav support
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   // Combine custom service gallery + related case study galleries
   const allRelatedGalleries = showcaseProjects.flatMap(p => p.gallery || []);
@@ -113,15 +113,7 @@ const ServiceDetail: React.FC = () => {
         )}
       </Helmet>
 
-      {/* Full-screen Gallery Lightbox */}
-      {lightboxIndex !== null && (
-        <ImageLightbox
-          images={galleryImages.length > 0 ? galleryImages : [{ url: service.heroImage || '', caption: service.title }]}
-          activeIndex={lightboxIndex}
-          onClose={() => setLightboxIndex(null)}
-          onNavigate={setLightboxIndex}
-        />
-      )}
+
       
       {/* 1. Hero Section */}
       <div className="pt-36 pb-12 flex flex-col items-center text-center px-4 max-w-5xl mx-auto">
@@ -143,50 +135,50 @@ const ServiceDetail: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Service Detailed Image Banner */}
+      {/* 2. Service Detailed Image Banner — object-contain so portrait & landscape show fully */}
       <div className="max-w-5xl mx-auto px-6 mb-12">
-        <img 
-          src={service.heroImage || "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=2000"} 
-          alt={service.title} 
-          className="w-full h-[350px] md:h-[550px] object-cover rounded-2xl shadow-md border border-gray-100 cursor-zoom-in hover:opacity-95 transition-opacity" 
-          onClick={() => setLightboxIndex(0)}
-          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setLightboxIndex(0); } }}
-          role="button"
-          tabIndex={0}
-          aria-label={`View full size: ${service.title}`}
-        />
+        <div className="w-full bg-gray-50 border border-gray-100 rounded-2xl overflow-hidden shadow-md">
+          <img 
+            src={service.heroImage || "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=2000"} 
+            alt={service.title} 
+            className="w-full object-contain block"
+            style={{ maxHeight: '70vh', background: '#f9f9f9' }}
+          />
+        </div>
       </div>
 
-      {/* 2b. Screenshot Gallery (if available) */}
+      {/* 2b. Clickable Gallery Grid — opens full-screen lightbox */}
       {galleryImages.length > 1 && (
         <div className="max-w-5xl mx-auto px-6 mb-20">
           <div className="flex items-center gap-2 mb-5">
-            <Images size={18} className="text-gray-400" />
-            <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400">Project Gallery</h3>
-            <span className="text-xs text-gray-400 ml-auto">{galleryImages.length} images</span>
+            <span className="text-xs font-mono text-gray-400 font-bold">{galleryImages.length} images</span>
+            <span className="text-gray-300">·</span>
+            <span className="text-[10px] text-gray-400 font-light">Click to open full-screen gallery</span>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {galleryImages.map((img, i) => (
-              <div
+              <button
                 key={i}
-                className="group relative aspect-square overflow-hidden rounded-xl bg-gray-50 cursor-pointer border border-gray-100 hover:border-gray-300 transition-all"
-                onClick={() => setLightboxIndex(i)}
-                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setLightboxIndex(i); } }}
-                role="button"
-                tabIndex={0}
-                aria-label={`View full size: ${img.caption || `Gallery image ${i + 1}`}`}
+                onClick={() => { setLightboxIndex(i); setLightboxOpen(true); }}
+                className="group relative overflow-hidden rounded-xl bg-gray-50 border border-gray-100 text-left focus:outline-none focus:ring-2 focus:ring-[#CCFF00]"
               >
-                <img src={img.url} alt={img.caption || `Gallery image ${i + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                {/* Zoom overlay — pointer-events-none so clicks reach the parent div */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center pointer-events-none" aria-hidden="true">
-                  <ZoomIn size={24} className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
-                </div>
+                <img
+                  src={img.url}
+                  alt={img.caption || `Gallery image ${i + 1}`}
+                  className="w-full object-contain block"
+                  style={{ maxHeight: '220px', background: '#f9f9f9' }}
+                />
                 {img.caption && (
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <p className="text-white text-[10px] font-medium line-clamp-1">{img.caption}</p>
+                  <div className="px-2 py-1.5 border-t border-gray-100 bg-white">
+                    <p className="text-[10px] text-gray-400 font-light line-clamp-1">{img.caption}</p>
                   </div>
                 )}
-              </div>
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 text-black p-2 rounded-full shadow-md">
+                    <Expand size={16} />
+                  </div>
+                </div>
+              </button>
             ))}
           </div>
         </div>
@@ -382,6 +374,16 @@ const ServiceDetail: React.FC = () => {
         <h3 className="text-xl md:text-2xl font-bold text-[#111] mb-6 tracking-tight text-center">What Our Clients Say</h3>
         <TestimonialCarousel />
       </div>
+
+      {/* Full-Screen Gallery Lightbox */}
+      {lightboxOpen && (
+        <ImageLightbox
+          images={galleryImages}
+          activeIndex={lightboxIndex}
+          onClose={() => setLightboxOpen(false)}
+          onNavigate={(i) => setLightboxIndex(i)}
+        />
+      )}
 
       {/* 8. Pre-Footer CTA */}
       <div className="bg-[#0a0a0a] text-white pt-20 pb-20 px-6 rounded-t-3xl md:rounded-t-[3rem] mt-10">

@@ -1,25 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, HelpCircle, ZoomIn } from 'lucide-react';
+import { ArrowLeft, ArrowRight, HelpCircle, Expand } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import ImageLightbox from '../components/ImageLightbox';
 
 const ProjectDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { projects } = useContent();
-  const navigate = useNavigate();
 
-  const [activeSlide, setActiveSlide] = useState(0);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    setActiveSlide(0);
     setOpenFaq(null);
-    setLightboxIndex(null);
+    setLightboxOpen(false);
   }, [id]);
 
   // Find project by slug or ID
@@ -81,15 +79,6 @@ const ProjectDetail: React.FC = () => {
 
   return (
     <div className="bg-white text-[#111] min-h-screen font-sans selection:bg-[#CCFF00]">
-      {/* Full-screen Gallery Lightbox */}
-      {lightboxIndex !== null && (
-        <ImageLightbox
-          images={galleryItems}
-          activeIndex={lightboxIndex}
-          onClose={() => setLightboxIndex(null)}
-          onNavigate={setLightboxIndex}
-        />
-      )}
       <Helmet>
         <title>{project.title} | Anvitam Sustainable Architecture</title>
         <meta name="description" content={project.description} />
@@ -141,89 +130,35 @@ const ProjectDetail: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Interactive Slideshow Showcase (Premium Slider) */}
-      <div className="max-w-5xl mx-auto px-6 mb-20">
-        <div className="relative aspect-[16/10] md:aspect-[16/9] w-full bg-gray-50 border border-gray-100 rounded-2xl overflow-hidden group shadow-lg">
-          {/* Main Slide Image — click to open lightbox */}
-          <img 
-            src={galleryItems[activeSlide].url} 
-            className="w-full h-full object-cover transition-opacity duration-500 cursor-zoom-in" 
-            alt={galleryItems[activeSlide].caption || "Slideshow showcase"} 
-            onClick={() => setLightboxIndex(activeSlide)}
-            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setLightboxIndex(activeSlide); } }}
-            role="button"
-            tabIndex={0}
-            aria-label={`View full size: ${galleryItems[activeSlide].caption || 'project image'}`}
-          />
-          {/* Zoom hint icon — pointer-events-none so it never blocks click */}
-          <div
-            className="absolute top-4 right-4 bg-black/50 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10"
-            aria-hidden="true"
-          >
-            <ZoomIn size={18} />
-          </div>
-          
-          {/* Gradients — pointer-events-none so clicks pass through to image */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none"></div>
-
-          {/* Navigation Buttons */}
-          {galleryItems.length > 1 && (
-            <>
-              <button 
-                onClick={() => setActiveSlide(prev => prev === 0 ? galleryItems.length - 1 : prev - 1)}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black p-2.5 rounded-full shadow-md transition opacity-0 group-hover:opacity-100 focus:opacity-100"
-              >
-                <ChevronLeft size={20} />
-              </button>
-              <button 
-                onClick={() => setActiveSlide(prev => prev === galleryItems.length - 1 ? 0 : prev + 1)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black p-2.5 rounded-full shadow-md transition opacity-0 group-hover:opacity-100 focus:opacity-100"
-              >
-                <ChevronRight size={20} />
-              </button>
-            </>
-          )}
-
-          {/* Caption & Counter overlay */}
-          <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between text-white z-10">
-            <div className="max-w-md">
-              <span className="text-[10px] uppercase font-bold tracking-widest text-[#CCFF00]">Anvitam Showcase</span>
-              <p className="text-sm font-medium mt-1 leading-snug">{galleryItems[activeSlide].caption || "Case study screenshot"}</p>
-            </div>
-            {galleryItems.length > 1 && (
-              <span className="text-xs bg-black/60 backdrop-blur-xs px-3 py-1 rounded-full font-mono text-[#fff]/90 border border-white/10">
-                {activeSlide + 1} / {galleryItems.length}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Thumbnail slider navigation */}
-        {galleryItems.length > 1 && (
-          <div className="flex justify-center gap-2 mt-4 overflow-x-auto py-2">
+        {/* 2. Clickable Gallery Grid — opens full-screen lightbox */}
+        <div className="max-w-6xl mx-auto px-6 mb-16">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {galleryItems.map((item, idx) => (
               <button
                 key={idx}
-                onClick={() => setActiveSlide(idx)}
-                className={`w-16 h-10 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 group/thumb relative ${
-                  activeSlide === idx ? 'border-[#CCFF00] scale-105 shadow' : 'border-transparent opacity-60 hover:opacity-100'
-                }`}
+                onClick={() => { setLightboxIndex(idx); setLightboxOpen(true); }}
+                className="group relative overflow-hidden rounded-xl bg-gray-50 border border-gray-100 text-left focus:outline-none focus:ring-2 focus:ring-[#CCFF00]"
               >
-                <img src={item.url} className="w-full h-full object-cover" alt="" />
+                <img
+                  src={item.url}
+                  alt={item.caption || `Gallery image ${idx + 1}`}
+                  className="w-full object-contain block"
+                  style={{ maxHeight: '220px', background: '#f9f9f9' }}
+                />
+                {item.caption && (
+                  <div className="px-2 py-1.5 border-t border-gray-100 bg-white">
+                    <p className="text-[10px] text-gray-400 font-light line-clamp-1">{item.caption}</p>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 text-black p-2 rounded-full shadow-md">
+                    <Expand size={16} />
+                  </div>
+                </div>
               </button>
             ))}
-            {/* Full-size view button — opens lightbox at current slide */}
-            <button
-              onClick={() => setLightboxIndex(activeSlide)}
-              className="w-16 h-10 rounded-lg border-2 border-dashed border-gray-300 hover:border-[#CCFF00] flex items-center justify-center flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors bg-gray-50"
-              title="View full size gallery"
-              aria-label="Open full-size gallery"
-            >
-              <ZoomIn size={16} />
-            </button>
           </div>
-        )}
-      </div>
+        </div>
 
       {/* 3. Project Videos (YouTube / Instagram embeds) */}
       {project.videos && project.videos.length > 0 && (() => {
@@ -399,6 +334,16 @@ const ProjectDetail: React.FC = () => {
           </Link>
         </div>
       </div>
+
+      {/* Full-Screen Gallery Lightbox */}
+      {lightboxOpen && (
+        <ImageLightbox
+          images={galleryItems}
+          activeIndex={lightboxIndex}
+          onClose={() => setLightboxOpen(false)}
+          onNavigate={(i) => setLightboxIndex(i)}
+        />
+      )}
 
       {/* 9. Pre-Footer CTA */}
       <div className="bg-[#0a0a0a] text-white pt-20 pb-20 px-6 rounded-t-3xl md:rounded-t-[3rem] mt-10">

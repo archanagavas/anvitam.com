@@ -20,7 +20,6 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({ images, activeIndex, onCl
   const goPrev = useCallback(() => { if (canGoPrev) onNavigate(activeIndex - 1); }, [activeIndex, canGoPrev, onNavigate]);
   const goNext = useCallback(() => { if (canGoNext) onNavigate(activeIndex + 1); }, [activeIndex, canGoNext, onNavigate]);
 
-  // Keyboard navigation
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -43,8 +42,7 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({ images, activeIndex, onCl
       role="dialog"
       aria-modal="true"
       aria-label="Image gallery lightbox"
-      className="fixed inset-0 z-[500] flex flex-col"
-      style={{ background: 'rgba(0,0,0,0.96)' }}
+      className="fixed inset-0 z-[500] flex flex-col bg-black/95"
       onClick={onClose}
     >
       {/* Top bar */}
@@ -74,12 +72,11 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({ images, activeIndex, onCl
         </button>
       </div>
 
-      {/* Main image area */}
+      {/* Main image area — fills all available space, image is contained */}
       <div
         className="flex-1 flex items-center justify-center relative min-h-0 px-16"
         onClick={e => e.stopPropagation()}
       >
-        {/* Prev button */}
         {images.length > 1 && (
           <button
             onClick={goPrev}
@@ -91,7 +88,6 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({ images, activeIndex, onCl
           </button>
         )}
 
-        {/* The image — object-contain so portrait + landscape both show fully */}
         <img
           key={current.url}
           src={current.url}
@@ -101,7 +97,6 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({ images, activeIndex, onCl
           draggable={false}
         />
 
-        {/* Next button */}
         {images.length > 1 && (
           <button
             onClick={goNext}
@@ -114,7 +109,7 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({ images, activeIndex, onCl
         )}
       </div>
 
-      {/* Thumbnail strip at bottom */}
+      {/* Thumbnail strip */}
       {images.length > 1 && (
         <div
           className="flex-shrink-0 py-4 px-5 overflow-x-auto"
