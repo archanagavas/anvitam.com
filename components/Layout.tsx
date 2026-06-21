@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Mail, ArrowRight, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Helmet } from 'react-helmet-async';
 import MapleLeafCursor from './MapleLeafCursor';
 
 // ── Newsletter Section Component ───────────────────────────────────────
@@ -128,8 +129,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const TOPMATE = 'https://topmate.io/archanagavas/1799075?utm_source=public_profile&utm_campaign=archanagavas';
 
+  const cleanPath = location.pathname.endsWith('/') && location.pathname !== '/'
+    ? location.pathname.slice(0, -1)
+    : location.pathname;
+  const canonicalUrl = `https://www.anvitam.com${cleanPath}`;
+
   return (
     <div className="flex flex-col min-h-screen font-sans bg-[#EFEFEB] text-[#111] relative z-10">
+      <Helmet>
+        <link rel="canonical" href={canonicalUrl} />
+      </Helmet>
 
       {/* Custom maple leaf cursor across all pages */}
       <MapleLeafCursor />

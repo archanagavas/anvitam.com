@@ -8,7 +8,7 @@ import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'fs';
 import { join, resolve } from 'path';
 import { neon } from '@neondatabase/serverless';
 
-const SITE_URL = 'https://anvitam.com';
+const SITE_URL = 'https://www.anvitam.com';
 const TODAY = new Date().toISOString().split('T')[0];
 const PUBLIC_DIR = resolve(process.cwd(), 'public');
 

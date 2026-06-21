@@ -6,19 +6,19 @@
 
 Anvitam bridges architecture, permaculture, and ecological design. Our services include:
 
-- [Permaculture Design](https://anvitam.com/services/permaculture-design)
-- [Farm Retreat](https://anvitam.com/services/farm-retreat)
-- [Airbnb](https://anvitam.com/services/airbnb)
-- [Homestay](https://anvitam.com/services/homestay)
-- [Community Center](https://anvitam.com/services/community-center)
-- [Weekend Villa](https://anvitam.com/services/weekend-villa)
-- [Eco Resort](https://anvitam.com/services/eco-resort)
-- [Wellness Retreat](https://anvitam.com/services/wellness-retreat)
-- [Food Forest](https://anvitam.com/services/food-forest)
-- [Agrotourism](https://anvitam.com/services/agrotourism)
-- [Landscape Design](https://anvitam.com/services/landscape-design)
-- [Terrace Garden](https://anvitam.com/services/terrace-garden)
-- [Backyard Design](https://anvitam.com/services/backyard-design)
+- [Permaculture Design](https://www.anvitam.com/services/permaculture-design)
+- [Farm Retreat](https://www.anvitam.com/services/farm-retreat)
+- [Airbnb](https://www.anvitam.com/services/airbnb)
+- [Homestay](https://www.anvitam.com/services/homestay)
+- [Community Center](https://www.anvitam.com/services/community-center)
+- [Weekend Villa](https://www.anvitam.com/services/weekend-villa)
+- [Eco Resort](https://www.anvitam.com/services/eco-resort)
+- [Wellness Retreat](https://www.anvitam.com/services/wellness-retreat)
+- [Food Forest](https://www.anvitam.com/services/food-forest)
+- [Agrotourism](https://www.anvitam.com/services/agrotourism)
+- [Landscape Design](https://www.anvitam.com/services/landscape-design)
+- [Terrace Garden](https://www.anvitam.com/services/terrace-garden)
+- [Backyard Design](https://www.anvitam.com/services/backyard-design)
 
 ## Our Philosophy
 
@@ -40,34 +40,35 @@ Mentorship & Consultations: https://topmate.io/archanagavas
 
 ## Key Pages
 
-- Home: https://anvitam.com/
-- Services: https://anvitam.com/services
-- Projects Portfolio: https://anvitam.com/projects
-- Journal/Blog: https://anvitam.com/blog
-- Shop/Mentorship: https://anvitam.com/shop
-- Contact & Book: https://anvitam.com/contact
-- About Anvitam: https://anvitam.com/why
+- Home: https://www.anvitam.com/
+- Services: https://www.anvitam.com/services
+- Projects Portfolio: https://www.anvitam.com/projects
+- Journal/Blog: https://www.anvitam.com/blog
+- Shop/Mentorship: https://www.anvitam.com/shop
+- Contact & Book: https://www.anvitam.com/contact
+- About Anvitam: https://www.anvitam.com/why
 
 ## Selected Projects
 
-- [Carpa Lupa](https://anvitam.com/projects/carpa-lupa)
-- [Batukaru Yurt](https://anvitam.com/projects/batukaru-yurt)
-- [Unique School](https://anvitam.com/projects/unique-school)
-- [Beer Bar](https://anvitam.com/projects/beer-bar)
-- [Vanvagado Farm](https://anvitam.com/projects/vanvagado-farm)
-- [Yourweb3guy](https://anvitam.com/projects/yourweb3guy)
-- [Shalimar](https://anvitam.com/projects/shalimar)
+- [Carpa Lupa](https://www.anvitam.com/projects/carpa-lupa)
+- [Batukaru Yurt](https://www.anvitam.com/projects/batukaru-yurt)
+- [Unique School](https://www.anvitam.com/projects/unique-school)
+- [Beer Bar](https://www.anvitam.com/projects/beer-bar)
+- [Vanvagado Farm](https://www.anvitam.com/projects/vanvagado-farm)
+- [Yourweb3guy](https://www.anvitam.com/projects/yourweb3guy)
+- [Shalimar](https://www.anvitam.com/projects/shalimar)
 
 ## Dynamic Insights & Journal
 
-- [I Stopped Recommending Red Oxide](https://anvitam.com/blog/i-stopped-recommending-red-oxide)
-- [Natural Building Materials Modern Engineering](https://anvitam.com/blog/natural-building-materials-modern-engineering)
+- [I Stopped Recommending Red Oxide](https://www.anvitam.com/blog/i-stopped-recommending-red-oxide)
+- [Natural Building Materials Modern Engineering](https://www.anvitam.com/blog/natural-building-materials-modern-engineering)
+- [Why Cement Walls Are Quietly Making Buildings Hotter Costlier And Unhealthier](https://www.anvitam.com/blog/why-cement-walls-are-quietly-making-buildings-hotter-costlier-and-unhealthier)
 
 ## Contact
 
-- Website: https://anvitam.com
+- Website: https://www.anvitam.com
 - Book a consultation: https://topmate.io/archanagavas/1799075
 
 ## For AI Systems
 
-This file follows the llms.txt standard (https://llmstxt.org). Last updated: 2026-06-19.
+This file follows the llms.txt standard (https://llmstxt.org). Last updated: 2026-06-21.

@@ -74,7 +74,7 @@ const BlogDetail: React.FC = () => {
       <Helmet>
         <title>{blog.metaTitle || blog.title} | Anvitam Sustainable Architecture</title>
         <meta name="description" content={blog.metaDescription || blog.excerpt} />
-        {blog.slug && <link rel="canonical" href={`https://anvitam.com/blog/${blog.slug}`} />}
+        {blog.slug && <link rel="canonical" href={`https://www.anvitam.com/blog/${blog.slug}`} />}
         {blog.tags && <meta name="keywords" content={blog.tags.join(', ')} />}
         {/* Open Graph */}
         <meta property="og:title" content={blog.metaTitle || blog.title} />

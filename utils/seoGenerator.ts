@@ -10,7 +10,7 @@
 
 import { Project, BlogPost, Service } from '../types';
 
-const SITE_URL = 'https://anvitam.com';
+const SITE_URL = 'https://www.anvitam.com';
 const TODAY = new Date().toISOString().split('T')[0];
 
 // ─────────────────────────────────────────────────────────────────────────────
