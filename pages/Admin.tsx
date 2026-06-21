@@ -987,6 +987,12 @@ const Admin: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'projects' | 'blog' | 'analytics' | 'shop' | 'services' | 'messages' | 'seo' | 'testimonials'>('analytics');
   const [seoStatus, setSeoStatus] = useState<null | 'generating' | 'done'>(null);
   const [previewFile, setPreviewFile] = useState<{ name: string; content: string } | null>(null);
+
+  // ── IndexNow Integration State ──────────────────────────────────────
+  const [indexNowUrls, setIndexNowUrls] = useState('');
+  const [indexNowStatus, setIndexNowStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [indexNowResult, setIndexNowResult] = useState<string | null>(null);
+  const [keyVerificationStatus, setKeyVerificationStatus] = useState<'idle' | 'verifying' | 'verified' | 'failed'>('idle');
   const [blogView, setBlogView] = useState<'list' | 'editor'>('list');
   const [editingBlog, setEditingBlog] = useState<BlogPost | null>(null);
   
@@ -1124,6 +1130,97 @@ const Admin: React.FC = () => {
   const handleLogout = () => {
     clearAuthToken();
     setIsAuthenticated(false);
+  };
+
+  // ── IndexNow Actions ────────────────────────────────────────────────
+  const handleVerifyIndexNowKey = async () => {
+    setKeyVerificationStatus('verifying');
+    try {
+      const res = await fetch('/REDACTED_INDEXNOW_KEY.txt');
+      if (res.ok) {
+        const text = (await res.text()).trim();
+        if (text === 'REDACTED_INDEXNOW_KEY') {
+          setKeyVerificationStatus('verified');
+          showToast('API Key file verified successfully!');
+        } else {
+          setKeyVerificationStatus('failed');
+          showToast('Key file loaded but contains incorrect content.');
+        }
+      } else {
+        setKeyVerificationStatus('failed');
+        showToast('Could not load key file at root.');
+      }
+    } catch (err) {
+      console.error('Error verifying key file:', err);
+      setKeyVerificationStatus('failed');
+      showToast('Error trying to read the key file.');
+    }
+  };
+
+  const handleSubmitIndexNow = async (urlsToSubmit: string[]) => {
+    if (urlsToSubmit.length === 0) {
+      showToast('Please select or enter at least one URL to submit.');
+      return;
+    }
+    setIndexNowStatus('submitting');
+    setIndexNowResult(null);
+    try {
+      const token = getAuthToken();
+      const res = await fetch('/api/indexnow', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ urlList: urlsToSubmit })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setIndexNowStatus('success');
+        setIndexNowResult(data.message || 'Successfully submitted!');
+        showToast('IndexNow submission successful!');
+      } else {
+        setIndexNowStatus('error');
+        setIndexNowResult(data.error || 'Submission failed.');
+      }
+    } catch (err: any) {
+      console.error('Error submitting to IndexNow:', err);
+      setIndexNowStatus('error');
+      setIndexNowResult(err.message || 'Network error occurred.');
+    }
+  };
+
+  const handleBulkSubmitIndexNow = () => {
+    const urls: string[] = [];
+    const siteUrl = 'https://www.anvitam.com';
+    
+    // Static routes
+    const staticPaths = [
+      '/', '/why', '/services', '/projects', '/blog', '/shop', '/contact', '/team',
+      '/seo/farm-retreat-architecture', '/seo/weekend-villas', '/seo/airbnb-homestay',
+      '/seo/wellness-retreat', '/seo/permaculture', '/seo/terrace-garden',
+      '/seo/yard-landscape', '/seo/community-centre'
+    ];
+    staticPaths.forEach(p => urls.push(`${siteUrl}${p}`));
+    
+    // Dynamic blog posts
+    blogs.forEach(b => {
+      urls.push(`${siteUrl}/blog/${b.slug || b.id}`);
+    });
+    
+    // Dynamic projects
+    projects.forEach(p => {
+      urls.push(`${siteUrl}/projects/${p.slug || p.id}`);
+    });
+    
+    // Dynamic services
+    services.forEach(s => {
+      urls.push(`${siteUrl}/services/${s.id}`);
+    });
+
+    if (confirm(`This will submit all ${urls.length} sitemap URLs to IndexNow search engines. Proceed?`)) {
+      handleSubmitIndexNow(urls);
+    }
   };
 
   const handleGenerateAI = async (type: 'project' | 'blog') => {
@@ -2181,6 +2278,183 @@ const Admin: React.FC = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* IndexNow Console Card */}
+              <div className="bg-white border border-gray-150 rounded-2xl shadow-sm p-6 space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+                  <div>
+                    <h3 className="text-base font-bold text-gray-800 flex items-center gap-2">
+                      <span className="text-[#CCFF00] bg-black text-xs font-black px-1.5 py-0.5 rounded animate-pulse">IN</span>
+                      <span>IndexNow URL Submission Console</span>
+                    </h3>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Directly submit URLs to Bing, Yandex, and other major search engines for instant indexing.
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleVerifyIndexNowKey}
+                      disabled={keyVerificationStatus === 'verifying'}
+                      className={`text-xs px-3.5 py-2 rounded-lg font-bold border transition flex items-center gap-1.5 ${
+                        keyVerificationStatus === 'verified'
+                          ? 'bg-green-50 text-green-700 border-green-200'
+                          : keyVerificationStatus === 'failed'
+                          ? 'bg-red-50 text-red-700 border-red-200'
+                          : 'bg-white border-gray-250 text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {keyVerificationStatus === 'verifying' ? (
+                        <>
+                          <RefreshCw size={12} className="animate-spin" />
+                          <span>Verifying...</span>
+                        </>
+                      ) : keyVerificationStatus === 'verified' ? (
+                        <>
+                          <CheckCircle size={12} className="text-green-600" />
+                          <span>Key File Active</span>
+                        </>
+                      ) : keyVerificationStatus === 'failed' ? (
+                        <>
+                          <AlertCircle size={12} className="text-red-600" />
+                          <span>Verification Failed</span>
+                        </>
+                      ) : (
+                        <span>Verify Key Setup</span>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={handleBulkSubmitIndexNow}
+                      className="bg-black hover:bg-gray-850 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-1.5"
+                    >
+                      <Zap size={12} className="text-[#CCFF00]" />
+                      <span>Submit Sitemap Bulk</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Left Column: Key info and select options */}
+                  <div className="space-y-4">
+                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-150 space-y-3">
+                      <h4 className="text-xs font-bold text-gray-750 uppercase tracking-wider">Protocol Setup Info</h4>
+                      <div className="space-y-2">
+                        <div>
+                          <span className="text-[10px] text-gray-400 font-bold block">HOST DOMAIN</span>
+                          <span className="text-xs font-mono font-semibold text-gray-800">www.anvitam.com</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-gray-400 font-bold block">API KEY</span>
+                          <span className="text-xs font-mono font-semibold text-gray-800 select-all">REDACTED_INDEXNOW_KEY</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-gray-400 font-bold block">VERIFICATION PATH</span>
+                          <a
+                            href="/REDACTED_INDEXNOW_KEY.txt"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-mono font-semibold text-gray-650 hover:text-black underline break-all"
+                          >
+                            /REDACTED_INDEXNOW_KEY.txt
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-700">Quick Populate URL</label>
+                      <div className="flex flex-wrap gap-1.5">
+                        <button
+                          onClick={() => setIndexNowUrls(prev => (prev ? prev + '\n' : '') + 'https://www.anvitam.com/')}
+                          className="bg-gray-105 hover:bg-gray-200 text-gray-750 text-[10px] font-bold px-2 py-1 rounded transition"
+                        >
+                          Home Page
+                        </button>
+                        {blogs.slice(0, 3).map(b => (
+                          <button
+                            key={b.id}
+                            onClick={() => setIndexNowUrls(prev => (prev ? prev + '\n' : '') + `https://www.anvitam.com/blog/${b.slug || b.id}`)}
+                            className="bg-gray-105 hover:bg-gray-200 text-gray-750 text-[10px] font-bold px-2 py-1 rounded transition truncate max-w-[130px]"
+                            title={b.title}
+                          >
+                            Blog: {b.title}
+                          </button>
+                        ))}
+                        {projects.slice(0, 2).map(p => (
+                          <button
+                            key={p.id}
+                            onClick={() => setIndexNowUrls(prev => (prev ? prev + '\n' : '') + `https://www.anvitam.com/projects/${p.slug || p.id}`)}
+                            className="bg-gray-105 hover:bg-gray-200 text-gray-750 text-[10px] font-bold px-2 py-1 rounded transition truncate max-w-[130px]"
+                            title={p.title}
+                          >
+                            Proj: {p.title}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Middle / Right Column: Input form and status logs */}
+                  <div className="lg:col-span-2 space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1.5">URLs to Submit (One per line)</label>
+                      <textarea
+                        rows={5}
+                        placeholder="https://www.anvitam.com/blog/example-slug&#10;https://www.anvitam.com/projects/example-project"
+                        value={indexNowUrls}
+                        onChange={e => setIndexNowUrls(e.target.value)}
+                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-xs outline-none focus:border-black font-mono bg-white text-gray-850 resize-y"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1">
+                        {indexNowStatus === 'submitting' && (
+                          <span className="text-xs text-gray-500 font-semibold flex items-center gap-1.5">
+                            <RefreshCw size={12} className="animate-spin text-gray-400" />
+                            Submitting URLs to IndexNow engines...
+                          </span>
+                        )}
+                        {indexNowStatus === 'success' && (
+                          <span className="text-xs text-green-600 font-bold flex items-center gap-1.5">
+                            <CheckCircle size={14} className="text-green-500" />
+                            Success: {indexNowResult}
+                          </span>
+                        )}
+                        {indexNowStatus === 'error' && (
+                          <span className="text-xs text-red-600 font-bold flex items-center gap-1.5">
+                            <AlertCircle size={14} className="text-red-500" />
+                            Error: {indexNowResult}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setIndexNowUrls('')}
+                          className="border border-gray-200 text-gray-700 text-xs font-semibold px-4 py-2 rounded-lg hover:bg-gray-50 transition"
+                        >
+                          Clear
+                        </button>
+                        <button
+                          onClick={() => {
+                            const list = indexNowUrls
+                              .split('\n')
+                              .map(u => u.trim())
+                              .filter(Boolean);
+                            handleSubmitIndexNow(list);
+                          }}
+                          disabled={indexNowStatus === 'submitting'}
+                          className="bg-black hover:bg-gray-850 text-white text-xs font-bold px-5 py-2 rounded-lg transition disabled:opacity-50"
+                        >
+                          Submit Selected URLs
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           );

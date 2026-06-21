@@ -31,6 +31,7 @@
     { "source": "/api/testimonials", "destination": "/api/testimonials.ts" },
     { "source": "/api/testimonials/:id", "destination": "/api/testimonials.ts" },
     { "source": "/api/analytics", "destination": "/api/analytics.ts" },
+    { "source": "/api/indexnow", "destination": "/api/indexnow.ts" },
     { "source": "/((?!api/|.*\\.[a-zA-Z0-9]+$).*)", "destination": "/index.html" }
   ]
 }
