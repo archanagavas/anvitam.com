@@ -11,9 +11,23 @@ import { Project, BlogPost, Service, DigitalProduct, ContactMessage, Testimonial
 import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES, DIGITAL_PRODUCTS, INITIAL_TESTIMONIALS } from '../constants';
 
 // ── Auth token helpers (JWT stored in sessionStorage — auto-clears on tab close) ──
-export const getAuthToken = (): string | null => sessionStorage.getItem('anvitam_admin_token');
-export const setAuthToken = (token: string) => sessionStorage.setItem('anvitam_admin_token', token);
-export const clearAuthToken = () => sessionStorage.removeItem('anvitam_admin_token');
+export const getAuthToken = (): string | null => {
+  try {
+    return sessionStorage.getItem('anvitam_admin_token');
+  } catch (e) {
+    return null;
+  }
+};
+export const setAuthToken = (token: string) => {
+  try {
+    sessionStorage.setItem('anvitam_admin_token', token);
+  } catch (e) {}
+};
+export const clearAuthToken = () => {
+  try {
+    sessionStorage.removeItem('anvitam_admin_token');
+  } catch (e) {}
+};
 export const authHeaders = (): Record<string, string> => {
   const t = getAuthToken();
   return t ? { Authorization: `Bearer ${t}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
@@ -62,6 +76,14 @@ function loadFromStorage<T>(key: string, initialData: T[]): T[] {
   return initialData;
 }
 
+function saveToStorage<T>(key: string, data: T[]): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (err) {
+    console.warn(`[ContentContext] Failed to save key "${key}" to localStorage:`, err);
+  }
+}
+
 export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [projects, setProjects] = useState<Project[]>(() =>
     loadFromStorage<Project>('anvitam_projects', INITIAL_PROJECTS)
@@ -98,7 +120,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
         const dbBlogs: BlogPost[] = await blogsRes.json();
         if (dbBlogs.length > 0) {
           setBlogs(dbBlogs);
-          localStorage.setItem('anvitam_blogs', JSON.stringify(dbBlogs));
+          saveToStorage('anvitam_blogs', dbBlogs);
         }
       }
 
@@ -106,7 +128,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
         const dbProjects: Project[] = await projectsRes.json();
         if (dbProjects.length > 0) {
           setProjects(dbProjects);
-          localStorage.setItem('anvitam_projects', JSON.stringify(dbProjects));
+          saveToStorage('anvitam_projects', dbProjects);
         }
       }
 
@@ -114,7 +136,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
         const dbServices: Service[] = await servicesRes.json();
         if (dbServices.length > 0) {
           setServices(dbServices);
-          localStorage.setItem('anvitam_services_v5', JSON.stringify(dbServices));
+          saveToStorage('anvitam_services_v5', dbServices);
         }
       }
 
@@ -122,7 +144,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
         const dbProducts: DigitalProduct[] = await productsRes.json();
         if (dbProducts.length > 0) {
           setDigitalProducts(dbProducts);
-          localStorage.setItem('anvitam_products', JSON.stringify(dbProducts));
+          saveToStorage('anvitam_products', dbProducts);
         }
       }
 
@@ -130,7 +152,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
         const dbTestimonials: Testimonial[] = await testimonialsRes.json();
         if (dbTestimonials.length > 0) {
           setTestimonials(dbTestimonials);
-          localStorage.setItem('anvitam_testimonials', JSON.stringify(dbTestimonials));
+          saveToStorage('anvitam_testimonials', dbTestimonials);
         }
       }
 
@@ -143,7 +165,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
         if (msgRes.ok) {
           const dbMessages: ContactMessage[] = await msgRes.json();
           setMessages(dbMessages);
-          localStorage.setItem('anvitam_messages', JSON.stringify(dbMessages));
+          saveToStorage('anvitam_messages', dbMessages);
         }
       }
 
@@ -168,11 +190,11 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, []);
 
   // Persist items to localStorage
-  useEffect(() => { localStorage.setItem('anvitam_services_v5', JSON.stringify(services)); }, [services]);
-  useEffect(() => { localStorage.setItem('anvitam_products', JSON.stringify(digitalProducts)); }, [digitalProducts]);
-  useEffect(() => { localStorage.setItem('anvitam_projects', JSON.stringify(projects)); }, [projects]);
-  useEffect(() => { localStorage.setItem('anvitam_blogs', JSON.stringify(blogs)); }, [blogs]);
-  useEffect(() => { localStorage.setItem('anvitam_testimonials', JSON.stringify(testimonials)); }, [testimonials]);
+  useEffect(() => { saveToStorage('anvitam_services_v5', services); }, [services]);
+  useEffect(() => { saveToStorage('anvitam_products', digitalProducts); }, [digitalProducts]);
+  useEffect(() => { saveToStorage('anvitam_projects', projects); }, [projects]);
+  useEffect(() => { saveToStorage('anvitam_blogs', blogs); }, [blogs]);
+  useEffect(() => { saveToStorage('anvitam_testimonials', testimonials); }, [testimonials]);
 
   // ── CRUD Operations ──────────────────────────────────────────────────────
   const addProject = async (project: Project) => {
