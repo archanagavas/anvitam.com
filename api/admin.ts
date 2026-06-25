@@ -23,8 +23,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const result = await initDatabase();
       return res.status(200).json(result);
     } catch (err: any) {
+      // Log full details server-side only — never expose internal error messages to clients
       console.error('[db-init] Error:', err);
-      return res.status(500).json({ error: err.message });
+      return res.status(500).json({ error: 'Database initialization failed. Check server logs.' });
     }
   }
 

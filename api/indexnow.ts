@@ -22,7 +22,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const HOST = 'www.anvitam.com';
-  const KEY = process.env.INDEXNOW_KEY || 'REDACTED_INDEXNOW_KEY';
+  // Never use a hardcoded fallback — the key is now in the public repo via git history.
+  // If INDEXNOW_KEY is missing, fail explicitly rather than submitting with a known key.
+  const KEY = process.env.INDEXNOW_KEY;
+  if (!KEY) {
+    console.error('[api/indexnow] INDEXNOW_KEY env var not set.');
+    return res.status(500).json({ error: 'IndexNow is not configured on the server.' });
+  }
   const KEY_LOCATION = `https://${HOST}/${KEY}.txt`;
 
   // Sanity check all URLs to make sure they belong to the host (prevent spam/abuse)
@@ -89,10 +95,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
   } catch (err: any) {
+    // Log full details server-side only
     console.error('[api/indexnow] HTTP post failed:', err);
     return res.status(500).json({
       success: false,
-      error: 'Failed to communicate with IndexNow API: ' + (err.message || String(err))
+      error: 'Failed to communicate with IndexNow API. Check server logs.'
     });
   }
 }

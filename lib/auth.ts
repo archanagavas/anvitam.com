@@ -5,7 +5,15 @@
  */
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'anvitam-fallback-secret-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
+// Crash-fast: if the secret is missing or too short, refuse to start.
+// A hardcoded fallback would appear in the public repo and let anyone forge admin tokens.
+if (!JWT_SECRET || JWT_SECRET.length < 32) {
+  throw new Error(
+    '[auth] JWT_SECRET env var is missing or shorter than 32 chars. ' +
+    'Set a 64-char hex secret in Vercel Dashboard → Project → Settings → Environment Variables.'
+  );
+}
 const TOKEN_EXPIRY = '24h';
 
 export interface AdminToken {

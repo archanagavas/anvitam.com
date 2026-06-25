@@ -6,6 +6,23 @@ import { ArrowRight, Calendar, Link as LinkIcon, Tag, Linkedin, Instagram, Faceb
 import DOMPurify from 'dompurify';
 import '../blog-prose.css';
 
+// Strict DOMPurify allowlist for rendering blog content.
+// Matches the RICH_TEXT_CONFIG used in the admin editor (Admin.tsx).
+// Using the same list at render time protects against content stored
+// before the editor config was applied or saved via alternative paths.
+const BLOG_PURIFY_CONFIG: Parameters<typeof DOMPurify.sanitize>[1] = {
+  ALLOWED_TAGS: [
+    'h1', 'h2', 'h3', 'h4', 'h5', 'p', 'br', 'strong', 'em', 'u', 's', 'del',
+    'a', 'ol', 'ul', 'li', 'blockquote', 'pre', 'code', 'img',
+    'div', 'span', 'iframe', 'hr',
+  ],
+  ALLOWED_ATTR: [
+    'href', 'src', 'class', 'target', 'rel', 'allowfullscreen',
+    'width', 'height', 'alt',
+  ],
+  ALLOW_DATA_ATTR: false,
+};
+
 // SVG for Medium brand icon (official brand layout)
 const MediumIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -144,7 +161,7 @@ const BlogDetail: React.FC = () => {
       <div className="max-w-3xl mx-auto px-6 mb-16">
         <div
           className="blog-prose"
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blog.content) as string }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blog.content, BLOG_PURIFY_CONFIG) as string }}
         />
 
         {/* Visible FAQ Section */}
