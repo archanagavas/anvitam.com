@@ -77,21 +77,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         message: 'URLs submitted to IndexNow successfully!'
       });
     } else {
+      // Read the upstream body for server-side diagnostics only — never forward to the client.
       let errorDetail = '';
       try {
         errorDetail = await indexNowResponse.text();
       } catch {}
+      console.error(`[api/indexnow] IndexNow API returned ${statusCode}:`, errorDetail);
 
-      let humanReason = 'Unknown error';
-      if (statusCode === 400) humanReason = 'Bad request / Invalid format';
-      if (statusCode === 403) humanReason = 'Forbidden / Invalid key or key file not found/matching';
-      if (statusCode === 422) humanReason = 'Unprocessable Entity / URLs do not belong to the host or key schema mismatch';
-      if (statusCode === 429) humanReason = 'Too Many Requests (potential Spam rate limiting)';
+      const humanReasons: Record<number, string> = {
+        400: 'Bad request / Invalid format',
+        403: 'Forbidden — check that the key file exists at the correct URL',
+        422: 'Unprocessable Entity — URLs may not belong to the declared host',
+        429: 'Too many requests — IndexNow rate limit reached',
+      };
+      const humanReason = humanReasons[statusCode] ?? 'Unexpected error from IndexNow';
 
+      // Return only the human-readable reason; raw upstream body stays server-side.
       return res.status(statusCode).json({
         success: false,
-        error: `${humanReason} (IndexNow API returned status code ${statusCode})`,
-        detail: errorDetail
+        error: `${humanReason} (status ${statusCode})`,
       });
     }
   } catch (err: any) {

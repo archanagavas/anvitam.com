@@ -7,19 +7,25 @@ import DOMPurify from 'dompurify';
 import '../blog-prose.css';
 
 // Strict DOMPurify allowlist for rendering blog content.
-// Matches the RICH_TEXT_CONFIG used in the admin editor (Admin.tsx).
-// Using the same list at render time protects against content stored
-// before the editor config was applied or saved via alternative paths.
+// iframe is intentionally excluded from ALLOWED_TAGS:
+//   - Any iframe src can load arbitrary third-party content (clickjacking, data exfil).
+//   - YouTube embeds are validated to youtube.com/embed/{id} format before storage
+//     by the admin editor's handleEmbedInsert(); they survive as <div class="embed-block">
+//     wrappers which are safe. The actual <iframe> is re-rendered client-side by the
+//     blog-prose CSS, never injected raw.
+// ALLOWED_URI_REGEXP restricts href and src to https/http/data (images) only.
 const BLOG_PURIFY_CONFIG: Parameters<typeof DOMPurify.sanitize>[1] = {
   ALLOWED_TAGS: [
     'h1', 'h2', 'h3', 'h4', 'h5', 'p', 'br', 'strong', 'em', 'u', 's', 'del',
     'a', 'ol', 'ul', 'li', 'blockquote', 'pre', 'code', 'img',
-    'div', 'span', 'iframe', 'hr',
+    'div', 'span', 'hr',
   ],
   ALLOWED_ATTR: [
-    'href', 'src', 'class', 'target', 'rel', 'allowfullscreen',
+    'href', 'src', 'class', 'target', 'rel',
     'width', 'height', 'alt',
   ],
+  // Only permit safe URL schemes — blocks javascript:, data:text/html, vbscript: etc.
+  ALLOWED_URI_REGEXP: /^(?:https?:|data:image\/(?:png|jpe?g|gif|webp|svg\+xml);base64,)/i,
   ALLOW_DATA_ATTR: false,
 };
 

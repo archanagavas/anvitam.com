@@ -6,12 +6,16 @@
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET;
-// Crash-fast: if the secret is missing or too short, refuse to start.
-// A hardcoded fallback would appear in the public repo and let anyone forge admin tokens.
-if (!JWT_SECRET || JWT_SECRET.length < 32) {
+// Crash-fast: enforce exact secret contract.
+// Must be a 64-character lowercase hex string produced by:
+//   node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+// A short or non-hex secret would make brute-forcing trivial.
+const HEX_64 = /^[0-9a-f]{64,}$/;
+if (!JWT_SECRET || !HEX_64.test(JWT_SECRET)) {
   throw new Error(
-    '[auth] JWT_SECRET env var is missing or shorter than 32 chars. ' +
-    'Set a 64-char hex secret in Vercel Dashboard → Project → Settings → Environment Variables.'
+    '[auth] JWT_SECRET must be a lowercase hex string of at least 64 characters. ' +
+    'Generate one with: node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))" ' +
+    'and set it in Vercel Dashboard → Project → Settings → Environment Variables.'
   );
 }
 const TOKEN_EXPIRY = '24h';

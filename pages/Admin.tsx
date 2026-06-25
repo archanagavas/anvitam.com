@@ -27,6 +27,10 @@ const ANALYTICS_DATA = [
 // ── DOMPurify allowlist for Quill rich-text content ──────────────────
 // Only whitelisted tags/attrs pass through — everything else is stripped.
 // OWASP A03 – XSS Prevention.
+// iframe is permitted here ONLY because the admin's handleEmbedInsert() validates
+// YouTube video IDs as /^[a-zA-Z0-9_-]{11}$/ before inserting the embed HTML.
+// ALLOWED_URI_REGEXP blocks javascript:, vbscript:, and data:text/html even if
+// a future code path skips URL validation.
 const RICH_TEXT_CONFIG = {
   ALLOWED_TAGS: [
     'h1', 'h2', 'h3', 'h4', 'h5', 'p', 'br', 'strong', 'em', 'u', 's', 'del',
@@ -37,6 +41,8 @@ const RICH_TEXT_CONFIG = {
     'href', 'src', 'class', 'target', 'rel', 'allowfullscreen',
     'width', 'height', 'data-value', 'alt',
   ],
+  // Only permit https, http, and base64-encoded images — blocks javascript: etc.
+  ALLOWED_URI_REGEXP: /^(?:https?:|data:image\/(?:png|jpe?g|gif|webp|svg\+xml);base64,)/i,
   ALLOW_DATA_ATTR: false,
   FORCE_BODY: false,
 };
