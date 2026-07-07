@@ -41,6 +41,8 @@ const ScrollToTop = () => {
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(() => {
     if (typeof window !== 'undefined') {
+      const isBot = /bot|googlebot|crawler|spider|robot|crawling/i.test(navigator.userAgent);
+      if (isBot) return false;
       return !sessionStorage.getItem('anvitam_loaded');
     }
     return true;

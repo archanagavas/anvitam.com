@@ -80,6 +80,7 @@ const ProjectDetail: React.FC = () => {
       <Helmet>
         <title>{project.title} | Anvitam Sustainable Architecture</title>
         <meta name="description" content={project.description} />
+        <link rel="canonical" href={`https://www.anvitam.com/projects/${project.slug || project.id}`} />
         {faqSchema && (
           <script type="application/ld+json">
             {JSON.stringify(faqSchema)}

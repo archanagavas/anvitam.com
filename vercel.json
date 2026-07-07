@@ -16,6 +16,11 @@
       ]
     }
   ],
+  "functions": {
+    "api/ssr-seo.ts": {
+      "includeFiles": "dist/index.html"
+    }
+  },
   "rewrites": [
     { "source": "/api/admin/:path*", "destination": "/api/admin.ts" },
     { "source": "/api/db-init", "destination": "/api/admin.ts" },
@@ -33,6 +38,7 @@
     { "source": "/api/testimonials/:id", "destination": "/api/testimonials.ts" },
     { "source": "/api/analytics", "destination": "/api/analytics.ts" },
     { "source": "/api/indexnow", "destination": "/api/indexnow.ts" },
-    { "source": "/((?!api/|.*\\.[a-zA-Z0-9]+$).*)", "destination": "/index.html" }
+    { "source": "/:key([a-zA-Z0-9_-]{8,128})\\.txt", "destination": "/api/indexnow-key?key=:key" },
+    { "source": "/((?!api/|.*\\.[a-zA-Z0-9]+$).*)", "destination": "/api/ssr-seo" }
   ]
 }
