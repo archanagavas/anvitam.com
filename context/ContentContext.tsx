@@ -86,10 +86,11 @@ function saveToStorage<T>(key: string, data: T[]): void {
 
 export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [projects, setProjects] = useState<Project[]>(() =>
-    loadFromStorage<Project>('anvitam_projects', INITIAL_PROJECTS)
+    loadFromStorage<Project>('anvitam_projects_v2', INITIAL_PROJECTS)
   );
   const [blogs, setBlogs] = useState<BlogPost[]>(() =>
-    loadFromStorage<BlogPost>('anvitam_blogs', INITIAL_BLOGS)
+    // v2 key: forces fresh DB sync, ignores stale 2-blog cache
+    loadFromStorage<BlogPost>('anvitam_blogs_v2', [])
   );
   const [services, setServices] = useState<Service[]>(() =>
     loadFromStorage<Service>('anvitam_services_v5', SERVICES)
@@ -120,7 +121,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
         const dbBlogs: BlogPost[] = await blogsRes.json();
         if (dbBlogs.length > 0) {
           setBlogs(dbBlogs);
-          saveToStorage('anvitam_blogs', dbBlogs);
+          saveToStorage('anvitam_blogs_v2', dbBlogs);
         }
       }
 
@@ -128,7 +129,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
         const dbProjects: Project[] = await projectsRes.json();
         if (dbProjects.length > 0) {
           setProjects(dbProjects);
-          saveToStorage('anvitam_projects', dbProjects);
+          saveToStorage('anvitam_projects_v2', dbProjects);
         }
       }
 
@@ -185,8 +186,8 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   // Persist items to localStorage
   useEffect(() => { saveToStorage('anvitam_services_v5', services); }, [services]);
   useEffect(() => { saveToStorage('anvitam_products', digitalProducts); }, [digitalProducts]);
-  useEffect(() => { saveToStorage('anvitam_projects', projects); }, [projects]);
-  useEffect(() => { saveToStorage('anvitam_blogs', blogs); }, [blogs]);
+  useEffect(() => { saveToStorage('anvitam_projects_v2', projects); }, [projects]);
+  useEffect(() => { saveToStorage('anvitam_blogs_v2', blogs); }, [blogs]);
   useEffect(() => { saveToStorage('anvitam_testimonials', testimonials); }, [testimonials]);
 
   // ── CRUD Operations ──────────────────────────────────────────────────────
