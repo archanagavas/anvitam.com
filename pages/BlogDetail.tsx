@@ -38,7 +38,7 @@ const MediumIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 const BlogDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { blogs } = useContent();
+  const { blogs, isInitialSyncDone } = useContent();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,6 +48,19 @@ const BlogDetail: React.FC = () => {
   // Match by id OR slug
   const blogIndex = blogs.findIndex(b => b.id === id || b.slug === id);
   const blog = blogs[blogIndex];
+
+  if (!isInitialSyncDone) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white text-[#111]">
+        <Helmet>
+          <title>Loading... | Anvitam Sustainable Architecture</title>
+          <meta name="robots" content="noindex, follow" />
+          <link rel="canonical" href={`https://www.anvitam.com/blog/${id}`} />
+        </Helmet>
+        <p className="text-xl font-medium mb-6">Loading...</p>
+      </div>
+    );
+  }
 
   if (!blog) {
     return (

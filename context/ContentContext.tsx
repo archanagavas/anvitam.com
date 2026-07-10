@@ -41,6 +41,7 @@ interface ContentContextType {
   messages: ContactMessage[];
   testimonials: Testimonial[];
   isDbConnected: boolean;
+  isInitialSyncDone: boolean;
   addProject: (project: Project) => Promise<void>;
   updateProject: (project: Project) => Promise<void>;
   addBlog: (blog: BlogPost) => Promise<void>;
@@ -105,6 +106,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
     loadFromStorage<Testimonial>('anvitam_testimonials', INITIAL_TESTIMONIALS)
   );
   const [isDbConnected, setIsDbConnected] = useState(false);
+  const [isInitialSyncDone, setIsInitialSyncDone] = useState(false);
 
   // ── Fetch from Neon DB ────────────────────────────────────────────
   const refreshFromDb = async () => {
@@ -174,6 +176,8 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
     } catch (err) {
       console.warn('[ContentContext] DB sync failed — using local data:', err);
       setIsDbConnected(false);
+    } finally {
+      setIsInitialSyncDone(true);
     }
   };
 
@@ -447,7 +451,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   return (
     <ContentContext.Provider value={{
       projects, blogs, services, digitalProducts, messages, testimonials,
-      isDbConnected,
+      isDbConnected, isInitialSyncDone,
       addProject, updateProject, addBlog, updateBlog, addService, updateService, addDigitalProduct, updateDigitalProduct, addMessage, addTestimonial, updateTestimonial,
       deleteProject, deleteBlog, deleteService, deleteDigitalProduct, deleteMessage, deleteTestimonial,
       refreshFromDb,

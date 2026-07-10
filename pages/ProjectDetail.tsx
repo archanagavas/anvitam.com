@@ -7,7 +7,7 @@ import DOMPurify from 'dompurify';
 
 const ProjectDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { projects } = useContent();
+  const { projects, isInitialSyncDone } = useContent();
 
   const [activeSlide, setActiveSlide] = useState(0);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -21,6 +21,19 @@ const ProjectDetail: React.FC = () => {
   // Find project by slug or ID
   const projectIndex = projects.findIndex(p => p.id === id || p.slug === id);
   const project = projects[projectIndex];
+
+  if (!isInitialSyncDone) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white text-[#111] font-sans">
+        <Helmet>
+          <title>Loading... | Anvitam Sustainable Architecture</title>
+          <meta name="robots" content="noindex, follow" />
+          <link rel="canonical" href={`https://www.anvitam.com/projects/${id}`} />
+        </Helmet>
+        <p className="text-xl mb-6">Loading...</p>
+      </div>
+    );
+  }
 
   if (!project) {
     return (

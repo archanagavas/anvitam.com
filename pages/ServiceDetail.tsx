@@ -8,7 +8,7 @@ import TestimonialCarousel from '../components/TestimonialCarousel';
 
 const ServiceDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { services, projects } = useContent();
+  const { services, projects, isInitialSyncDone } = useContent();
   const service = services.find(s => s.id === id);
   // Find all projects to showcase
   const primaryProject = projects.find(p => p.id === service?.caseStudyId);
@@ -32,6 +32,19 @@ const ServiceDetail: React.FC = () => {
     window.scrollTo(0, 0);
     setOpenFaq(null);
   }, [id]);
+
+  if (!isInitialSyncDone) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white text-[#111] font-sans">
+        <Helmet>
+          <title>Loading... | Anvitam Sustainable Architecture Services</title>
+          <meta name="robots" content="noindex, follow" />
+          <link rel="canonical" href={`https://www.anvitam.com/services/${id}`} />
+        </Helmet>
+        <p className="text-xl mb-6">Loading...</p>
+      </div>
+    );
+  }
 
   if (!service) {
     return (

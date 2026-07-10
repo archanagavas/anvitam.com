@@ -16,7 +16,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
-  const urlParts = (req.url || '').split('?')[0].split('/');
+  const requestPath = (req.headers['x-forwarded-uri'] as string) || req.url || '';
+  const urlParts = requestPath.split('?')[0].split('/');
   // Filter empty parts
   const pathSegments = urlParts.filter(Boolean);
   
@@ -26,107 +27,107 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let title = 'Anvitam | Architecture & Design';
   let desc = 'ANVITAM Architects in Vadodara, Gujarat blending Sustainability with Nature. Eco retreats, farm stays, permaculture design worldwide.';
   let imageUrl = 'https://www.anvitam.com/favicon.png';
-  let canonicalUrl = `https://www.anvitam.com${req.url ? req.url.split('?')[0] : ''}`;
+  let canonicalUrl = `https://www.anvitam.com${requestPath.split('?')[0]}`;
   let keywords = 'architecture, sustainable architecture, permaculture design, eco retreats, farm stays, biophilic design, green building, Vadodara, Gujarat';
   let robots = 'index, follow';
   let publisher = 'Anvitam';
 
   // Fetch data depending on the section
   if (section === 'blog' && idOrSlug) {
-    try {
-      let blog: any = null;
-      if (isDbConfigured) {
+    let blog: any = null;
+    if (isDbConfigured) {
+      try {
         const rows = await sql`
-          SELECT title, slug, excerpt, image, meta_title, meta_description, meta_keywords, meta_robots, tags 
+          SELECT id, title, slug, excerpt, image, meta_title, meta_description, meta_keywords, meta_robots, tags 
           FROM blogs 
           WHERE slug = ${idOrSlug} OR id = ${idOrSlug}
         `;
         if (rows.length > 0) {
           blog = rows[0];
         }
+      } catch (e) {
+        console.error('Error fetching blog SEO data from DB:', e);
       }
-      if (!blog) {
-        blog = INITIAL_BLOGS.find(b => b.slug === idOrSlug || b.id === idOrSlug);
-      }
+    }
+    if (!blog) {
+      blog = INITIAL_BLOGS.find(b => b.slug === idOrSlug || b.id === idOrSlug);
+    }
 
-      if (blog) {
-        title = blog.meta_title || blog.metaTitle || blog.title;
-        desc = blog.meta_description || blog.metaDescription || blog.excerpt || blog.title;
-        imageUrl = blog.image || imageUrl;
-        canonicalUrl = `https://www.anvitam.com/blog/${blog.slug || blog.id}`;
-        let tagsArr = blog.tags;
-        if (typeof tagsArr === 'string') {
-          try { tagsArr = JSON.parse(tagsArr); } catch (e) {}
-        }
-        keywords = blog.meta_keywords || blog.metaKeywords || (Array.isArray(tagsArr) && tagsArr.length > 0 ? tagsArr.join(', ') : keywords);
-        robots = blog.meta_robots || blog.metaRobots || robots;
+    if (blog) {
+      title = blog.meta_title || blog.metaTitle || blog.title;
+      desc = blog.meta_description || blog.metaDescription || blog.excerpt || blog.title;
+      imageUrl = blog.image || imageUrl;
+      canonicalUrl = `https://www.anvitam.com/blog/${blog.slug || blog.id}`;
+      let tagsArr = blog.tags;
+      if (typeof tagsArr === 'string') {
+        try { tagsArr = JSON.parse(tagsArr); } catch (e) {}
       }
-    } catch (e) {
-      console.error('Error fetching blog SEO data:', e);
+      keywords = blog.meta_keywords || blog.metaKeywords || (Array.isArray(tagsArr) && tagsArr.length > 0 ? tagsArr.join(', ') : keywords);
+      robots = blog.meta_robots || blog.metaRobots || robots;
     }
   } else if (section === 'projects' && idOrSlug) {
-    try {
-      let project: any = null;
-      if (isDbConfigured) {
+    let project: any = null;
+    if (isDbConfigured) {
+      try {
         const rows = await sql`
-          SELECT title, slug, description, image, tags, meta_title, meta_description, meta_keywords, meta_robots 
+          SELECT id, title, slug, description, image, tags, meta_title, meta_description, meta_keywords, meta_robots 
           FROM projects 
           WHERE slug = ${idOrSlug} OR id = ${idOrSlug}
         `;
         if (rows.length > 0) {
           project = rows[0];
         }
+      } catch (e) {
+        console.error('Error fetching project SEO data from DB:', e);
       }
-      if (!project) {
-        project = INITIAL_PROJECTS.find(p => p.slug === idOrSlug || p.id === idOrSlug);
-      }
+    }
+    if (!project) {
+      project = INITIAL_PROJECTS.find(p => p.slug === idOrSlug || p.id === idOrSlug);
+    }
 
-      if (project) {
-        title = project.meta_title || project.metaTitle || `${project.title} | Projects | Anvitam`;
-        desc = project.meta_description || project.metaDescription || project.description || desc;
-        imageUrl = project.image || imageUrl;
-        canonicalUrl = `https://www.anvitam.com/projects/${project.slug || project.id}`;
-        let tagsArr = project.tags;
-        if (typeof tagsArr === 'string') {
-          try { tagsArr = JSON.parse(tagsArr); } catch (e) {}
-        }
-        keywords = project.meta_keywords || project.metaKeywords || (Array.isArray(tagsArr) && tagsArr.length > 0 ? tagsArr.join(', ') : keywords);
-        robots = project.meta_robots || project.metaRobots || robots;
+    if (project) {
+      title = project.meta_title || project.metaTitle || `${project.title} | Projects | Anvitam`;
+      desc = project.meta_description || project.metaDescription || project.description || desc;
+      imageUrl = project.image || imageUrl;
+      canonicalUrl = `https://www.anvitam.com/projects/${project.slug || project.id}`;
+      let tagsArr = project.tags;
+      if (typeof tagsArr === 'string') {
+        try { tagsArr = JSON.parse(tagsArr); } catch (e) {}
       }
-    } catch (e) {
-      console.error('Error fetching project SEO data:', e);
+      keywords = project.meta_keywords || project.metaKeywords || (Array.isArray(tagsArr) && tagsArr.length > 0 ? tagsArr.join(', ') : keywords);
+      robots = project.meta_robots || project.metaRobots || robots;
     }
   } else if (section === 'services' && idOrSlug) {
-    try {
-      let service: any = null;
-      if (isDbConfigured) {
+    let service: any = null;
+    if (isDbConfigured) {
+      try {
         const rows = await sql`
-          SELECT title, description, hero_image, value_props, meta_title, meta_description, meta_keywords, meta_robots 
+          SELECT id, title, description, hero_image, value_props, meta_title, meta_description, meta_keywords, meta_robots 
           FROM services 
           WHERE id = ${idOrSlug}
         `;
         if (rows.length > 0) {
           service = rows[0];
         }
+      } catch (e) {
+        console.error('Error fetching service SEO data from DB:', e);
       }
-      if (!service) {
-        service = SERVICES.find(s => s.id === idOrSlug);
-      }
+    }
+    if (!service) {
+      service = SERVICES.find(s => s.id === idOrSlug);
+    }
 
-      if (service) {
-        title = service.meta_title || service.metaTitle || `${service.title} | Services | Anvitam`;
-        desc = service.meta_description || service.metaDescription || service.description || desc;
-        imageUrl = service.hero_image || service.heroImage || imageUrl;
-        canonicalUrl = `https://www.anvitam.com/services/${idOrSlug}`;
-        let props = service.value_props || service.valueProps;
-        if (typeof props === 'string') {
-          try { props = JSON.parse(props); } catch (e) {}
-        }
-        keywords = service.meta_keywords || service.metaKeywords || [service.title, 'sustainable architecture', 'eco design', 'permaculture', ...(Array.isArray(props) ? props : [])].join(', ');
-        robots = service.meta_robots || service.metaRobots || robots;
+    if (service) {
+      title = service.meta_title || service.metaTitle || `${service.title} | Services | Anvitam`;
+      desc = service.meta_description || service.metaDescription || service.description || desc;
+      imageUrl = service.hero_image || service.heroImage || imageUrl;
+      canonicalUrl = `https://www.anvitam.com/services/${idOrSlug}`;
+      let props = service.value_props || service.valueProps;
+      if (typeof props === 'string') {
+        try { props = JSON.parse(props); } catch (e) {}
       }
-    } catch (e) {
-      console.error('Error fetching service SEO data:', e);
+      keywords = service.meta_keywords || service.metaKeywords || [service.title, 'sustainable architecture', 'eco design', 'permaculture', ...(Array.isArray(props) ? props : [])].join(', ');
+      robots = service.meta_robots || service.metaRobots || robots;
     }
   } else if (section === 'seo' && idOrSlug) {
     const seoPages: Record<string, { title: string; desc: string }> = {
