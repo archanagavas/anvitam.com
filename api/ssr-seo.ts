@@ -5,6 +5,17 @@ import { sql, isDbConfigured } from '../lib/db.js';
 import { INITIAL_BLOGS, INITIAL_PROJECTS, SERVICES } from '../constants.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.url?.includes('debug-seo-headers') || 
+      (req.headers['x-matched-path'] as string)?.includes('debug-seo-headers') ||
+      (req.headers['x-forwarded-uri'] as string)?.includes('debug-seo-headers')) {
+    return res.status(200).json({
+      url: req.url,
+      headers: req.headers,
+      method: req.method,
+      query: req.query
+    });
+  }
+
   const urlParts = (req.url || '').split('?')[0].split('/');
   // Filter empty parts
   const pathSegments = urlParts.filter(Boolean);
