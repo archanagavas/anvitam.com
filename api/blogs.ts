@@ -25,7 +25,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (id) {
         const rows = await sql`
           SELECT id, title, slug, date, excerpt, content, image, author,
-                 meta_description, meta_title, cover_image_alt, faqs, tags, status, toc, author_bio, author_image, created_at
+                 meta_description, meta_title, cover_image_alt, faqs, tags, status, toc, author_bio, author_image, created_at,
+                 meta_keywords, meta_robots
           FROM blogs WHERE id = ${id}
         `;
         if (rows.length === 0) {
@@ -43,12 +44,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           tags: r.tags ?? [], status: r.status, toc: r.toc ?? [],
           authorBio: r.author_bio || '',
           authorImage: r.author_image || '',
+          metaKeywords: r.meta_keywords || '',
+          metaRobots: r.meta_robots || '',
         });
       }
 
       const rows = await sql`
         SELECT id, title, slug, date, excerpt, content, image, author,
-               meta_description, meta_title, cover_image_alt, faqs, tags, status, toc, author_bio, author_image, created_at
+               meta_description, meta_title, cover_image_alt, faqs, tags, status, toc, author_bio, author_image, created_at,
+               meta_keywords, meta_robots
         FROM blogs ORDER BY created_at DESC
       `;
       const blogs = rows.map(r => ({
@@ -60,6 +64,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         tags: r.tags ?? [], status: r.status, toc: r.toc ?? [],
         authorBio: r.author_bio || '',
         authorImage: r.author_image || '',
+        metaKeywords: r.meta_keywords || '',
+        metaRobots: r.meta_robots || '',
       }));
       return res.status(200).json(blogs);
     } catch (dbError) {
@@ -81,7 +87,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'POST') {
     const { id: bodyId, title, slug, date, excerpt, content, image, author,
-            metaDescription, metaTitle, coverImageAlt, faqs, tags, status, toc, authorBio, authorImage } = req.body ?? {};
+            metaDescription, metaTitle, coverImageAlt, faqs, tags, status, toc, authorBio, authorImage,
+            metaKeywords, metaRobots } = req.body ?? {};
 
     const targetId = id || bodyId;
     if (!targetId) {
@@ -90,11 +97,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     await sql`
       INSERT INTO blogs (id, title, slug, date, excerpt, content, image, author,
-                         meta_description, meta_title, cover_image_alt, faqs, tags, status, toc, author_bio, author_image)
+                         meta_description, meta_title, cover_image_alt, faqs, tags, status, toc, author_bio, author_image,
+                         meta_keywords, meta_robots)
       VALUES (${targetId}, ${title}, ${slug}, ${date}, ${excerpt}, ${content},
               ${image}, ${author ?? 'Anvitam Team'}, ${metaDescription ?? null},
               ${metaTitle ?? null}, ${coverImageAlt ?? null}, ${JSON.stringify(faqs ?? [])},
-              ${JSON.stringify(tags ?? [])}, ${status ?? 'draft'}, ${JSON.stringify(toc ?? [])}, ${authorBio ?? null}, ${authorImage ?? null})
+              ${JSON.stringify(tags ?? [])}, ${status ?? 'draft'}, ${JSON.stringify(toc ?? [])}, ${authorBio ?? null}, ${authorImage ?? null},
+              ${metaKeywords ?? null}, ${metaRobots ?? null})
       ON CONFLICT (id) DO UPDATE SET
         title = EXCLUDED.title, slug = EXCLUDED.slug, date = EXCLUDED.date,
         excerpt = EXCLUDED.excerpt, content = EXCLUDED.content, image = EXCLUDED.image,
@@ -102,7 +111,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         meta_title = EXCLUDED.meta_title, cover_image_alt = EXCLUDED.cover_image_alt,
         faqs = EXCLUDED.faqs,
         tags = EXCLUDED.tags, status = EXCLUDED.status, toc = EXCLUDED.toc,
-        author_bio = EXCLUDED.author_bio, author_image = EXCLUDED.author_image
+        author_bio = EXCLUDED.author_bio, author_image = EXCLUDED.author_image,
+        meta_keywords = EXCLUDED.meta_keywords, meta_robots = EXCLUDED.meta_robots
     `;
     return res.status(201).json({ success: true });
   }
@@ -112,7 +122,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Missing blog ID' });
     }
     const { title, slug, date, excerpt, content, image, author,
-            metaDescription, metaTitle, coverImageAlt, faqs, tags, status, toc, authorBio, authorImage } = req.body ?? {};
+            metaDescription, metaTitle, coverImageAlt, faqs, tags, status, toc, authorBio, authorImage,
+            metaKeywords, metaRobots } = req.body ?? {};
 
     await sql`
       UPDATE blogs SET
@@ -125,7 +136,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         tags = ${JSON.stringify(tags ?? [])}, status = ${status},
         toc = ${JSON.stringify(toc ?? [])},
         author_bio = ${authorBio ?? null},
-        author_image = ${authorImage ?? null}
+        author_image = ${authorImage ?? null},
+        meta_keywords = ${metaKeywords ?? null},
+        meta_robots = ${metaRobots ?? null}
       WHERE id = ${id}
     `;
     return res.status(200).json({ success: true });

@@ -33,6 +33,12 @@ const Team: React.FC = () => {
       <Helmet>
         <title>Who We Are | Sustainable Resort Architect & Eco Retreat Designer</title>
         <meta name="description" content="Meet Archana Gavas, Principal Architect and Founder of Anvitam, specializing in sustainable resort architecture, eco retreat design, and permaculture landscape design." />
+        <meta name="keywords" content="archana gavas, sustainable resort architect, eco retreat designer, permaculture landscape design, backyard garden design, farm retreat architecture" />
+        <meta name="robots" content="index, follow" />
+        <meta name="X-Robots-Tag" content="index, follow" />
+        <meta name="publisher" content="Anvitam" />
+        <link rel="publisher" href="https://www.anvitam.com/" />
+        <link rel="canonical" href="https://www.anvitam.com/team" />
       </Helmet>
 
       <motion.div 

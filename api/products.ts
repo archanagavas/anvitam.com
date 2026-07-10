@@ -58,7 +58,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       if (id) {
         const rows = await sql`
-          SELECT id, title, description, price, link, image, tags, category, created_at
+          SELECT id, title, description, price, link, image, tags, category, created_at,
+                 meta_title, meta_description, meta_keywords, meta_robots
           FROM digital_products WHERE id = ${id}
         `;
         if (rows.length === 0) {
@@ -75,12 +76,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           link: r.link || '',
           image: r.image || '',
           tags: r.tags ?? [],
-          category: r.category || 'E-Books'
+          category: r.category || 'E-Books',
+          metaTitle: r.meta_title || '',
+          metaDescription: r.meta_description || '',
+          metaKeywords: r.meta_keywords || '',
+          metaRobots: r.meta_robots || ''
         });
       }
 
       const rows = await sql`
-        SELECT id, title, description, price, link, image, tags, category, created_at
+        SELECT id, title, description, price, link, image, tags, category, created_at,
+               meta_title, meta_description, meta_keywords, meta_robots
         FROM digital_products ORDER BY created_at DESC
       `;
       const products = rows.map(r => ({
@@ -91,7 +97,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         link: r.link || '',
         image: r.image || '',
         tags: r.tags ?? [],
-        category: r.category || 'E-Books'
+        category: r.category || 'E-Books',
+        metaTitle: r.meta_title || '',
+        metaDescription: r.meta_description || '',
+        metaKeywords: r.meta_keywords || '',
+        metaRobots: r.meta_robots || ''
       }));
       return res.status(200).json(products);
     } catch (dbError) {
@@ -112,15 +122,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'POST') {
-    const { id: bodyId, title, description, price, link, image, tags, category } = req.body ?? {};
+    const { id: bodyId, title, description, price, link, image, tags, category,
+            metaTitle, metaDescription, metaKeywords, metaRobots } = req.body ?? {};
     const targetId = id || bodyId;
     if (!targetId) {
       return res.status(400).json({ error: 'Missing product ID' });
     }
 
     await sql`
-      INSERT INTO digital_products (id, title, description, price, link, image, tags, category)
-      VALUES (${targetId}, ${title}, ${description ?? ''}, ${price ?? ''}, ${link ?? ''}, ${image ?? ''}, ${JSON.stringify(tags ?? [])}, ${category ?? 'E-Books'})
+      INSERT INTO digital_products (id, title, description, price, link, image, tags, category,
+                                    meta_title, meta_description, meta_keywords, meta_robots)
+      VALUES (${targetId}, ${title}, ${description ?? ''}, ${price ?? ''}, ${link ?? ''}, ${image ?? ''}, ${JSON.stringify(tags ?? [])}, ${category ?? 'E-Books'},
+              ${metaTitle ?? null}, ${metaDescription ?? null}, ${metaKeywords ?? null}, ${metaRobots ?? null})
       ON CONFLICT (id) DO UPDATE SET
         title = EXCLUDED.title,
         description = EXCLUDED.description,
@@ -128,7 +141,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         link = EXCLUDED.link,
         image = EXCLUDED.image,
         tags = EXCLUDED.tags,
-        category = EXCLUDED.category
+        category = EXCLUDED.category,
+        meta_title = EXCLUDED.meta_title,
+        meta_description = EXCLUDED.meta_description,
+        meta_keywords = EXCLUDED.meta_keywords,
+        meta_robots = EXCLUDED.meta_robots
     `;
     return res.status(201).json({ success: true });
   }
@@ -137,7 +154,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!id) {
       return res.status(400).json({ error: 'Missing product ID' });
     }
-    const { title, description, price, link, image, tags, category } = req.body ?? {};
+    const { title, description, price, link, image, tags, category,
+            metaTitle, metaDescription, metaKeywords, metaRobots } = req.body ?? {};
 
     await sql`
       UPDATE digital_products SET
@@ -147,7 +165,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         link = ${link ?? ''},
         image = ${image ?? ''},
         tags = ${JSON.stringify(tags ?? [])},
-        category = ${category ?? 'E-Books'}
+        category = ${category ?? 'E-Books'},
+        meta_title = ${metaTitle ?? null},
+        meta_description = ${metaDescription ?? null},
+        meta_keywords = ${metaKeywords ?? null},
+        meta_robots = ${metaRobots ?? null}
       WHERE id = ${id}
     `;
     return res.status(200).json({ success: true });

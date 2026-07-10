@@ -28,6 +28,10 @@ export interface Project {
   tags?: string[]; // Tag list
   faqs?: { question: string; answer: string }[]; // FAQ Schema builder items
   status?: 'ongoing' | 'delivered'; // New: Project status
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string;
+  metaRobots?: string;
 }
 
 export interface BlogPost {
@@ -48,6 +52,8 @@ export interface BlogPost {
   toc?: string[];        // Table of contents headers
   authorBio?: string;    // Optional custom biography for the author
   authorImage?: string;  // Optional custom avatar/image URL or base64 for the author
+  metaKeywords?: string;
+  metaRobots?: string;
 }
 
 export interface TeamMember {
@@ -116,6 +122,10 @@ export interface Service {
   gallery?: GalleryItem[];
   caseStudyIds?: string[];
   videos?: { url: string; caption: string }[];
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string;
+  metaRobots?: string;
 }
 
 export interface DigitalProduct {
@@ -127,6 +137,10 @@ export interface DigitalProduct {
   image: string;
   tags: string[];
   category?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string;
+  metaRobots?: string;
 }
 
 export interface ContactMessage {

@@ -24,6 +24,12 @@ const Services: React.FC = () => {
       <Helmet>
         <title>Services | Sustainable Resort Architect & Eco Retreat Designer</title>
         <meta name="description" content="Explore our sustainable architecture and permaculture design services, including farm retreats, wellness spaces, food forests, and weekend villa design." />
+        <meta name="keywords" content="sustainable design services, eco-friendly architecture, permaculture master planning, farm retreat design, terrace garden design, biodiverse landscaping" />
+        <meta name="robots" content="index, follow" />
+        <meta name="X-Robots-Tag" content="index, follow" />
+        <meta name="publisher" content="Anvitam" />
+        <link rel="publisher" href="https://www.anvitam.com/" />
+        <link rel="canonical" href="https://www.anvitam.com/services" />
       </Helmet>
 
       {/* Hero Section */}

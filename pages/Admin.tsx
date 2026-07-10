@@ -168,6 +168,8 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initial, onSave, onCancel }) =>
   const [excerpt, setExcerpt] = useState(initial?.excerpt || '');
   const [metaDescription, setMetaDescription] = useState(initial?.metaDescription || '');
   const [metaTitle, setMetaTitle] = useState(initial?.metaTitle || '');
+  const [metaKeywords, setMetaKeywords] = useState(initial?.metaKeywords || '');
+  const [metaRobots, setMetaRobots] = useState(initial?.metaRobots || 'index, follow');
   const [coverImageAlt, setCoverImageAlt] = useState(initial?.coverImageAlt || '');
   const [faqs, setFaqs] = useState<{ question: string; answer: string; }[]>(initial?.faqs || []);
   const [tags, setTags] = useState<string[]>(
@@ -382,6 +384,8 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initial, onSave, onCancel }) =>
       status: finalStatus,
       authorBio: authorBio.trim(),
       authorImage: authorImage.trim(),
+      metaKeywords: metaKeywords.trim(),
+      metaRobots: metaRobots.trim(),
     };
     onSave(post, finalStatus);
   };
@@ -671,6 +675,33 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initial, onSave, onCancel }) =>
               <p className={`text-xxs mt-1 text-right font-mono ${metaDescription.length > 150 ? 'text-orange-600' : 'text-gray-500'}`}>
                 {metaDescription.length}/160 characters
               </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xxs font-bold uppercase tracking-widest text-gray-600 mb-1">Meta Keywords</label>
+                <input
+                  type="text"
+                  placeholder="e.g. permaculture, architecture, eco retreat"
+                  value={metaKeywords}
+                  onChange={e => setMetaKeywords(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-black transition text-gray-800 bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xxs font-bold uppercase tracking-widest text-gray-600 mb-1">Robots Tag (Meta Robots)</label>
+                <select
+                  value={metaRobots}
+                  onChange={e => setMetaRobots(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-black transition text-gray-800 bg-white"
+                >
+                  <option value="index, follow">index, follow (Default)</option>
+                  <option value="noindex, follow">noindex, follow</option>
+                  <option value="index, nofollow">index, nofollow</option>
+                  <option value="noindex, nofollow">noindex, nofollow</option>
+                </select>
+              </div>
             </div>
           </div>
 

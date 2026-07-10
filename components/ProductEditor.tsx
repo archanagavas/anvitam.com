@@ -72,6 +72,11 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ initial, onSave, onCancel
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>(initial?.tags || []);
 
+  const [metaTitle, setMetaTitle] = useState(initial?.metaTitle || '');
+  const [metaDescription, setMetaDescription] = useState(initial?.metaDescription || '');
+  const [metaKeywords, setMetaKeywords] = useState(initial?.metaKeywords || '');
+  const [metaRobots, setMetaRobots] = useState(initial?.metaRobots || 'index, follow');
+
   const [isCompressing, setIsCompressing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -148,7 +153,11 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ initial, onSave, onCancel
       link: link.trim(),
       image: image || 'https://picsum.photos/400/300?random=product',
       tags,
-      category
+      category,
+      metaTitle: metaTitle.trim() || title.trim(),
+      metaDescription: metaDescription.trim() || description.trim(),
+      metaKeywords: metaKeywords.trim(),
+      metaRobots: metaRobots.trim(),
     };
 
     setSaveSuccess(true);
@@ -269,6 +278,68 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ initial, onSave, onCancel
                   value={price}
                   onChange={e => setPrice(e.target.value)}
                 />
+              </div>
+            </div>
+
+            {/* SEO Settings Card */}
+            <div className="bg-white border border-gray-150 rounded-xl p-5 shadow-sm space-y-4">
+              <h4 className="text-sm font-bold flex items-center gap-1.5 text-gray-800">🔍 SEO Settings</h4>
+              
+              <div>
+                <label className="block text-xxs font-bold uppercase tracking-widest text-gray-600 mb-1">Meta Title</label>
+                <input
+                  type="text"
+                  placeholder="SEO Title (60 chars max)"
+                  value={metaTitle}
+                  maxLength={60}
+                  onChange={e => setMetaTitle(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-black transition text-gray-800 bg-white"
+                />
+                <p className={`text-xxs mt-1 text-right font-mono ${metaTitle.length > 55 ? 'text-orange-600' : 'text-gray-500'}`}>
+                  {metaTitle.length}/60 characters
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xxs font-bold uppercase tracking-widest text-gray-600 mb-1">Meta Description</label>
+                <textarea
+                  rows={3}
+                  placeholder="SEO Description (160 chars max)"
+                  value={metaDescription}
+                  maxLength={160}
+                  onChange={e => setMetaDescription(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-black transition resize-none text-gray-800 bg-white"
+                />
+                <p className={`text-xxs mt-1 text-right font-mono ${metaDescription.length > 150 ? 'text-orange-600' : 'text-gray-500'}`}>
+                  {metaDescription.length}/160 characters
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xxs font-bold uppercase tracking-widest text-gray-600 mb-1">Meta Keywords</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. permaculture, architecture, eco retreat"
+                    value={metaKeywords}
+                    onChange={e => setMetaKeywords(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-black transition text-gray-800 bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xxs font-bold uppercase tracking-widest text-gray-600 mb-1">Robots Tag (Meta Robots)</label>
+                  <select
+                    value={metaRobots}
+                    onChange={e => setMetaRobots(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-black transition text-gray-800 bg-white"
+                  >
+                    <option value="index, follow">index, follow (Default)</option>
+                    <option value="noindex, follow">noindex, follow</option>
+                    <option value="index, nofollow">index, nofollow</option>
+                    <option value="noindex, nofollow">noindex, nofollow</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>

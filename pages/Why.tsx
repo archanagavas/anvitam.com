@@ -84,6 +84,12 @@ const Why: React.FC = () => {
           name="description"
           content="Discover Anvitam's philosophy of contextual architecture and interior design, practicing sustainable, eco-friendly biophilic designs, including farm retreat architecture and wellness retreat design."
         />
+        <meta name="keywords" content="about anvitam, sustainable resort architect, eco retreat designer, bio-climatic design, natural building materials, archana gavas, Vadodara, India" />
+        <meta name="robots" content="index, follow" />
+        <meta name="X-Robots-Tag" content="index, follow" />
+        <meta name="publisher" content="Anvitam" />
+        <link rel="publisher" href="https://www.anvitam.com/" />
+        <link rel="canonical" href="https://www.anvitam.com/why" />
       </Helmet>
 
       {/* ══════════════════════════════════════════

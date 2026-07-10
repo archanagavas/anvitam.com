@@ -87,6 +87,12 @@ const Contact: React.FC = () => {
       <Helmet>
         <title>Contact Us | Anvitam Sustainable Architecture</title>
         <meta name="description" content="Get in touch with Anvitam for your next sustainable architecture, permaculture design, or wellness retreat project." />
+        <meta name="keywords" content="contact anvitam, architecture consultation, sustainable architecture vadodara, permaculture design inquiry, eco retreat builders" />
+        <meta name="robots" content="index, follow" />
+        <meta name="X-Robots-Tag" content="index, follow" />
+        <meta name="publisher" content="Anvitam" />
+        <link rel="publisher" href="https://www.anvitam.com/" />
+        <link rel="canonical" href="https://www.anvitam.com/contact" />
       </Helmet>
       
       {/* Hero Section */}

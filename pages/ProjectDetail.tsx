@@ -78,12 +78,12 @@ const ProjectDetail: React.FC = () => {
   return (
     <div className="bg-white text-[#111] min-h-screen font-sans selection:bg-[#CCFF00]">
       <Helmet>
-        <title>{project.title} | Anvitam Sustainable Architecture</title>
-        <meta name="description" content={project.description} />
+        <title>{project.metaTitle || project.title} | Anvitam Sustainable Architecture</title>
+        <meta name="description" content={project.metaDescription || project.description} />
         <link rel="canonical" href={`https://www.anvitam.com/projects/${project.slug || project.id}`} />
-        <meta name="keywords" content={project.tags && project.tags.length > 0 ? project.tags.join(', ') : 'architecture projects, sustainable design, permaculture design'} />
-        <meta name="robots" content="index, follow" />
-        <meta name="X-Robots-Tag" content="index, follow" />
+        <meta name="keywords" content={project.metaKeywords || (project.tags && project.tags.length > 0 ? project.tags.join(', ') : 'architecture projects, sustainable design, permaculture design')} />
+        <meta name="robots" content={project.metaRobots || 'index, follow'} />
+        <meta name="X-Robots-Tag" content={project.metaRobots || 'index, follow'} />
         <meta name="publisher" content="Anvitam" />
         <link rel="publisher" href="https://www.anvitam.com/" />
         {faqSchema && (

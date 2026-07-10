@@ -103,6 +103,8 @@ export async function initDatabase() {
   await sql`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS faqs JSONB DEFAULT '[]';`;
   await sql`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS author_bio TEXT;`;
   await sql`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS author_image TEXT;`;
+  await sql`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS meta_keywords TEXT;`;
+  await sql`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS meta_robots TEXT;`;
 
   await sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS slug TEXT;`;
   await sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS hero_image TEXT;`;
@@ -110,9 +112,23 @@ export async function initDatabase() {
   await sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS faqs JSONB DEFAULT '[]';`;
   await sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS videos JSONB DEFAULT '[]';`;
   await sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS status TEXT;`;
+  await sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS meta_title TEXT;`;
+  await sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS meta_description TEXT;`;
+  await sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS meta_keywords TEXT;`;
+  await sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS meta_robots TEXT;`;
+
   await sql`ALTER TABLE services ADD COLUMN IF NOT EXISTS gallery JSONB DEFAULT '[]';`;
   await sql`ALTER TABLE services ADD COLUMN IF NOT EXISTS case_study_ids JSONB DEFAULT '[]';`;
   await sql`ALTER TABLE services ADD COLUMN IF NOT EXISTS videos JSONB DEFAULT '[]';`;
+  await sql`ALTER TABLE services ADD COLUMN IF NOT EXISTS meta_title TEXT;`;
+  await sql`ALTER TABLE services ADD COLUMN IF NOT EXISTS meta_description TEXT;`;
+  await sql`ALTER TABLE services ADD COLUMN IF NOT EXISTS meta_keywords TEXT;`;
+  await sql`ALTER TABLE services ADD COLUMN IF NOT EXISTS meta_robots TEXT;`;
+
+  await sql`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS meta_title TEXT;`;
+  await sql`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS meta_description TEXT;`;
+  await sql`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS meta_keywords TEXT;`;
+  await sql`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS meta_robots TEXT;`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS messages (

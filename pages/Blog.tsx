@@ -51,6 +51,7 @@ const Blog: React.FC = () => {
         <meta name="X-Robots-Tag" content="index, follow" />
         <meta name="publisher" content="Anvitam" />
         <link rel="publisher" href="https://www.anvitam.com/" />
+        <link rel="canonical" href="https://www.anvitam.com/blog" />
       </Helmet>
 
       {/* Header */}

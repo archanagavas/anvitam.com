@@ -112,6 +112,11 @@ const Shop: React.FC = () => {
         <title>Shop & Courses | Sustainable Architecture Resources | Anvitam</title>
         <meta name="description" content="Explore Anvitam's curated e-books, guides, resources, and online courses on sustainable architecture, permaculture design, farm retreats, and eco homestays." />
         <meta name="keywords" content="sustainable architecture course, permaculture design guide, eco retreat ebook, farm stay design resources, architecture consultation" />
+        <meta name="robots" content="index, follow" />
+        <meta name="X-Robots-Tag" content="index, follow" />
+        <meta name="publisher" content="Anvitam" />
+        <link rel="publisher" href="https://www.anvitam.com/" />
+        <link rel="canonical" href="https://www.anvitam.com/shop" />
         <meta property="og:title" content="Shop & Courses | Anvitam" />
         <meta property="og:description" content="E-books, guides, and courses on sustainable architecture and permaculture design." />
       </Helmet>

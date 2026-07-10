@@ -25,7 +25,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (id) {
         const rows = await sql`
           SELECT id, title, description, icon, value_props, hero_image, what_it_is,
-                 who_its_for, case_study_id, case_study_ids, process, pricing, faq, booking_link, gallery, videos, created_at
+                 who_its_for, case_study_id, case_study_ids, process, pricing, faq, booking_link, gallery, videos, created_at,
+                 meta_title, meta_description, meta_keywords, meta_robots
           FROM services WHERE id = ${id}
         `;
         if (rows.length === 0) {
@@ -50,13 +51,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           faq: r.faq ?? [],
           bookingLink: r.booking_link || '',
           gallery: r.gallery ?? [],
-          videos: r.videos ?? []
+          videos: r.videos ?? [],
+          metaTitle: r.meta_title || '',
+          metaDescription: r.meta_description || '',
+          metaKeywords: r.meta_keywords || '',
+          metaRobots: r.meta_robots || ''
         });
       }
 
       const rows = await sql`
         SELECT id, title, description, icon, value_props, hero_image, what_it_is,
-               who_its_for, case_study_id, case_study_ids, process, pricing, faq, booking_link, gallery, videos, created_at
+               who_its_for, case_study_id, case_study_ids, process, pricing, faq, booking_link, gallery, videos, created_at,
+               meta_title, meta_description, meta_keywords, meta_robots
         FROM services ORDER BY created_at ASC
       `;
       const services = rows.map(r => ({
@@ -75,7 +81,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         faq: r.faq ?? [],
         bookingLink: r.booking_link || '',
         gallery: r.gallery ?? [],
-        videos: r.videos ?? []
+        videos: r.videos ?? [],
+        metaTitle: r.meta_title || '',
+        metaDescription: r.meta_description || '',
+        metaKeywords: r.meta_keywords || '',
+        metaRobots: r.meta_robots || ''
       }));
       return res.status(200).json(services);
     } catch (dbError) {
@@ -97,7 +107,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'POST') {
     const { id: bodyId, title, description, icon, valueProps, heroImage, whatItIs,
-            whoItsFor, caseStudyId, caseStudyIds, process, pricing, faq, bookingLink, gallery, videos } = req.body ?? {};
+            whoItsFor, caseStudyId, caseStudyIds, process, pricing, faq, bookingLink, gallery, videos,
+            metaTitle, metaDescription, metaKeywords, metaRobots } = req.body ?? {};
     const targetId = id || bodyId;
     if (!targetId) {
       return res.status(400).json({ error: 'Missing service ID' });
@@ -105,16 +116,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     await sql`
       INSERT INTO services (id, title, description, icon, value_props, hero_image, what_it_is,
-                            who_its_for, case_study_id, case_study_ids, process, pricing, faq, booking_link, gallery, videos)
+                            who_its_for, case_study_id, case_study_ids, process, pricing, faq, booking_link, gallery, videos,
+                            meta_title, meta_description, meta_keywords, meta_robots)
       VALUES (${targetId}, ${title}, ${description ?? ''}, ${icon ?? 'PenTool'}, ${JSON.stringify(valueProps ?? [])},
               ${heroImage ?? ''}, ${JSON.stringify(whatItIs ?? [])}, ${JSON.stringify(whoItsFor ?? [])},
               ${caseStudyId ?? ''}, ${JSON.stringify(caseStudyIds ?? [])}, ${JSON.stringify(process ?? [])}, ${pricing ?? ''},
-              ${JSON.stringify(faq ?? [])}, ${bookingLink ?? ''}, ${JSON.stringify(gallery ?? [])}, ${JSON.stringify(videos ?? [])})
+              ${JSON.stringify(faq ?? [])}, ${bookingLink ?? ''}, ${JSON.stringify(gallery ?? [])}, ${JSON.stringify(videos ?? [])},
+              ${metaTitle ?? null}, ${metaDescription ?? null}, ${metaKeywords ?? null}, ${metaRobots ?? null})
       ON CONFLICT (id) DO UPDATE SET
         title = EXCLUDED.title, description = EXCLUDED.description, icon = EXCLUDED.icon,
         value_props = EXCLUDED.value_props, hero_image = EXCLUDED.hero_image, what_it_is = EXCLUDED.what_it_is,
         who_its_for = EXCLUDED.who_its_for, case_study_id = EXCLUDED.case_study_id, case_study_ids = EXCLUDED.case_study_ids,
-        process = EXCLUDED.process, pricing = EXCLUDED.pricing, faq = EXCLUDED.faq, booking_link = EXCLUDED.booking_link, gallery = EXCLUDED.gallery, videos = EXCLUDED.videos
+        process = EXCLUDED.process, pricing = EXCLUDED.pricing, faq = EXCLUDED.faq, booking_link = EXCLUDED.booking_link, gallery = EXCLUDED.gallery, videos = EXCLUDED.videos,
+        meta_title = EXCLUDED.meta_title, meta_description = EXCLUDED.meta_description, meta_keywords = EXCLUDED.meta_keywords, meta_robots = EXCLUDED.meta_robots
     `;
     return res.status(201).json({ success: true });
   }
@@ -124,7 +138,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Missing service ID' });
     }
     const { title, description, icon, valueProps, heroImage, whatItIs,
-            whoItsFor, caseStudyId, caseStudyIds, process, pricing, faq, bookingLink, gallery, videos } = req.body ?? {};
+            whoItsFor, caseStudyId, caseStudyIds, process, pricing, faq, bookingLink, gallery, videos,
+            metaTitle, metaDescription, metaKeywords, metaRobots } = req.body ?? {};
 
     await sql`
       UPDATE services SET
@@ -142,7 +157,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         faq = ${JSON.stringify(faq ?? [])},
         booking_link = ${bookingLink ?? ''},
         gallery = ${JSON.stringify(gallery ?? [])},
-        videos = ${JSON.stringify(videos ?? [])}
+        videos = ${JSON.stringify(videos ?? [])},
+        meta_title = ${metaTitle ?? null},
+        meta_description = ${metaDescription ?? null},
+        meta_keywords = ${metaKeywords ?? null},
+        meta_robots = ${metaRobots ?? null}
       WHERE id = ${id}
     `;
     return res.status(200).json({ success: true });

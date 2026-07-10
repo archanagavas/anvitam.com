@@ -98,9 +98,9 @@ const BlogDetail: React.FC = () => {
         <title>{blog.metaTitle || blog.title} | Anvitam Sustainable Architecture</title>
         <meta name="description" content={blog.metaDescription || blog.excerpt} />
         {blog.slug && <link rel="canonical" href={`https://www.anvitam.com/blog/${blog.slug}`} />}
-        <meta name="keywords" content={blog.tags && blog.tags.length > 0 ? blog.tags.join(', ') : 'architecture, sustainable architecture, permaculture design'} />
-        <meta name="robots" content="index, follow" />
-        <meta name="X-Robots-Tag" content="index, follow" />
+        <meta name="keywords" content={blog.metaKeywords || (blog.tags && blog.tags.length > 0 ? blog.tags.join(', ') : 'architecture, sustainable architecture, permaculture design')} />
+        <meta name="robots" content={blog.metaRobots || 'index, follow'} />
+        <meta name="X-Robots-Tag" content={blog.metaRobots || 'index, follow'} />
         <meta name="publisher" content="Anvitam" />
         <link rel="publisher" href="https://www.anvitam.com/" />
         {/* Open Graph */}

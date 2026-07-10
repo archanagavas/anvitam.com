@@ -51,13 +51,14 @@ const Home: React.FC = () => {
     <div className="w-full bg-[#EFEFEB] text-[#111] font-sans overflow-hidden">
 
       <Helmet>
-        <title>Anvitam | Architecture Firm</title>
+        <title>Anvitam | Sustainable Architecture & Eco Design</title>
         <meta name="description" content="Anvitam designs high-performing farm retreats, eco-resorts, Airbnbs, homestays, and wellness centers using permaculture and sustainable landscape design." />
-        <meta name="keywords" content="architecture firm, sustainable architecture, permaculture design, eco retreats, farm stays, biophilic design, green building, Vadodara, Gujarat" />
+        <meta name="keywords" content="architecture firm, sustainable architecture, permaculture design, eco retreats, farm stays, biophilic design, green building, Vadodara, Gujarat, India" />
         <meta name="robots" content="index, follow" />
         <meta name="X-Robots-Tag" content="index, follow" />
         <meta name="publisher" content="Anvitam" />
         <link rel="publisher" href="https://www.anvitam.com/" />
+        <link rel="canonical" href="https://www.anvitam.com/" />
       </Helmet>
 
       {/* ══════════════════════════════════════════

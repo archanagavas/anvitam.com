@@ -16,6 +16,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let desc = 'ANVITAM Architects in Vadodara, Gujarat blending Sustainability with Nature. Eco retreats, farm stays, permaculture design worldwide.';
   let imageUrl = 'https://www.anvitam.com/favicon.png';
   let canonicalUrl = `https://www.anvitam.com${req.url ? req.url.split('?')[0] : ''}`;
+  let keywords = 'architecture, sustainable architecture, permaculture design, eco retreats, farm stays, biophilic design, green building, Vadodara, Gujarat';
+  let robots = 'index, follow';
+  let publisher = 'Anvitam';
 
   // Fetch data depending on the section
   if (section === 'blog' && idOrSlug) {
@@ -23,7 +26,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       let blog: any = null;
       if (isDbConfigured) {
         const rows = await sql`
-          SELECT title, slug, excerpt, image, meta_title, meta_description 
+          SELECT title, slug, excerpt, image, meta_title, meta_description, meta_keywords, meta_robots, tags 
           FROM blogs 
           WHERE slug = ${idOrSlug} OR id = ${idOrSlug}
         `;
@@ -40,6 +43,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         desc = blog.meta_description || blog.metaDescription || blog.excerpt || blog.title;
         imageUrl = blog.image || imageUrl;
         canonicalUrl = `https://www.anvitam.com/blog/${blog.slug || blog.id}`;
+        let tagsArr = blog.tags;
+        if (typeof tagsArr === 'string') {
+          try { tagsArr = JSON.parse(tagsArr); } catch (e) {}
+        }
+        keywords = blog.meta_keywords || blog.metaKeywords || (Array.isArray(tagsArr) && tagsArr.length > 0 ? tagsArr.join(', ') : keywords);
+        robots = blog.meta_robots || blog.metaRobots || robots;
       }
     } catch (e) {
       console.error('Error fetching blog SEO data:', e);
@@ -49,7 +58,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       let project: any = null;
       if (isDbConfigured) {
         const rows = await sql`
-          SELECT title, slug, description, image 
+          SELECT title, slug, description, image, tags, meta_title, meta_description, meta_keywords, meta_robots 
           FROM projects 
           WHERE slug = ${idOrSlug} OR id = ${idOrSlug}
         `;
@@ -62,10 +71,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       if (project) {
-        title = `${project.title} | Projects | Anvitam`;
-        desc = project.description || desc;
+        title = project.meta_title || project.metaTitle || `${project.title} | Projects | Anvitam`;
+        desc = project.meta_description || project.metaDescription || project.description || desc;
         imageUrl = project.image || imageUrl;
         canonicalUrl = `https://www.anvitam.com/projects/${project.slug || project.id}`;
+        let tagsArr = project.tags;
+        if (typeof tagsArr === 'string') {
+          try { tagsArr = JSON.parse(tagsArr); } catch (e) {}
+        }
+        keywords = project.meta_keywords || project.metaKeywords || (Array.isArray(tagsArr) && tagsArr.length > 0 ? tagsArr.join(', ') : keywords);
+        robots = project.meta_robots || project.metaRobots || robots;
       }
     } catch (e) {
       console.error('Error fetching project SEO data:', e);
@@ -75,7 +90,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       let service: any = null;
       if (isDbConfigured) {
         const rows = await sql`
-          SELECT title, description, hero_image 
+          SELECT title, description, hero_image, value_props, meta_title, meta_description, meta_keywords, meta_robots 
           FROM services 
           WHERE id = ${idOrSlug}
         `;
@@ -88,10 +103,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       if (service) {
-        title = `${service.title} | Services | Anvitam`;
-        desc = service.description || desc;
+        title = service.meta_title || service.metaTitle || `${service.title} | Services | Anvitam`;
+        desc = service.meta_description || service.metaDescription || service.description || desc;
         imageUrl = service.hero_image || service.heroImage || imageUrl;
         canonicalUrl = `https://www.anvitam.com/services/${idOrSlug}`;
+        let props = service.value_props || service.valueProps;
+        if (typeof props === 'string') {
+          try { props = JSON.parse(props); } catch (e) {}
+        }
+        keywords = service.meta_keywords || service.metaKeywords || [service.title, 'sustainable architecture', 'eco design', 'permaculture', ...(Array.isArray(props) ? props : [])].join(', ');
+        robots = service.meta_robots || service.metaRobots || robots;
       }
     } catch (e) {
       console.error('Error fetching service SEO data:', e);
@@ -235,6 +256,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   template = replaceOrInjectMeta(template, 'name', 'twitter:image', imageUrl);
   template = replaceOrInjectMeta(template, 'name', 'twitter:card', 'summary_large_image');
 
+  // Inject keywords, robots, publisher metas
+  template = replaceOrInjectMeta(template, 'name', 'keywords', keywords);
+  template = replaceOrInjectMeta(template, 'name', 'robots', robots);
+  template = replaceOrInjectMeta(template, 'name', 'X-Robots-Tag', robots);
+  template = replaceOrInjectMeta(template, 'name', 'publisher', publisher);
+
   // Inject/replace canonical link
   const canonicalTag = `<link rel="canonical" href="${canonicalUrl}" data-rh="true" />`;
   if (template.includes('rel="canonical"')) {
@@ -243,7 +270,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     template = template.replace('</head>', `  ${canonicalTag}\n</head>`);
   }
 
+  // Inject link rel="publisher"
+  const publisherTag = `<link rel="publisher" href="https://www.anvitam.com/" data-rh="true" />`;
+  if (template.includes('rel="publisher"')) {
+    template = template.replace(/<link[^>]*rel="publisher"[^>]*>/i, publisherTag);
+  } else {
+    template = template.replace('</head>', `  ${publisherTag}\n</head>`);
+  }
+
   res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=600, stale-while-revalidate=60');
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('X-Robots-Tag', robots);
   return res.status(200).send(template);
 }

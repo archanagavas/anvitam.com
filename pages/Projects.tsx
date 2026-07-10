@@ -26,6 +26,12 @@ const Projects: React.FC = () => {
       <Helmet>
         <title>Projects | Sustainable Resort Architect & Eco Retreat Designer</title>
         <meta name="description" content="Explore our portfolio of sustainable architecture, permaculture design, farm retreats, wellness spaces, and weekend villa design." />
+        <meta name="keywords" content="sustainable architecture projects, eco resort design, permaculture farm retreats, green building design, architectural portfolio, vadodara architecture" />
+        <meta name="robots" content="index, follow" />
+        <meta name="X-Robots-Tag" content="index, follow" />
+        <meta name="publisher" content="Anvitam" />
+        <link rel="publisher" href="https://www.anvitam.com/" />
+        <link rel="canonical" href="https://www.anvitam.com/projects" />
       </Helmet>
 
       {/* Hero Section */}
