@@ -100,6 +100,10 @@ const ServiceDetail: React.FC = () => {
         <title>{service.title} | Anvitam Sustainable Architecture Services</title>
         <meta name="description" content={service.description} />
         <meta name="keywords" content={[service.title, 'sustainable architecture', 'eco design', 'permaculture', ...(service.valueProps || [])].join(', ')} />
+        <meta name="robots" content="index, follow" />
+        <meta name="X-Robots-Tag" content="index, follow" />
+        <meta name="publisher" content="Anvitam" />
+        <link rel="publisher" href="https://www.anvitam.com/" />
         <meta property="og:title" content={`${service.title} | Anvitam`} />
         <meta property="og:description" content={service.description} />
         <meta property="og:image" content={service.heroImage || 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=1200'} />

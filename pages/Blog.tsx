@@ -46,6 +46,11 @@ const Blog: React.FC = () => {
       <Helmet>
         <title>News &amp; Insight | Anvitam Sustainable Architecture</title>
         <meta name="description" content="Stay updated with the latest news, architectural features, project stories and sustainable design trends and updates." />
+        <meta name="keywords" content="architecture blog, sustainable architecture news, permaculture articles, eco design journal, farm retreat design ideas" />
+        <meta name="robots" content="index, follow" />
+        <meta name="X-Robots-Tag" content="index, follow" />
+        <meta name="publisher" content="Anvitam" />
+        <link rel="publisher" href="https://www.anvitam.com/" />
       </Helmet>
 
       {/* Header */}

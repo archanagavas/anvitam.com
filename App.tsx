@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
+import { HelmetProvider, Helmet } from 'react-helmet-async';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Projects from './pages/Projects';
@@ -61,6 +61,15 @@ const App: React.FC = () => {
 
   return (
     <HelmetProvider>
+      <Helmet>
+        <title>Anvitam | Sustainable Architecture & Eco Design</title>
+        <meta name="description" content="ANVITAM Architects Vadodara, Gujarat blending Sustainability with Nature. Eco retreats, farm stays, permaculture design." />
+        <meta name="keywords" content="architecture, sustainable architecture, permaculture design, eco retreats, farm stays, biophilic design, green building, Vadodara, Gujarat" />
+        <meta name="robots" content="index, follow" />
+        <meta name="X-Robots-Tag" content="index, follow" />
+        <meta name="publisher" content="Anvitam" />
+        <link rel="publisher" href="https://www.anvitam.com/" />
+      </Helmet>
       <ContentProvider>
         {isLoading ? (
           <Loader />
