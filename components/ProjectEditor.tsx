@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   ArrowLeft, Save, Sparkles, AlertCircle, X, Plus, Trash2, 
   Image as ImageIcon, Link as LinkIcon, Hash, CheckCircle, ChevronUp, ChevronDown,
-  Video, Play
+  Video, Play, Globe
 } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { Project, GalleryItem } from '../types';
@@ -895,6 +895,66 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
               >
                 Add
               </button>
+            </div>
+          </div>
+
+          {/* SEO Settings Card */}
+          <div className="bg-white border border-gray-150 rounded-xl p-5 shadow-sm space-y-4">
+            <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 border-b border-gray-100 pb-2 flex items-center gap-1.5"><Globe size={12} /> SEO Settings</h4>
+            
+            <div>
+              <label className="block text-xxs font-bold uppercase tracking-widest text-gray-600 mb-1">Meta Title</label>
+              <input
+                type="text"
+                placeholder="SEO Title (60 chars max)"
+                value={metaTitle}
+                maxLength={60}
+                onChange={e => setMetaTitle(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-black transition text-gray-800 bg-white"
+              />
+              <p className={`text-xxs mt-1 text-right font-mono ${metaTitle.length > 55 ? 'text-orange-600' : 'text-gray-500'}`}>
+                {metaTitle.length}/60 characters
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-xxs font-bold uppercase tracking-widest text-gray-600 mb-1">Meta Description</label>
+              <textarea
+                rows={3}
+                placeholder="SEO Description (160 chars max)"
+                value={metaDescription}
+                maxLength={160}
+                onChange={e => setMetaDescription(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-black transition resize-none text-gray-800 bg-white"
+              />
+              <p className={`text-xxs mt-1 text-right font-mono ${metaDescription.length > 150 ? 'text-orange-600' : 'text-gray-500'}`}>
+                {metaDescription.length}/160 characters
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-xxs font-bold uppercase tracking-widest text-gray-600 mb-1">Meta Keywords</label>
+              <input
+                type="text"
+                placeholder="e.g. permaculture, architecture, eco retreat"
+                value={metaKeywords}
+                onChange={e => setMetaKeywords(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-black transition text-gray-800 bg-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xxs font-bold uppercase tracking-widest text-gray-600 mb-1">Robots Tag (Meta Robots)</label>
+              <select
+                value={metaRobots}
+                onChange={e => setMetaRobots(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-black transition text-gray-800 bg-white"
+              >
+                <option value="index, follow">index, follow (Default)</option>
+                <option value="noindex, follow">noindex, follow</option>
+                <option value="index, nofollow">index, nofollow</option>
+                <option value="noindex, nofollow">noindex, nofollow</option>
+              </select>
             </div>
           </div>
         </div>

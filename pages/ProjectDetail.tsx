@@ -80,7 +80,7 @@ const ProjectDetail: React.FC = () => {
       <Helmet>
         <title>{project.metaTitle || project.title} | Anvitam Sustainable Architecture</title>
         <meta name="description" content={project.metaDescription || project.description} />
-        <link rel="canonical" href={`https://www.anvitam.com/projects/${project.slug || project.id}`} />
+        <link rel="canonical" href={`https://www.anvitam.com/projects/${project.slug || project.id || id}`} />
         <meta name="keywords" content={project.metaKeywords || (project.tags && project.tags.length > 0 ? project.tags.join(', ') : 'architecture projects, sustainable design, permaculture design')} />
         <meta name="robots" content={project.metaRobots || 'index, follow'} />
         <meta name="X-Robots-Tag" content={project.metaRobots || 'index, follow'} />

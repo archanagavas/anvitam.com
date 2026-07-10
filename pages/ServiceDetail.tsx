@@ -99,7 +99,7 @@ const ServiceDetail: React.FC = () => {
       <Helmet>
         <title>{service.metaTitle || service.title} | Anvitam Sustainable Architecture Services</title>
         <meta name="description" content={service.metaDescription || service.description} />
-        <link rel="canonical" href={`https://www.anvitam.com/services/${service.id}`} />
+        <link rel="canonical" href={`https://www.anvitam.com/services/${service.id || id}`} />
         <meta name="keywords" content={service.metaKeywords || [service.title, 'sustainable architecture', 'eco design', 'permaculture', ...(service.valueProps || [])].join(', ')} />
         <meta name="robots" content={service.metaRobots || 'index, follow'} />
         <meta name="X-Robots-Tag" content={service.metaRobots || 'index, follow'} />
