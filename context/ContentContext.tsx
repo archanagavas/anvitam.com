@@ -176,17 +176,10 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
-  // Fetch on mount and self-healing check
+  // Fetch on mount — always sync from DB (DB is the source of truth)
   useEffect(() => {
     refreshFromDb();
-
-    // Self-healing: reset broken/old data
-    if (projects.some(p => p.id === 'container-motel' || p.image.includes('1518481612222'))) {
-      setProjects(INITIAL_PROJECTS);
-    }
-    if (services.length <= 6) {
-      setServices(SERVICES);
-    }
+    // Note: self-healing resets removed — DB data always wins on sync
   }, []);
 
   // Persist items to localStorage
