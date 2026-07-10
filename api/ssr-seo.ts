@@ -16,7 +16,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
-  const requestPath = (req.headers['x-forwarded-uri'] as string) || req.url || '';
+  let requestPath = (req.query.path as string) || (req.headers['x-forwarded-uri'] as string) || req.url || '';
+  if (requestPath.startsWith('/api/ssr-seo')) {
+    try {
+      const parsedUrl = new URL(requestPath, 'https://www.anvitam.com');
+      const queryPath = parsedUrl.searchParams.get('path');
+      if (queryPath) {
+        requestPath = queryPath;
+      }
+    } catch (e) {}
+  }
   const urlParts = requestPath.split('?')[0].split('/');
   // Filter empty parts
   const pathSegments = urlParts.filter(Boolean);

@@ -6,9 +6,29 @@ import { Project } from '../types';
 import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardList, PenTool, Wrench, Sprout, Check, HelpCircle } from 'lucide-react';
 import TestimonialCarousel from '../components/TestimonialCarousel';
 
+// Helper to extract SSR-injected metadata from the DOM during hydration
+const getSSRMetadata = () => {
+  if (typeof document === 'undefined') return null;
+  const getMeta = (nameOrProperty: string, isProperty = false) => {
+    const selector = isProperty ? `meta[property="${nameOrProperty}"]` : `meta[name="${nameOrProperty}"]`;
+    return document.querySelector(selector)?.getAttribute('content') || '';
+  };
+  return {
+    title: document.title,
+    description: getMeta('description'),
+    keywords: getMeta('keywords'),
+    robots: getMeta('robots') || getMeta('X-Robots-Tag'),
+    canonical: document.querySelector('link[rel="canonical"]')?.getAttribute('href') || '',
+    ogTitle: getMeta('og:title', true),
+    ogDescription: getMeta('og:description', true),
+    ogImage: getMeta('og:image', true),
+  };
+};
+
 const ServiceDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { services, projects, isInitialSyncDone } = useContent();
+  const [ssrMeta] = React.useState(getSSRMetadata);
   const service = services.find(s => s.id === id);
   // Find all projects to showcase
   const primaryProject = projects.find(p => p.id === service?.caseStudyId);
@@ -36,11 +56,19 @@ const ServiceDetail: React.FC = () => {
   if (!isInitialSyncDone) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white text-[#111] font-sans">
-        <Helmet>
-          <title>Loading... | Anvitam Sustainable Architecture Services</title>
-          <meta name="robots" content="noindex, follow" />
-          <link rel="canonical" href={`https://www.anvitam.com/services/${id}`} />
-        </Helmet>
+        {ssrMeta && (
+          <Helmet>
+            <title>{ssrMeta.title}</title>
+            {ssrMeta.description && <meta name="description" content={ssrMeta.description} />}
+            {ssrMeta.canonical && <link rel="canonical" href={ssrMeta.canonical} />}
+            {ssrMeta.keywords && <meta name="keywords" content={ssrMeta.keywords} />}
+            {ssrMeta.robots && <meta name="robots" content={ssrMeta.robots} />}
+            {ssrMeta.robots && <meta name="X-Robots-Tag" content={ssrMeta.robots} />}
+            {ssrMeta.ogTitle && <meta property="og:title" content={ssrMeta.ogTitle} />}
+            {ssrMeta.ogDescription && <meta property="og:description" content={ssrMeta.ogDescription} />}
+            {ssrMeta.ogImage && <meta property="og:image" content={ssrMeta.ogImage} />}
+          </Helmet>
+        )}
         <p className="text-xl mb-6">Loading...</p>
       </div>
     );
@@ -49,6 +77,13 @@ const ServiceDetail: React.FC = () => {
   if (!service) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white text-[#111] font-sans">
+        {ssrMeta && (
+          <Helmet>
+            <title>{ssrMeta.title || 'Service Not Found | Anvitam'}</title>
+            {ssrMeta.description && <meta name="description" content={ssrMeta.description} />}
+            {ssrMeta.canonical && <link rel="canonical" href={ssrMeta.canonical} />}
+          </Helmet>
+        )}
         <p className="text-xl mb-6">Service not found.</p>
         <Link to="/services" className="text-sm font-semibold uppercase tracking-wider underline">Back to Services</Link>
       </div>

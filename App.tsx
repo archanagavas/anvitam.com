@@ -59,17 +59,25 @@ const App: React.FC = () => {
     return () => clearTimeout(timer);
   }, [isLoading]);
 
+  // Check if we are on a details page where specific SEO tags are rendered by the component
+  const isDetailsPage = typeof window !== 'undefined' && 
+    (window.location.pathname.startsWith('/blog/') || 
+     window.location.pathname.startsWith('/projects/') || 
+     window.location.pathname.startsWith('/services/'));
+
   return (
     <HelmetProvider>
-      <Helmet>
-        <title>Anvitam | Sustainable Architecture & Eco Design</title>
-        <meta name="description" content="ANVITAM Architects Vadodara, Gujarat blending Sustainability with Nature. Eco retreats, farm stays, permaculture design." />
-        <meta name="keywords" content="architecture, sustainable architecture, permaculture design, eco retreats, farm stays, biophilic design, green building, Vadodara, Gujarat" />
-        <meta name="robots" content="index, follow" />
-        <meta name="X-Robots-Tag" content="index, follow" />
-        <meta name="publisher" content="Anvitam" />
-        <link rel="publisher" href="https://www.anvitam.com/" />
-      </Helmet>
+      {!isDetailsPage && (
+        <Helmet>
+          <title>Anvitam | Sustainable Architecture & Eco Design</title>
+          <meta name="description" content="ANVITAM Architects Vadodara, Gujarat blending Sustainability with Nature. Eco retreats, farm stays, permaculture design." />
+          <meta name="keywords" content="architecture, sustainable architecture, permaculture design, eco retreats, farm stays, biophilic design, green building, Vadodara, Gujarat" />
+          <meta name="robots" content="index, follow" />
+          <meta name="X-Robots-Tag" content="index, follow" />
+          <meta name="publisher" content="Anvitam" />
+          <link rel="publisher" href="https://www.anvitam.com/" />
+        </Helmet>
+      )}
       <ContentProvider>
         {isLoading ? (
           <Loader />

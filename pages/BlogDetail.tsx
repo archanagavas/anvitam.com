@@ -36,10 +36,30 @@ const MediumIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+// Helper to extract SSR-injected metadata from the DOM during hydration
+const getSSRMetadata = () => {
+  if (typeof document === 'undefined') return null;
+  const getMeta = (nameOrProperty: string, isProperty = false) => {
+    const selector = isProperty ? `meta[property="${nameOrProperty}"]` : `meta[name="${nameOrProperty}"]`;
+    return document.querySelector(selector)?.getAttribute('content') || '';
+  };
+  return {
+    title: document.title,
+    description: getMeta('description'),
+    keywords: getMeta('keywords'),
+    robots: getMeta('robots') || getMeta('X-Robots-Tag'),
+    canonical: document.querySelector('link[rel="canonical"]')?.getAttribute('href') || '',
+    ogTitle: getMeta('og:title', true),
+    ogDescription: getMeta('og:description', true),
+    ogImage: getMeta('og:image', true),
+  };
+};
+
 const BlogDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { blogs, isInitialSyncDone } = useContent();
   const navigate = useNavigate();
+  const [ssrMeta] = React.useState(getSSRMetadata);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -52,11 +72,19 @@ const BlogDetail: React.FC = () => {
   if (!isInitialSyncDone) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white text-[#111]">
-        <Helmet>
-          <title>Loading... | Anvitam Sustainable Architecture</title>
-          <meta name="robots" content="noindex, follow" />
-          <link rel="canonical" href={`https://www.anvitam.com/blog/${id}`} />
-        </Helmet>
+        {ssrMeta && (
+          <Helmet>
+            <title>{ssrMeta.title}</title>
+            {ssrMeta.description && <meta name="description" content={ssrMeta.description} />}
+            {ssrMeta.canonical && <link rel="canonical" href={ssrMeta.canonical} />}
+            {ssrMeta.keywords && <meta name="keywords" content={ssrMeta.keywords} />}
+            {ssrMeta.robots && <meta name="robots" content={ssrMeta.robots} />}
+            {ssrMeta.robots && <meta name="X-Robots-Tag" content={ssrMeta.robots} />}
+            {ssrMeta.ogTitle && <meta property="og:title" content={ssrMeta.ogTitle} />}
+            {ssrMeta.ogDescription && <meta property="og:description" content={ssrMeta.ogDescription} />}
+            {ssrMeta.ogImage && <meta property="og:image" content={ssrMeta.ogImage} />}
+          </Helmet>
+        )}
         <p className="text-xl font-medium mb-6">Loading...</p>
       </div>
     );
@@ -65,6 +93,13 @@ const BlogDetail: React.FC = () => {
   if (!blog) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white text-[#111]">
+        {ssrMeta && (
+          <Helmet>
+            <title>{ssrMeta.title || 'Article Not Found | Anvitam'}</title>
+            {ssrMeta.description && <meta name="description" content={ssrMeta.description} />}
+            {ssrMeta.canonical && <link rel="canonical" href={ssrMeta.canonical} />}
+          </Helmet>
+        )}
         <p className="text-xl font-medium mb-6">Article not found.</p>
         <Link to="/blog" className="text-sm font-semibold uppercase tracking-wider underline">Back to Journal</Link>
       </div>
@@ -75,6 +110,13 @@ const BlogDetail: React.FC = () => {
   if (blog.status === 'draft') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white text-[#111]">
+        {ssrMeta && (
+          <Helmet>
+            <title>{ssrMeta.title || 'Draft | Anvitam'}</title>
+            {ssrMeta.description && <meta name="description" content={ssrMeta.description} />}
+            {ssrMeta.canonical && <link rel="canonical" href={ssrMeta.canonical} />}
+          </Helmet>
+        )}
         <span className="text-xs font-bold bg-amber-100 text-amber-700 px-3 py-1 rounded-full mb-4 uppercase tracking-wider">Draft</span>
         <p className="text-xl font-medium mb-6">This post is not yet published.</p>
         <Link to="/blog" className="text-sm font-semibold uppercase tracking-wider underline">← Back to Journal</Link>
