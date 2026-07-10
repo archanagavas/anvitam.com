@@ -66,7 +66,7 @@ const Blog: React.FC = () => {
 
       {/* Tabs — dynamic from tags */}
       <div className="max-w-6xl mx-auto px-6 mb-16">
-        <div className="flex justify-center md:space-x-8 space-x-4 border-b border-gray-200 overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
+        <div className="flex justify-start md:justify-center md:space-x-8 space-x-6 border-b border-gray-200 overflow-x-auto no-scrollbar pb-1" style={{ WebkitOverflowScrolling: 'touch' }}>
           {allTags.map(tab => (
             <button
               key={tab}
