@@ -67,7 +67,15 @@ const Home: React.FC = () => {
       <section ref={heroRef} className="relative h-screen min-h-[600px] flex flex-col items-center justify-center overflow-hidden">
         {/* BG image with parallax */}
         <motion.div style={{ y: heroY }} className="absolute inset-0 z-0">
-          <img src={HERO_BG} alt="Farm retreat architecture and sustainable resort design" className="w-full h-full object-cover" />
+          <img 
+            src={HERO_BG} 
+            srcSet="https://images.unsplash.com/photo-1449844908441-8829872d2607?q=75&w=640&auto=format&fit=crop 640w, https://images.unsplash.com/photo-1449844908441-8829872d2607?q=75&w=1200&auto=format&fit=crop 1200w"
+            sizes="100vw"
+            alt="Farm retreat architecture and sustainable resort design" 
+            className="w-full h-full object-cover" 
+            fetchPriority="high"
+            loading="eager"
+          />
           {/* very subtle dark vignette at bottom */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/50" />
         </motion.div>

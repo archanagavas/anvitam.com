@@ -56,7 +56,7 @@ const App: React.FC = () => {
       try {
         sessionStorage.setItem('anvitam_loaded', 'true');
       } catch (e) {}
-    }, 1100);
+    }, 300);
     return () => clearTimeout(timer);
   }, [isLoading]);
 

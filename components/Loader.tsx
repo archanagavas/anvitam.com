@@ -4,10 +4,10 @@ import { motion } from 'motion/react';
 const Loader: React.FC = () => {
   const [progress, setProgress] = useState(0);
 
-  // Simulate loading progress over 0.8 seconds (to match App.tsx timeout)
+  // Simulate loading progress over 0.2 seconds (to match App.tsx timeout)
   useEffect(() => {
-    const totalDuration = 800; // 0.8 seconds to reach 100%
-    const updateInterval = 40; 
+    const totalDuration = 200; // 0.2 seconds to reach 100%
+    const updateInterval = 20; 
     const steps = totalDuration / updateInterval;
     const increment = 100 / steps;
 
@@ -35,7 +35,7 @@ const Loader: React.FC = () => {
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
           className="text-6xl md:text-8xl font-serif text-[#FAFAFA] font-medium tracking-wide mb-10"
         >
           अन्वितम
@@ -47,7 +47,7 @@ const Loader: React.FC = () => {
             className="h-full bg-[#CCFF00]"
             initial={{ width: '0%' }}
             animate={{ width: `${progress}%` }}
-            transition={{ ease: "linear", duration: 0.1 }}
+            transition={{ ease: "linear", duration: 0.05 }}
           />
         </div>
 
@@ -55,7 +55,7 @@ const Loader: React.FC = () => {
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 1 }}
+          transition={{ delay: 0.05, duration: 0.15 }}
           className="flex items-center gap-3 font-sans"
         >
           <span className="text-white/40 uppercase tracking-[0.4em] text-[10px] font-bold">
