@@ -69,7 +69,7 @@ const BlogDetail: React.FC = () => {
   const blogIndex = blogs.findIndex(b => b.id === id || b.slug === id);
   const blog = blogs[blogIndex];
 
-  if (!isInitialSyncDone) {
+  if (!isInitialSyncDone && !blog) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white text-[#111]">
         {ssrMeta && (
@@ -93,13 +93,11 @@ const BlogDetail: React.FC = () => {
   if (!blog) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white text-[#111]">
-        {ssrMeta && (
-          <Helmet>
-            <title>{ssrMeta.title || 'Article Not Found | Anvitam'}</title>
-            {ssrMeta.description && <meta name="description" content={ssrMeta.description} />}
-            {ssrMeta.canonical && <link rel="canonical" href={ssrMeta.canonical} />}
-          </Helmet>
-        )}
+        <Helmet>
+          <title>Article Not Found | Anvitam</title>
+          <meta name="description" content="The requested article could not be found." />
+          <meta name="robots" content="noindex, follow" />
+        </Helmet>
         <p className="text-xl font-medium mb-6">Article not found.</p>
         <Link to="/blog" className="text-sm font-semibold uppercase tracking-wider underline">Back to Journal</Link>
       </div>
@@ -110,13 +108,11 @@ const BlogDetail: React.FC = () => {
   if (blog.status === 'draft') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white text-[#111]">
-        {ssrMeta && (
-          <Helmet>
-            <title>{ssrMeta.title || 'Draft | Anvitam'}</title>
-            {ssrMeta.description && <meta name="description" content={ssrMeta.description} />}
-            {ssrMeta.canonical && <link rel="canonical" href={ssrMeta.canonical} />}
-          </Helmet>
-        )}
+        <Helmet>
+          <title>Draft | Anvitam</title>
+          <meta name="description" content="This post is not yet published." />
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
         <span className="text-xs font-bold bg-amber-100 text-amber-700 px-3 py-1 rounded-full mb-4 uppercase tracking-wider">Draft</span>
         <p className="text-xl font-medium mb-6">This post is not yet published.</p>
         <Link to="/blog" className="text-sm font-semibold uppercase tracking-wider underline">← Back to Journal</Link>

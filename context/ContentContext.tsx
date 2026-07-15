@@ -77,9 +77,30 @@ function loadFromStorage<T>(key: string, initialData: T[]): T[] {
   return initialData;
 }
 
+function stripBase64(obj: any): any {
+  if (typeof obj === 'string') {
+    if (obj.startsWith('data:image/') && obj.includes(';base64,')) {
+      return '';
+    }
+    return obj.replace(/src=["']data:image\/[^"']*(?:;base64)[^"']*["']/gi, 'src=""');
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(stripBase64);
+  }
+  if (obj !== null && typeof obj === 'object') {
+    const newObj: any = {};
+    for (const key in obj) {
+      newObj[key] = stripBase64(obj[key]);
+    }
+    return newObj;
+  }
+  return obj;
+}
+
 function saveToStorage<T>(key: string, data: T[]): void {
   try {
-    localStorage.setItem(key, JSON.stringify(data));
+    const sanitized = stripBase64(data);
+    localStorage.setItem(key, JSON.stringify(sanitized));
   } catch (err) {
     console.warn(`[ContentContext] Failed to save key "${key}" to localStorage:`, err);
   }

@@ -42,7 +42,7 @@ const ProjectDetail: React.FC = () => {
   const projectIndex = projects.findIndex(p => p.id === id || p.slug === id);
   const project = projects[projectIndex];
 
-  if (!isInitialSyncDone) {
+  if (!isInitialSyncDone && !project) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white text-[#111] font-sans">
         {ssrMeta && (
@@ -66,13 +66,11 @@ const ProjectDetail: React.FC = () => {
   if (!project) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white text-[#111] font-sans">
-        {ssrMeta && (
-          <Helmet>
-            <title>{ssrMeta.title || 'Project Not Found | Anvitam'}</title>
-            {ssrMeta.description && <meta name="description" content={ssrMeta.description} />}
-            {ssrMeta.canonical && <link rel="canonical" href={ssrMeta.canonical} />}
-          </Helmet>
-        )}
+        <Helmet>
+          <title>Project Not Found | Anvitam</title>
+          <meta name="description" content="The requested project could not be found." />
+          <meta name="robots" content="noindex, follow" />
+        </Helmet>
         <p className="text-xl mb-6">Project not found.</p>
         <Link to="/projects" className="text-sm font-semibold uppercase tracking-wider underline">Back to Projects</Link>
       </div>

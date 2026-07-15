@@ -53,7 +53,7 @@ const ServiceDetail: React.FC = () => {
     setOpenFaq(null);
   }, [id]);
 
-  if (!isInitialSyncDone) {
+  if (!isInitialSyncDone && !service) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white text-[#111] font-sans">
         {ssrMeta && (
@@ -77,13 +77,11 @@ const ServiceDetail: React.FC = () => {
   if (!service) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white text-[#111] font-sans">
-        {ssrMeta && (
-          <Helmet>
-            <title>{ssrMeta.title || 'Service Not Found | Anvitam'}</title>
-            {ssrMeta.description && <meta name="description" content={ssrMeta.description} />}
-            {ssrMeta.canonical && <link rel="canonical" href={ssrMeta.canonical} />}
-          </Helmet>
-        )}
+        <Helmet>
+          <title>Service Not Found | Anvitam</title>
+          <meta name="description" content="The requested service could not be found." />
+          <meta name="robots" content="noindex, follow" />
+        </Helmet>
         <p className="text-xl mb-6">Service not found.</p>
         <Link to="/services" className="text-sm font-semibold uppercase tracking-wider underline">Back to Services</Link>
       </div>

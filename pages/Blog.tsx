@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Blog: React.FC = () => {
@@ -19,10 +19,22 @@ const Blog: React.FC = () => {
         t.split(',').map(s => s.trim()).filter(Boolean).forEach(tag => tagSet.add(tag));
       });
     });
-    return ['All', ...Array.from(tagSet)];
+    return ['All', ...Array.from(tagSet).sort((a, b) => a.localeCompare(b))];
   }, [publishedBlogs]);
 
   const [activeTab, setActiveTab] = useState('All');
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const activeTabRef = useRef<HTMLButtonElement>(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
+
+  const checkScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setShowLeftArrow(scrollLeft > 5);
+      setShowRightArrow(scrollLeft + clientWidth < scrollWidth - 5);
+    }
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -31,7 +43,45 @@ const Blog: React.FC = () => {
   // Reset tab if it disappears (e.g. after deleting posts)
   useEffect(() => {
     if (!allTags.includes(activeTab)) setActiveTab('All');
+  }, [allTags, activeTab]);
+
+  // Monitor scrolling and container resize
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) {
+      checkScroll();
+      el.addEventListener('scroll', checkScroll, { passive: true });
+      window.addEventListener('resize', checkScroll);
+      
+      const timer = setTimeout(checkScroll, 300);
+      return () => {
+        el.removeEventListener('scroll', checkScroll);
+        window.removeEventListener('resize', checkScroll);
+        clearTimeout(timer);
+      };
+    }
   }, [allTags]);
+
+  // Scroll active tab into view
+  useEffect(() => {
+    if (activeTabRef.current) {
+      activeTabRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center'
+      });
+    }
+  }, [activeTab]);
+
+  const handleScroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollAmount = 250;
+      scrollRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   const filteredBlogs = activeTab === 'All'
     ? publishedBlogs
@@ -65,23 +115,54 @@ const Blog: React.FC = () => {
       </div>
 
       {/* Tabs — dynamic from tags */}
-      <div className="max-w-6xl mx-auto px-6 mb-16">
-        <div className="flex justify-start md:justify-center md:space-x-8 space-x-6 border-b border-gray-200 overflow-x-auto no-scrollbar pb-1" style={{ WebkitOverflowScrolling: 'touch' }}>
-          {allTags.map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`whitespace-nowrap pb-4 px-2 text-sm font-semibold transition-colors relative ${
-                activeTab === tab ? 'text-[#111]' : 'text-gray-400 hover:text-gray-600'
-              }`}
-            >
-              {tab}
-              {activeTab === tab && (
-                <div className="absolute bottom-[-1px] left-0 w-full h-[2px] bg-[#8bc34a]" />
-              )}
-            </button>
-          ))}
+      <div className="max-w-6xl mx-auto px-6 mb-16 relative group">
+        {/* Left Arrow Button */}
+        <button
+          onClick={() => handleScroll('left')}
+          className={`absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/95 backdrop-blur-sm border border-gray-200 text-gray-700 p-1.5 rounded-full shadow-md transition-all duration-300 hover:bg-gray-50 active:scale-95 ${
+            showLeftArrow ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-90 invisible'
+          }`}
+          aria-label="Scroll tags left"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+
+        {/* Scroll Container */}
+        <div
+          ref={scrollRef}
+          className="flex justify-start border-b border-gray-200 overflow-x-auto no-scrollbar pb-1 space-x-6 md:space-x-8"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          {allTags.map(tab => {
+            const isActive = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                ref={isActive ? activeTabRef : null}
+                onClick={() => setActiveTab(tab)}
+                className={`whitespace-nowrap pb-4 px-2 text-sm font-semibold transition-colors relative ${
+                  isActive ? 'text-[#111]' : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                {tab}
+                {isActive && (
+                  <div className="absolute bottom-[-1px] left-0 w-full h-[2px] bg-[#8bc34a]" />
+                )}
+              </button>
+            );
+          })}
         </div>
+
+        {/* Right Arrow Button */}
+        <button
+          onClick={() => handleScroll('right')}
+          className={`absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/95 backdrop-blur-sm border border-gray-200 text-gray-700 p-1.5 rounded-full shadow-md transition-all duration-300 hover:bg-gray-50 active:scale-95 ${
+            showRightArrow ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-90 invisible'
+          }`}
+          aria-label="Scroll tags right"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Blog Grid */}
