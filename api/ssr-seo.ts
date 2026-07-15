@@ -957,7 +957,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // --- Inject Semantic Pre-Rendered HTML inside <div id="root"> ---
   const ssrHtml = generateSsrHtml(section, idOrSlug, { blog, project, service });
   template = template.replace(
-    '<div id="root"></div>',
+    /<div id="root">[\s\S]*?<\/div>/i,
     `<div id="root">${ssrHtml}</div>`
   );
 
