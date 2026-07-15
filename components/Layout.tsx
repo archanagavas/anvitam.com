@@ -177,7 +177,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <a
               href={TOPMATE}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-5 py-2.5 rounded-full text-sm font-semibold hover:scale-105 transition-transform duration-300"
             >
               Free Consultation →
@@ -220,7 +220,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <a
               href={TOPMATE}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="mt-4 inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-8 py-4 rounded-full text-base font-semibold"
             >
               Free Consultation →
@@ -280,7 +280,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   ['Medium', 'https://medium.com/@archanagavas']
                 ].map(([n, p]) => (
                   <li key={n}>
-                    <a href={p} target="_blank" rel="noreferrer" className="text-sm text-white/70 hover:text-white transition-colors">{n}</a>
+                    <a href={p} target="_blank" rel="noopener noreferrer" className="text-sm text-white/70 hover:text-white transition-colors">{n}</a>
                   </li>
                 ))}
               </ul>

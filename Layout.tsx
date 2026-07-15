@@ -117,7 +117,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <a
                 href="https://topmate.io/archanagavas/1799075?utm_source=public_profile&utm_campaign=archanagavas"
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-7 py-3.5 rounded-full text-sm font-bold hover:scale-105 transition-transform duration-300"
               >
                 Free Design Consultation →
@@ -151,7 +151,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <ul className="space-y-3">
                 {[['LinkedIn', 'https://linkedin.com'], ['Instagram', 'https://instagram.com'], ['YouTube', 'https://youtube.com'], ['Medium', 'https://medium.com']].map(([n, p]) => (
                   <li key={n}>
-                    <a href={p} target="_blank" rel="noreferrer" className="text-sm text-white/70 hover:text-white transition-colors">{n}</a>
+                    <a href={p} target="_blank" rel="noopener noreferrer" className="text-sm text-white/70 hover:text-white transition-colors">{n}</a>
                   </li>
                 ))}
               </ul>

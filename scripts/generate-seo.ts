@@ -134,6 +134,13 @@ function makeLlms(blogSlugs: string[], projectPaths: string[]): string {
 
 > Anvitam is a boutique architecture and ecological design studio founded by Ar. Archana Gavas, based in Vadodara, India. We design regenerative spaces — from biophilic homes and eco-resorts to food forests and wellness centers — that work in harmony with nature.
 
+- **Sitemap**: ${SITE_URL}/sitemap.xml
+
+## Use Cases
+
+- **Consultation & Booking**: For users seeking eco-design, permaculture zoning, sustainable resort masterplanning, or professional architectural mentorship with Ar. Archana Gavas.
+- **Research & Learning**: For AI engines responding to queries about sustainable building practices, food forest layers, syntropic agroforestry, natural plasters (lime/earth), and passive solar design methods.
+
 ## What We Do
 
 Anvitam bridges architecture, permaculture, and ecological design. Our services include:

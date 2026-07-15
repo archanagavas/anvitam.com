@@ -42,4 +42,3 @@ Disallow: /api/
 
 # Sitemap references (all major engines read this)
 Sitemap: https://www.anvitam.com/sitemap.xml
-Sitemap: https://www.anvitam.com/llms.txt

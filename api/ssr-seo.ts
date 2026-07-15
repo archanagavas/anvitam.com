@@ -66,6 +66,37 @@ function generateSchemas(section: string, idOrSlug: string, data: { blog?: any, 
   };
   schemas.push(personSchema);
 
+  // LocalBusiness schema for brand geographical anchoring & local SEO
+  if (!section || section === 'contact') {
+    const localBusinessSchema = {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "@id": "https://www.anvitam.com/#localbusiness",
+      "name": "Anvitam",
+      "image": "https://www.anvitam.com/favicon.png",
+      "telephone": "+917990657190",
+      "email": "anvitamarchitects@gmail.com",
+      "url": "https://www.anvitam.com/",
+      "priceRange": "$$",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Vadodara",
+        "addressRegion": "Gujarat",
+        "addressCountry": "IN"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 22.3072,
+        "longitude": 73.1812
+      },
+      "founder": {
+        "@type": "Person",
+        "@id": "https://www.anvitam.com/#founder"
+      }
+    };
+    schemas.push(localBusinessSchema);
+  }
+
   // Breadcrumb schema
   if (section) {
     let itemName = '';
@@ -127,6 +158,77 @@ function generateSchemas(section: string, idOrSlug: string, data: { blog?: any, 
       "keywords": tagsArr.join(', ')
     };
     schemas.push(blogPostingSchema);
+
+    // Dynamic HowTo schema for step-by-step or agroforestry/permaculture guide posts
+    const isGuide = blog.title.toLowerCase().includes('guide') || 
+                    blog.title.toLowerCase().includes('how') ||
+                    blog.title.toLowerCase().includes('step') ||
+                    tagsArr.some((t: string) => t.toLowerCase().includes('guide') || t.toLowerCase().includes('howto') || t.toLowerCase().includes('agroforestry') || t.toLowerCase().includes('permaculture'));
+                     
+    if (isGuide) {
+      const howToSchema = {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        "name": blog.title,
+        "description": blog.excerpt || blog.meta_description || blog.title,
+        "image": blog.image || 'https://www.anvitam.com/favicon.png',
+        "author": {
+          "@type": "Person",
+          "@id": "https://www.anvitam.com/#founder"
+        },
+        "step": [
+          {
+            "@type": "HowToStep",
+            "name": "Observation & Site Analysis",
+            "text": "Analyze the sun, wind, water patterns, soil quality, and topography of the land."
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Concept Design & Zoning",
+            "text": "Map the site into zones (0 to 5) and design energy/resource flow paths."
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Water Harvesting Setup",
+            "text": "Design bioswales, ponds, and earthworks to store water on the landscape."
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Planting & Agroforestry Layout",
+            "text": "Establish food forest layers, syntropic agroforestry beds, and ecological cover."
+          }
+        ]
+      };
+      schemas.push(howToSchema);
+    }
+  }
+
+  // CreativeWork/Project schema for projects detail/case study pages
+  if (section === 'projects' && data.project) {
+    const project = data.project;
+    let tagsArr = project.tags;
+    if (typeof tagsArr === 'string') {
+      try { tagsArr = JSON.parse(tagsArr); } catch (e) {}
+    }
+    if (!Array.isArray(tagsArr)) tagsArr = [];
+
+    const projectSchema = {
+      "@context": "https://schema.org",
+      "@type": "CreativeWork",
+      "name": project.title,
+      "description": project.description,
+      "image": project.image || 'https://www.anvitam.com/favicon.png',
+      "creator": {
+        "@type": "Person",
+        "@id": "https://www.anvitam.com/#founder"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://www.anvitam.com/#organization"
+      },
+      "keywords": tagsArr.join(', ')
+    };
+    schemas.push(projectSchema);
   }
 
   // FAQPage schema
