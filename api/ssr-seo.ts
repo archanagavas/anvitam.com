@@ -151,8 +151,8 @@ function generateSchemas(section: string, idOrSlug: string, data: { blog?: any, 
         "logo": {
           "@type": "ImageObject",
           "url": "https://www.anvitam.com/favicon.png",
-          "width": 512,
-          "height": 512
+          "width": 192,
+          "height": 192
         }
       },
       "keywords": tagsArr.join(', ')
