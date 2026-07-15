@@ -229,11 +229,81 @@ function generateSchemas(section: string, idOrSlug: string, data: { blog?: any, 
       "keywords": tagsArr.join(', ')
     };
     schemas.push(projectSchema);
+
+    // Article schema for case studies
+    const articleSchema = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": project.title,
+      "description": project.description,
+      "image": project.image || 'https://www.anvitam.com/favicon.png',
+      "datePublished": project.year ? `${project.year}-01-01` : new Date().toISOString(),
+      "author": {
+        "@type": "Person",
+        "@id": "https://www.anvitam.com/#founder"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://www.anvitam.com/#organization"
+      },
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": `https://www.anvitam.com/projects/${project.slug || project.id}`
+      }
+    };
+    schemas.push(articleSchema);
   }
 
-  // FAQPage schema
+  // CollectionPage schema for main projects listing
+  if (section === 'projects' && !data.project) {
+    const collectionSchema = {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "Anvitam Projects Portfolio | Sustainable Architecture",
+      "description": "Explore our portfolio of sustainable design projects, permaculture masterplans, biophilic buildings, and ecological retreats globally.",
+      "url": "https://www.anvitam.com/projects",
+      "about": {
+        "@type": "LocalBusiness",
+        "@id": "https://www.anvitam.com/#localbusiness"
+      },
+      "mainEntity": {
+        "@type": "ItemList",
+        "itemListElement": INITIAL_PROJECTS.map((p, idx) => ({
+          "@type": "ListItem",
+          "position": idx + 1,
+          "url": `https://www.anvitam.com/projects/${p.slug || p.id}`
+        }))
+      }
+    };
+    schemas.push(collectionSchema);
+  }
+
+  // Service and FAQPage schema for specific services
   if (section === 'services' && data.service) {
     const service = data.service;
+    
+    // Service schema
+    const serviceSchema = {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "name": service.title,
+      "description": service.description,
+      "serviceType": "Architectural Design and Ecological Masterplanning",
+      "provider": {
+        "@type": "LocalBusiness",
+        "@id": "https://www.anvitam.com/#localbusiness"
+      },
+      "areaServed": "Worldwide",
+      "offers": {
+        "@type": "Offer",
+        "price": service.pricing || "0",
+        "priceCurrency": "INR",
+        "description": "Contact for custom design pricing"
+      }
+    };
+    schemas.push(serviceSchema);
+
+    // FAQPage schema
     let serviceFaq = service.faq || [];
     if (typeof serviceFaq === 'string') {
       try { serviceFaq = JSON.parse(serviceFaq); } catch (e) {}
@@ -253,6 +323,107 @@ function generateSchemas(section: string, idOrSlug: string, data: { blog?: any, 
       };
       schemas.push(faqSchema);
     }
+  }
+
+  // ContactPage schema for /contact
+  if (section === 'contact') {
+    const contactPageSchema = {
+      "@context": "https://schema.org",
+      "@type": "ContactPage",
+      "@id": "https://www.anvitam.com/contact#webpage",
+      "url": "https://www.anvitam.com/contact",
+      "name": "Contact Anvitam | Sustainable Architecture & Eco Design",
+      "description": "Get in touch with Ar. Archana Gavas at Anvitam for sustainable architecture, permaculture consultation, farm retreat design, and wellness sanctuaries.",
+      "mainEntity": {
+        "@type": "LocalBusiness",
+        "@id": "https://www.anvitam.com/#localbusiness"
+      }
+    };
+    schemas.push(contactPageSchema);
+  }
+
+  // Product and Offer schema for /shop
+  if (section === 'shop') {
+    const product1 = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": "Farm Retreat Design Masterclass",
+      "description": "Learn the details of site analysis, bioclimatic design, permaculture zoning, and how to create profitable eco-retreat experiences.",
+      "image": "https://www.anvitam.com/favicon.png",
+      "offers": {
+        "@type": "Offer",
+        "price": "3999",
+        "priceCurrency": "INR",
+        "availability": "https://schema.org/InStock",
+        "url": "https://topmate.io/archanagavas"
+      }
+    };
+    const product2 = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": "Food Forest Design Blueprint",
+      "description": "Design productive food forests and edible gardens for farm stays, community spaces, and personal properties using permaculture.",
+      "image": "https://www.anvitam.com/favicon.png",
+      "offers": {
+        "@type": "Offer",
+        "price": "2499",
+        "priceCurrency": "INR",
+        "availability": "https://schema.org/InStock",
+        "url": "https://topmate.io/archanagavas"
+      }
+    };
+    schemas.push(product1, product2);
+  }
+
+  // FAQPage schema on homepage
+  if (!section) {
+    const homeFaqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How long does a farm retreat architecture project take?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Typically 6–18 months depending on scale, site conditions, and permitting. We'll give you a full timeline after the initial site audit."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do you provide weekend villa architect services in Australia?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. We have dedicated teams across major Australian states including NSW, VIC, and QLD delivering weekend villa design and farm stay architecture."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is permaculture site planning?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "It's a design methodology that works with natural systems to create self-sustaining, productive landscapes. We integrate it into every eco retreat design project."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I get Airbnb homestay design services remotely?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Absolutely. We offer full digital discovery, remote design consultations, and partnered local build management across USA and Australia."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do you handle food forest design?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes — edible garden design services and food forest design are core to our offering and can be added to any retreat or villa landscape project."
+          }
+        }
+      ]
+    };
+    schemas.push(homeFaqSchema);
   }
 
   return schemas;
@@ -581,20 +752,72 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
     bodyHtml = `
       <main style="max-width: 1000px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', sans-serif;">
         <div style="text-align: center; padding: 80px 20px; background-color: #03160E; color: #FAFAFA; border-radius: 8px; margin-bottom: 40px;">
-          <h1 style="font-family: 'Playfair Display', serif; font-size: 50px; color: #CCFF00; margin-bottom: 20px;">ANVITAM</h1>
-          <p style="font-size: 20px; max-width: 700px; margin: 0 auto; line-height: 1.6; color: #A3B8AF;">Sustainable Architecture & Eco Design studio based in Vadodara, Gujarat. We blend passive design with nature to construct farm retreats, wellness sanctuaries, and permaculture food forests globally.</p>
+          <h1 style="font-family: 'Playfair Display', serif; font-size: 36px; color: #CCFF00; margin-bottom: 20px; line-height: 1.2;">Anvitam | Sustainable Architecture &amp; Ecological Design</h1>
+          <p style="font-size: 18px; max-width: 700px; margin: 0 auto; line-height: 1.6; color: #A3B8AF;">Anvitam is a sustainable architecture and ecological design studio based in Vadodara, Gujarat. Led by Ar. Archana Gavas, we design zero-carbon farm retreats, wellness sanctuaries, and permaculture food forests globally to restore soil and water ecosystems.</p>
+          <img src="https://images.unsplash.com/photo-1449844908441-8829872d2607?q=75&w=600&auto=format&fit=crop" alt="Sustainable Architecture and Farm Retreat Design" style="width: 100%; height: auto; max-height: 350px; object-fit: cover; border-radius: 4px; margin-top: 30px;" />
         </div>
 
+        <section style="margin-bottom: 60px; display: flex; flex-direction: column; gap: 20px;">
+          <h2 style="font-family: 'Playfair Display', serif; font-size: 32px; color: #03160E; border-bottom: 2px solid #CCFF00; padding-bottom: 10px; margin-bottom: 10px;">Our Principal Architect</h2>
+          <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start;">
+            <img src="https://www.anvitam.com/favicon.png" alt="Ar. Archana Gavas - Principal Architect & Founder" style="width: 120px; height: 120px; border-radius: 8px; object-fit: cover;" />
+            <div style="flex: 1; min-width: 250px;">
+              <p style="font-size: 16px; line-height: 1.8; margin-top: 0;"><strong>Ar. Archana Gavas</strong> is the Principal Architect and Permaculture Masterplanner behind Anvitam. Specializing in carbon-negative building craft, agroforestry, and water-resilient landscaping, she helps hospitality brands, homeowners, and private farms design beautiful, self-sustaining properties.</p>
+            </div>
+          </div>
+          <blockquote style="border-left: 4px solid #CCFF00; padding-left: 20px; margin: 20px 0; font-style: italic; color: #555;">
+            "Human habitats should act like trees—generating energy, purifying water, and nourishing the soil. True design excellence does not build on the land, it builds with the land, ensuring that every project enhances local ecosystems for generations to come."
+            <cite style="display: block; margin-top: 10px; font-weight: bold; font-style: normal; color: #03160E;">— Ar. Archana Gavas, Principal Architect (published in Anvitam Ecological Journal, 2025)</cite>
+          </blockquote>
+        </section>
+
         <section style="margin-bottom: 60px;">
-          <h2 style="font-family: 'Playfair Display', serif; font-size: 32px; color: #03160E; border-bottom: 2px solid #CCFF00; padding-bottom: 10px;">Our Principal Architect</h2>
-          <p style="font-size: 16px; line-height: 1.8;"><strong>Ar. Archana Gavas</strong> is the Principal Architect and Permaculture Masterplanner behind Anvitam. Specializing in carbon-negative building craft, agroforestry, and water-resilient landscaping, she helps hospitality brands, homeowners, and private farms design beautiful, self-sustaining properties.</p>
+          <h2 style="font-family: 'Playfair Display', serif; font-size: 32px; color: #03160E; border-bottom: 2px solid #CCFF00; padding-bottom: 10px;">Ecological Design Impact</h2>
+          <p style="color: #666; font-size: 15px; margin-bottom: 20px;">A comparative overview of how Anvitam's ecological design principles compare with standard/conventional builds:</p>
+          <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; text-align: left;">
+            <thead>
+              <tr style="background-color: #03160E; color: #CCFF00;">
+                <th style="padding: 12px; border: 1px solid #E5E7EB;">Design Metric</th>
+                <th style="padding: 12px; border: 1px solid #E5E7EB;">Conventional Building</th>
+                <th style="padding: 12px; border: 1px solid #E5E7EB;">Anvitam Ecological Design</th>
+                <th style="padding: 12px; border: 1px solid #E5E7EB;">Net Environmental Benefit</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 12px; border: 1px solid #E5E7EB; font-weight: bold;">Carbon Footprint</td>
+                <td style="padding: 12px; border: 1px solid #E5E7EB; color: #C53030;">High (+39% global emissions)</td>
+                <td style="padding: 12px; border: 1px solid #E5E7EB; color: #2F855A; font-weight: bold;">Negative (Carbon-sequestering earth/bamboo)</td>
+                <td style="padding: 12px; border: 1px solid #E5E7EB; font-weight: bold; color: #2F855A;">100% Net Reduction</td>
+              </tr>
+              <tr style="background-color: #F9FAFB;">
+                <td style="padding: 12px; border: 1px solid #E5E7EB; font-weight: bold;">Water Self-Sufficiency</td>
+                <td style="padding: 12px; border: 1px solid #E5E7EB; color: #C53030;">0% (Relies on municipal/groundwater depletion)</td>
+                <td style="padding: 12px; border: 1px solid #E5E7EB; color: #2F855A; font-weight: bold;">100% (Rainwater harvesting & greywater reuse)</td>
+                <td style="padding: 12px; border: 1px solid #E5E7EB; font-weight: bold; color: #2F855A;">Zero external water dependency</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px; border: 1px solid #E5E7EB; font-weight: bold;">Indoor Microclimate</td>
+                <td style="padding: 12px; border: 1px solid #E5E7EB; color: #C53030;">Unregulated (Requires mechanical AC/heating)</td>
+                <td style="padding: 12px; border: 1px solid #E5E7EB; color: #2F855A; font-weight: bold;">Self-regulating (Thermal mass earth walls)</td>
+                <td style="padding: 12px; border: 1px solid #E5E7EB; font-weight: bold; color: #2F855A;">60% reduction in mechanical loads</td>
+              </tr>
+              <tr style="background-color: #F9FAFB;">
+                <td style="padding: 12px; border: 1px solid #E5E7EB; font-weight: bold;">Ecosystem Biodiversity</td>
+                <td style="padding: 12px; border: 1px solid #E5E7EB; color: #C53030;">Negative (Soil compaction & concrete cover)</td>
+                <td style="padding: 12px; border: 1px solid #E5E7EB; color: #2F855A; font-weight: bold;">Positive (Syntropic agroforestry & food forests)</td>
+                <td style="padding: 12px; border: 1px solid #E5E7EB; font-weight: bold; color: #2F855A;">Restores native flora/fauna habitats</td>
+              </tr>
+            </tbody>
+          </table>
         </section>
 
         <section style="margin-bottom: 60px;">
           <h2 style="font-family: 'Playfair Display', serif; font-size: 32px; color: #03160E; border-bottom: 2px solid #CCFF00; padding-bottom: 10px;">Our Ecological Services</h2>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px;">
-            ${SERVICES.map(s => `
+            ${SERVICES.map((s, idx) => `
               <div style="border: 1px solid #E5E7EB; border-radius: 8px; padding: 20px; background: #FFF;">
+                <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?q=75&w=400&auto=format&fit=crop" alt="${s.title}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px; margin-bottom: 15px;" />
                 <h3 style="font-family: 'Playfair Display', serif; margin-top: 0; color: #03160E;">${s.title}</h3>
                 <p style="color: #666; font-size: 14px; line-height: 1.6;">${s.description}</p>
                 <a href="/services/${s.id}" style="color: #03160E; font-weight: bold; text-decoration: underline;">Learn More</a>
@@ -608,6 +831,7 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px;">
             ${INITIAL_PROJECTS.map(p => `
               <div style="border: 1px solid #E5E7EB; border-radius: 8px; padding: 20px; background: #FFF;">
+                <img src="${p.image || 'https://www.anvitam.com/favicon.png'}" alt="${p.title}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 4px; margin-bottom: 15px;" />
                 <h3 style="font-family: 'Playfair Display', serif; margin-top: 0; color: #03160E;">${p.title}</h3>
                 <p style="font-size: 12px; color: #888;">${p.category} | ${p.location}</p>
                 <p style="color: #666; font-size: 14px; line-height: 1.6;">${p.description}</p>
@@ -628,6 +852,25 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
               </div>
             `).join('')}
           </div>
+        </section>
+
+        <section style="margin-bottom: 60px; background: #03160E; color: #FAFAFA; padding: 40px 30px; border-radius: 8px;">
+          <h2 style="font-family: 'Playfair Display', serif; font-size: 32px; color: #CCFF00; border-bottom: 2px solid #CCFF00; padding-bottom: 10px; margin-top: 0;">Frequently Asked Questions</h2>
+          
+          <h3 style="font-size: 18px; color: #CCFF00; margin-top: 20px;">How long does a farm retreat architecture project take?</h3>
+          <p style="color: #A3B8AF; font-size: 15px; line-height: 1.6; margin-bottom: 20px;">Typically 6–18 months depending on scale, site conditions, and permitting. We give you a full timeline after the initial site audit.</p>
+          
+          <h3 style="font-size: 18px; color: #CCFF00; margin-top: 20px;">Do you provide weekend villa architect services in Australia?</h3>
+          <p style="color: #A3B8AF; font-size: 15px; line-height: 1.6; margin-bottom: 20px;">Yes. We have dedicated teams across major Australian states including NSW, VIC, and QLD delivering weekend villa design and farm stay architecture.</p>
+          
+          <h3 style="font-size: 18px; color: #CCFF00; margin-top: 20px;">What is permaculture site planning?</h3>
+          <p style="color: #A3B8AF; font-size: 15px; line-height: 1.6; margin-bottom: 20px;">It is a design methodology that works with natural systems to create self-sustaining, productive landscapes. We integrate it into every eco retreat design project.</p>
+          
+          <h3 style="font-size: 18px; color: #CCFF00; margin-top: 20px;">Can I get Airbnb homestay design services remotely?</h3>
+          <p style="color: #A3B8AF; font-size: 15px; line-height: 1.6; margin-bottom: 20px;">Absolutely. We offer full digital discovery, remote design consultations, and partnered local build management across the USA and Australia.</p>
+          
+          <h3 style="font-size: 18px; color: #CCFF00; margin-top: 20px;">Do you handle food forest design?</h3>
+          <p style="color: #A3B8AF; font-size: 15px; line-height: 1.6; margin-bottom: 20px;">Yes — edible garden design services and food forest design are core to our offering and can be added to any retreat or villa landscape project.</p>
         </section>
       </main>
     `;
@@ -675,8 +918,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const section = pathSegments[0] || '';
   const idOrSlug = pathSegments[1] || '';
 
-  let title = 'Anvitam | Architecture & Design';
-  let desc = 'ANVITAM Architects in Vadodara, Gujarat blending Sustainability with Nature. Eco retreats, farm stays, permaculture design worldwide.';
+  let title = 'Anvitam | Sustainable Architecture & Ecological Design';
+  let desc = 'Anvitam designs high-performing farm retreats, eco-resorts, airbnbs, homestays, and wellness centers using permaculture and sustainable landscape design.';
   let imageUrl = 'https://www.anvitam.com/favicon.png';
   let canonicalUrl = `https://www.anvitam.com${requestPath.split('?')[0]}`;
   let keywords = 'architecture, sustainable architecture, permaculture design, eco retreats, farm stays, biophilic design, green building, Vadodara, Gujarat';
