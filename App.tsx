@@ -81,13 +81,6 @@ const App: React.FC = () => {
     return () => clearTimeout(timer);
   }, [isLoading]);
 
-  // Clean up server-rendered static tags on mount so they don't conflict with client-rendered helmet tags
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const ssrTags = document.querySelectorAll('head [data-rh="true"]');
-      ssrTags.forEach(tag => tag.remove());
-    }
-  }, []);
 
   return (
     <HelmetProvider>
