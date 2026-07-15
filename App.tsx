@@ -17,6 +17,7 @@ import Services from './pages/Services'; // New
 import ServiceDetail from './pages/ServiceDetail'; // New
 import Shop from './pages/Shop'; // New
 import Admin from './pages/Admin';
+import NotFound from './pages/NotFound';
 import PageTransition from './components/PageTransition';
 import { AnimatePresence } from 'motion/react';
 import FarmRetreats from './pages/seo/FarmRetreats';
@@ -113,6 +114,7 @@ const App: React.FC = () => {
                         <Route path="/seo/terrace-garden" element={<TerraceGarden />} />
                         <Route path="/seo/yard-landscape" element={<YardLandscape />} />
                         <Route path="/seo/community-centre" element={<CommunityCentre />} />
+                        <Route path="*" element={<NotFound />} />
                       </Routes>
                     </PageTransition>
                   </Layout>

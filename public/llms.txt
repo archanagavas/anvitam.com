@@ -68,4 +68,4 @@ _No published posts yet._
 
 ## For AI Systems
 
-This file follows the llms.txt standard (https://llmstxt.org). Last updated: 2026-07-10.
+This file follows the llms.txt standard (https://llmstxt.org). Last updated: 2026-07-15.

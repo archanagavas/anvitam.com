@@ -2,7 +2,547 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import fs from 'fs';
 import path from 'path';
 import { sql, isDbConfigured } from '../lib/db.js';
-import { INITIAL_BLOGS, INITIAL_PROJECTS, SERVICES } from '../constants.js';
+import { INITIAL_BLOGS, INITIAL_PROJECTS, SERVICES, PROCESS_STEPS, TESTIMONIALS } from '../constants.js';
+
+// --- Helper Functions for HTML and Schema Generation ---
+
+function generateBreadcrumbSchema(section: string, idOrSlug: string, itemName?: string) {
+  const elements = [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://www.anvitam.com/"
+    }
+  ];
+
+  const sectionName = section.charAt(0).toUpperCase() + section.slice(1);
+  elements.push({
+    "@type": "ListItem",
+    "position": 2,
+    "name": sectionName,
+    "item": `https://www.anvitam.com/${section}`
+  });
+
+  if (idOrSlug) {
+    const finalName = itemName || idOrSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    elements.push({
+      "@type": "ListItem",
+      "position": 3,
+      "name": finalName,
+      "item": `https://www.anvitam.com/${section}/${idOrSlug}`
+    });
+  }
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": elements
+  };
+}
+
+function generateSchemas(section: string, idOrSlug: string, data: { blog?: any, project?: any, service?: any }) {
+  const schemas: any[] = [];
+
+  // Person schema for Archana Gavas (E-E-A-T)
+  const personSchema = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "@id": "https://www.anvitam.com/#founder",
+    "name": "Archana Gavas",
+    "jobTitle": "Principal Architect & Founder",
+    "worksFor": {
+      "@type": "Organization",
+      "@id": "https://www.anvitam.com/#organization",
+      "name": "Anvitam",
+      "url": "https://www.anvitam.com/"
+    },
+    "url": "https://www.anvitam.com/why",
+    "sameAs": [
+      "https://www.linkedin.com/in/archana-gavas/",
+      "https://www.instagram.com/anvitam_archit/",
+      "https://topmate.io/archanagavas"
+    ]
+  };
+  schemas.push(personSchema);
+
+  // Breadcrumb schema
+  if (section) {
+    let itemName = '';
+    if (section === 'blog' && data.blog) {
+      itemName = data.blog.title;
+    } else if (section === 'projects' && data.project) {
+      itemName = data.project.title;
+    } else if (section === 'services' && data.service) {
+      itemName = data.service.title;
+    }
+    
+    const breadcrumbSchema = generateBreadcrumbSchema(section, idOrSlug, itemName);
+    if (breadcrumbSchema) {
+      schemas.push(breadcrumbSchema);
+    }
+  }
+
+  // BlogPosting schema
+  if (section === 'blog' && data.blog) {
+    const blog = data.blog;
+    let tagsArr = blog.tags;
+    if (typeof tagsArr === 'string') {
+      try { tagsArr = JSON.parse(tagsArr); } catch (e) {}
+    }
+    if (!Array.isArray(tagsArr)) tagsArr = [];
+
+    const blogPostingSchema = {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": `https://www.anvitam.com/blog/${blog.slug || blog.id}`
+      },
+      "headline": blog.title,
+      "description": blog.excerpt || blog.meta_description || blog.title,
+      "image": blog.image || 'https://www.anvitam.com/favicon.png',
+      "datePublished": blog.date || new Date().toISOString(),
+      "author": {
+        "@type": "Person",
+        "name": blog.author || "Archana Gavas",
+        "jobTitle": "Principal Architect & Founder",
+        "sameAs": [
+          "https://www.linkedin.com/in/archana-gavas/",
+          "https://www.instagram.com/anvitam_archit/",
+          "https://topmate.io/archanagavas"
+        ]
+      },
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://www.anvitam.com/#organization",
+        "name": "Anvitam",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://www.anvitam.com/favicon.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "keywords": tagsArr.join(', ')
+    };
+    schemas.push(blogPostingSchema);
+  }
+
+  // FAQPage schema
+  if (section === 'services' && data.service) {
+    const service = data.service;
+    let serviceFaq = service.faq || [];
+    if (typeof serviceFaq === 'string') {
+      try { serviceFaq = JSON.parse(serviceFaq); } catch (e) {}
+    }
+    if (Array.isArray(serviceFaq) && serviceFaq.length > 0) {
+      const faqSchema = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": serviceFaq.map((f: any) => ({
+          "@type": "Question",
+          "name": f.question,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": f.answer
+          }
+        }))
+      };
+      schemas.push(faqSchema);
+    }
+  }
+
+  return schemas;
+}
+
+function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, project?: any, service?: any }): string {
+  const headerHtml = `
+    <header style="padding: 20px; background-color: #03160E; color: #FAFAFA; display: flex; justify-content: space-between; align-items: center; font-family: 'Playfair Display', serif;">
+      <div style="font-size: 24px; font-weight: bold;"><a href="/" style="color: #CCFF00; text-decoration: none;">Anvitam</a></div>
+      <nav style="display: flex; gap: 20px;">
+        <a href="/" style="color: #FAFAFA; text-decoration: none;">Home</a>
+        <a href="/why" style="color: #FAFAFA; text-decoration: none;">Why Sustainable</a>
+        <a href="/services" style="color: #FAFAFA; text-decoration: none;">Services</a>
+        <a href="/projects" style="color: #FAFAFA; text-decoration: none;">Projects</a>
+        <a href="/blog" style="color: #FAFAFA; text-decoration: none;">Blog</a>
+        <a href="/contact" style="color: #FAFAFA; text-decoration: none;">Contact</a>
+        <a href="/shop" style="color: #FAFAFA; text-decoration: none;">Shop</a>
+      </nav>
+    </header>
+  `;
+
+  const footerHtml = `
+    <footer style="background-color: #03160E; color: #A3B8AF; padding: 40px 20px; font-family: 'Inter', sans-serif; font-size: 14px; text-align: center; border-top: 1px solid rgba(163, 184, 175, 0.1);">
+      <p style="color: #FAFAFA; font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 10px;">Anvitam — Sustainable Architecture & Eco Design Studio</p>
+      <p style="margin-bottom: 20px;">Vadodara, Gujarat, India | Designing for the World</p>
+      <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;">
+        <a href="https://www.linkedin.com/in/archana-gavas/" style="color: #CCFF00; text-decoration: none;">LinkedIn</a>
+        <a href="https://www.instagram.com/anvitam_archit/" style="color: #CCFF00; text-decoration: none;">Instagram</a>
+        <a href="https://topmate.io/archanagavas" style="color: #CCFF00; text-decoration: none;">Topmate Consultation</a>
+      </div>
+      <p>&copy; ${new Date().getFullYear()} Anvitam. All rights reserved. <a href="/privacy" style="color: #A3B8AF;">Privacy Policy</a> | <a href="/terms" style="color: #A3B8AF;">Terms of Service</a></p>
+    </footer>
+  `;
+
+  let bodyHtml = '';
+
+  if (section === 'blog') {
+    if (idOrSlug && data.blog) {
+      const blog = data.blog;
+      let tagsArr = blog.tags;
+      if (typeof tagsArr === 'string') {
+        try { tagsArr = JSON.parse(tagsArr); } catch (e) {}
+      }
+      if (!Array.isArray(tagsArr)) tagsArr = [];
+      
+      bodyHtml = `
+        <article style="max-width: 800px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', sans-serif; line-height: 1.8; color: #111;">
+          <h1 style="font-family: 'Playfair Display', serif; font-size: 40px; margin-bottom: 10px; color: #03160E;">${blog.title}</h1>
+          <p style="color: #666; margin-bottom: 30px;">Published on ${blog.date} by <strong>${blog.author || 'Archana Gavas'}</strong></p>
+          <div style="font-size: 18px; font-style: italic; color: #555; border-left: 4px solid #CCFF00; padding-left: 20px; margin-bottom: 30px;">
+            <p>${blog.excerpt}</p>
+          </div>
+          <div style="margin-bottom: 40px; border-radius: 8px; overflow: hidden;">
+            <img src="${blog.image}" alt="${blog.title}" style="width: 100%; max-height: 450px; object-fit: cover;" />
+          </div>
+          <div class="prose" style="font-size: 16px;">
+            ${blog.content}
+          </div>
+          <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;">
+            <p><strong>Tags:</strong> ${tagsArr.join(', ')}</p>
+          </div>
+          ${blog.author_bio ? `
+            <div style="margin-top: 40px; padding: 20px; background-color: #03160E; color: #FAFAFA; border-radius: 8px; display: flex; gap: 20px; align-items: center;">
+              ${blog.author_image ? `<img src="${blog.author_image}" alt="${blog.author}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;" />` : ''}
+              <div>
+                <h3 style="margin-top: 0; font-family: 'Playfair Display', serif; color: #CCFF00; margin-bottom: 5px;">About Ar. Archana Gavas</h3>
+                <p style="margin: 0; font-size: 14px; color: #A3B8AF; line-height: 1.5;">${blog.author_bio}</p>
+              </div>
+            </div>
+          ` : ''}
+        </article>
+      `;
+    } else {
+      bodyHtml = `
+        <main style="max-width: 1000px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', sans-serif;">
+          <h1 style="font-family: 'Playfair Display', serif; font-size: 36px; color: #03160E; margin-bottom: 20px;">Blog & Insights</h1>
+          <p style="color: #666; font-size: 18px; margin-bottom: 40px;">Deep dives, research, and project stories exploring sustainable materials, biophilic design, and ecological landscaping.</p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+            ${INITIAL_BLOGS.map(b => `
+              <div style="background: #FFF; border: 1px solid #E5E7EB; border-radius: 8px; overflow: hidden; padding: 20px;">
+                <h2 style="font-family: 'Playfair Display', serif; font-size: 22px; margin-top: 0;"><a href="/blog/${b.slug || b.id}" style="color: #03160E; text-decoration: none;">${b.title}</a></h2>
+                <p style="color: #888; font-size: 12px;">${b.date}</p>
+                <p style="color: #555; line-height: 1.6;">${b.excerpt}</p>
+                <a href="/blog/${b.slug || b.id}" style="color: #03160E; font-weight: bold; text-decoration: underline;">Read Article</a>
+              </div>
+            `).join('')}
+          </div>
+        </main>
+      `;
+    }
+  } else if (section === 'projects') {
+    if (idOrSlug && data.project) {
+      const project = data.project;
+      let specs = project.specs || [];
+      if (typeof specs === 'string') {
+        try { specs = JSON.parse(specs); } catch (e) {}
+      }
+      if (!Array.isArray(specs)) specs = [];
+
+      bodyHtml = `
+        <main style="max-width: 900px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', sans-serif; line-height: 1.8;">
+          <h1 style="font-family: 'Playfair Display', serif; font-size: 40px; color: #03160E; margin-bottom: 10px;">${project.title}</h1>
+          <p style="font-size: 18px; color: #666; margin-bottom: 30px;"><strong>Category:</strong> ${project.category} | <strong>Location:</strong> ${project.location} | <strong>Year:</strong> ${project.year}</p>
+          <div style="margin-bottom: 40px; border-radius: 8px; overflow: hidden;">
+            <img src="${project.image}" alt="${project.title}" style="width: 100%; max-height: 500px; object-fit: cover;" />
+          </div>
+          <h2>Overview & Concept</h2>
+          <p style="font-size: 16px;">${project.full_description || project.fullDescription || project.description}</p>
+          
+          <h2>Project Specifications</h2>
+          <table style="width: 100%; border-collapse: collapse; margin: 30px 0;">
+            <thead>
+              <tr style="border-bottom: 2px solid #03160E; text-align: left;">
+                <th style="padding: 10px; font-family: 'Playfair Display', serif; font-weight: bold;">Aspect</th>
+                <th style="padding: 10px; font-family: 'Playfair Display', serif; font-weight: bold;">Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${specs.map((s: any) => `
+                <tr style="border-bottom: 1px solid #ddd;">
+                  <td style="padding: 10px; font-weight: bold;">${s.label}</td>
+                  <td style="padding: 10px;">${s.value}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </main>
+      `;
+    } else {
+      bodyHtml = `
+        <main style="max-width: 1000px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', sans-serif;">
+          <h1 style="font-family: 'Playfair Display', serif; font-size: 36px; color: #03160E; margin-bottom: 20px;">Our Portfolio</h1>
+          <p style="color: #666; font-size: 18px; margin-bottom: 40px;">Explore selected architectural and permaculture projects built with natural local materials and climate-responsive planning.</p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+            ${INITIAL_PROJECTS.map(p => `
+              <div style="background: #FFF; border: 1px solid #E5E7EB; border-radius: 8px; overflow: hidden; padding: 20px;">
+                <h2 style="font-family: 'Playfair Display', serif; font-size: 22px; margin-top: 0;"><a href="/projects/${p.id}" style="color: #03160E; text-decoration: none;">${p.title}</a></h2>
+                <p style="color: #888; font-size: 12px;">${p.category} | ${p.location}</p>
+                <p style="color: #555; line-height: 1.6;">${p.description}</p>
+                <a href="/projects/${p.id}" style="color: #03160E; font-weight: bold; text-decoration: underline;">View Details</a>
+              </div>
+            `).join('')}
+          </div>
+        </main>
+      `;
+    }
+  } else if (section === 'services') {
+    if (idOrSlug && data.service) {
+      const service = data.service;
+      let valueProps = service.value_props || service.valueProps || [];
+      if (typeof valueProps === 'string') {
+        try { valueProps = JSON.parse(valueProps); } catch (e) {}
+      }
+      if (!Array.isArray(valueProps)) valueProps = [];
+
+      let whatItIs = service.what_it_is || service.whatItIs || [];
+      if (typeof whatItIs === 'string') {
+        try { whatItIs = JSON.parse(whatItIs); } catch (e) {}
+      }
+      if (!Array.isArray(whatItIs)) whatItIs = [];
+
+      let whoItsFor = service.who_its_for || service.whoItsFor || [];
+      if (typeof whoItsFor === 'string') {
+        try { whoItsFor = JSON.parse(whoItsFor); } catch (e) {}
+      }
+      if (!Array.isArray(whoItsFor)) whoItsFor = [];
+
+      let processList = service.process || [];
+      if (typeof processList === 'string') {
+        try { processList = JSON.parse(processList); } catch (e) {}
+      }
+      if (!Array.isArray(processList)) processList = [];
+
+      let faqList = service.faq || [];
+      if (typeof faqList === 'string') {
+        try { faqList = JSON.parse(faqList); } catch (e) {}
+      }
+      if (!Array.isArray(faqList)) faqList = [];
+
+      bodyHtml = `
+        <main style="max-width: 900px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', sans-serif; line-height: 1.8;">
+          <h1 style="font-family: 'Playfair Display', serif; font-size: 40px; color: #03160E; margin-bottom: 20px;">${service.title}</h1>
+          <p style="font-size: 18px; color: #555; margin-bottom: 40px;">${service.description}</p>
+          
+          <h2>Value Propositions & Design Principles</h2>
+          <ul>
+            ${valueProps.map((v: string) => `<li>${v}</li>`).join('')}
+          </ul>
+
+          <h2>What It Is</h2>
+          ${whatItIs.map((w: string) => `<p>${w}</p>`).join('')}
+
+          <h2>Who It's For</h2>
+          <ul>
+            ${whoItsFor.map((w: string) => `<li>${w}</li>`).join('')}
+          </ul>
+
+          <h2>Working Process & Milestones</h2>
+          <ol>
+            ${processList.map((p: any) => `
+              <li>
+                <strong>${p.title}:</strong> ${p.description}
+              </li>
+            `).join('')}
+          </ol>
+
+          ${service.pricing ? `<h2>Pricing</h2><p>${service.pricing}</p>` : ''}
+
+          ${faqList.length > 0 ? `
+            <h2>Frequently Asked Questions</h2>
+            <dl>
+              ${faqList.map((f: any) => `
+                <dt style="font-weight: bold; margin-top: 20px;">${f.question}</dt>
+                <dd>${f.answer}</dd>
+              `).join('')}
+            </dl>
+          ` : ''}
+
+          ${service.bookingLink ? `
+            <div style="margin: 40px 0; text-align: center;">
+              <a href="${service.bookingLink}" style="display: inline-block; padding: 15px 30px; background-color: #CCFF00; color: #03160E; font-weight: bold; border-radius: 30px; text-decoration: none; font-size: 18px;">Book a Consultation Session</a>
+            </div>
+          ` : ''}
+        </main>
+      `;
+    } else {
+      bodyHtml = `
+        <main style="max-width: 1000px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', sans-serif;">
+          <h1 style="font-family: 'Playfair Display', serif; font-size: 36px; color: #03160E; margin-bottom: 20px;">Our Services</h1>
+          <p style="color: #666; font-size: 18px; margin-bottom: 40px;">Professional design services bridging sustainable architecture, permaculture masterplanning, and experiential hospitality.</p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+            ${SERVICES.map(s => `
+              <div style="background: #FFF; border: 1px solid #E5E7EB; border-radius: 8px; overflow: hidden; padding: 20px;">
+                <h2 style="font-family: 'Playfair Display', serif; font-size: 22px; margin-top: 0;"><a href="/services/${s.id}" style="color: #03160E; text-decoration: none;">${s.title}</a></h2>
+                <p style="color: #555; line-height: 1.6;">${s.description}</p>
+                <a href="/services/${s.id}" style="color: #03160E; font-weight: bold; text-decoration: underline;">Explore Service</a>
+              </div>
+            `).join('')}
+          </div>
+        </main>
+      `;
+    }
+  } else if (section === 'seo') {
+    const seoPageTitle = idOrSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    bodyHtml = `
+      <main style="max-width: 900px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', sans-serif; line-height: 1.8;">
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 40px; color: #03160E; margin-bottom: 20px;">${seoPageTitle}</h1>
+        
+        <h2>Sustainable & Ecological Architecture</h2>
+        <p>Anvitam designs high-performing properties integrated with natural systems. By combining local construction craftsmanship, natural building materials (such as mud, lime, bamboo, stone, and reclaimed wood), and passive solar engineering, we construct spaces that are carbon-negative, climate-resilient, and deeply calming.</p>
+        <p>Our ecological design strategies maximize site potential, conserve water through passive harvesting, restore topsoil biodiversity, and establish self-sustaining food production systems. Whether you are building an off-grid farm retreat, a high-revenue eco homestay, or a lush rooftop garden sanctuary, we deliver design masterplans that balance environment and aesthetics perfectly.</p>
+        
+        <div style="margin: 40px 0; text-align: center;">
+          <a href="/contact" style="display: inline-block; padding: 15px 30px; background-color: #CCFF00; color: #03160E; font-weight: bold; border-radius: 30px; text-decoration: none; font-size: 18px;">Contact Ar. Archana Gavas</a>
+        </div>
+      </main>
+    `;
+  } else if (section === 'why') {
+    bodyHtml = `
+      <main style="max-width: 900px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', sans-serif; line-height: 1.8;">
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 40px; color: #03160E; margin-bottom: 20px;">Why Sustainable Design?</h1>
+        <p style="font-size: 18px; color: #666; margin-bottom: 40px;">Conventional construction drives over 39% of global energy-related carbon emissions. Sustainable architecture is not a luxury—it is an absolute necessity for our planet and our health.</p>
+        
+        <h2>Passive Solar & Climate-Responsive Architecture</h2>
+        <p>We analyze sun paths, seasonal winds, and microclimates to design structures that naturally maintain comfortable temperatures. By maximizing natural daylight and integrating passive cooling/heating techniques, we slash lifelong energy demands.</p>
+
+        <h2>Healthy Buildings with Natural Materials</h2>
+        <p>Traditional industrial buildings off-gas toxic volatile organic compounds (VOCs). We build exclusively with natural, non-toxic materials like earth, stone, timber, bamboo, and lime. These materials are breathable, regulate indoor humidity, prevent mold, and lock carbon inside the building fabric.</p>
+
+        <h2>Closing Ecosystem Loops</h2>
+        <p>A building should act like a tree—generating energy, harvesting water, and feeding the soil. We integrate graywater filtration, compost systems, rainwater collection, and food forestry into the immediate architectural environment, turning waste back into resource loops.</p>
+      </main>
+    `;
+  } else if (section === 'about' || section === 'team') {
+    bodyHtml = `
+      <main style="max-width: 900px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', sans-serif; line-height: 1.8;">
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 40px; color: #03160E; margin-bottom: 20px;">About Anvitam</h1>
+        <p style="font-size: 18px; color: #555; margin-bottom: 40px;">Anvitam is an architectural design and permaculture masterplanning studio based in Vadodara, Gujarat, collaborating on projects worldwide. We create habitats that are carbon-negative, biodiverse, and beautiful.</p>
+        
+        <h2>Our Principal Architect & Founder</h2>
+        <p><strong>Ar. Archana Gavas</strong> is the Principal Architect and founder of Anvitam. She holds deep professional credentials in sustainable building techniques, agroforestry, and permaculture design. For the past 4 years, she has been leading masterplanning projects, farm stay setups, food forest layouts, and biophilic architectural projects globally, helping land owners turn raw soil into productive, high-performing ecological retreats.</p>
+
+        <h2>Our Core Philosophy</h2>
+        <p>We believe human design should enrich, rather than destroy, the natural environment. Our projects leverage ancient architectural wisdom tailored to modern realities, constructing spaces that are emotionally calming and physically restorative.</p>
+      </main>
+    `;
+  } else if (section === 'contact') {
+    bodyHtml = `
+      <main style="max-width: 900px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', sans-serif; line-height: 1.8;">
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 40px; color: #03160E; margin-bottom: 20px;">Contact Us</h1>
+        <p style="font-size: 18px; color: #555; margin-bottom: 40px;">Let's build something beautiful and sustainable together. Get in touch to discuss your project vision.</p>
+        
+        <div style="background-color: #03160E; color: #FAFAFA; border-radius: 8px; padding: 30px; margin-bottom: 40px;">
+          <h2 style="font-family: 'Playfair Display', serif; color: #CCFF00; margin-top: 0;">Get In Touch</h2>
+          <p><strong>Email:</strong> <a href="mailto:anvitamarchitect@gmail.com" style="color: #CCFF00;">anvitamarchitect@gmail.com</a></p>
+          <p><strong>Location:</strong> Vadodara, Gujarat, India (consulting worldwide)</p>
+          <p><strong>Booking / Priority Session:</strong> <a href="https://topmate.io/archanagavas" style="color: #CCFF00; text-decoration: underline;">Schedule a priority meeting on Topmate</a></p>
+        </div>
+      </main>
+    `;
+  } else if (section === 'shop') {
+    bodyHtml = `
+      <main style="max-width: 1000px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', sans-serif;">
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 36px; color: #03160E; margin-bottom: 20px;">Products & Online Courses</h1>
+        <p style="color: #666; font-size: 18px; margin-bottom: 40px;">Masterclasses, design blueprints, and priority mentoring sessions designed to help you construct profitable, ecological retreat sanctuaries.</p>
+        
+        <h2>Available Courses & Resources</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 40px;">
+          <div style="background: #FFF; border: 1px solid #E5E7EB; border-radius: 8px; overflow: hidden; padding: 20px;">
+            <h3 style="font-family: 'Playfair Display', serif; font-size: 22px; margin-top: 0; color: #03160E;">Farm Retreat Design Masterclass</h3>
+            <p style="color: #555; line-height: 1.6;">Learn details of site analysis, bioclimatic design, permaculture zoning, and how to create profitable eco-retreat experiences.</p>
+            <p style="font-weight: bold; color: #03160E;">Price: ₹3,999</p>
+            <a href="https://topmate.io/archanagavas" style="color: #CCFF00; background: #03160E; padding: 10px 20px; border-radius: 20px; text-decoration: none; display: inline-block; font-weight: bold;">Enroll Now</a>
+          </div>
+          <div style="background: #FFF; border: 1px solid #E5E7EB; border-radius: 8px; overflow: hidden; padding: 20px;">
+            <h3 style="font-family: 'Playfair Display', serif; font-size: 22px; margin-top: 0; color: #03160E;">Food Forest Design Blueprint</h3>
+            <p style="color: #555; line-height: 1.6;">Design productive food forests and edible gardens for farm stays, community spaces, and personal properties using permaculture.</p>
+            <p style="font-weight: bold; color: #03160E;">Price: ₹2,499</p>
+            <a href="https://topmate.io/archanagavas" style="color: #CCFF00; background: #03160E; padding: 10px 20px; border-radius: 20px; text-decoration: none; display: inline-block; font-weight: bold;">Enroll Now</a>
+          </div>
+        </div>
+      </main>
+    `;
+  } else {
+    // Default Home Page
+    bodyHtml = `
+      <main style="max-width: 1000px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', sans-serif;">
+        <div style="text-align: center; padding: 80px 20px; background-color: #03160E; color: #FAFAFA; border-radius: 8px; margin-bottom: 40px;">
+          <h1 style="font-family: 'Playfair Display', serif; font-size: 50px; color: #CCFF00; margin-bottom: 20px;">ANVITAM</h1>
+          <p style="font-size: 20px; max-width: 700px; margin: 0 auto; line-height: 1.6; color: #A3B8AF;">Sustainable Architecture & Eco Design studio based in Vadodara, Gujarat. We blend passive design with nature to construct farm retreats, wellness sanctuaries, and permaculture food forests globally.</p>
+        </div>
+
+        <section style="margin-bottom: 60px;">
+          <h2 style="font-family: 'Playfair Display', serif; font-size: 32px; color: #03160E; border-bottom: 2px solid #CCFF00; padding-bottom: 10px;">Our Principal Architect</h2>
+          <p style="font-size: 16px; line-height: 1.8;"><strong>Ar. Archana Gavas</strong> is the Principal Architect and Permaculture Masterplanner behind Anvitam. Specializing in carbon-negative building craft, agroforestry, and water-resilient landscaping, she helps hospitality brands, homeowners, and private farms design beautiful, self-sustaining properties.</p>
+        </section>
+
+        <section style="margin-bottom: 60px;">
+          <h2 style="font-family: 'Playfair Display', serif; font-size: 32px; color: #03160E; border-bottom: 2px solid #CCFF00; padding-bottom: 10px;">Our Ecological Services</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px;">
+            ${SERVICES.map(s => `
+              <div style="border: 1px solid #E5E7EB; border-radius: 8px; padding: 20px; background: #FFF;">
+                <h3 style="font-family: 'Playfair Display', serif; margin-top: 0; color: #03160E;">${s.title}</h3>
+                <p style="color: #666; font-size: 14px; line-height: 1.6;">${s.description}</p>
+                <a href="/services/${s.id}" style="color: #03160E; font-weight: bold; text-decoration: underline;">Learn More</a>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+
+        <section style="margin-bottom: 60px;">
+          <h2 style="font-family: 'Playfair Display', serif; font-size: 32px; color: #03160E; border-bottom: 2px solid #CCFF00; padding-bottom: 10px;">Selected Projects</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px;">
+            ${INITIAL_PROJECTS.map(p => `
+              <div style="border: 1px solid #E5E7EB; border-radius: 8px; padding: 20px; background: #FFF;">
+                <h3 style="font-family: 'Playfair Display', serif; margin-top: 0; color: #03160E;">${p.title}</h3>
+                <p style="font-size: 12px; color: #888;">${p.category} | ${p.location}</p>
+                <p style="color: #666; font-size: 14px; line-height: 1.6;">${p.description}</p>
+                <a href="/projects/${p.id}" style="color: #03160E; font-weight: bold; text-decoration: underline;">View Project</a>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+
+        <section style="margin-bottom: 60px;">
+          <h2 style="font-family: 'Playfair Display', serif; font-size: 32px; color: #03160E; border-bottom: 2px solid #CCFF00; padding-bottom: 10px;">Our Process</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px;">
+            ${PROCESS_STEPS.map(p => `
+              <div style="border: 1px solid #E5E7EB; border-radius: 8px; padding: 20px; background: #FFF;">
+                <span style="font-size: 24px; font-weight: bold; color: #CCFF00; background: #03160E; width: 40px; height: 40px; display: inline-flex; justify-content: center; align-items: center; border-radius: 50%;">${p.number}</span>
+                <h3 style="font-family: 'Playfair Display', serif; margin-top: 10px; color: #03160E;">${p.title}</h3>
+                <p style="color: #666; font-size: 14px; line-height: 1.6;">${p.description}</p>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+      </main>
+    `;
+  }
+
+  return `
+    <div style="background-color: #EFEFEB; min-height: 100vh; font-family: 'Inter', sans-serif;">
+      ${headerHtml}
+      <div style="padding-bottom: 60px;">
+        ${bodyHtml}
+      </div>
+      ${footerHtml}
+    </div>
+  `;
+}
+
+// --- Express/Vercel Handler ---
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.url?.includes('debug-seo-headers') || 
@@ -41,13 +581,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let robots = 'index, follow';
   let publisher = 'Anvitam';
 
+  let blog: any = null;
+  let project: any = null;
+  let service: any = null;
+
   // Fetch data depending on the section
   if (section === 'blog' && idOrSlug) {
-    let blog: any = null;
     if (isDbConfigured) {
       try {
         const rows = await sql`
-          SELECT id, title, slug, excerpt, image, meta_title, meta_description, meta_keywords, meta_robots, tags 
+          SELECT id, title, slug, date, author, excerpt, content, image, author_bio, author_image, meta_title, meta_description, meta_keywords, meta_robots, tags 
           FROM blogs 
           WHERE slug = ${idOrSlug} OR id = ${idOrSlug}
         `;
@@ -75,11 +618,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       robots = blog.meta_robots || blog.metaRobots || robots;
     }
   } else if (section === 'projects' && idOrSlug) {
-    let project: any = null;
     if (isDbConfigured) {
       try {
         const rows = await sql`
-          SELECT id, title, slug, description, image, tags, meta_title, meta_description, meta_keywords, meta_robots 
+          SELECT id, title, slug, category, location, year, image, description, full_description, specs, tags, meta_title, meta_description, meta_keywords, meta_robots 
           FROM projects 
           WHERE slug = ${idOrSlug} OR id = ${idOrSlug}
         `;
@@ -107,11 +649,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       robots = project.meta_robots || project.metaRobots || robots;
     }
   } else if (section === 'services' && idOrSlug) {
-    let service: any = null;
     if (isDbConfigured) {
       try {
         const rows = await sql`
-          SELECT id, title, description, hero_image, value_props, meta_title, meta_description, meta_keywords, meta_robots 
+          SELECT id, title, description, icon, hero_image, value_props, what_it_is, who_its_for, process, pricing, faq, booking_link, meta_title, meta_description, meta_keywords, meta_robots 
           FROM services 
           WHERE id = ${idOrSlug}
         `;
@@ -231,6 +772,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
+  // Ensure title and desc lengths are appropriate for SEO
+  if (title.length < 40) title = `${title} | Sustainable Eco Design Studio`;
+  if (desc.length < 100) desc = `${desc} Professional architectural masterplanning grounded in biophilic design, carbon-negative local materials, and water harvesting.`;
+
   // Load the index.html template
   let template = '';
   try {
@@ -283,21 +828,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   template = replaceOrInjectMeta(template, 'name', 'X-Robots-Tag', robots);
   template = replaceOrInjectMeta(template, 'name', 'publisher', publisher);
 
-  // Inject/replace canonical link
+  // Clean all duplicate/existing canonical and publisher links from template to prevent duplicates
+  template = template.replace(/<link[^>]*rel="canonical"[^>]*>/gi, '');
+  template = template.replace(/<link[^>]*rel="publisher"[^>]*>/gi, '');
+
+  // Inject the single canonical link
   const canonicalTag = `<link rel="canonical" href="${canonicalUrl}" data-rh="true" />`;
-  if (template.includes('rel="canonical"')) {
-    template = template.replace(/<link[^>]*rel="canonical"[^>]*>/i, canonicalTag);
-  } else {
-    template = template.replace('</head>', `  ${canonicalTag}\n</head>`);
+  template = template.replace('</head>', `  ${canonicalTag}\n</head>`);
+
+  // Inject the single publisher link
+  const publisherTag = `<link rel="publisher" href="https://www.anvitam.com/" data-rh="true" />`;
+  template = template.replace('</head>', `  ${publisherTag}\n</head>`);
+
+  // --- Inject JSON-LD Schema Marks ---
+  const schemas = generateSchemas(section, idOrSlug, { blog, project, service });
+  let schemaTags = '';
+  for (const schema of schemas) {
+    if (schema) {
+      schemaTags += `\n  <script type="application/ld+json">\n  ${JSON.stringify(schema, null, 2)}\n  </script>`;
+    }
+  }
+  if (schemaTags) {
+    template = template.replace('</head>', `${schemaTags}\n</head>`);
   }
 
-  // Inject link rel="publisher"
-  const publisherTag = `<link rel="publisher" href="https://www.anvitam.com/" data-rh="true" />`;
-  if (template.includes('rel="publisher"')) {
-    template = template.replace(/<link[^>]*rel="publisher"[^>]*>/i, publisherTag);
-  } else {
-    template = template.replace('</head>', `  ${publisherTag}\n</head>`);
-  }
+  // --- Inject Semantic Pre-Rendered HTML inside <div id="root"> ---
+  const ssrHtml = generateSsrHtml(section, idOrSlug, { blog, project, service });
+  template = template.replace(
+    '<div id="root"></div>',
+    `<div id="root">${ssrHtml}</div>`
+  );
 
   res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=600, stale-while-revalidate=60');
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
