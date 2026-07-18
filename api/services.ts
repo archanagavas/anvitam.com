@@ -6,7 +6,8 @@ import { SERVICES } from '../constants.js';
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const urlParts = (req.url || '').split('?')[0].split('/');
   const lastPart = urlParts[urlParts.length - 1];
-  const id = (req.query.id as string | undefined) || (lastPart !== 'services' ? lastPart : undefined);
+  const id = (req.query.id as string | undefined) || 
+             (lastPart && lastPart !== 'services' && lastPart !== 'services.ts' && lastPart !== 'services.js' ? lastPart : undefined);
 
   if (!isDbConfigured) {
     if (req.method === 'GET') {

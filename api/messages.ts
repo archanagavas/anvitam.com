@@ -5,7 +5,8 @@ import { verifyAdminToken, extractToken } from '../lib/auth.js';
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const urlParts = (req.url || '').split('?')[0].split('/');
   const lastPart = urlParts[urlParts.length - 1];
-  const id = (req.query.id as string | undefined) || (lastPart !== 'messages' ? lastPart : undefined);
+  const id = (req.query.id as string | undefined) || 
+             (lastPart && lastPart !== 'messages' && lastPart !== 'messages.ts' && lastPart !== 'messages.js' ? lastPart : undefined);
 
   if (!isDbConfigured) {
     if (req.method === 'GET') {
