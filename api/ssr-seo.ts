@@ -1107,6 +1107,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       'terms': {
         title: 'Terms of Service | Anvitam',
         desc: 'Read the Terms of Service for Anvitam.com.'
+      },
+      'team': {
+        title: 'Our Team | Anvitam Sustainable Architecture',
+        desc: 'Meet Ar. Archana Gavas, Principal Architect and Founder of Anvitam, specializing in sustainable resort architecture, eco retreat design, and permaculture landscape design.'
       }
     };
 
