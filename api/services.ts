@@ -10,6 +10,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (!isDbConfigured) {
     if (req.method === 'GET') {
+      res.setHeader('x-db-fallback', 'true');
       if (id) {
         const service = SERVICES.find(s => s.id === id);
         if (!service) return res.status(404).json({ error: 'Service not found' });
@@ -31,7 +32,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         `;
         if (rows.length === 0) {
           const mockSvc = SERVICES.find(s => s.id === id);
-          if (mockSvc) return res.status(200).json(mockSvc);
+          if (mockSvc) {
+            res.setHeader('x-db-fallback', 'true');
+            return res.status(200).json(mockSvc);
+          }
           return res.status(404).json({ error: 'Service not found' });
         }
         const r = rows[0];
@@ -90,6 +94,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json(services);
     } catch (dbError) {
       console.warn('[services API] Database query failed, falling back to static constants:', dbError);
+      res.setHeader('x-db-fallback', 'true');
       if (id) {
         const service = SERVICES.find(s => s.id === id);
         if (!service) return res.status(404).json({ error: 'Service not found' });

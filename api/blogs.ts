@@ -10,6 +10,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (!isDbConfigured) {
     if (req.method === 'GET') {
+      res.setHeader('x-db-fallback', 'true');
       if (id) {
         const blog = INITIAL_BLOGS.find(b => b.id === id || b.slug === id);
         if (!blog) return res.status(404).json({ error: 'Blog not found' });
@@ -31,7 +32,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         `;
         if (rows.length === 0) {
           const mockBlog = INITIAL_BLOGS.find(b => b.id === id || b.slug === id);
-          if (mockBlog) return res.status(200).json(mockBlog);
+          if (mockBlog) {
+            res.setHeader('x-db-fallback', 'true');
+            return res.status(200).json(mockBlog);
+          }
           return res.status(404).json({ error: 'Blog not found' });
         }
         const r = rows[0];
@@ -70,6 +74,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json(blogs);
     } catch (dbError) {
       console.warn('[blogs API] Database query failed, falling back to static constants:', dbError);
+      res.setHeader('x-db-fallback', 'true');
       if (id) {
         const blog = INITIAL_BLOGS.find(b => b.id === id || b.slug === id);
         if (!blog) return res.status(404).json({ error: 'Blog not found' });

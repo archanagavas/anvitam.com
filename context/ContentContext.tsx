@@ -140,43 +140,80 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
         fetch('/api/testimonials')
       ]);
 
+      const hasAnyFallback = 
+        blogsRes.headers.get('x-db-fallback') === 'true' ||
+        projectsRes.headers.get('x-db-fallback') === 'true' ||
+        servicesRes.headers.get('x-db-fallback') === 'true' ||
+        productsRes.headers.get('x-db-fallback') === 'true' ||
+        testimonialsRes.headers.get('x-db-fallback') === 'true';
+
       if (blogsRes.ok) {
+        const isFallback = blogsRes.headers.get('x-db-fallback') === 'true';
         const dbBlogs: BlogPost[] = await blogsRes.json();
-        if (dbBlogs.length > 0) {
-          setBlogs(dbBlogs);
-          saveToStorage('anvitam_blogs_v2', dbBlogs);
+        if (!isFallback) {
+          if (dbBlogs.length > 0) {
+            setBlogs(dbBlogs);
+            saveToStorage('anvitam_blogs_v2', dbBlogs);
+          }
+        } else {
+          console.info('[ContentContext] blogs API returned fallback mock data; preserving local cache.');
+          setBlogs(prev => prev.length === 0 ? dbBlogs : prev);
         }
       }
 
       if (projectsRes.ok) {
+        const isFallback = projectsRes.headers.get('x-db-fallback') === 'true';
         const dbProjects: Project[] = await projectsRes.json();
-        if (dbProjects.length > 0) {
-          setProjects(dbProjects);
-          saveToStorage('anvitam_projects_v2', dbProjects);
+        if (!isFallback) {
+          if (dbProjects.length > 0) {
+            setProjects(dbProjects);
+            saveToStorage('anvitam_projects_v2', dbProjects);
+          }
+        } else {
+          console.info('[ContentContext] projects API returned fallback mock data; preserving local cache.');
+          setProjects(prev => prev.length === 0 ? dbProjects : prev);
         }
       }
 
       if (servicesRes.ok) {
+        const isFallback = servicesRes.headers.get('x-db-fallback') === 'true';
         const dbServices: Service[] = await servicesRes.json();
-        if (dbServices.length > 0) {
-          setServices(dbServices);
-          saveToStorage('anvitam_services_v5', dbServices);
+        if (!isFallback) {
+          if (dbServices.length > 0) {
+            setServices(dbServices);
+            saveToStorage('anvitam_services_v5', dbServices);
+          }
+        } else {
+          console.info('[ContentContext] services API returned fallback mock data; preserving local cache.');
+          setServices(prev => prev.length === 0 ? dbServices : prev);
         }
       }
 
       if (productsRes.ok) {
+        const isFallback = productsRes.headers.get('x-db-fallback') === 'true';
         const dbProducts: DigitalProduct[] = await productsRes.json();
-        if (dbProducts.length > 0) {
-          setDigitalProducts(dbProducts);
-          saveToStorage('anvitam_products', dbProducts);
+        if (!isFallback) {
+          if (dbProducts.length > 0) {
+            setDigitalProducts(dbProducts);
+            saveToStorage('anvitam_products', dbProducts);
+          }
+        } else {
+          console.info('[ContentContext] products API returned fallback mock data; preserving local cache.');
+          setDigitalProducts(prev => prev.length === 0 ? dbProducts : prev);
         }
       }
 
       if (testimonialsRes.ok) {
+        const isFallback = testimonialsRes.headers.get('x-db-fallback') === 'true';
         const dbTestimonials: Testimonial[] = await testimonialsRes.json();
-        if (dbTestimonials.length > 0) {
-          setTestimonials(dbTestimonials);
-          saveToStorage('anvitam_testimonials', dbTestimonials);
+        if (!isFallback) {
+          if (dbTestimonials.length > 0) {
+            setTestimonials(dbTestimonials);
+            saveToStorage('anvitam_testimonials', dbTestimonials);
+          }
+        } else {
+          console.info('[ContentContext] testimonials API returned fallback mock data; preserving local cache.');
+          setTestimonials(prev => prev.length === 0 ? dbTestimonials : prev);
         }
       }
 
@@ -193,7 +230,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
         }
       }
 
-      setIsDbConnected(true);
+      setIsDbConnected(!hasAnyFallback);
     } catch (err) {
       console.warn('[ContentContext] DB sync failed — using local data:', err);
       setIsDbConnected(false);

@@ -44,6 +44,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (!isDbConfigured) {
     if (req.method === 'GET') {
+      res.setHeader('x-db-fallback', 'true');
       if (id) {
         const prod = ALL_MOCK_PRODUCTS.find(p => p.id === id);
         if (!prod) return res.status(404).json({ error: 'Product not found' });
@@ -64,7 +65,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         `;
         if (rows.length === 0) {
           const mockProd = ALL_MOCK_PRODUCTS.find(p => p.id === id);
-          if (mockProd) return res.status(200).json(mockProd);
+          if (mockProd) {
+            res.setHeader('x-db-fallback', 'true');
+            return res.status(200).json(mockProd);
+          }
           return res.status(404).json({ error: 'Product not found' });
         }
         const r = rows[0];
@@ -106,6 +110,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json(products);
     } catch (dbError) {
       console.warn('[products API] Database query failed, falling back to static constants:', dbError);
+      res.setHeader('x-db-fallback', 'true');
       if (id) {
         const prod = ALL_MOCK_PRODUCTS.find(p => p.id === id);
         if (!prod) return res.status(404).json({ error: 'Product not found' });

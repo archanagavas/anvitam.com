@@ -10,6 +10,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (!isDbConfigured) {
     if (req.method === 'GET') {
+      res.setHeader('x-db-fallback', 'true');
       if (id) {
         const item = INITIAL_TESTIMONIALS.find(i => i.id === id);
         if (!item) return res.status(404).json({ error: 'Testimonial not found' });
@@ -26,7 +27,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const rows = await sql`SELECT id, author, role, text, image FROM testimonials WHERE id = ${id}`;
         if (rows.length === 0) {
           const mockItem = INITIAL_TESTIMONIALS.find(i => i.id === id);
-          if (mockItem) return res.status(200).json(mockItem);
+          if (mockItem) {
+            res.setHeader('x-db-fallback', 'true');
+            return res.status(200).json(mockItem);
+          }
           return res.status(404).json({ error: 'Testimonial not found' });
         }
         return res.status(200).json(rows[0]);
@@ -35,6 +39,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json(rows);
     } catch (dbError) {
       console.warn('[testimonials API] Database query failed, falling back to static constants:', dbError);
+      res.setHeader('x-db-fallback', 'true');
       if (id) {
         const item = INITIAL_TESTIMONIALS.find(i => i.id === id);
         if (!item) return res.status(404).json({ error: 'Testimonial not found' });

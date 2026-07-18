@@ -10,6 +10,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (!isDbConfigured) {
     if (req.method === 'GET') {
+      res.setHeader('x-db-fallback', 'true');
       if (id) {
         const project = INITIAL_PROJECTS.find(p => p.id === id || p.slug === id);
         if (!project) return res.status(404).json({ error: 'Project not found' });
@@ -31,7 +32,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         `;
         if (rows.length === 0) {
           const mockProj = INITIAL_PROJECTS.find(p => p.id === id || p.slug === id);
-          if (mockProj) return res.status(200).json(mockProj);
+          if (mockProj) {
+            res.setHeader('x-db-fallback', 'true');
+            return res.status(200).json(mockProj);
+          }
           return res.status(404).json({ error: 'Project not found' });
         }
         const r = rows[0];
@@ -64,6 +68,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json(projects);
     } catch (dbError) {
       console.warn('[projects API] Database query failed, falling back to static constants:', dbError);
+      res.setHeader('x-db-fallback', 'true');
       if (id) {
         const project = INITIAL_PROJECTS.find(p => p.id === id || p.slug === id);
         if (!project) return res.status(404).json({ error: 'Project not found' });
