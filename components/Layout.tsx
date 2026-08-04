@@ -212,40 +212,45 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-0 bg-white z-40 flex flex-col items-center justify-center space-y-8 md:hidden pt-16"
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-0 bg-white z-40 flex flex-col items-center justify-center md:hidden pt-20 pb-8 px-6 overflow-y-auto"
           >
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.path}
-                onClick={() => setIsMenuOpen(false)}
-                className="text-3xl font-bold text-[#111] hover:text-[#555] transition-colors"
+            <div className="flex flex-col items-center space-y-3.5 w-full max-w-xs">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  to={link.path}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="text-xl font-bold text-[#111] hover:text-[#5A5A40] transition-colors py-1"
+                >
+                  {link.name}
+                </Link>
+              ))}
+              
+              <div className="w-12 h-px bg-black/10 my-1" />
+
+              <button
+                onClick={() => { setIsMenuOpen(false); setEstimatorOpen(true); }}
+                className="w-full inline-flex items-center justify-center gap-2 border border-[#111] text-[#111] py-2.5 rounded-full text-sm font-semibold hover:bg-[#111] hover:text-white transition-all"
               >
-                {link.name}
+                <Calculator size={16} /> Get Estimate
+              </button>
+              <a
+                href={TOPMATE}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2 bg-[#CCFF00] text-[#111] py-2.5 rounded-full text-sm font-bold shadow-sm"
+              >
+                Free Consultation →
+              </a>
+              <Link
+                to="/admin"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-xs text-gray-400 hover:text-gray-600 font-semibold pt-2"
+              >
+                Staff Login
               </Link>
-            ))}
-            <button
-              onClick={() => { setIsMenuOpen(false); setEstimatorOpen(true); }}
-              className="mt-4 inline-flex items-center gap-2 border-2 border-[#111] text-[#111] px-8 py-4 rounded-full text-base font-semibold"
-            >
-              <Calculator size={18} /> Get Estimate
-            </button>
-            <a
-              href={TOPMATE}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-8 py-4 rounded-full text-base font-semibold"
-            >
-              Free Consultation →
-            </a>
-            <Link
-              to="/admin"
-              onClick={() => setIsMenuOpen(false)}
-              className="text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors border border-gray-200 rounded-full px-6 py-2.5"
-            >
-              Staff Login
-            </Link>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

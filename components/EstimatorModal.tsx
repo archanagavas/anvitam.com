@@ -82,13 +82,25 @@ export default function EstimatorModal({ onClose }: { onClose: () => void }) {
   const country = COUNTRIES.find(c => c.code === form.country) || COUNTRIES[0];
   const totalINR = selected.reduce((s, i) => s + (svc?.baseINR[i] || 0), 0);
 
+  const getFormattedPrice = (baseINR: number) => {
+    const adjusted = baseINR * country.tier;
+    if (form.country === 'IN') {
+      return `₹${Math.round(adjusted).toLocaleString('en-IN')}`;
+    }
+    const usd = Math.round(adjusted / 83);
+    return `$${usd.toLocaleString('en-US')}`;
+  };
+
+  const totalBase = selected.reduce((s, i) => s + (svc?.baseINR[i] || 0), 0);
+  const formattedTotal = getFormattedPrice(totalBase);
+
   const toggle = (i: number) => setSelected(p => p.includes(i) ? p.filter(x => x !== i) : [...p, i]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const subList = selected.map(i => svc?.subs[i]).filter(Boolean).join(', ');
-    const msg = `[ESTIMATE REQUEST]\nService: ${svc?.title}\nDeliverables: ${subList}\nCountry: ${form.country} (${country.name})\nInternal estimate: ₹${totalINR.toLocaleString()} base\nPhone: ${form.phone}`;
+    const subList = selected.map(i => `${svc?.subs[i]} (${getFormattedPrice(svc?.baseINR[i] || 0)})`).filter(Boolean).join(', ');
+    const msg = `[ESTIMATE REQUEST]\nService: ${svc?.title}\nDeliverables & Costs: ${subList}\nTotal Estimate: ${formattedTotal}\nCountry: ${form.country} (${country.name})\nPhone: ${form.phone}`;
     try {
       await fetch('/api/messages', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -128,7 +140,7 @@ export default function EstimatorModal({ onClose }: { onClose: () => void }) {
                 {step === 'service' && 'What can we design for you?'}
                 {step === 'sub' && svc?.title}
                 {step === 'contact' && 'Tell us about yourself'}
-                {step === 'result' && "You're all set! 🎉"}
+                {step === 'result' && "Your Estimate Summary 🎉"}
               </h2>
               {step !== 'result' && <p className="text-xs text-[#888] mt-0.5">Step {stepNum} of 3</p>}
             </div>
@@ -268,7 +280,7 @@ export default function EstimatorModal({ onClose }: { onClose: () => void }) {
                   disabled={busy}
                   className="flex-1 bg-[#CCFF00] text-[#111] py-3 rounded-full text-xs sm:text-sm font-bold hover:scale-[1.02] transition-transform disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer shadow-md"
                 >
-                  {busy ? 'Sending…' : <><span>Submit Request</span><ArrowRight size={14} /></>}
+                  {busy ? 'Sending…' : <><span>View Estimate</span><ArrowRight size={14} /></>}
                 </button>
               </div>
             </form>
@@ -276,34 +288,79 @@ export default function EstimatorModal({ onClose }: { onClose: () => void }) {
 
           {/* STEP 4: Result */}
           {step === 'result' && (
-            <div>
-              <div className="flex items-center gap-3 bg-[#CCFF00]/20 border border-[#CCFF00] rounded-2xl p-4 sm:p-5 mb-5">
-                <CheckCircle className="text-[#111] shrink-0" size={26} />
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 bg-[#CCFF00]/20 border border-[#CCFF00] rounded-2xl p-4 sm:p-5">
+                <CheckCircle className="text-[#111] shrink-0" size={24} />
                 <div>
-                  <p className="font-bold text-[#111] text-sm sm:text-base">Request received!</p>
-                  <p className="text-xs sm:text-sm text-[#444] mt-0.5">We'll review your requirements and reach out within 24 hours with a custom proposal.</p>
+                  <p className="font-bold text-[#111] text-sm sm:text-base">Request Received!</p>
+                  <p className="text-xs text-[#444] mt-0.5">We'll review your requirements and follow up within 24 hours.</p>
                 </div>
               </div>
 
-              <div className="bg-[#111] rounded-2xl sm:rounded-3xl p-5 sm:p-7 text-white mb-5 text-center shadow-xl">
-                <p className="text-xs sm:text-sm text-white/50 mb-2">Want to discuss your project right away?</p>
-                <p className="text-lg sm:text-2xl font-bold text-white mb-2">Book a Free Consultation</p>
-                <p className="text-xs sm:text-sm text-white/70 mb-5">15-minute intro call with Ar. Archana Gavas — no commitment needed.</p>
-                <a
-                  href={TOPMATE}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-6 sm:px-7 py-3 rounded-full text-xs sm:text-sm font-bold hover:scale-105 transition-transform cursor-pointer shadow-lg"
-                >
-                  <Calendar size={16} /> Book Free Consultation
-                </a>
+              {/* Itemized Deliverables & Pricing Breakdown */}
+              <div className="bg-white border border-black/10 rounded-2xl p-4 sm:p-5 shadow-sm">
+                <div className="flex items-center justify-between border-b border-black/8 pb-3 mb-3">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[#777]">Your Selected Service</p>
+                    <h4 className="font-bold text-[#111] text-sm sm:text-base flex items-center gap-1.5 mt-0.5">
+                      <span>{svc?.icon}</span> {svc?.title}
+                    </h4>
+                  </div>
+                  <span className="text-[11px] font-semibold px-2.5 py-1 bg-[#111] text-[#CCFF00] rounded-full shrink-0">
+                    {country.flag} {country.name}
+                  </span>
+                </div>
+
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[#888] mb-2">Itemized Deliverables</p>
+                <div className="space-y-2 mb-4 max-h-48 overflow-y-auto no-scrollbar pr-1">
+                  {selected.map((index) => {
+                    const name = svc?.subs[index];
+                    const baseCost = svc?.baseINR[index] || 0;
+                    return (
+                      <div key={index} className="flex items-center justify-between text-xs sm:text-sm py-1.5 border-b border-black/5 last:border-0">
+                        <span className="text-[#333] font-medium flex items-center gap-2 pr-2">
+                          <span className="text-[#CCFF00] bg-[#111] w-4 h-4 rounded-full flex items-center justify-center text-[10px] shrink-0">✓</span>
+                          {name}
+                        </span>
+                        <span className="font-bold text-[#111] shrink-0">{getFormattedPrice(baseCost)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="flex items-center justify-between pt-3 border-t-2 border-black/10">
+                  <span className="font-bold text-xs sm:text-sm text-[#111]">Estimated Total</span>
+                  <span className="text-sm sm:text-base font-black text-[#111] bg-[#CCFF00] px-3 py-1 rounded-lg">
+                    {formattedTotal}
+                  </span>
+                </div>
               </div>
 
-              <p className="text-[11px] sm:text-xs text-[#888] text-center mb-5">
-                We serve clients from {COUNTRIES.find(c => c.code === form.country)?.name || 'around the world'}. Pricing is tailored to your project location and scope.
-              </p>
+              {/* Founder Consultation Section with Archana Photo */}
+              <div className="bg-[#111] rounded-2xl sm:rounded-3xl p-4 sm:p-5 text-white shadow-xl">
+                <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+                  <img
+                    src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop"
+                    alt="Ar. Archana Gavas"
+                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-[#CCFF00] shrink-0 shadow-md"
+                  />
+                  <div className="flex-1">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#CCFF00] mb-0.5">Want to discuss right away?</p>
+                    <h3 className="text-base sm:text-lg font-bold text-white mb-1">Book a Call with Ar. Archana Gavas</h3>
+                    <p className="text-xs text-white/70 mb-3">15-minute intro call to discuss site context, design scope & timelines.</p>
+                    <a
+                      href={TOPMATE}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold hover:scale-105 transition-transform cursor-pointer shadow-md"
+                    >
+                      <Calendar size={15} /> Book Free Consultation
+                    </a>
+                  </div>
+                </div>
+              </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-3 pt-1">
                 <button
                   onClick={() => { setStep('service'); setSvc(null); setSelected([]); setForm({ name: '', email: '', phone: '', country: 'IN' }); }}
                   className="flex-1 border border-black/15 text-[#555] py-3 rounded-full text-xs sm:text-sm font-semibold hover:bg-black/5 transition-colors cursor-pointer"
