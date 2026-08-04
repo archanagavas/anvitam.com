@@ -55,11 +55,11 @@ const Team: React.FC = () => {
                 <motion.img 
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                  src={archana?.image || "/founder.jpg"} 
+                  src={archana?.image || "/archana.png"} 
                   alt="Archana Gavas - Sustainable Resort Architect" 
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    e.currentTarget.src = "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop"; // Fallback
+                    e.currentTarget.src = "/archana.png"; // Fallback
                   }}
                 />
                 <div className="absolute inset-0 bg-[#0a0a0a]/10 group-hover:bg-transparent transition-colors duration-500"></div>

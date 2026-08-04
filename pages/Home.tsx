@@ -497,37 +497,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* ══ ENGAGEMENT MODELS ══ */}
-      <section className="bg-[#EFEFEB] py-24 px-6 md:px-16 lg:px-24">
-        <div className="max-w-screen-xl mx-auto">
-          <FadeUp>
-            <div className="mb-12">
-              <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-[#111] mb-4">
-                Engagement Model
-              </h2>
-              <p className="text-[#555] text-base max-w-lg">
-                Flexible ways to collaborate on your next <strong>community centre design</strong> or{' '}
-                <strong className="text-[#2a7a4f]">food forest design</strong>.
-              </p>
-            </div>
-          </FadeUp>
-          <div className="max-w-2xl">
-            {/* Retainer Model */}
-            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="bg-white rounded-3xl p-8 sm:p-10 flex flex-col justify-between min-h-[280px] hover:shadow-lg transition-shadow">
-              <div>
-                <h3 className="text-2xl md:text-3xl font-bold mb-2">Retainer Model</h3>
-                <p className="text-xs font-bold uppercase tracking-widest text-[#2a7a4f] mb-6">Starting ₹25,000/month</p>
-                <p className="text-[#555] text-sm leading-relaxed">
-                  This engagement is intended for ongoing design guidance, phased implementation, and focused consultation on smaller residential landscape projects.
-                </p>
-              </div>
-              <Link to="/contact" className="inline-flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-[#111] border-b border-[#111]/30 pb-1 w-fit hover:gap-5 transition-all mt-8">
-                Explore Retainer <ArrowRight size={14} />
-              </Link>
-            </motion.div>
-          </div>
-        </div>
-      </section>
+
 
       {/* ══ TESTIMONIALS — LOOPING CAROUSEL ══ */}
       <section className="bg-white py-24 px-6 md:px-16 lg:px-24">

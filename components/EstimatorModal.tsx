@@ -340,9 +340,9 @@ export default function EstimatorModal({ onClose }: { onClose: () => void }) {
               <div className="bg-[#111] rounded-2xl sm:rounded-3xl p-4 sm:p-5 text-white shadow-xl">
                 <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
                   <img
-                    src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop"
+                    src="/archana.png"
                     alt="Ar. Archana Gavas"
-                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-[#CCFF00] shrink-0 shadow-md"
+                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-[#CCFF00] shrink-0 shadow-md bg-[#222]"
                   />
                   <div className="flex-1">
                     <p className="text-[10px] font-bold uppercase tracking-widest text-[#CCFF00] mb-0.5">Want to discuss right away?</p>
