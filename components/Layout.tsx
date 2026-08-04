@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Mail, ArrowRight, CheckCircle } from 'lucide-react';
+import { Menu, X, Mail, ArrowRight, CheckCircle, Calculator } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Helmet } from 'react-helmet-async';
 import MapleLeafCursor from './MapleLeafCursor';
+import EstimatorModal from './EstimatorModal';
 
 // ── Newsletter Section Component ───────────────────────────────────────
 const NewsletterSection: React.FC = () => {
@@ -97,6 +98,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [estimatorOpen, setEstimatorOpen] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -174,6 +176,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             >
               Admin
             </Link>
+            <button
+              onClick={() => setEstimatorOpen(true)}
+              className="inline-flex items-center gap-2 border border-[#111] text-[#111] px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#111] hover:text-white transition-all duration-300"
+            >
+              <Calculator size={14} /> Get Estimate
+            </button>
             <a
               href={TOPMATE}
               target="_blank"
@@ -217,11 +225,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 {link.name}
               </Link>
             ))}
+            <button
+              onClick={() => { setIsMenuOpen(false); setEstimatorOpen(true); }}
+              className="mt-4 inline-flex items-center gap-2 border-2 border-[#111] text-[#111] px-8 py-4 rounded-full text-base font-semibold"
+            >
+              <Calculator size={18} /> Get Estimate
+            </button>
             <a
               href={TOPMATE}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-4 inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-8 py-4 rounded-full text-base font-semibold"
+              className="inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-8 py-4 rounded-full text-base font-semibold"
             >
               Free Consultation →
             </a>
@@ -234,6 +248,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </Link>
           </motion.div>
         )}
+      </AnimatePresence>
+
+      {/* Estimator Modal */}
+      <AnimatePresence>
+        {estimatorOpen && <EstimatorModal onClose={() => setEstimatorOpen(false)} />}
       </AnimatePresence>
 
       {/* Main */}

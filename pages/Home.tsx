@@ -2,9 +2,10 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
-import { ArrowRight, MapPin, Globe, Trees } from 'lucide-react';
+import { ArrowRight, MapPin, Globe, Trees, Calculator } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import TestimonialCarousel from '../components/TestimonialCarousel';
+import EstimatorModal from '../components/EstimatorModal';
 
 
 /* ─── HERO BACKGROUND VIDEO/IMAGE URL ─── */
@@ -35,6 +36,7 @@ const Home: React.FC = () => {
   const { projects, blogs, services } = useContent();
   const navigate = useNavigate();
   const heroRef = useRef<HTMLDivElement>(null);
+  const [estimatorOpen, setEstimatorOpen] = useState(false);
 
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '25%']);
@@ -49,6 +51,11 @@ const Home: React.FC = () => {
 
   return (
     <div className="w-full bg-[#EFEFEB] text-[#111] font-sans overflow-hidden">
+
+      {/* Estimator Modal */}
+      <AnimatePresence>
+        {estimatorOpen && <EstimatorModal onClose={() => setEstimatorOpen(false)} />}
+      </AnimatePresence>
 
       <Helmet>
         <title>Anvitam | Sustainable Architecture & Eco Design</title>
@@ -110,6 +117,12 @@ const Home: React.FC = () => {
             <a href={TOPMATE} target="_blank" rel="noreferrer" className={neonBtn}>
               Get a Design Consultation <ArrowRight size={16} />
             </a>
+            <button
+              onClick={() => setEstimatorOpen(true)}
+              className="inline-flex items-center gap-2 border-2 border-white text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-white hover:text-[#111] transition-all duration-300"
+            >
+              <Calculator size={16} /> Get Instant Estimate
+            </button>
           </motion.div>
 
           {/* Benefit checks */}
