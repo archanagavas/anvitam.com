@@ -346,8 +346,8 @@ ${formData.message}`;
             </p>
 
             <h3 className="text-lg font-bold text-[#111] mb-4">Still got questions?</h3>
-            <a href="mailto:contact@anvitam.com" className="inline-block bg-[#D1F0AA] text-[#111] rounded-full px-5 py-2 text-xs font-bold transition-colors hover:bg-[#bceb81]">
-              contact@anvitam.com
+            <a href="mailto:ar.archanagavas@gmail.com" className="inline-block bg-[#D1F0AA] text-[#111] rounded-full px-5 py-2 text-xs font-bold transition-colors hover:bg-[#bceb81]">
+              ar.archanagavas@gmail.com
             </a>
           </div>
 
