@@ -901,27 +901,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
-  let requestPath = (req.query.path as string) || (req.headers['x-forwarded-uri'] as string) || req.url || '';
-  if (requestPath.startsWith('/api/ssr-seo')) {
+  // Robust path resolution: req.query.path is set by vercel.json rewrite (?path=/$1)
+  // x-forwarded-uri is the INTERNAL rewrite URI (e.g. /api/ssr-seo?path=...) — do NOT use it as fallback path
+  // x-vercel-deployment-url or req.url may contain internal paths too — always prefer query.path
+  let requestPath: string;
+  if (req.query.path) {
+    requestPath = req.query.path as string;
+  } else {
+    // Last resort: parse req.url and extract ?path= param
     try {
-      const parsedUrl = new URL(requestPath, 'https://www.anvitam.com');
+      const parsedUrl = new URL(req.url || '', 'https://www.anvitam.com');
       const queryPath = parsedUrl.searchParams.get('path');
-      if (queryPath) {
-        requestPath = queryPath;
-      }
-    } catch (e) {}
+      requestPath = queryPath || parsedUrl.pathname || '/';
+    } catch (e) {
+      requestPath = '/';
+    }
   }
-  const urlParts = requestPath.split('?')[0].split('/');
-  // Filter empty parts
-  const pathSegments = urlParts.filter(Boolean);
-  
+
+  // Strip query string and leading slash for clean path segments
+  const cleanPath = requestPath.split('?')[0];
+  const pathSegments = cleanPath.split('/').filter(Boolean);
+
   const section = pathSegments[0] || '';
   const idOrSlug = pathSegments[1] || '';
+
+  // Build canonical URL from the clean, user-facing path (not the internal /api/ssr-seo path)
+  const canonicalPath = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
 
   let title = 'Anvitam | Sustainable Architecture & Ecological Design';
   let desc = 'Anvitam designs high-performing farm retreats, eco-resorts, airbnbs, homestays, and wellness centers using permaculture and sustainable landscape design.';
   let imageUrl = 'https://www.anvitam.com/favicon.png';
-  let canonicalUrl = `https://www.anvitam.com${requestPath.split('?')[0]}`;
+  let canonicalUrl = `https://www.anvitam.com${canonicalPath}`;
   let keywords = 'architecture, sustainable architecture, permaculture design, eco retreats, farm stays, biophilic design, green building, Vadodara, Gujarat';
   let robots = 'index, follow';
   let publisher = 'Anvitam';
@@ -999,7 +1009,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const rows = await sql`
           SELECT id, title, description, icon, hero_image, value_props, what_it_is, who_its_for, process, pricing, faq, booking_link, meta_title, meta_description, meta_keywords, meta_robots 
           FROM services 
-          WHERE id = ${idOrSlug}
+          WHERE id = ${idOrSlug} OR slug = ${idOrSlug}
         `;
         if (rows.length > 0) {
           service = rows[0];
@@ -1208,7 +1218,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     `<div id="root">${ssrHtml}</div>`
   );
 
-  res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=600, stale-while-revalidate=60');
+  // Disable shared CDN cache to prevent cross-URL cache poisoning (each path must be served independently)
+  res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=0, must-revalidate');
+  res.setHeader('Vary', 'Accept-Encoding');
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('X-Robots-Tag', robots);
   return res.status(200).send(template);
