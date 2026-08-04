@@ -1556,7 +1556,7 @@ const Admin: React.FC = () => {
                     Live Tracking Active
                   </span>
                   <a
-                    href="https://cloud.umami.is/share/Ti4vnaf1fhBkM43g"
+                    href="https://cloud.umami.is/analytics/us/share/Ti4vnaf1fhBkM43g"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 bg-black text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-gray-800 transition shadow-sm"
@@ -1569,7 +1569,7 @@ const Admin: React.FC = () => {
               {/* Embedded Live Umami Analytics Dashboard */}
               <div className="relative w-full h-[620px] rounded-xl overflow-hidden border border-gray-200 bg-gray-50 shadow-inner">
                 <iframe
-                  src="https://cloud.umami.is/share/Ti4vnaf1fhBkM43g"
+                  src="https://cloud.umami.is/analytics/us/share/Ti4vnaf1fhBkM43g"
                   className="w-full h-full border-0"
                   title="Umami Live Visitor Analytics"
                   loading="eager"
