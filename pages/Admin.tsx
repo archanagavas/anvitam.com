@@ -1544,65 +1544,36 @@ const Admin: React.FC = () => {
                 <div>
                   <h3 className="text-base font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
                     <Activity size={18} className="text-emerald-500" />
-                    Umami Analytics Telemetry Hub
+                    Live Visitor Traffic & Blog Readers (Umami Real Telemetry)
                   </h3>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    Real-time privacy-first visitor counts, active readers, and referral analytics.
+                    Real-time privacy-first visitor counts, active readers, and referral analytics directly from your Umami instance.
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1.5 shrink-0">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                    Tracking Active
+                    Live Tracking Active
                   </span>
                   <a
-                    href="https://cloud.umami.is/websites/14be7ec2-6f32-451a-92d4-0961ff82c370"
+                    href="https://cloud.umami.is/share/Ti4vnaf1fhBkM43g"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 bg-black text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-gray-800 transition shadow-sm"
                   >
-                    Open Live Umami Dashboard <Globe size={13} />
+                    Open Fullscreen <Globe size={13} />
                   </a>
                 </div>
               </div>
 
-              {/* Status details grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-1">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Website ID</span>
-                  <span className="font-mono text-xs font-bold text-gray-800 break-all">14be7ec2-6f32-451a-92d4-0961ff82c370</span>
-                  <span className="text-[10px] text-emerald-600 font-medium block">✓ Injected in index.html</span>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-1">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Data Protection</span>
-                  <span className="text-xs font-bold text-gray-800 block">GDPR & CCPA Compliant</span>
-                  <span className="text-[10px] text-gray-500 block">No Cookies · Bot Filtered</span>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-1">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Telemetry Source</span>
-                  <span className="font-mono text-xs text-gray-700 block">https://cloud.umami.is/script.js</span>
-                  <span className="text-[10px] text-emerald-600 font-medium block">✓ Script loaded asynchronously</span>
-                </div>
-              </div>
-
-              {/* Notice explaining how Umami Cloud security headers work */}
-              <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-emerald-900">
-                <div className="space-y-1">
-                  <p className="font-bold flex items-center gap-1.5 text-emerald-950">
-                    <CheckCircle size={14} className="text-emerald-600" /> Real-time Analytics Active
-                  </p>
-                  <p className="text-emerald-800 text-[11px] leading-relaxed">
-                    Umami Cloud secures dashboard views using security headers (<code className="bg-emerald-100 px-1 py-0.5 rounded font-mono">X-Frame-Options</code>). Click below to open your live real-time dashboard in 1 click.
-                  </p>
-                </div>
-                <a
-                  href="https://cloud.umami.is/websites/14be7ec2-6f32-451a-92d4-0961ff82c370"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold text-xs hover:bg-emerald-800 transition whitespace-nowrap shrink-0 shadow-sm"
-                >
-                  View Umami Analytics &rarr;
-                </a>
+              {/* Embedded Live Umami Analytics Dashboard */}
+              <div className="relative w-full h-[620px] rounded-xl overflow-hidden border border-gray-200 bg-gray-50 shadow-inner">
+                <iframe
+                  src="https://cloud.umami.is/share/Ti4vnaf1fhBkM43g"
+                  className="w-full h-full border-0"
+                  title="Umami Live Visitor Analytics"
+                  loading="eager"
+                />
               </div>
             </div>
 
