@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
-import { ArrowRight, Plus, Minus } from 'lucide-react';
+import { ArrowRight, Plus, Minus, CheckCircle, Calendar } from 'lucide-react';
 
 const Contact: React.FC = () => {
   const { addMessage } = useContent();
-  const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', phone: '', message: '' });
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    serviceType: 'Farm Retreat Architecture',
+    location: '',
+    area: '',
+    timeline: '1-3 Months (Immediate)',
+    message: ''
+  });
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('Getting started');
@@ -20,42 +30,56 @@ const Contact: React.FC = () => {
     setStatus('submitting');
     setSubmitError(null);
 
+    const formattedMessage = `[DIRECT CONTACT INQUIRY]
+Service Requested: ${formData.serviceType}
+Location/Country: ${formData.location || 'Not specified'}
+Project Area: ${formData.area || 'Standard'}
+Timeline: ${formData.timeline}
+Phone: ${formData.phone || 'Not provided'}
+
+Client Message:
+${formData.message}`;
+
     // ── Optional: Formspree email delivery ──────────────────────────
-    // Set VITE_FORMSPREE_ID in .env.local to enable real email delivery.
     const formspreeId = import.meta.env.VITE_FORMSPREE_ID as string;
     if (formspreeId) {
       try {
-        const resp = await fetch(`https://formspree.io/f/${formspreeId}`, {
+        await fetch(`https://formspree.io/f/${formspreeId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
           body: JSON.stringify({
             name: `${formData.firstName} ${formData.lastName}`.trim(),
             email: formData.email,
             phone: formData.phone || 'Not provided',
-            message: formData.message,
+            message: formattedMessage,
           }),
         });
-        if (!resp.ok) {
-          console.error('[Contact] Formspree error:', resp.status);
-          // Still save locally — don't block the UX
-        }
       } catch (err) {
         console.error('[Contact] Formspree network error:', err);
       }
     }
 
-    // ── Always save to local admin panel ────────────────────────────
-    addMessage({
+    // ── Always save to local admin panel & trigger email alert ───────
+    await addMessage({
       id: crypto.randomUUID(),
       name: `${formData.firstName} ${formData.lastName}`.trim(),
       email: formData.email,
-      message: `${formData.phone ? `Phone: ${formData.phone}\n` : ''}${formData.message}`,
+      message: formattedMessage,
       date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
     });
 
     setStatus('success');
-    setFormData({ firstName: '', lastName: '', email: '', phone: '', message: '' });
-    setTimeout(() => setStatus('idle'), 5000);
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      serviceType: 'Farm Retreat Architecture',
+      location: '',
+      area: '',
+      timeline: '1-3 Months (Immediate)',
+      message: ''
+    });
   };
 
   const faqData: Record<string, {q: string, a: string}[]> = {
@@ -119,84 +143,183 @@ const Contact: React.FC = () => {
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight text-[#111] leading-tight max-w-sm">
               Send us a Message
             </h2>
+            <p className="text-gray-500 text-sm mt-4 leading-relaxed max-w-sm">
+              Fill out your project details below so we can tailor our initial feedback and schedule a consultation tailored to your vision.
+            </p>
           </div>
 
           {/* Right: Form */}
           <div>
             {status === 'success' ? (
-              <div className="bg-green-50 border border-green-200 text-green-800 p-8 rounded-xl text-center">
-                <h4 className="font-bold text-xl mb-2">Message Sent Successfully!</h4>
-                <p className="text-sm font-medium">Thank you for reaching out. Our team will get back to you shortly.</p>
+              <div className="bg-[#f9fdf5] border border-[#8bc34a]/40 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
+                <div className="flex items-center gap-3.5 bg-[#D1F0AA]/40 border border-[#8bc34a]/50 rounded-2xl p-5">
+                  <CheckCircle className="text-[#2b5711] shrink-0" size={28} />
+                  <div>
+                    <h4 className="font-bold text-gray-900 text-base sm:text-lg">Message Received!</h4>
+                    <p className="text-xs sm:text-sm text-gray-600 mt-0.5">
+                      Thank you for reaching out. We will review your project details and reach out to you within <strong>24 hours</strong>.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Archana Consultation Card */}
+                <div className="bg-[#111] text-white rounded-2xl p-5 sm:p-6 shadow-xl">
+                  <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
+                    <img
+                      src="/archana.png"
+                      alt="Ar. Archana Gavas"
+                      className="w-20 h-20 rounded-full object-cover border-2 border-[#D1F0AA] shrink-0 shadow-md bg-[#222]"
+                    />
+                    <div className="flex-1">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-[#D1F0AA] mb-1">Want to connect right away?</p>
+                      <h3 className="text-base sm:text-lg font-bold text-white mb-1">Book a Call with Ar. Archana Gavas</h3>
+                      <p className="text-xs text-gray-300 mb-4 leading-relaxed">Schedule a 15-minute 1:1 consultation to discuss site context, design scope & project timelines directly.</p>
+                      <a
+                        href="https://topmate.io/archanagavas/1799075?utm_source=contact_page&utm_campaign=contact_lead"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 bg-[#D1F0AA] text-[#111] px-6 py-3 rounded-full text-xs sm:text-sm font-bold hover:scale-105 transition-transform cursor-pointer shadow-md"
+                      >
+                        <Calendar size={16} /> Book Free 1:1 Consultation
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setStatus('idle')}
+                  className="text-xs font-semibold text-gray-500 hover:text-gray-900 underline block mx-auto pt-2 cursor-pointer"
+                >
+                  Send Another Message
+                </button>
               </div>
             ) : (
-              <form className="space-y-6" onSubmit={handleSubmit}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-[#111] ml-1">Name</label>
+              <form className="space-y-5" onSubmit={handleSubmit}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-[#111] ml-1">First Name *</label>
                     <input 
                       type="text" 
                       required
                       value={formData.firstName}
                       onChange={e => setFormData({...formData, firstName: e.target.value})}
                       className="w-full bg-white border border-gray-200 rounded-full px-5 py-3 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-all font-medium text-sm text-[#111]" 
-                      placeholder="Type first name"
+                      placeholder="First name"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-[#111] ml-1">Last Name</label>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-[#111] ml-1">Last Name *</label>
                     <input 
                       type="text" 
                       required
                       value={formData.lastName}
                       onChange={e => setFormData({...formData, lastName: e.target.value})}
                       className="w-full bg-white border border-gray-200 rounded-full px-5 py-3 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-all font-medium text-sm text-[#111]" 
-                      placeholder="Type last name"
+                      placeholder="Last name"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-[#111] ml-1">Email</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-[#111] ml-1">Email Address *</label>
                     <input 
                       type="email" 
                       required
                       value={formData.email}
                       onChange={e => setFormData({...formData, email: e.target.value})}
                       className="w-full bg-white border border-gray-200 rounded-full px-5 py-3 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-all font-medium text-sm text-[#111]" 
-                      placeholder="Type email"
+                      placeholder="you@email.com"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-[#111] ml-1">Phone</label>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-[#111] ml-1">Phone Number *</label>
                     <input 
                       type="tel" 
+                      required
                       value={formData.phone}
                       onChange={e => setFormData({...formData, phone: e.target.value})}
                       className="w-full bg-white border border-gray-200 rounded-full px-5 py-3 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-all font-medium text-sm text-[#111]" 
-                      placeholder="Type phone number"
+                      placeholder="+91 99999 99999"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-[#111] ml-1">Any other message?</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-[#111] ml-1">Primary Service Requested *</label>
+                    <select
+                      value={formData.serviceType}
+                      onChange={e => setFormData({...formData, serviceType: e.target.value})}
+                      className="w-full bg-white border border-gray-200 rounded-full px-5 py-3 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-all font-medium text-sm text-[#111] cursor-pointer"
+                    >
+                      <option value="Farm Retreat Architecture">Farm Retreat Architecture</option>
+                      <option value="Permaculture & Food Forest Design">Permaculture & Food Forest Design</option>
+                      <option value="Luxury Eco Villa & Residence">Luxury Eco Villa & Residence</option>
+                      <option value="Eco Resort & Hospitality Planning">Eco Resort & Hospitality Planning</option>
+                      <option value="Landscape & Site Planning">Landscape & Site Planning</option>
+                      <option value="General Architecture Inquiry">General Architecture Inquiry</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-[#111] ml-1">Project Location / Country *</label>
+                    <input 
+                      type="text" 
+                      required
+                      value={formData.location}
+                      onChange={e => setFormData({...formData, location: e.target.value})}
+                      className="w-full bg-white border border-gray-200 rounded-full px-5 py-3 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-all font-medium text-sm text-[#111]" 
+                      placeholder="e.g. Vadodara, India or California, USA"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-[#111] ml-1">Approx. Site / Land Size</label>
+                    <input 
+                      type="text" 
+                      value={formData.area}
+                      onChange={e => setFormData({...formData, area: e.target.value})}
+                      className="w-full bg-white border border-gray-200 rounded-full px-5 py-3 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-all font-medium text-sm text-[#111]" 
+                      placeholder="e.g. 5 Acres or 2,500 Sq. Ft."
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-[#111] ml-1">Target Timeline *</label>
+                    <select
+                      value={formData.timeline}
+                      onChange={e => setFormData({...formData, timeline: e.target.value})}
+                      className="w-full bg-white border border-gray-200 rounded-full px-5 py-3 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-all font-medium text-sm text-[#111] cursor-pointer"
+                    >
+                      <option value="1-3 Months (Immediate)">1-3 Months (Immediate)</option>
+                      <option value="3-6 Months">3-6 Months</option>
+                      <option value="6-12 Months">6-12 Months</option>
+                      <option value="Exploring & Early Planning">Exploring & Early Planning</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-[#111] ml-1">Tell us about your vision & goals *</label>
                   <textarea 
-                    rows={5} 
+                    rows={4} 
                     required
                     value={formData.message}
                     onChange={e => setFormData({...formData, message: e.target.value})}
                     className="w-full bg-white border border-gray-200 rounded-2xl px-5 py-4 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-all font-medium text-sm text-[#111] resize-none"
-                    placeholder="Type your message"
+                    placeholder="Describe your site context, key objectives, or specific requirements..."
                   ></textarea>
                 </div>
 
                 <button 
                   type="submit" 
                   disabled={status === 'submitting'}
-                  className="w-full bg-[#D1F0AA] text-[#111] rounded-full py-4 text-sm font-bold transition-colors hover:bg-[#bceb81] mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full bg-[#D1F0AA] text-[#111] rounded-full py-4 text-sm font-bold transition-all hover:bg-[#bceb81] mt-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer shadow-sm hover:shadow"
                 >
-                  {status === 'submitting' ? 'Sending...' : 'Submit'}
+                  {status === 'submitting' ? 'Submitting Details...' : 'Submit Inquiry'}
                 </button>
               </form>
             )}
