@@ -54,12 +54,32 @@ export const getCountryByCode = (code: string): CountryPPP => {
   return PPP_COUNTRIES.find(c => c.code === code) || PPP_COUNTRIES.find(c => c.code === 'US') || PPP_COUNTRIES[0];
 };
 
+export type AreaUnit = 'sqft' | 'sqm' | 'acre' | 'hectare' | 'guntha';
+
+export const AREA_UNITS: { code: AreaUnit; label: string; sqftMultiplier: number }[] = [
+  { code: 'sqft', label: 'Sq. Ft. (Square Feet)', sqftMultiplier: 1 },
+  { code: 'sqm', label: 'Sq. M. (Square Meters)', sqftMultiplier: 10.764 },
+  { code: 'acre', label: 'Acres', sqftMultiplier: 43560 },
+  { code: 'hectare', label: 'Hectares', sqftMultiplier: 107639 },
+  { code: 'guntha', label: 'Guntha', sqftMultiplier: 1089 },
+];
+
+export const getAreaMultiplier = (areaVal: number, unit: AreaUnit): number => {
+  if (!areaVal || areaVal <= 0) return 1.0;
+  const unitConfig = AREA_UNITS.find(u => u.code === unit) || AREA_UNITS[0];
+  const totalSqft = areaVal * unitConfig.sqftMultiplier;
+  if (totalSqft <= 2000) return 1.0;
+  // Smooth progressive land scaling:
+  const scale = Math.pow(totalSqft / 2000, 0.25);
+  return Math.min(4.5, Math.max(1.0, scale));
+};
+
 /**
- * Calculates target price formatted in local/international currency using World Bank PPP data
+ * Calculates target price formatted in local/international currency using World Bank PPP data and land area scaling
  */
-export const calculatePPPPrice = (baseINR: number, countryCode: string): string => {
+export const calculatePPPPrice = (baseINR: number, countryCode: string, areaMultiplier: number = 1.0): string => {
   const country = getCountryByCode(countryCode);
-  const multiplier = country.targetPriceRatio / 100;
+  const multiplier = (country.targetPriceRatio / 100) * areaMultiplier;
   const targetINR = baseINR * multiplier;
 
   if (country.code === 'IN') {
@@ -94,7 +114,7 @@ export const calculatePPPPrice = (baseINR: number, countryCode: string): string 
 /**
  * Returns raw target INR amount for benchmark calculations
  */
-export const getTargetINRAmount = (baseINR: number, countryCode: string): number => {
+export const getTargetINRAmount = (baseINR: number, countryCode: string, areaMultiplier: number = 1.0): number => {
   const country = getCountryByCode(countryCode);
-  return Math.round(baseINR * (country.targetPriceRatio / 100));
+  return Math.round(baseINR * (country.targetPriceRatio / 100) * areaMultiplier);
 };

@@ -1778,6 +1778,7 @@ const Admin: React.FC = () => {
                     return line ? line.substring(line.indexOf(':') + 1).trim() : '';
                   };
                   const serviceVal = getVal('Service');
+                  const areaVal = getVal('Project Area');
                   const countryVal = getVal('Country');
                   const totalEstVal = getVal('Total Estimate');
                   const phoneVal = getVal('Phone');
@@ -1796,10 +1797,14 @@ const Admin: React.FC = () => {
                             <a href={`mailto:${msg.email}`} className="text-green-700 hover:underline font-semibold flex items-center gap-1"><Mail size={12}/>{msg.email}</a>
                             {phoneVal && <span className="text-gray-600 font-medium">📞 {phoneVal}</span>}
                           </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
                             <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
                               <p className="text-gray-400 uppercase tracking-widest text-[10px] font-bold mb-1">Service Requested</p>
                               <p className="font-bold text-gray-800">{serviceVal || 'N/A'}</p>
+                            </div>
+                            <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                              <p className="text-gray-400 uppercase tracking-widest text-[10px] font-bold mb-1">Project Area</p>
+                              <p className="font-bold text-gray-800">{areaVal || 'Standard / Unspecified'}</p>
                             </div>
                             <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
                               <p className="text-gray-400 uppercase tracking-widest text-[10px] font-bold mb-1">Client Country</p>
@@ -1809,7 +1814,7 @@ const Admin: React.FC = () => {
                               <p className="text-gray-400 uppercase tracking-widest text-[10px] font-bold mb-1">Total Estimated Cost</p>
                               <p className="font-black text-[#008822] font-mono text-sm">{totalEstVal || 'N/A'}</p>
                             </div>
-                            <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-100 sm:col-span-3">
+                            <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-100 sm:col-span-2 md:col-span-4">
                               <p className="text-gray-400 uppercase tracking-widest text-[10px] font-bold mb-1">Requested Deliverables & Scope</p>
                               <p className="text-gray-800 font-semibold leading-relaxed">{deliverablesVal || 'All standard deliverables selected'}</p>
                             </div>

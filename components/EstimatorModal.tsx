@@ -5,7 +5,7 @@ import { X, ArrowRight, CheckCircle, Calculator, ChevronRight, Calendar } from '
 import { useContent } from '../context/ContentContext';
 import { INITIAL_ESTIMATOR_SERVICES } from '../constants';
 import { EstimatorService } from '../types';
-import { PPP_COUNTRIES, calculatePPPPrice, getCountryByCode } from '../utils/pppPricing';
+import { PPP_COUNTRIES, calculatePPPPrice, getCountryByCode, AREA_UNITS, getAreaMultiplier, AreaUnit } from '../utils/pppPricing';
 
 const TOPMATE = 'https://topmate.io/archanagavas/1799075?utm_source=estimator&utm_campaign=estimate_lead';
 
@@ -18,22 +18,26 @@ export default function EstimatorModal({ onClose }: { onClose: () => void }) {
   const [step, setStep] = useState<Step>('service');
   const [svc, setSvc] = useState<EstimatorService | null>(null);
   const [selected, setSelected] = useState<number[]>([]);
-  const [form, setForm] = useState({ name: '', email: '', phone: '', country: 'IN' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', country: 'IN', area: '', areaUnit: 'sqft' as AreaUnit });
   const [busy, setBusy] = useState(false);
 
   const country = getCountryByCode(form.country);
+  const areaNum = Number(form.area) || 0;
+  const areaMultiplier = getAreaMultiplier(areaNum, form.areaUnit);
   const totalBase = selected.reduce((s, i) => s + (svc?.baseINR[i] || 0), 0);
-  const formattedTotal = calculatePPPPrice(totalBase, form.country);
+  const formattedTotal = calculatePPPPrice(totalBase, form.country, areaMultiplier);
 
-  const getFormattedPrice = (baseINR: number) => calculatePPPPrice(baseINR, form.country);
+  const getFormattedPrice = (baseINR: number) => calculatePPPPrice(baseINR, form.country, areaMultiplier);
 
   const toggle = (i: number) => setSelected(p => p.includes(i) ? p.filter(x => x !== i) : [...p, i]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
+    const areaUnitLabel = AREA_UNITS.find(u => u.code === form.areaUnit)?.label || 'Sq. Ft.';
+    const areaDisplay = form.area ? `${form.area} ${areaUnitLabel}` : 'Standard';
     const subList = selected.map(i => `${svc?.subs[i]} (${getFormattedPrice(svc?.baseINR[i] || 0)})`).filter(Boolean).join(' · ');
-    const msg = `[ESTIMATE REQUEST]\nService: ${svc?.title}\nDeliverables: ${subList}\nTotal Estimate: ${formattedTotal}\nCountry: ${country.flag} ${country.name} (${form.country})\nPhone: ${form.phone}`;
+    const msg = `[ESTIMATE REQUEST]\nService: ${svc?.title}\nProject Area: ${areaDisplay}\nDeliverables: ${subList}\nTotal Estimate: ${formattedTotal}\nCountry: ${country.flag} ${country.name} (${form.country})\nPhone: ${form.phone}`;
     try {
       await fetch('/api/messages', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -188,6 +192,28 @@ export default function EstimatorModal({ onClose }: { onClose: () => void }) {
                   </div>
                 ))}
                 <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#777] mb-1.5">Project / Land Area</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      placeholder="e.g. 2500 or 5"
+                      value={form.area}
+                      onChange={e => setForm(p => ({ ...p, area: e.target.value }))}
+                      className="flex-1 bg-white border border-black/12 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-[#111] placeholder-[#aaa] outline-none focus:border-[#111] transition-colors cursor-text"
+                    />
+                    <select
+                      value={form.areaUnit}
+                      onChange={e => setForm(p => ({ ...p, areaUnit: e.target.value as AreaUnit }))}
+                      className="w-36 sm:w-44 bg-white border border-black/12 rounded-xl px-3 py-2.5 sm:py-3 text-xs sm:text-sm text-[#111] outline-none focus:border-[#111] transition-colors cursor-pointer shrink-0 font-medium"
+                    >
+                      {AREA_UNITS.map(u => (
+                        <option key={u.code} value={u.code}>{u.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
                   <label className="block text-[10px] font-bold uppercase tracking-widest text-[#777] mb-1.5">Your Country *</label>
                   <select
                     required
@@ -239,9 +265,16 @@ export default function EstimatorModal({ onClose }: { onClose: () => void }) {
                       <span>{svc?.icon}</span> {svc?.title}
                     </h4>
                   </div>
-                  <span className="text-[11px] font-semibold px-2.5 py-1 bg-[#111] text-[#CCFF00] rounded-full shrink-0">
-                    {country.flag} {country.name}
-                  </span>
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    <span className="text-[11px] font-semibold px-2.5 py-0.5 bg-[#111] text-[#CCFF00] rounded-full">
+                      {country.flag} {country.name}
+                    </span>
+                    {form.area && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 bg-gray-100 text-gray-700 rounded-md border border-gray-200">
+                        📏 {form.area} {AREA_UNITS.find(u => u.code === form.areaUnit)?.label.split(' ')[0]}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <p className="text-[10px] font-bold uppercase tracking-widest text-[#888] mb-2">Itemized Deliverables</p>
