@@ -149,14 +149,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-black/5' : 'bg-white/90 backdrop-blur-md border-b border-black/5'
       }`}>
-        <div className="max-w-[92%] mx-auto flex items-center justify-between py-3">
-          <Link to="/" className="z-50 flex items-center gap-2.5 text-xl md:text-2xl font-bold tracking-tight text-[#111] hover:opacity-85 transition-opacity duration-300 group">
-            <img src="/logo.png" alt="Anvitam Logo" className="h-10 w-10 object-contain" />
-            Anvitam
-          </Link>
+        <div className="max-w-[95%] xl:max-w-[92%] mx-auto flex items-center justify-between py-3">
+          {/* Logo — Left balanced container */}
+          <div className="flex-1 flex items-center justify-start">
+            <Link to="/" className="z-50 flex items-center gap-2.5 text-xl md:text-2xl font-bold tracking-tight text-[#111] hover:opacity-85 transition-opacity duration-300 group">
+              <img src="/logo.png" alt="Anvitam Logo" className="h-10 w-10 object-contain" />
+              Anvitam
+            </Link>
+          </div>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center space-x-10">
+          {/* Desktop Nav — Perfectly Centered */}
+          <nav className="hidden md:flex items-center justify-center space-x-6 lg:space-x-8">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
@@ -168,8 +171,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             ))}
           </nav>
 
-          {/* CTA + Admin */}
-          <div className="hidden md:flex items-center gap-3">
+          {/* CTA + Admin — Right balanced container */}
+          <div className="hidden md:flex items-center justify-end gap-2.5 xl:gap-3 flex-1">
             <Link
               to="/admin"
               className="text-xs font-semibold text-gray-400 hover:text-[#111] transition-colors border border-gray-200 rounded-full px-3 py-1.5 hover:border-gray-400"
@@ -178,7 +181,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </Link>
             <button
               onClick={() => setEstimatorOpen(true)}
-              className="inline-flex items-center gap-2 border border-[#111] text-[#111] px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#111] hover:text-white transition-all duration-300"
+              className="inline-flex items-center gap-1.5 border border-[#111] text-[#111] px-3.5 py-2 rounded-full text-xs xl:text-sm font-semibold hover:bg-[#111] hover:text-white transition-all duration-300"
             >
               <Calculator size={14} /> Get Estimate
             </button>
@@ -186,7 +189,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               href={TOPMATE}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-5 py-2.5 rounded-full text-sm font-semibold hover:scale-105 transition-transform duration-300"
+              className="inline-flex items-center gap-1.5 bg-[#CCFF00] text-[#111] px-4 xl:px-5 py-2.5 rounded-full text-xs xl:text-sm font-semibold hover:scale-105 transition-transform duration-300"
             >
               Free Consultation →
             </a>

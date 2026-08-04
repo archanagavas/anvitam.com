@@ -31,23 +31,25 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* ── HEADER — Biogax style: white bg, logo left, nav center, neon CTA right ── */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-black/5 transition-all duration-300">
-        <div className="max-w-[92%] mx-auto flex items-center justify-between py-3">
-          {/* Logo */}
-          <Link to="/" className="z-50 hover:opacity-80 transition-opacity">
-            <video
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="h-14 w-auto"
-              src="https://jitter.video/v/1739023402773.mp4"
-            >
-              Anvitam
-            </video>
-          </Link>
+        <div className="max-w-[95%] xl:max-w-[92%] mx-auto flex items-center justify-between py-3">
+          {/* Logo — Left balanced container */}
+          <div className="flex-1 flex items-center justify-start">
+            <Link to="/" className="z-50 hover:opacity-80 transition-opacity">
+              <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="h-14 w-auto"
+                src="https://jitter.video/v/1739023402773.mp4"
+              >
+                Anvitam
+              </video>
+            </Link>
+          </div>
 
-          {/* Desktop Nav — centered */}
-          <nav className="hidden md:flex items-center space-x-10">
+          {/* Desktop Nav — Perfectly Centered */}
+          <nav className="hidden md:flex items-center justify-center space-x-6 lg:space-x-8">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
@@ -59,13 +61,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             ))}
           </nav>
 
-          {/* Neon CTA pill — far right */}
-          <Link
-            to="/contact"
-            className="hidden md:inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-5 py-2.5 rounded-full text-sm font-semibold hover:scale-105 transition-transform duration-300"
-          >
-            Free Design Consultation <span>→</span>
-          </Link>
+          {/* Neon CTA pill — Right balanced container */}
+          <div className="hidden md:flex items-center justify-end flex-1">
+            <Link
+              to="/contact"
+              className="inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-5 py-2.5 rounded-full text-sm font-semibold hover:scale-105 transition-transform duration-300"
+            >
+              Free Design Consultation <span>→</span>
+            </Link>
+          </div>
 
           {/* Mobile hamburger */}
           <button
