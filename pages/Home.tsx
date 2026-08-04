@@ -144,11 +144,7 @@ const Home: React.FC = () => {
       <div className="bg-white border-y border-black/5 py-5 overflow-hidden">
         <p className="text-center text-xs text-[#999] uppercase tracking-widest mb-4">Trusted by our clients</p>
         <div className="relative flex overflow-hidden">
-          <motion.div
-            animate={{ x: ['0%', '-50%'] }}
-            transition={{ repeat: Infinity, ease: 'linear', duration: 30 }}
-            className="flex whitespace-nowrap text-[#333] text-sm font-semibold gap-0"
-          >
+          <div className="animate-marquee-infinite whitespace-nowrap text-[#333] text-sm font-semibold gap-0">
             {[
               'dwelvex studio', 'Unique school of science', 'Beer Bar', 'Shalimar',
               'yourweb3guy', 'Saraya', 'Mahadev Construction', 'Mossaria', 'vanvagado Farm', 'Carpa Lupa', 'The Batukaru Yurt',
@@ -157,7 +153,7 @@ const Home: React.FC = () => {
             ].map((name, i) => (
               <span key={i} className="mx-10 opacity-40 hover:opacity-100 transition-opacity cursor-default">{name}</span>
             ))}
-          </motion.div>
+          </div>
         </div>
       </div>
 
