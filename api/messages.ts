@@ -10,11 +10,27 @@ async function sendLeadEmailNotification(name: string, email: string, message: s
     return;
   }
 
-  // Resend free accounts allow sending to account owner email (anvitamarchitects@gmail.com)
-  // or verified domains. We try sending to both so delivery is guaranteed.
-  const targetEmails = ['anvitamarchitects@gmail.com', 'ar.archanagavas@gmail.com'];
+  // Primary lead intake inbox requested by user
+  const targetEmail = 'anvitamarchitects@gmail.com';
 
-  for (const toEmail of targetEmails) {
+  const htmlBody = `
+    <div style="font-family: Arial, sans-serif; padding: 24px; color: #111; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 16px; background-color: #ffffff;">
+      <h2 style="color: #2b5711; margin-top: 0;">🌿 New Anvitam Website Lead</h2>
+      <p style="font-size: 15px;"><strong>Client Name:</strong> ${name}</p>
+      <p style="font-size: 15px;"><strong>Client Email:</strong> <a href="mailto:${email}" style="color: #0070f3;">${email}</a></p>
+      <p style="font-size: 15px;"><strong>Date:</strong> ${date ?? new Date().toLocaleString()}</p>
+      <div style="background-color: #f9f9f5; padding: 16px; border-left: 4px solid #8bc34a; border-radius: 8px; margin: 20px 0;">
+        <h4 style="margin-top:0; color: #333; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Inquiry & Project Details:</h4>
+        <pre style="white-space: pre-wrap; font-family: inherit; font-size: 14px; margin: 0; color: #222;">${message}</pre>
+      </div>
+      <p style="font-size: 12px; color: #999; border-top: 1px solid #eee; padding-top: 12px;">Automated lead notification sent from anvitam.com</p>
+    </div>
+  `;
+
+  // We try custom domain first (leads@anvitam.com), falling back to onboarding@resend.dev
+  const senders = ['Anvitam Leads <leads@anvitam.com>', 'Anvitam Leads <onboarding@resend.dev>'];
+
+  for (const sender of senders) {
     try {
       const resp = await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -23,30 +39,18 @@ async function sendLeadEmailNotification(name: string, email: string, message: s
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          from: 'Anvitam Web Leads <onboarding@resend.dev>',
-          to: [toEmail],
+          from: sender,
+          to: [targetEmail],
           subject: `🔔 New Anvitam Lead: ${name} (${email})`,
-          html: `
-            <div style="font-family: Arial, sans-serif; padding: 24px; color: #111; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 16px; background-color: #ffffff;">
-              <h2 style="color: #2b5711; margin-top: 0;">🌿 New Anvitam Website Lead</h2>
-              <p style="font-size: 15px;"><strong>Client Name:</strong> ${name}</p>
-              <p style="font-size: 15px;"><strong>Client Email:</strong> <a href="mailto:${email}" style="color: #0070f3;">${email}</a></p>
-              <p style="font-size: 15px;"><strong>Date:</strong> ${date ?? new Date().toLocaleString()}</p>
-              <div style="background-color: #f9f9f5; padding: 16px; border-left: 4px solid #8bc34a; border-radius: 8px; margin: 20px 0;">
-                <h4 style="margin-top:0; color: #333; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Inquiry & Project Details:</h4>
-                <pre style="white-space: pre-wrap; font-family: inherit; font-size: 14px; margin: 0; color: #222;">${message}</pre>
-              </div>
-              <p style="font-size: 12px; color: #999; border-top: 1px solid #eee; padding-top: 12px;">Automated lead notification sent from anvitam.com</p>
-            </div>
-          `
+          html: htmlBody
         })
       });
       const data = await resp.json();
       if (resp.ok) {
-        console.log(`[Resend Success] Email delivered to ${toEmail}:`, data.id);
-        break; // Successfully delivered
+        console.log(`[Resend Success] Email delivered to ${targetEmail} via ${sender}:`, data.id);
+        break; // Successfully delivered!
       } else {
-        console.warn(`[Resend Warning] Resend status ${resp.status} for ${toEmail}:`, data);
+        console.warn(`[Resend Sender Warning] ${sender} failed (Status ${resp.status}):`, data.message || data);
       }
     } catch (err) {
       console.error('[Resend Error]', err);
