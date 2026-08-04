@@ -501,9 +501,9 @@ const Home: React.FC = () => {
       <section className="bg-[#EFEFEB] py-24 px-6 md:px-16 lg:px-24">
         <div className="max-w-screen-xl mx-auto">
           <FadeUp>
-            <div className="mb-16">
+            <div className="mb-12">
               <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-[#111] mb-4">
-                Engagement Models
+                Engagement Model
               </h2>
               <p className="text-[#555] text-base max-w-lg">
                 Flexible ways to collaborate on your next <strong>community centre design</strong> or{' '}
@@ -511,22 +511,9 @@ const Home: React.FC = () => {
               </p>
             </div>
           </FadeUp>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Partnership Model */}
-            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="bg-white rounded-3xl p-10 flex flex-col justify-between min-h-[320px] hover:shadow-lg transition-shadow">
-              <div>
-                <h3 className="text-2xl md:text-3xl font-bold mb-2">Partnership Model</h3>
-                <p className="text-xs font-bold uppercase tracking-widest text-[#CCAA00] mb-6">Revenue Share (15%/Quarter)</p>
-                <p className="text-[#555] text-sm leading-relaxed mb-2">
-                  For complex projects including wellness centres and homestay developments, we act as long-term design partners, leading the architectural scope with a focus on environmental performance and longevity.
-                </p>
-              </div>
-              <Link to="/contact" className="inline-flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-[#111] border-b border-[#111]/30 pb-1 w-fit hover:gap-5 transition-all mt-8">
-                Explore Partnership <ArrowRight size={14} />
-              </Link>
-            </motion.div>
+          <div className="max-w-2xl">
             {/* Retainer Model */}
-            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }} className="bg-white rounded-3xl p-10 flex flex-col justify-between min-h-[320px] hover:shadow-lg transition-shadow">
+            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="bg-white rounded-3xl p-8 sm:p-10 flex flex-col justify-between min-h-[280px] hover:shadow-lg transition-shadow">
               <div>
                 <h3 className="text-2xl md:text-3xl font-bold mb-2">Retainer Model</h3>
                 <p className="text-xs font-bold uppercase tracking-widest text-[#2a7a4f] mb-6">Starting ₹25,000/month</p>
