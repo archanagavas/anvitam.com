@@ -61,7 +61,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (id) {
         const rows = await sql`
           SELECT id, title, description, price, link, image, tags, category, created_at,
-                 meta_title, meta_description, meta_keywords, meta_robots
+                 meta_title, meta_description, meta_keywords, meta_robots, youtube_url, videos
           FROM digital_products WHERE id = ${id}
         `;
         if (rows.length === 0) {
@@ -82,6 +82,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           image: r.image || '',
           tags: r.tags ?? [],
           category: r.category || 'E-Books',
+          youtubeUrl: r.youtube_url || '',
+          videos: r.videos ?? [],
           metaTitle: r.meta_title || '',
           metaDescription: r.meta_description || '',
           metaKeywords: r.meta_keywords || '',
@@ -91,7 +93,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const rows = await sql`
         SELECT id, title, description, price, link, image, tags, category, created_at,
-               meta_title, meta_description, meta_keywords, meta_robots
+               meta_title, meta_description, meta_keywords, meta_robots, youtube_url, videos
         FROM digital_products ORDER BY created_at DESC
       `;
       const products = rows.map(r => ({
@@ -103,6 +105,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         image: r.image || '',
         tags: r.tags ?? [],
         category: r.category || 'E-Books',
+        youtubeUrl: r.youtube_url || '',
+        videos: r.videos ?? [],
         metaTitle: r.meta_title || '',
         metaDescription: r.meta_description || '',
         metaKeywords: r.meta_keywords || '',
@@ -128,7 +132,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'POST') {
-    const { id: bodyId, title, description, price, link, image, tags, category,
+    const { id: bodyId, title, description, price, link, image, tags, category, youtubeUrl, videos,
             metaTitle, metaDescription, metaKeywords, metaRobots } = req.body ?? {};
     const targetId = id || bodyId;
     if (!targetId) {
@@ -136,9 +140,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     await sql`
-      INSERT INTO digital_products (id, title, description, price, link, image, tags, category,
+      INSERT INTO digital_products (id, title, description, price, link, image, tags, category, youtube_url, videos,
                                     meta_title, meta_description, meta_keywords, meta_robots)
       VALUES (${targetId}, ${title}, ${description ?? ''}, ${price ?? ''}, ${link ?? ''}, ${image ?? ''}, ${JSON.stringify(tags ?? [])}, ${category ?? 'E-Books'},
+              ${youtubeUrl ?? ''}, ${JSON.stringify(videos ?? [])},
               ${metaTitle ?? null}, ${metaDescription ?? null}, ${metaKeywords ?? null}, ${metaRobots ?? null})
       ON CONFLICT (id) DO UPDATE SET
         title = EXCLUDED.title,
@@ -148,6 +153,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         image = EXCLUDED.image,
         tags = EXCLUDED.tags,
         category = EXCLUDED.category,
+        youtube_url = EXCLUDED.youtube_url,
+        videos = EXCLUDED.videos,
         meta_title = EXCLUDED.meta_title,
         meta_description = EXCLUDED.meta_description,
         meta_keywords = EXCLUDED.meta_keywords,
@@ -160,7 +167,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!id) {
       return res.status(400).json({ error: 'Missing product ID' });
     }
-    const { title, description, price, link, image, tags, category,
+    const { title, description, price, link, image, tags, category, youtubeUrl, videos,
             metaTitle, metaDescription, metaKeywords, metaRobots } = req.body ?? {};
 
     await sql`
@@ -172,6 +179,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         image = ${image ?? ''},
         tags = ${JSON.stringify(tags ?? [])},
         category = ${category ?? 'E-Books'},
+        youtube_url = ${youtubeUrl ?? ''},
+        videos = ${JSON.stringify(videos ?? [])},
         meta_title = ${metaTitle ?? null},
         meta_description = ${metaDescription ?? null},
         meta_keywords = ${metaKeywords ?? null},

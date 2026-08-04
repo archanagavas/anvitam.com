@@ -137,6 +137,8 @@ export interface DigitalProduct {
   image: string;
   tags: string[];
   category?: string;
+  youtubeUrl?: string;
+  videos?: { url: string; caption: string }[];
   metaTitle?: string;
   metaDescription?: string;
   metaKeywords?: string;

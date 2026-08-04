@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ArrowLeft, Save, Sparkles, AlertCircle, X, Plus, Trash2, 
-  Image as ImageIcon, Link as LinkIcon, Tag, CheckCircle
+  Image as ImageIcon, Link as LinkIcon, Tag, CheckCircle, Video, Play
 } from 'lucide-react';
 import { DigitalProduct } from '../types';
 import { generateContentDescription } from '../services/geminiService';
@@ -68,6 +68,10 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ initial, onSave, onCancel
   const [image, setImage] = useState(initial?.image || '');
   const [description, setDescription] = useState(initial?.description || '');
   
+  // Videos & YouTube Embed
+  const [youtubeUrl, setYoutubeUrl] = useState(initial?.youtubeUrl || '');
+  const [videos, setVideos] = useState<{ url: string; caption: string }[]>(initial?.videos || []);
+
   // Tags
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>(initial?.tags || []);
@@ -83,6 +87,17 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ initial, onSave, onCancel
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const getEmbedUrl = (url: string): { embedUrl: string; type: 'youtube' | 'instagram' } | null => {
+    if (!url.trim()) return null;
+    const ytMatch = url.match(
+      /(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+    );
+    if (ytMatch) return { embedUrl: `https://www.youtube.com/embed/${ytMatch[1]}?rel=0&modestbranding=1`, type: 'youtube' };
+    const igMatch = url.match(/instagram\.com\/(reel|p|tv)\/([A-Za-z0-9_-]+)/);
+    if (igMatch) return { embedUrl: `https://www.instagram.com/${igMatch[1]}/${igMatch[2]}/embed/`, type: 'instagram' };
+    return null;
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -154,6 +169,8 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ initial, onSave, onCancel
       image: image || 'https://picsum.photos/400/300?random=product',
       tags,
       category,
+      youtubeUrl: youtubeUrl.trim(),
+      videos,
       metaTitle: metaTitle.trim() || title.trim(),
       metaDescription: metaDescription.trim() || description.trim(),
       metaKeywords: metaKeywords.trim(),
@@ -183,7 +200,7 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ initial, onSave, onCancel
               {initial ? 'Edit Product' : 'Create New Product'}
             </h3>
             <p className="text-xxs text-gray-400 mt-0.5">
-              {initial ? 'Update shop listing fields' : 'Fill details to add to shop index'}
+              {initial ? 'Update shop listing fields & YouTube video embeds' : 'Fill details to add to shop index'}
             </p>
           </div>
         </div>
@@ -278,6 +295,65 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ initial, onSave, onCancel
                   value={price}
                   onChange={e => setPrice(e.target.value)}
                 />
+              </div>
+            </div>
+
+            {/* ── YouTube Video Embed Section ── */}
+            <div className="bg-white border border-gray-150 rounded-xl p-5 shadow-sm space-y-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h4 className="text-sm font-bold flex items-center gap-1.5 text-gray-800">
+                    <Video size={16} className="text-red-500" /> YouTube / Video Embed
+                  </h4>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Paste a <strong>YouTube</strong> or <strong>Instagram</strong> link to embed an explainer video on the shop product card.
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">
+                    Primary YouTube Video URL
+                  </label>
+                  <div className="relative">
+                    <Play size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-red-500" />
+                    <input
+                      type="url"
+                      placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+                      value={youtubeUrl}
+                      onChange={e => setYoutubeUrl(e.target.value)}
+                      className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-xs font-mono outline-none focus:border-black bg-white"
+                    />
+                  </div>
+                </div>
+
+                {/* Live YouTube Preview */}
+                {youtubeUrl.trim() && (() => {
+                  const embed = getEmbedUrl(youtubeUrl);
+                  if (embed) {
+                    return (
+                      <div className="rounded-xl overflow-hidden border border-gray-200 bg-black mt-2">
+                        <div className="flex items-center justify-between px-3 py-1.5 bg-gray-900 border-b border-gray-700 text-[10px] text-red-400 font-bold uppercase tracking-wider">
+                          <span>▶ YouTube Live Preview</span>
+                          <span className="text-gray-500 font-normal">Ready to share</span>
+                        </div>
+                        <iframe
+                          src={embed.embedUrl}
+                          className="w-full h-52 border-0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          title="YouTube Product Video Preview"
+                        />
+                      </div>
+                    );
+                  }
+                  return (
+                    <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-200">
+                      Please enter a valid YouTube link to preview (e.g. https://www.youtube.com/watch?v=...)
+                    </p>
+                  );
+                })()}
               </div>
             </div>
 

@@ -1,10 +1,19 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
-import { ExternalLink, ShoppingBag, BookOpen, FileText, Layers, Video, ArrowRight, Star, Users, Clock } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ExternalLink, ShoppingBag, BookOpen, FileText, Layers, Video, ArrowRight, Star, Users, Clock, Play, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const TOPMATE_BASE = 'https://topmate.io/archanagavas';
+
+const getEmbedUrl = (url: string): { embedUrl: string; type: 'youtube' | 'instagram' } | null => {
+  if (!url || !url.trim()) return null;
+  const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  if (ytMatch) return { embedUrl: `https://www.youtube.com/embed/${ytMatch[1]}?rel=0&modestbranding=1&autoplay=1`, type: 'youtube' };
+  const igMatch = url.match(/instagram\.com\/(reel|p|tv)\/([A-Za-z0-9_-]+)/);
+  if (igMatch) return { embedUrl: `https://www.instagram.com/${igMatch[1]}/${igMatch[2]}/embed/`, type: 'instagram' };
+  return null;
+};
 
 // ── Static course data (Topmate-hosted) ──────────────────────────────────
 const COURSES = [
@@ -74,6 +83,7 @@ const stagger = {
 const Shop: React.FC = () => {
   const { digitalProducts } = useContent();
   const [activeCategory, setActiveCategory] = useState('All');
+  const [activeVideoModal, setActiveVideoModal] = useState<{ url: string; title: string } | null>(null);
 
   const filteredProducts = activeCategory === 'All'
     ? digitalProducts.filter(p => p.category !== 'Online Courses')
@@ -95,6 +105,8 @@ const Shop: React.FC = () => {
           image: c.image,
           tags: c.tags,
           level: fallback ? fallback.level : 'All levels',
+          youtubeUrl: c.youtubeUrl,
+          videos: c.videos,
         };
       })
     : COURSES;
@@ -150,57 +162,71 @@ const Shop: React.FC = () => {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {displayCourses.map((course, i) => (
-              <motion.div key={course.id} variants={fadeUp} custom={i}>
-                <div className="bg-white rounded-2xl overflow-hidden border border-black/5 hover:shadow-xl transition-all duration-300 flex flex-col h-full group">
-                  <div className="relative h-52 overflow-hidden">
-                    <img src={course.image} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                    <div className="absolute top-3 left-3">
-                      <span className={`text-[10px] font-bold uppercase tracking-wider border px-2.5 py-1 rounded-full ${levelColors[course.level] || levelColors.Beginner}`}>
-                        {course.level}
-                      </span>
-                    </div>
-                    <div className="absolute bottom-0 left-0 p-5">
-                      <div className="flex flex-wrap gap-1.5 mb-2">
-                        {course.tags.map(t => (
-                          <span key={t} className="text-[10px] font-semibold text-white/80 bg-white/15 backdrop-blur-sm px-2 py-0.5 rounded-full">{t}</span>
-                        ))}
+            {displayCourses.map((course, i) => {
+              const hasVideo = course.youtubeUrl || (course.videos && course.videos.length > 0);
+              const videoTarget = course.youtubeUrl || (course.videos && course.videos[0]?.url);
+              return (
+                <motion.div key={course.id} variants={fadeUp} custom={i}>
+                  <div className="bg-white rounded-2xl overflow-hidden border border-black/5 hover:shadow-xl transition-all duration-300 flex flex-col h-full group">
+                    <div className="relative h-52 overflow-hidden">
+                      <img src={course.image} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                      <div className="absolute top-3 left-3">
+                        <span className={`text-[10px] font-bold uppercase tracking-wider border px-2.5 py-1 rounded-full ${levelColors[course.level] || levelColors.Beginner}`}>
+                          {course.level}
+                        </span>
                       </div>
-                      <h3 className="text-white font-bold text-lg leading-snug">{course.title}</h3>
+                      {hasVideo && videoTarget && (
+                        <button
+                          onClick={() => setActiveVideoModal({ url: videoTarget, title: course.title })}
+                          className="absolute inset-0 flex items-center justify-center bg-black/40 hover:bg-black/60 transition-colors group/play"
+                        >
+                          <div className="w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg group-hover/play:scale-110 transition-transform">
+                            <Play size={20} className="fill-white ml-1" />
+                          </div>
+                        </button>
+                      )}
+                      <div className="absolute bottom-0 left-0 p-5 pointer-events-none">
+                        <div className="flex flex-wrap gap-1.5 mb-2">
+                          {course.tags.map(t => (
+                            <span key={t} className="text-[10px] font-semibold text-white/80 bg-white/15 backdrop-blur-sm px-2 py-0.5 rounded-full">{t}</span>
+                          ))}
+                        </div>
+                        <h3 className="text-white font-bold text-lg leading-snug">{course.title}</h3>
+                      </div>
+                    </div>
+                    <div className="p-6 flex flex-col flex-grow">
+                      <p className="text-[#555] text-sm leading-relaxed mb-4 flex-grow">{course.description}</p>
+                      <div className="grid grid-cols-3 gap-2 mb-5 text-center">
+                        <div className="bg-gray-50 rounded-xl py-2.5 px-1 border border-gray-100">
+                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Duration</p>
+                          <p className="text-xs font-bold text-[#111] flex items-center justify-center gap-1"><Clock size={10} />{course.duration}</p>
+                        </div>
+                        <div className="bg-gray-50 rounded-xl py-2.5 px-1 border border-gray-100">
+                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Students</p>
+                          <p className="text-xs font-bold text-[#111] flex items-center justify-center gap-1"><Users size={10} />{course.students}</p>
+                        </div>
+                        <div className="bg-gray-50 rounded-xl py-2.5 px-1 border border-gray-100">
+                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Rating</p>
+                          <p className="text-xs font-bold text-[#111] flex items-center justify-center gap-1"><Star size={10} className="text-yellow-500" />{course.rating}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xl font-bold text-[#111]">{course.price}</span>
+                        <a
+                          href={course.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-5 py-2.5 rounded-full text-xs font-bold hover:scale-105 transition-transform"
+                        >
+                          Enroll on Topmate <ExternalLink size={12} />
+                        </a>
+                      </div>
                     </div>
                   </div>
-                  <div className="p-6 flex flex-col flex-grow">
-                    <p className="text-[#555] text-sm leading-relaxed mb-4 flex-grow">{course.description}</p>
-                    <div className="grid grid-cols-3 gap-2 mb-5 text-center">
-                      <div className="bg-gray-50 rounded-xl py-2.5 px-1 border border-gray-100">
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Duration</p>
-                        <p className="text-xs font-bold text-[#111] flex items-center justify-center gap-1"><Clock size={10} />{course.duration}</p>
-                      </div>
-                      <div className="bg-gray-50 rounded-xl py-2.5 px-1 border border-gray-100">
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Students</p>
-                        <p className="text-xs font-bold text-[#111] flex items-center justify-center gap-1"><Users size={10} />{course.students}</p>
-                      </div>
-                      <div className="bg-gray-50 rounded-xl py-2.5 px-1 border border-gray-100">
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Rating</p>
-                        <p className="text-xs font-bold text-[#111] flex items-center justify-center gap-1"><Star size={10} className="text-yellow-500" />{course.rating}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xl font-bold text-[#111]">{course.price}</span>
-                      <a
-                        href={course.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-5 py-2.5 rounded-full text-xs font-bold hover:scale-105 transition-transform"
-                      >
-                        Enroll on Topmate <ExternalLink size={12} />
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </div>
 
           {/* Topmate CTA */}
@@ -262,52 +288,121 @@ const Shop: React.FC = () => {
               </motion.div>
             ) : (
               <motion.div variants={stagger} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredProducts.map(product => (
-                  <motion.div key={product.id} variants={fadeUp}>
-                    <div className="group border border-[#0a0a0a]/10 hover:border-[#111]/30 hover:shadow-2xl transition-all duration-500 bg-white flex flex-col h-full rounded-2xl overflow-hidden">
-                      <div className="aspect-[4/3] overflow-hidden bg-gray-50 relative">
-                        <img
-                          src={product.image}
-                          alt={product.title}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
-                        <div className="absolute top-4 right-4 bg-[#CCFF00] text-[#111] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.15em] rounded-full shadow-sm">
-                          {product.price}
+                {filteredProducts.map(product => {
+                  const hasVideo = product.youtubeUrl || (product.videos && product.videos.length > 0);
+                  const videoTarget = product.youtubeUrl || (product.videos && product.videos[0]?.url);
+                  return (
+                    <motion.div key={product.id} variants={fadeUp}>
+                      <div className="group border border-[#0a0a0a]/10 hover:border-[#111]/30 hover:shadow-2xl transition-all duration-500 bg-white flex flex-col h-full rounded-2xl overflow-hidden">
+                        <div className="aspect-[4/3] overflow-hidden bg-gray-50 relative">
+                          <img
+                            src={product.image}
+                            alt={product.title}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
+                          <div className="absolute top-4 right-4 bg-[#CCFF00] text-[#111] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.15em] rounded-full shadow-sm">
+                            {product.price}
+                          </div>
+                          {hasVideo && videoTarget && (
+                            <button
+                              onClick={() => setActiveVideoModal({ url: videoTarget, title: product.title })}
+                              className="absolute inset-0 flex items-center justify-center bg-black/35 hover:bg-black/55 transition-colors group/play"
+                            >
+                              <div className="w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg group-hover/play:scale-110 transition-transform">
+                                <Play size={20} className="fill-white ml-1" />
+                              </div>
+                            </button>
+                          )}
+                        </div>
+                        <div className="p-7 flex flex-col flex-grow">
+                          <div className="flex flex-wrap gap-1.5 mb-4">
+                            {product.tags.map(tag => (
+                              <span key={tag} className="text-[10px] uppercase tracking-[0.15em] bg-[#f5f5f0] text-[#555] px-2.5 py-1 rounded-full border border-gray-100">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                          <h3 className="text-xl font-bold text-[#0a0a0a] mb-3 leading-snug group-hover:text-[#555] transition-colors">
+                            {product.title}
+                          </h3>
+                          <p className="text-[#555] text-sm leading-relaxed mb-6 flex-grow">
+                            {product.description}
+                          </p>
+
+                          {/* Embed Inline or Play Button */}
+                          {hasVideo && videoTarget && (
+                            <button
+                              onClick={() => setActiveVideoModal({ url: videoTarget, title: product.title })}
+                              className="mb-4 flex items-center justify-center gap-2 border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 py-2.5 rounded-xl text-xs font-bold transition-colors"
+                            >
+                              <Play size={14} className="fill-red-600 text-red-600" /> Watch Video Overview
+                            </button>
+                          )}
+
+                          <a
+                            href={product.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full flex items-center justify-center gap-2 bg-[#111] text-white py-4 text-xs font-bold uppercase tracking-[0.15em] hover:bg-[#CCFF00] hover:text-[#111] transition-colors rounded-xl"
+                          >
+                            <ShoppingBag size={14} />
+                            <span>Get on Topmate</span>
+                            <ExternalLink size={12} className="opacity-60" />
+                          </a>
                         </div>
                       </div>
-                      <div className="p-7 flex flex-col flex-grow">
-                        <div className="flex flex-wrap gap-1.5 mb-4">
-                          {product.tags.map(tag => (
-                            <span key={tag} className="text-[10px] uppercase tracking-[0.15em] bg-[#f5f5f0] text-[#555] px-2.5 py-1 rounded-full border border-gray-100">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                        <h3 className="text-xl font-bold text-[#0a0a0a] mb-3 leading-snug group-hover:text-[#555] transition-colors">
-                          {product.title}
-                        </h3>
-                        <p className="text-[#555] text-sm leading-relaxed mb-6 flex-grow">
-                          {product.description}
-                        </p>
-                        <a
-                          href={product.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="w-full flex items-center justify-center gap-2 bg-[#111] text-white py-4 text-xs font-bold uppercase tracking-[0.15em] hover:bg-[#CCFF00] hover:text-[#111] transition-colors rounded-xl"
-                        >
-                          <ShoppingBag size={14} />
-                          <span>Get on Topmate</span>
-                          <ExternalLink size={12} className="opacity-60" />
-                        </a>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  );
+                })}
               </motion.div>
             )}
           </motion.div>
         </div>
       </section>
+
+      {/* ── Video Modal ── */}
+      <AnimatePresence>
+        {activeVideoModal && (() => {
+          const embed = getEmbedUrl(activeVideoModal.url);
+          if (!embed) return null;
+          return (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setActiveVideoModal(null)}
+              className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 md:p-8"
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={e => e.stopPropagation()}
+                className="bg-black border border-gray-800 rounded-2xl overflow-hidden w-full max-w-4xl shadow-2xl relative"
+              >
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-850 bg-gray-950">
+                  <h4 className="text-white font-bold text-sm truncate pr-4">{activeVideoModal.title}</h4>
+                  <button
+                    onClick={() => setActiveVideoModal(null)}
+                    className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+                <div className="aspect-video w-full">
+                  <iframe
+                    src={embed.embedUrl}
+                    className="w-full h-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title={activeVideoModal.title}
+                  />
+                </div>
+              </motion.div>
+            </motion.div>
+          );
+        })()}
+      </AnimatePresence>
     </div>
   );
 };
