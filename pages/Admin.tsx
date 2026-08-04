@@ -1538,109 +1538,108 @@ const Admin: React.FC = () => {
                 <RefreshCw size={12} /> Sync
               </button>
             </div>
-            {/* ── Native Umami Real-Time Analytics Dashboard ── */}
+            {/* ── Genuine Real-Time Analytics & Telemetry Hub ── */}
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
                 <div>
                   <h3 className="text-base font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
                     <Activity size={18} className="text-emerald-500" />
-                    Live Visitor Traffic & Blog Analytics (Umami Connected)
+                    Genuine Live Analytics & Search Console Telemetry
                   </h3>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    Real-time privacy-first tracking powered by your Umami instance (<code className="font-mono text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">14be7ec2-6f32-451a-92d4-0961ff82c370</code>).
+                    No simulated metrics. Access 100% legitimate traffic, keyword impressions, and reader data directly.
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1.5 shrink-0">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                    Live Script Active
+                    Live Scripts Active
                   </span>
-                  <a
-                    href="https://cloud.umami.is/analytics/us/share/Ti4vnaf1fhBkM43g"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-emerald-800 transition shadow-sm"
-                  >
-                    Open Live Umami Dashboard <Globe size={13} />
-                  </a>
                 </div>
               </div>
 
-              {/* Real Metrics Summary Bar */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 space-y-1">
-                  <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">Live Script Tag</span>
-                  <span className="text-xs font-bold text-emerald-950 block flex items-center gap-1">
-                    <CheckCircle size={12} className="text-emerald-600" /> Active in HTML Head
-                  </span>
-                  <span className="text-[10px] text-emerald-700 block">cloud.umami.is/script.js</span>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-1">
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">Data Protection</span>
-                  <span className="text-xs font-bold text-gray-800 block">100% GDPR Compliant</span>
-                  <span className="text-[10px] text-gray-500 block">No Cookies · Privacy First</span>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-1">
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">Tracking Mode</span>
-                  <span className="text-xs font-bold text-gray-800 block">Asynchronous Async</span>
-                  <span className="text-[10px] text-gray-500 block">Zero page load impact</span>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-1">
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">Public Share URL</span>
-                  <span className="text-xs font-bold text-emerald-700 block truncate">Ti4vnaf1fhBkM43g</span>
-                  <a
-                    href="https://cloud.umami.is/analytics/us/share/Ti4vnaf1fhBkM43g"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[10px] text-black font-semibold hover:underline block"
-                  >
-                    View Report &rarr;
-                  </a>
-                </div>
-              </div>
-
-              {/* Visitor Traffic Chart */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center justify-between">
-                  <span>Weekly Visitor Traffic Breakdown</span>
-                  <span className="text-[10px] font-normal text-gray-500">Updated Real-Time via Telemetry</span>
-                </h4>
-                <div className="h-64 bg-gray-50 p-4 rounded-xl border border-gray-100">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={ANALYTICS_DATA}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                      <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} />
-                      <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} />
-                      <Tooltip cursor={{ fill: '#f3f4f6' }} contentStyle={{ border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                      <Bar dataKey="visitors" fill="#10b981" radius={[6, 6, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* Top Read Blog Posts & Content Performance */}
-              <div className="border-t border-gray-100 pt-4 space-y-3">
-                <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center justify-between">
-                  <span>Most Read Blogs & Articles</span>
-                  <span className="text-[10px] font-normal text-gray-500">Tracked Pageviews</span>
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {[
-                    { title: 'Mud House Construction & Vernacular Architecture', path: '/blog/mud-house-architecture', shares: '42% of traffic' },
-                    { title: 'Permaculture Farm Retreat Design Principles', path: '/blog/permaculture-farm-retreat', shares: '28% of traffic' },
-                    { title: 'Airbnb & Homestay Sustainable Architecture Guide', path: '/blog/airbnb-homestay-design', shares: '18% of traffic' },
-                    { title: 'Eco-Resort & Boutique Stay Masterplanning', path: '/blog/eco-resort-masterplanning', shares: '12% of traffic' },
-                  ].map((blog, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-100 text-xs">
-                      <div className="truncate pr-2">
-                        <span className="font-semibold text-gray-800 block truncate">{blog.title}</span>
-                        <span className="font-mono text-[10px] text-gray-400">{blog.path}</span>
-                      </div>
-                      <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 text-[10px] shrink-0">
-                        {blog.shares}
-                      </span>
+              {/* Direct Access Cards for Real Data Sources */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Umami */}
+                <div className="bg-emerald-50/60 p-5 rounded-xl border border-emerald-200 space-y-3 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-emerald-950 uppercase tracking-wider">Umami Cloud</span>
+                      <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">Active Script</span>
                     </div>
-                  ))}
+                    <p className="text-xs text-emerald-800 mt-2 leading-relaxed">
+                      Privacy-first real-time visitor counts, referrer sites, and top read blog post URLs.
+                    </p>
+                  </div>
+                  <a
+                    href="https://cloud.umami.is/analytics/us/share/Ti4vnaf1fhBkM43g"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs py-2.5 px-4 rounded-lg transition text-center block shadow-sm"
+                  >
+                    View Umami Real Traffic &rarr;
+                  </a>
+                </div>
+
+                {/* Google Search Console */}
+                <div className="bg-blue-50/60 p-5 rounded-xl border border-blue-200 space-y-3 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-blue-950 uppercase tracking-wider">Google Search Console</span>
+                      <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded">Site Verified</span>
+                    </div>
+                    <p className="text-xs text-blue-800 mt-2 leading-relaxed">
+                      Exact Google search queries, impressions, click-through rates (CTR), and average keyword rankings.
+                    </p>
+                  </div>
+                  <a
+                    href="https://search.google.com/search-console"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs py-2.5 px-4 rounded-lg transition text-center block shadow-sm"
+                  >
+                    Open Google Search Console &rarr;
+                  </a>
+                </div>
+
+                {/* Google Analytics 4 */}
+                <div className="bg-amber-50/60 p-5 rounded-xl border border-amber-200 space-y-3 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-amber-950 uppercase tracking-wider">Google Analytics (GA4)</span>
+                      <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded">G-Y6HN9JF1CM</span>
+                    </div>
+                    <p className="text-xs text-amber-800 mt-2 leading-relaxed">
+                      User demographics, geographic traffic distribution, session duration, and retention events.
+                    </p>
+                  </div>
+                  <a
+                    href="https://analytics.google.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs py-2.5 px-4 rounded-lg transition text-center block shadow-sm"
+                  >
+                    Open Google Analytics &rarr;
+                  </a>
+                </div>
+              </div>
+
+              {/* API Integration Guide for Direct Backend Extraction */}
+              <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 space-y-3 text-xs">
+                <h4 className="font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                  <Database size={14} className="text-gray-600" />
+                  How to fetch raw GA4 & Search Console data directly inside this page
+                </h4>
+                <p className="text-gray-600 leading-relaxed">
+                  Google and Umami require authenticated API Service Account Keys to stream your private traffic & keyword data directly into backend endpoints. To render raw JSON graphs inside this dashboard, add these environment variables to Vercel:
+                </p>
+                <div className="bg-gray-900 text-emerald-400 p-3 rounded-lg font-mono text-[11px] space-y-1 overflow-x-auto">
+                  <p># 1. Umami API Token (Umami Settings &rarr; API Keys)</p>
+                  <p>UMAMI_API_TOKEN=um_live_xxxxxxxxxxxxxxxxxxxx</p>
+                  <p className="pt-1"># 2. Google Search Console Service Account JSON</p>
+                  <p>GOOGLE_SEARCH_CONSOLE_KEY=&#123;&quot;type&quot;:&quot;service_account&quot;,...&#125;</p>
+                  <p className="pt-1"># 3. Google Analytics GA4 Data API Property ID</p>
+                  <p>GA4_PROPERTY_ID=15078622590</p>
                 </div>
               </div>
             </div>
