@@ -32,8 +32,8 @@ export default function EstimatorModal({ onClose }: { onClose: () => void }) {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const subList = selected.map(i => `${svc?.subs[i]} (${getFormattedPrice(svc?.baseINR[i] || 0)})`).filter(Boolean).join(', ');
-    const msg = `[ESTIMATE REQUEST]\nService: ${svc?.title}\nDeliverables & Costs: ${subList}\nTotal Estimate: ${formattedTotal}\nCountry: ${form.country} (${country.name})\nPhone: ${form.phone}`;
+    const subList = selected.map(i => `${svc?.subs[i]} (${getFormattedPrice(svc?.baseINR[i] || 0)})`).filter(Boolean).join(' · ');
+    const msg = `[ESTIMATE REQUEST]\nService: ${svc?.title}\nDeliverables: ${subList}\nTotal Estimate: ${formattedTotal}\nCountry: ${country.flag} ${country.name} (${form.country})\nPhone: ${form.phone}`;
     try {
       await fetch('/api/messages', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },

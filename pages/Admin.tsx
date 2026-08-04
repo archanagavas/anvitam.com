@@ -1773,42 +1773,57 @@ const Admin: React.FC = () => {
                   <div className="text-center py-20 bg-white rounded-xl border border-gray-100 text-gray-400">No estimate leads yet. Share the estimator tool to get started.</div>
                 ) : leads.map(msg => {
                   const lines = (msg.message || '').split('\n');
-                  const get = (key: string) => lines.find(l => l.startsWith(key))?.replace(key, '').trim() || '';
+                  const getVal = (prefix: string) => {
+                    const line = lines.find(l => l.toLowerCase().startsWith(prefix.toLowerCase()));
+                    return line ? line.substring(line.indexOf(':') + 1).trim() : '';
+                  };
+                  const serviceVal = getVal('Service');
+                  const countryVal = getVal('Country');
+                  const totalEstVal = getVal('Total Estimate');
+                  const phoneVal = getVal('Phone');
+                  const deliverablesVal = getVal('Deliverables') || getVal('Deliverables & Costs') || (msg.message || '');
+
                   return (
-                    <div key={msg.id} className="bg-white p-5 rounded-xl border border-[#CCFF00]/40 shadow-sm">
+                    <div key={msg.id} className="bg-white p-5 rounded-2xl border border-[#CCFF00]/60 shadow-sm space-y-3">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="text-[10px] font-bold uppercase tracking-widest bg-[#CCFF00] text-[#111] px-2 py-0.5 rounded-full">Estimate Lead</span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest bg-[#CCFF00] text-[#111] px-2.5 py-0.5 rounded-full">Estimate Lead</span>
                             <span className="font-bold text-gray-800 text-sm">{msg.name}</span>
-                            <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">{msg.date?.slice(0,10)}</span>
+                            <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-md font-mono">{msg.date?.slice(0,10)}</span>
                           </div>
                           <div className="flex items-center gap-4 text-sm mb-3">
-                            <a href={`mailto:${msg.email}`} className="text-green-600 hover:underline font-medium flex items-center gap-1"><Mail size={12}/>{msg.email}</a>
-                            {get('Phone:') && <span className="text-gray-500">{get('Phone:')}</span>}
+                            <a href={`mailto:${msg.email}`} className="text-green-700 hover:underline font-semibold flex items-center gap-1"><Mail size={12}/>{msg.email}</a>
+                            {phoneVal && <span className="text-gray-600 font-medium">📞 {phoneVal}</span>}
                           </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                            <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                              <p className="text-gray-400 uppercase tracking-widest text-[10px] font-bold mb-1">Service</p>
-                              <p className="font-semibold text-gray-800">{get('Service:')}</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                            <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                              <p className="text-gray-400 uppercase tracking-widest text-[10px] font-bold mb-1">Service Requested</p>
+                              <p className="font-bold text-gray-800">{serviceVal || 'N/A'}</p>
                             </div>
-                            <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                              <p className="text-gray-400 uppercase tracking-widest text-[10px] font-bold mb-1">Country</p>
-                              <p className="font-semibold text-gray-800">{get('Country:')}</p>
+                            <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                              <p className="text-gray-400 uppercase tracking-widest text-[10px] font-bold mb-1">Client Country</p>
+                              <p className="font-bold text-gray-800">{countryVal || 'N/A'}</p>
                             </div>
-                            <div className="bg-gray-50 rounded-lg p-3 border border-gray-100 sm:col-span-2">
-                              <p className="text-gray-400 uppercase tracking-widest text-[10px] font-bold mb-1">Deliverables</p>
-                              <p className="text-gray-700 leading-relaxed">{get('Deliverables:')}</p>
+                            <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                              <p className="text-gray-400 uppercase tracking-widest text-[10px] font-bold mb-1">Total Estimated Cost</p>
+                              <p className="font-black text-[#008822] font-mono text-sm">{totalEstVal || 'N/A'}</p>
+                            </div>
+                            <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-100 sm:col-span-3">
+                              <p className="text-gray-400 uppercase tracking-widest text-[10px] font-bold mb-1">Requested Deliverables & Scope</p>
+                              <p className="text-gray-800 font-semibold leading-relaxed">{deliverablesVal || 'All standard deliverables selected'}</p>
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <a href={`mailto:${msg.email}?subject=Your Anvitam Design Estimate&body=Hi ${msg.name},%0A%0AThank you for using our estimator. Based on your selections, here is your personalised proposal...%0A%0A`}
-                            className="flex items-center gap-1 text-xs border border-blue-200 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition font-semibold">
-                            <Mail size={11}/> Reply
+                          <a href={`mailto:${msg.email}?subject=Your Anvitam Design Estimate for ${encodeURIComponent(serviceVal || 'Architectural Services')}&body=Hi ${msg.name},%0A%0AThank you for getting an estimate with Anvitam for ${encodeURIComponent(serviceVal || 'your project')}.%0A%0ABased on your selected deliverables (${encodeURIComponent(deliverablesVal)}), here is our recommended proposal...%0A%0A`}
+                            className="flex items-center gap-1.5 text-xs border border-blue-200 bg-blue-50 text-blue-600 px-3.5 py-2 rounded-xl hover:bg-blue-100 transition font-bold cursor-pointer">
+                            <Mail size={12}/> Reply Lead
                           </a>
                           <button onClick={() => { if (confirm('Delete this lead?')) { deleteMessage(msg.id); showToast('Lead deleted.'); } }}
-                            className="text-red-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-lg transition">
+                            className="text-red-400 hover:text-red-600 p-2.5 hover:bg-red-50 rounded-xl transition cursor-pointer"
+                            title="Delete lead"
+                          >
                             <Trash2 size={15}/>
                           </button>
                         </div>
