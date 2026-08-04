@@ -46,6 +46,9 @@
     { "source": "/api/testimonials", "destination": "/api/testimonials.ts" },
     { "source": "/api/testimonials/:id", "destination": "/api/testimonials.ts?id=:id" },
     { "source": "/api/analytics", "destination": "/api/analytics.ts" },
+    { "source": "/sitemap.xml", "destination": "/api/sitemap.ts" },
+    { "source": "/llms.txt", "destination": "/api/llms.ts?mode=short" },
+    { "source": "/llms-full.txt", "destination": "/api/llms.ts?mode=full" },
     { "source": "/api/indexnow", "destination": "/api/indexnow.ts" },
     { "source": "/:key([a-zA-Z0-9_-]{8,128})\\.txt", "destination": "/api/indexnow-key?key=:key" },
     { "source": "/((?!api/|.*\\.[a-zA-Z0-9]+$).*)", "destination": "/api/ssr-seo?path=/$1" }

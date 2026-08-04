@@ -29,7 +29,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           SELECT id, title, slug, category, location, year, image, hero_image, description,
                  full_description, gallery, specs, story, is_featured, tags, faqs, videos, status, created_at,
                  meta_title, meta_description, meta_keywords, meta_robots
-          FROM projects WHERE id = ${id}
+          FROM projects WHERE id = ${id} OR slug = ${id}
         `;
         if (rows.length === 0) {
           const mockProj = INITIAL_PROJECTS.find(p => p.id === id || p.slug === id);

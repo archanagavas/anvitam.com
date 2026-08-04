@@ -1148,11 +1148,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Replace tags
-  template = template.replace(/<title[^>]*>[\s\S]*?<\/title>/i, `<title data-rh="true">${title}</title>`);
+  template = template.replace(/<title[^>]*>[\s\S]*?<\/title>/i, `<title>${title}</title>`);
 
   const replaceOrInjectMeta = (htmlStr: string, keyAttr: string, keyVal: string, value: string) => {
     const regex = new RegExp(`<meta[^>]*${keyAttr}="${keyVal}"[^>]*>`, 'i');
-    const newTag = `<meta ${keyAttr}="${keyVal}" content="${value.replace(/"/g, '&quot;')}" data-rh="true" />`;
+    const newTag = `<meta ${keyAttr}="${keyVal}" content="${value.replace(/"/g, '&quot;')}" />`;
     if (regex.test(htmlStr)) {
       return htmlStr.replace(regex, newTag);
     } else {
@@ -1182,11 +1182,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   template = template.replace(/<link[^>]*rel="publisher"[^>]*>/gi, '');
 
   // Inject the single canonical link
-  const canonicalTag = `<link rel="canonical" href="${canonicalUrl}" data-rh="true" />`;
+  const canonicalTag = `<link rel="canonical" href="${canonicalUrl}" />`;
   template = template.replace('</head>', `  ${canonicalTag}\n</head>`);
 
   // Inject the single publisher link
-  const publisherTag = `<link rel="publisher" href="https://www.anvitam.com/" data-rh="true" />`;
+  const publisherTag = `<link rel="publisher" href="https://www.anvitam.com/" />`;
   template = template.replace('</head>', `  ${publisherTag}\n</head>`);
 
   // --- Inject JSON-LD Schema Marks ---

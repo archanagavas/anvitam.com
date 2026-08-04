@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "npx tsx scripts/start-dev.ts",
-    "build": "npx tsx scripts/generate-seo.ts && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "generate-seo": "npx tsx scripts/generate-seo.ts",
     "db-hash": "node -e \"const b=require('bcryptjs');b.hash(process.argv[1],12).then(h=>console.log(h))\" "

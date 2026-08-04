@@ -29,7 +29,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           SELECT id, title, slug, date, excerpt, content, image, author,
                  meta_description, meta_title, cover_image_alt, faqs, tags, status, toc, author_bio, author_image, created_at,
                  meta_keywords, meta_robots
-          FROM blogs WHERE id = ${id}
+          FROM blogs WHERE id = ${id} OR slug = ${id}
         `;
         if (rows.length === 0) {
           const mockBlog = INITIAL_BLOGS.find(b => b.id === id || b.slug === id);
