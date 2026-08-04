@@ -150,3 +150,12 @@ export interface ContactMessage {
   message: string;
   date: string;
 }
+
+export interface EstimatorService {
+  id: string;
+  title: string;
+  icon: string;
+  desc: string;
+  subs: string[];
+  baseINR: number[];
+}

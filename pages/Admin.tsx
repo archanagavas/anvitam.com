@@ -15,6 +15,7 @@ import { BlogPost, Project, Service, DigitalProduct, Testimonial } from '../type
 import ProjectEditor from '../components/ProjectEditor';
 import ServiceEditor from '../components/ServiceEditor';
 import ProductEditor from '../components/ProductEditor';
+import EstimatorEditor from '../components/EstimatorEditor';
 
 // ── Mock Analytics ────────────────────────────────────────────────────
 const ANALYTICS_DATA = [
@@ -1021,7 +1022,7 @@ const Admin: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const [activeTab, setActiveTab] = useState<'projects' | 'blog' | 'analytics' | 'shop' | 'services' | 'messages' | 'seo' | 'testimonials'>('analytics');
+  const [activeTab, setActiveTab] = useState<'projects' | 'blog' | 'analytics' | 'shop' | 'services' | 'messages' | 'seo' | 'testimonials' | 'estimator' | 'estimator-pricing'>('analytics');
   const [seoStatus, setSeoStatus] = useState<null | 'generating' | 'done'>(null);
   const [previewFile, setPreviewFile] = useState<{ name: string; content: string } | null>(null);
 
@@ -1482,6 +1483,7 @@ const Admin: React.FC = () => {
           <NavButton id="analytics" icon={ChartIcon} label="Dashboard" />
           <NavButton id="messages" icon={MessageSquare} label="Inquiries" />
           <NavButton id="estimator" icon={Calculator} label="Estimate Leads" />
+          <NavButton id="estimator-pricing" icon={Calculator} label="Estimator Services & Pricing" />
           <NavButton id="projects" icon={LayoutIcon} label="Projects" />
           <NavButton id="blog" icon={FileText} label="Journal / Blog" />
           <NavButton id="shop" icon={ShoppingBag} label="Shop / Products" />
@@ -1818,6 +1820,11 @@ const Admin: React.FC = () => {
             </div>
           );
         })()}
+
+        {/* ── Estimator Pricing & Services Manager ── */}
+        {activeTab === 'estimator-pricing' && (
+          <EstimatorEditor showToast={showToast} />
+        )}
 
         {/* ── Projects ── */}
         {activeTab === 'projects' && (

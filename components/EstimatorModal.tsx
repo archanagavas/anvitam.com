@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
 import { X, ArrowRight, CheckCircle, Calculator, ChevronRight, Calendar } from 'lucide-react';
+import { useContent } from '../context/ContentContext';
+import { INITIAL_ESTIMATOR_SERVICES } from '../constants';
+import { EstimatorService } from '../types';
 
 const TOPMATE = 'https://topmate.io/archanagavas/1799075?utm_source=estimator&utm_campaign=estimate_lead';
 
@@ -25,56 +28,14 @@ const COUNTRIES = [
   { code: 'OTHER', name: 'Other country', flag: '🌍', tier: 2.5 },
 ];
 
-const SERVICES_DATA = [
-  {
-    id: 'permaculture-design', title: 'Permaculture Design', icon: '🌿',
-    desc: 'Site analysis, food forest & land masterplan',
-    subs: ['Site Reading & Analysis','Zonation Plan','Master Plan / Layout','Food Forest Design','Water Harvesting System','Soil Improvement Plan','Plant Guild & Species List','Implementation Roadmap'],
-    baseINR: [15000,12000,25000,18000,14000,10000,8000,12000],
-  },
-  {
-    id: 'farm-retreat', title: 'Farm Retreat Design', icon: '🏡',
-    desc: 'Complete architecture for farm stays',
-    subs: ['Conceptual Mood Board','Layout Plan','Design Presentation','Exterior 3D Views','Building Measurement','Site Drainage Scheme','Landscape Integration','Bill of Quantity','Development Estimate'],
-    baseINR: [10000,20000,15000,25000,8000,12000,18000,20000,15000],
-  },
-  {
-    id: 'airbnb', title: 'Airbnb Design', icon: '🏠',
-    desc: 'Revenue-optimised short-stay design',
-    subs: ['Market Analysis','Spatial Strategy','Interior Concept','3D Renders','Material Selection','Guest Experience Curation','Listing Photo Guide','Pricing Strategy Report'],
-    baseINR: [12000,15000,20000,22000,10000,12000,8000,10000],
-  },
-  {
-    id: 'homestay', title: 'Homestay Design', icon: '🏘️',
-    desc: 'Vernacular & biophilic homestay architecture',
-    subs: ['Vernacular Study','Site Integration Plan','Host–Guest Zoning','Natural Materials Plan','Layout Plan','3D Views','Cultural Expression Guide','Bill of Quantity'],
-    baseINR: [12000,15000,10000,12000,18000,22000,8000,15000],
-  },
-  {
-    id: 'weekend-villa', title: 'Weekend Villa', icon: '🌄',
-    desc: 'Biophilic luxury villa architecture',
-    subs: ['Conceptual Design','Biophilic Design Plan','Exterior 3D Views','Interior 3D Views','Landscape Design','Rental Optimisation','Working Drawings','Bill of Quantity'],
-    baseINR: [15000,20000,25000,25000,18000,12000,30000,20000],
-  },
-  {
-    id: 'eco-resort', title: 'Eco Resort', icon: '🌺',
-    desc: 'Full masterplan for eco-resorts & retreats',
-    subs: ['Ecological Baseline Study','Regenerative Masterplan','Cabin / Unit Design','Amenity Block Design','Wastewater System Design','Solar & Wind Plan','Resort Landscape','Bill of Quantity'],
-    baseINR: [20000,45000,30000,25000,18000,15000,30000,35000],
-  },
-  {
-    id: 'community-center', title: 'Community Center', icon: '🏛️',
-    desc: 'Inclusive sustainable civic spaces',
-    subs: ['Civic Needs Study','Programmatic Synergy Plan','Conceptual Design','Accessibility Design','Ecological Integration','Working Drawings','Bill of Quantity','Grant Readiness Report'],
-    baseINR: [12000,15000,20000,12000,15000,35000,22000,18000],
-  },
-];
-
 type Step = 'service' | 'sub' | 'contact' | 'result';
 
 export default function EstimatorModal({ onClose }: { onClose: () => void }) {
+  const contentCtx = useContent();
+  const servicesList: EstimatorService[] = contentCtx?.estimatorServices?.length ? contentCtx.estimatorServices : INITIAL_ESTIMATOR_SERVICES;
+
   const [step, setStep] = useState<Step>('service');
-  const [svc, setSvc] = useState<typeof SERVICES_DATA[0] | null>(null);
+  const [svc, setSvc] = useState<EstimatorService | null>(null);
   const [selected, setSelected] = useState<number[]>([]);
   const [form, setForm] = useState({ name: '', email: '', phone: '', country: 'IN' });
   const [busy, setBusy] = useState(false);
@@ -161,7 +122,7 @@ export default function EstimatorModal({ onClose }: { onClose: () => void }) {
           {/* STEP 1: Service */}
           {step === 'service' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {SERVICES_DATA.map(s => (
+              {servicesList.map(s => (
                 <button
                   key={s.id}
                   onClick={() => { setSvc(s); setSelected([]); setStep('sub'); }}

@@ -7,8 +7,8 @@
  *  3. Admin mutations hit the API and update local state
  */
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Project, BlogPost, Service, DigitalProduct, ContactMessage, Testimonial } from '../types';
-import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES, DIGITAL_PRODUCTS, INITIAL_TESTIMONIALS } from '../constants';
+import { Project, BlogPost, Service, DigitalProduct, ContactMessage, Testimonial, EstimatorService } from '../types';
+import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES, DIGITAL_PRODUCTS, INITIAL_TESTIMONIALS, INITIAL_ESTIMATOR_SERVICES } from '../constants';
 
 // ── Auth token helpers (JWT stored in sessionStorage — auto-clears on tab close) ──
 export const getAuthToken = (): string | null => {
@@ -40,6 +40,7 @@ interface ContentContextType {
   digitalProducts: DigitalProduct[];
   messages: ContactMessage[];
   testimonials: Testimonial[];
+  estimatorServices: EstimatorService[];
   isDbConnected: boolean;
   isInitialSyncDone: boolean;
   addProject: (project: Project) => Promise<void>;
@@ -59,6 +60,9 @@ interface ContentContextType {
   addTestimonial: (t: Testimonial) => Promise<void>;
   updateTestimonial: (t: Testimonial) => Promise<void>;
   deleteTestimonial: (id: string) => Promise<void>;
+  addEstimatorService: (s: EstimatorService) => Promise<void>;
+  updateEstimatorService: (s: EstimatorService) => Promise<void>;
+  deleteEstimatorService: (id: string) => Promise<void>;
   refreshFromDb: () => Promise<void>;
 }
 
@@ -125,6 +129,9 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   );
   const [testimonials, setTestimonials] = useState<Testimonial[]>(() =>
     loadFromStorage<Testimonial>('anvitam_testimonials', INITIAL_TESTIMONIALS)
+  );
+  const [estimatorServices, setEstimatorServices] = useState<EstimatorService[]>(() =>
+    loadFromStorage<EstimatorService>('anvitam_estimator_services_v1', INITIAL_ESTIMATOR_SERVICES)
   );
   const [isDbConnected, setIsDbConnected] = useState(false);
   const [isInitialSyncDone, setIsInitialSyncDone] = useState(false);
@@ -251,6 +258,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   useEffect(() => { saveToStorage('anvitam_projects_v2', projects); }, [projects]);
   useEffect(() => { saveToStorage('anvitam_blogs_v2', blogs); }, [blogs]);
   useEffect(() => { saveToStorage('anvitam_testimonials', testimonials); }, [testimonials]);
+  useEffect(() => { saveToStorage('anvitam_estimator_services_v1', estimatorServices); }, [estimatorServices]);
 
   // ── CRUD Operations ──────────────────────────────────────────────────────
   const addProject = async (project: Project) => {
@@ -506,11 +514,48 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
+  const addEstimatorService = async (s: EstimatorService) => {
+    setEstimatorServices(prev => [s, ...prev]);
+    const token = getAuthToken();
+    if (token) {
+      try {
+        await fetch('/api/estimator-services', { method: 'POST', headers: authHeaders(), body: JSON.stringify(s) });
+      } catch (err) {
+        console.error('Failed to save estimator service to DB:', err);
+      }
+    }
+  };
+
+  const updateEstimatorService = async (s: EstimatorService) => {
+    setEstimatorServices(prev => prev.map(item => item.id === s.id ? s : item));
+    const token = getAuthToken();
+    if (token) {
+      try {
+        await fetch(`/api/estimator-services/${s.id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(s) });
+      } catch (err) {
+        console.error('Failed to update estimator service in DB:', err);
+      }
+    }
+  };
+
+  const deleteEstimatorService = async (id: string) => {
+    setEstimatorServices(prev => prev.filter(item => item.id !== id));
+    const token = getAuthToken();
+    if (token) {
+      try {
+        await fetch(`/api/estimator-services/${id}`, { method: 'DELETE', headers: authHeaders() });
+      } catch (err) {
+        console.error('Failed to delete estimator service from DB:', err);
+      }
+    }
+  };
+
   return (
     <ContentContext.Provider value={{
-      projects, blogs, services, digitalProducts, messages, testimonials,
+      projects, blogs, services, digitalProducts, messages, testimonials, estimatorServices,
       isDbConnected, isInitialSyncDone,
       addProject, updateProject, addBlog, updateBlog, addService, updateService, addDigitalProduct, updateDigitalProduct, addMessage, addTestimonial, updateTestimonial,
+      addEstimatorService, updateEstimatorService, deleteEstimatorService,
       deleteProject, deleteBlog, deleteService, deleteDigitalProduct, deleteMessage, deleteTestimonial,
       refreshFromDb,
     }}>
