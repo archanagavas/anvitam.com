@@ -40,21 +40,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
-  // Calculate realistic visitor volume dynamically based on actual content size and messaging activity
-  // More published content + user interactions = higher simulated traffic baseline
-  const baseMultiplier = 15 + blogCount * 8 + projectCount * 5 + messageCount * 2;
-  
-  const analyticsData = [
-    { name: 'Mon', visitors: Math.round(baseMultiplier * 1.2 + 8) },
-    { name: 'Tue', visitors: Math.round(baseMultiplier * 1.5 + 12) },
-    { name: 'Wed', visitors: Math.round(baseMultiplier * 2.0 + 15) },
-    { name: 'Thu', visitors: Math.round(baseMultiplier * 1.8 + 10) },
-    { name: 'Fri', visitors: Math.round(baseMultiplier * 2.5 + 20) },
-    { name: 'Sat', visitors: Math.round(baseMultiplier * 1.9 + 5) },
-    { name: 'Sun', visitors: Math.round(baseMultiplier * 1.4 + 2) },
-  ];
+  const umamiWebsiteId = '14be7ec2-6f32-451a-92d4-0961ff82c370';
+  let umamiStats = null;
 
-  const totalWeeklyVisitors = analyticsData.reduce((acc, curr) => acc + curr.visitors, 0);
+  // Attempt to fetch real stats from Umami Cloud API if API key or public access is available
+  try {
+    const umamiToken = process.env.UMAMI_API_TOKEN;
+    if (umamiToken) {
+      const startAt = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      const endAt = Date.now();
+      const umamiRes = await fetch(`https://api.umami.is/v1/websites/${umamiWebsiteId}/stats?startAt=${startAt}&endAt=${endAt}`, {
+        headers: { Authorization: `Bearer ${umamiToken}` }
+      });
+      if (umamiRes.ok) {
+        umamiStats = await umamiRes.json();
+      }
+    }
+  } catch (err) {
+    console.error('[analytics API] Umami API fetch error:', err);
+  }
 
   return res.status(200).json({
     blogCount,
@@ -62,11 +66,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     serviceCount,
     messageCount,
     testimonialCount,
-    analyticsData,
-    totalWeeklyVisitors,
+    umamiWebsiteId,
+    umamiStats,
+    isUmamiLive: true,
     performanceScore: 99,
     lcp: '1.1s',
     cls: '0.01',
     fcp: '0.7s'
   });
 }
+

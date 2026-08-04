@@ -1538,29 +1538,43 @@ const Admin: React.FC = () => {
                 <RefreshCw size={12} /> Sync
               </button>
             </div>
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100" style={{ height: 320 }}>
-              <h3 className="text-sm font-bold text-gray-600 mb-4 uppercase tracking-wider flex items-center gap-2">
-                Visitor Traffic (week)
-                {analyticsStats ? (
-                  <span className="text-green-600 text-xs font-normal normal-case border border-green-200 bg-green-50 px-2 py-0.5 rounded-full flex items-center gap-1">
-                    <CheckCircle size={12} className="inline text-green-500" />
-                    Live: {analyticsStats.totalWeeklyVisitors} weekly visits (Vercel & Google Analytics tag telemetry)
+            {/* ── Live Umami Analytics Dashboard Embedded Container ── */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
+                    <Activity size={18} className="text-emerald-500" />
+                    Live Visitor Traffic & Blog Readers (Umami Real Telemetry)
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Real-time privacy-first visitor counts, active readers, and referrer analytics directly from your Umami instance.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1.5 shrink-0">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                    Live Tracking Active
                   </span>
-                ) : (
-                  <span className="text-amber-500 text-xs font-normal normal-case border border-amber-200 bg-amber-50 px-2 py-0.5 rounded-full">
-                    {loadingAnalytics ? 'Loading analytics...' : 'Demo data — connect an analytics API'}
-                  </span>
-                )}
-              </h3>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={analyticsStats?.analyticsData || ANALYTICS_DATA}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
-                  <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
-                  <Tooltip cursor={{ fill: '#f4f4f4' }} contentStyle={{ border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                  <Bar dataKey="visitors" fill="#8bc34a" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+                  <a
+                    href="https://cloud.umami.is/websites/14be7ec2-6f32-451a-92d4-0961ff82c370"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs bg-black text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-gray-800 transition flex items-center gap-1 shrink-0"
+                  >
+                    Open Fullscreen <Globe size={12} />
+                  </a>
+                </div>
+              </div>
+
+              {/* Embedded Umami Live Dashboard Frame */}
+              <div className="relative w-full h-[520px] rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+                <iframe
+                  src="https://cloud.umami.is/share/14be7ec2-6f32-451a-92d4-0961ff82c370"
+                  className="w-full h-full border-0"
+                  title="Umami Live Visitor Analytics"
+                  loading="lazy"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
