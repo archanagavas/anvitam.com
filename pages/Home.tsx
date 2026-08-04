@@ -52,10 +52,8 @@ const Home: React.FC = () => {
   return (
     <div className="w-full bg-[#EFEFEB] text-[#111] font-sans overflow-hidden">
 
-      {/* Estimator Modal */}
-      <AnimatePresence>
-        {estimatorOpen && <EstimatorModal onClose={() => setEstimatorOpen(false)} />}
-      </AnimatePresence>
+      {/* Estimator Modal — rendered via createPortal into document.body */}
+      {estimatorOpen && <EstimatorModal onClose={() => setEstimatorOpen(false)} />}
 
       <Helmet>
         <title>Anvitam | Sustainable Architecture & Eco Design</title>

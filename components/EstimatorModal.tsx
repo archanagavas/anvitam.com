@@ -1,459 +1,277 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { X, ArrowRight, CheckCircle, Calculator, MapPin, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
+import { motion } from 'motion/react';
+import { X, ArrowRight, CheckCircle, Calculator, ChevronRight, Calendar } from 'lucide-react';
 
-// ── Service definitions with sub-services and INR base prices ──────────────
+const TOPMATE = 'https://topmate.io/archanagavas/1799075?utm_source=estimator&utm_campaign=estimate_lead';
+
+// Country list with region pricing tiers (multipliers stored internally, never shown to user)
+const COUNTRIES = [
+  { code: 'IN', name: 'India', flag: '🇮🇳', tier: 1 },
+  { code: 'US', name: 'United States', flag: '🇺🇸', tier: 4 },
+  { code: 'AU', name: 'Australia', flag: '🇦🇺', tier: 3.5 },
+  { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', tier: 4 },
+  { code: 'DE', name: 'Germany', flag: '🇩🇪', tier: 3.5 },
+  { code: 'FR', name: 'France', flag: '🇫🇷', tier: 3.5 },
+  { code: 'NL', name: 'Netherlands', flag: '🇳🇱', tier: 3.5 },
+  { code: 'SG', name: 'Singapore', flag: '🇸🇬', tier: 3 },
+  { code: 'AE', name: 'UAE', flag: '🇦🇪', tier: 3.5 },
+  { code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦', tier: 3 },
+  { code: 'CA', name: 'Canada', flag: '🇨🇦', tier: 3.5 },
+  { code: 'NZ', name: 'New Zealand', flag: '🇳🇿', tier: 3 },
+  { code: 'ZA', name: 'South Africa', flag: '🇿🇦', tier: 2 },
+  { code: 'ID', name: 'Indonesia', flag: '🇮🇩', tier: 1.5 },
+  { code: 'TH', name: 'Thailand', flag: '🇹🇭', tier: 2 },
+  { code: 'MY', name: 'Malaysia', flag: '🇲🇾', tier: 2 },
+  { code: 'OTHER', name: 'Other country', flag: '🌍', tier: 2.5 },
+];
+
 const SERVICES_DATA = [
   {
-    id: 'permaculture-design',
-    title: 'Permaculture Design',
-    icon: '🌿',
-    description: 'Site analysis, zoning, food forest & land masterplan',
-    subServices: [
-      { id: 'site-reading', label: 'Site Reading & Analysis', price: 15000 },
-      { id: 'zonation-plan', label: 'Zonation Plan', price: 12000 },
-      { id: 'master-plan', label: 'Master Plan / Layout', price: 25000 },
-      { id: 'food-forest', label: 'Food Forest Design', price: 18000 },
-      { id: 'water-harvest', label: 'Water Harvesting System', price: 14000 },
-      { id: 'soil-plan', label: 'Soil Improvement Plan', price: 10000 },
-      { id: 'plant-guild', label: 'Plant Guild & Species List', price: 8000 },
-      { id: 'implementation', label: 'Implementation Roadmap', price: 12000 },
-    ],
+    id: 'permaculture-design', title: 'Permaculture Design', icon: '🌿',
+    desc: 'Site analysis, food forest & land masterplan',
+    subs: ['Site Reading & Analysis','Zonation Plan','Master Plan / Layout','Food Forest Design','Water Harvesting System','Soil Improvement Plan','Plant Guild & Species List','Implementation Roadmap'],
+    baseINR: [15000,12000,25000,18000,14000,10000,8000,12000],
   },
   {
-    id: 'farm-retreat',
-    title: 'Farm Retreat Design',
-    icon: '🏡',
-    description: 'Complete architecture & landscape for farm stays',
-    subServices: [
-      { id: 'concept-design', label: 'Conceptual Mood Board', price: 10000 },
-      { id: 'layout', label: 'Layout Plan', price: 20000 },
-      { id: 'design-pres', label: 'Design Presentation', price: 15000 },
-      { id: '3d-views', label: 'Exterior 3D Views', price: 25000 },
-      { id: 'bldg-measurement', label: 'Building Measurement', price: 8000 },
-      { id: 'drainage', label: 'Site Drainage Scheme', price: 12000 },
-      { id: 'landscape', label: 'Landscape Integration', price: 18000 },
-      { id: 'boq', label: 'Bill of Quantity', price: 20000 },
-      { id: 'dev-estimate', label: 'Development Estimate', price: 15000 },
-    ],
+    id: 'farm-retreat', title: 'Farm Retreat Design', icon: '🏡',
+    desc: 'Complete architecture for farm stays',
+    subs: ['Conceptual Mood Board','Layout Plan','Design Presentation','Exterior 3D Views','Building Measurement','Site Drainage Scheme','Landscape Integration','Bill of Quantity','Development Estimate'],
+    baseINR: [10000,20000,15000,25000,8000,12000,18000,20000,15000],
   },
   {
-    id: 'airbnb',
-    title: 'Airbnb Design',
-    icon: '🏠',
-    description: 'Revenue-optimised Airbnb & short-stay design',
-    subServices: [
-      { id: 'market-analysis', label: 'Market Analysis', price: 12000 },
-      { id: 'spatial-strategy', label: 'Spatial Strategy', price: 15000 },
-      { id: 'interior-concept', label: 'Interior Concept', price: 20000 },
-      { id: '3d-renders', label: '3D Renders', price: 22000 },
-      { id: 'material-selection', label: 'Material Selection', price: 10000 },
-      { id: 'guest-experience', label: 'Guest Experience Curation', price: 12000 },
-      { id: 'listing-photos', label: 'Listing Photo Guide', price: 8000 },
-      { id: 'pricing-strategy', label: 'Pricing Strategy Report', price: 10000 },
-    ],
+    id: 'airbnb', title: 'Airbnb Design', icon: '🏠',
+    desc: 'Revenue-optimised short-stay design',
+    subs: ['Market Analysis','Spatial Strategy','Interior Concept','3D Renders','Material Selection','Guest Experience Curation','Listing Photo Guide','Pricing Strategy Report'],
+    baseINR: [12000,15000,20000,22000,10000,12000,8000,10000],
   },
   {
-    id: 'homestay',
-    title: 'Homestay Design',
-    icon: '🏘️',
-    description: 'Vernacular & biophilic homestay architecture',
-    subServices: [
-      { id: 'vernacular-study', label: 'Vernacular Study', price: 12000 },
-      { id: 'site-integration', label: 'Site Integration Plan', price: 15000 },
-      { id: 'host-guest-zoning', label: 'Host–Guest Zoning', price: 10000 },
-      { id: 'natural-materials', label: 'Natural Materials Plan', price: 12000 },
-      { id: 'layout-plan', label: 'Layout Plan', price: 18000 },
-      { id: '3d-views-hs', label: '3D Views', price: 22000 },
-      { id: 'cultural-expression', label: 'Cultural Expression Guide', price: 8000 },
-      { id: 'boq-hs', label: 'Bill of Quantity', price: 15000 },
-    ],
+    id: 'homestay', title: 'Homestay Design', icon: '🏘️',
+    desc: 'Vernacular & biophilic homestay architecture',
+    subs: ['Vernacular Study','Site Integration Plan','Host–Guest Zoning','Natural Materials Plan','Layout Plan','3D Views','Cultural Expression Guide','Bill of Quantity'],
+    baseINR: [12000,15000,10000,12000,18000,22000,8000,15000],
   },
   {
-    id: 'weekend-villa',
-    title: 'Weekend Villa',
-    icon: '🌄',
-    description: 'Biophilic luxury weekend villa architecture',
-    subServices: [
-      { id: 'concept-villa', label: 'Conceptual Design', price: 15000 },
-      { id: 'biophilic-design', label: 'Biophilic Design Plan', price: 20000 },
-      { id: 'exterior-3d', label: 'Exterior 3D Views', price: 25000 },
-      { id: 'interior-3d', label: 'Interior 3D Views', price: 25000 },
-      { id: 'landscape-villa', label: 'Landscape Design', price: 18000 },
-      { id: 'rental-optim', label: 'Rental Optimisation', price: 12000 },
-      { id: 'working-drawings', label: 'Working Drawings', price: 30000 },
-      { id: 'boq-villa', label: 'Bill of Quantity', price: 20000 },
-    ],
+    id: 'weekend-villa', title: 'Weekend Villa', icon: '🌄',
+    desc: 'Biophilic luxury villa architecture',
+    subs: ['Conceptual Design','Biophilic Design Plan','Exterior 3D Views','Interior 3D Views','Landscape Design','Rental Optimisation','Working Drawings','Bill of Quantity'],
+    baseINR: [15000,20000,25000,25000,18000,12000,30000,20000],
   },
   {
-    id: 'eco-resort',
-    title: 'Eco Resort',
-    icon: '🌺',
-    description: 'Full masterplan for eco-resorts & wellness retreats',
-    subServices: [
-      { id: 'eco-baseline', label: 'Ecological Baseline Study', price: 20000 },
-      { id: 'regen-masterplan', label: 'Regenerative Masterplan', price: 45000 },
-      { id: 'cabin-design', label: 'Cabin / Unit Design', price: 30000 },
-      { id: 'amenity-design', label: 'Amenity Block Design', price: 25000 },
-      { id: 'wastewater', label: 'Wastewater System Design', price: 18000 },
-      { id: 'solar-wind', label: 'Solar & Wind Plan', price: 15000 },
-      { id: 'resort-landscape', label: 'Resort Landscape', price: 30000 },
-      { id: 'boq-resort', label: 'Bill of Quantity', price: 35000 },
-    ],
+    id: 'eco-resort', title: 'Eco Resort', icon: '🌺',
+    desc: 'Full masterplan for eco-resorts & retreats',
+    subs: ['Ecological Baseline Study','Regenerative Masterplan','Cabin / Unit Design','Amenity Block Design','Wastewater System Design','Solar & Wind Plan','Resort Landscape','Bill of Quantity'],
+    baseINR: [20000,45000,30000,25000,18000,15000,30000,35000],
   },
   {
-    id: 'community-center',
-    title: 'Community Center',
-    icon: '🏛️',
-    description: 'Inclusive, sustainable civic & community spaces',
-    subServices: [
-      { id: 'civic-listening', label: 'Civic Needs Study', price: 12000 },
-      { id: 'program-synergy', label: 'Programmatic Synergy Plan', price: 15000 },
-      { id: 'concept-cc', label: 'Conceptual Design', price: 20000 },
-      { id: 'accessibility', label: 'Accessibility Design', price: 12000 },
-      { id: 'eco-integ', label: 'Ecological Integration', price: 15000 },
-      { id: 'working-cc', label: 'Working Drawings', price: 35000 },
-      { id: 'boq-cc', label: 'Bill of Quantity', price: 22000 },
-      { id: 'grant-report', label: 'Grant Readiness Report', price: 18000 },
-    ],
+    id: 'community-center', title: 'Community Center', icon: '🏛️',
+    desc: 'Inclusive sustainable civic spaces',
+    subs: ['Civic Needs Study','Programmatic Synergy Plan','Conceptual Design','Accessibility Design','Ecological Integration','Working Drawings','Bill of Quantity','Grant Readiness Report'],
+    baseINR: [12000,15000,20000,12000,15000,35000,22000,18000],
   },
 ];
 
-// ── Currency config ────────────────────────────────────────────────────────
-const CURRENCIES: Record<string, { symbol: string; code: string; rate: number }> = {
-  IN:  { symbol: '₹', code: 'INR', rate: 1 },
-  US:  { symbol: '$', code: 'USD', rate: 0.012 },
-  AU:  { symbol: 'A$', code: 'AUD', rate: 0.018 },
-  GB:  { symbol: '£', code: 'GBP', rate: 0.0095 },
-  EU:  { symbol: '€', code: 'EUR', rate: 0.011 },
-  AE:  { symbol: 'AED', code: 'AED', rate: 0.044 },
-  SG:  { symbol: 'S$', code: 'SGD', rate: 0.016 },
-  ID:  { symbol: 'Rp', code: 'IDR', rate: 192 },
-  DEFAULT: { symbol: '$', code: 'USD', rate: 0.012 },
-};
-
-function formatPrice(inr: number, currency: { symbol: string; rate: number }) {
-  const val = Math.round(inr * currency.rate);
-  if (val >= 100000) return `${currency.symbol}${(val / 100000).toFixed(1)}L`;
-  if (val >= 1000) return `${currency.symbol}${(val / 1000).toFixed(0)}K`;
-  return `${currency.symbol}${val.toLocaleString()}`;
-}
-
-// ── Component ──────────────────────────────────────────────────────────────
-interface Props { onClose: () => void; }
-
 type Step = 'service' | 'sub' | 'contact' | 'result';
 
-export default function EstimatorModal({ onClose }: Props) {
+export default function EstimatorModal({ onClose }: { onClose: () => void }) {
   const [step, setStep] = useState<Step>('service');
-  const [selectedService, setSelectedService] = useState<typeof SERVICES_DATA[0] | null>(null);
-  const [selectedSubs, setSelectedSubs] = useState<string[]>([]);
-  const [currency, setCurrency] = useState(CURRENCIES.DEFAULT);
-  const [countryCode, setCountryCode] = useState('');
-  const [form, setForm] = useState({ name: '', email: '', phone: '' });
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [svc, setSvc] = useState<typeof SERVICES_DATA[0] | null>(null);
+  const [selected, setSelected] = useState<number[]>([]);
+  const [form, setForm] = useState({ name: '', email: '', phone: '', country: 'IN' });
+  const [busy, setBusy] = useState(false);
 
-  // Auto-detect country
-  useEffect(() => {
-    fetch('https://ipapi.co/json/')
-      .then(r => r.json())
-      .then(data => {
-        const code = data.country_code || 'DEFAULT';
-        setCountryCode(code);
-        setCurrency(CURRENCIES[code] || CURRENCIES.DEFAULT);
-      })
-      .catch(() => {});
-  }, []);
+  const country = COUNTRIES.find(c => c.code === form.country) || COUNTRIES[0];
+  // Internal estimate for lead message only
+  const totalINR = selected.reduce((s, i) => s + (svc?.baseINR[i] || 0), 0);
 
-  const totalINR = selectedSubs.reduce((sum, id) => {
-    const sub = selectedService?.subServices.find(s => s.id === id);
-    return sum + (sub?.price || 0);
-  }, 0);
+  const toggle = (i: number) => setSelected(p => p.includes(i) ? p.filter(x => x !== i) : [...p, i]);
 
-  const toggleSub = (id: string) =>
-    setSelectedSubs(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitting(true);
-    const subLabels = selectedSubs.map(id => selectedService?.subServices.find(s => s.id === id)?.label).filter(Boolean).join(', ');
-    const msg = `[ESTIMATE REQUEST]\nService: ${selectedService?.title}\nSub-services: ${subLabels}\nEstimate (${currency.code}): ${formatPrice(totalINR, currency)} (Base ₹${totalINR.toLocaleString()})\nCountry: ${countryCode}`;
+    setBusy(true);
+    const subList = selected.map(i => svc?.subs[i]).filter(Boolean).join(', ');
+    const msg = `[ESTIMATE REQUEST]\nService: ${svc?.title}\nDeliverables: ${subList}\nCountry: ${form.country} (${country.name})\nInternal estimate: ₹${totalINR.toLocaleString()} base\nPhone: ${form.phone}`;
     try {
       await fetch('/api/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: form.name, email: form.email, message: msg + `\nPhone: ${form.phone}`, date: new Date().toISOString() }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: form.name, email: form.email, message: msg, date: new Date().toISOString() }),
       });
     } catch {}
-    setSubmitting(false);
-    setSubmitted(true);
+    setBusy(false);
     setStep('result');
   };
 
-  const stepNum = { service: 1, sub: 2, contact: 3, result: 4 }[step];
-  const totalSteps = 3;
+  const stepNum = { service: 1, sub: 2, contact: 3, result: 3 }[step];
 
-  return (
-    <AnimatePresence>
+  const content = (
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}
+      onClick={e => e.target === e.currentTarget && onClose()}
+    >
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-        onClick={e => e.target === e.currentTarget && onClose()}
+        initial={{ opacity: 0, scale: 0.96, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 16 }}
+        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[#EFEFEB] rounded-3xl shadow-2xl"
       >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[#EFEFEB] rounded-3xl shadow-2xl"
-        >
-          {/* Header */}
-          <div className="sticky top-0 z-10 bg-[#EFEFEB]/95 backdrop-blur-md px-8 pt-8 pb-5 border-b border-black/5">
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <Calculator size={18} className="text-[#111]" />
-                  <span className="text-xs font-bold uppercase tracking-widest text-[#888]">Cost Estimator</span>
-                  {countryCode && (
-                    <span className="flex items-center gap-1 text-[10px] font-semibold bg-[#CCFF00] text-[#111] px-2 py-0.5 rounded-full">
-                      <MapPin size={10} /> {currency.code}
-                    </span>
-                  )}
-                </div>
-                <h2 className="text-2xl font-bold text-[#111]">
-                  {step === 'service' && 'What can we design for you?'}
-                  {step === 'sub' && selectedService?.title}
-                  {step === 'contact' && 'Almost there!'}
-                  {step === 'result' && 'Your Estimate is Ready'}
-                </h2>
-                {step !== 'result' && (
-                  <p className="text-sm text-[#888] mt-1">Step {stepNum} of {totalSteps}</p>
-                )}
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-[#EFEFEB]/97 backdrop-blur-sm px-7 pt-7 pb-4 border-b border-black/8">
+          <div className="flex items-start justify-between mb-1">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Calculator size={15} className="text-[#111]" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-[#888]">Cost Estimator</span>
               </div>
-              <button onClick={onClose} className="text-[#888] hover:text-[#111] transition-colors p-1">
-                <X size={22} />
-              </button>
+              <h2 className="text-xl font-bold text-[#111]">
+                {step === 'service' && 'What can we design for you?'}
+                {step === 'sub' && svc?.title}
+                {step === 'contact' && 'Tell us about yourself'}
+                {step === 'result' && "You're all set! 🎉"}
+              </h2>
+              {step !== 'result' && <p className="text-xs text-[#999] mt-0.5">Step {stepNum} of 3</p>}
             </div>
-            {/* Progress bar */}
-            {step !== 'result' && (
-              <div className="mt-4 h-1.5 bg-black/10 rounded-full overflow-hidden">
-                <motion.div
-                  className="h-full bg-[#CCFF00] rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(stepNum / totalSteps) * 100}%` }}
-                  transition={{ duration: 0.4 }}
-                />
-              </div>
-            )}
+            <button onClick={onClose} className="text-[#aaa] hover:text-[#111] transition-colors ml-4 mt-1"><X size={20} /></button>
           </div>
+          {step !== 'result' && (
+            <div className="mt-3 h-1 bg-black/10 rounded-full overflow-hidden">
+              <motion.div className="h-full bg-[#CCFF00] rounded-full" animate={{ width: `${(stepNum / 3) * 100}%` }} transition={{ duration: 0.4 }} />
+            </div>
+          )}
+        </div>
 
-          <div className="px-8 py-6">
-            {/* STEP 1: Service Selection */}
-            {step === 'service' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {SERVICES_DATA.map(svc => (
-                  <button
-                    key={svc.id}
-                    onClick={() => { setSelectedService(svc); setSelectedSubs([]); setStep('sub'); }}
-                    className="text-left bg-white border border-black/8 rounded-2xl p-5 hover:border-[#CCFF00] hover:shadow-md transition-all group"
-                  >
-                    <div className="text-3xl mb-3">{svc.icon}</div>
-                    <h3 className="font-bold text-[#111] mb-1 group-hover:text-[#111]">{svc.title}</h3>
-                    <p className="text-xs text-[#888] leading-relaxed">{svc.description}</p>
-                    <div className="flex items-center gap-1 mt-3 text-xs font-semibold text-[#555] group-hover:text-[#111]">
-                      Select <ChevronRight size={12} />
-                    </div>
-                  </button>
+        <div className="px-7 py-6">
+
+          {/* STEP 1: Service */}
+          {step === 'service' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {SERVICES_DATA.map(s => (
+                <button key={s.id} onClick={() => { setSvc(s); setSelected([]); setStep('sub'); }}
+                  className="text-left bg-white border border-black/8 rounded-2xl p-5 hover:border-[#111] hover:shadow-md transition-all group">
+                  <div className="text-3xl mb-2">{s.icon}</div>
+                  <p className="font-bold text-[#111] text-sm mb-1">{s.title}</p>
+                  <p className="text-xs text-[#888] leading-relaxed">{s.desc}</p>
+                  <div className="flex items-center gap-1 mt-3 text-xs font-semibold text-[#aaa] group-hover:text-[#111] transition-colors">Select <ChevronRight size={11} /></div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* STEP 2: Sub-services (NO PRICES SHOWN) */}
+          {step === 'sub' && svc && (
+            <div>
+              <p className="text-sm text-[#666] mb-5">Select the deliverables you need. You can choose as many as you like.</p>
+              <div className="space-y-2 mb-6">
+                {svc.subs.map((sub, i) => {
+                  const active = selected.includes(i);
+                  return (
+                    <button key={i} onClick={() => toggle(i)}
+                      className={`w-full flex items-center gap-3 px-5 py-3.5 rounded-xl border transition-all text-left ${active ? 'bg-[#CCFF00] border-[#CCFF00]' : 'bg-white border-black/8 hover:border-[#111]/30'}`}>
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${active ? 'border-[#111] bg-[#111]' : 'border-black/20'}`}>
+                        {active && <div className="w-2 h-2 rounded-full bg-[#CCFF00]" />}
+                      </div>
+                      <span className="text-sm font-medium text-[#111]">{sub}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {selected.length > 0 && (
+                <div className="bg-[#111] text-white rounded-xl px-5 py-3 flex items-center justify-between mb-4">
+                  <span className="text-sm text-white/70">{selected.length} deliverable{selected.length !== 1 ? 's' : ''} selected</span>
+                  <span className="text-xs text-[#CCFF00] font-semibold">We'll prepare a custom quote for you</span>
+                </div>
+              )}
+              <div className="flex gap-3">
+                <button onClick={() => setStep('service')} className="flex-1 border border-black/15 text-[#555] py-3 rounded-full text-sm font-semibold hover:bg-black/5 transition-colors">← Back</button>
+                <button onClick={() => setStep('contact')} disabled={selected.length === 0}
+                  className="flex-1 bg-[#111] text-white py-3 rounded-full text-sm font-bold hover:bg-[#333] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                  Next <ArrowRight size={14} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3: Contact */}
+          {step === 'contact' && (
+            <form onSubmit={submit}>
+              <div className="bg-white border border-black/8 rounded-xl p-4 mb-5">
+                <p className="text-xs text-[#888] uppercase tracking-widest mb-1">Your selection</p>
+                <p className="font-bold text-[#111] text-sm">{svc?.title}</p>
+                <p className="text-xs text-[#666] mt-0.5">{selected.length} deliverable{selected.length !== 1 ? 's' : ''} · Custom quote will be sent to you</p>
+              </div>
+              <p className="text-sm text-[#666] mb-4">We'll review your requirements and send you a personalised proposal within 24 hours.</p>
+              <div className="space-y-4">
+                {[
+                  { label: 'Full Name', key: 'name', type: 'text', placeholder: 'Your name' },
+                  { label: 'Email Address', key: 'email', type: 'email', placeholder: 'you@email.com' },
+                  { label: 'Phone Number', key: 'phone', type: 'tel', placeholder: '+91 99999 99999' },
+                ].map(f => (
+                  <div key={f.key}>
+                    <label className="block text-xs font-bold uppercase tracking-widest text-[#888] mb-2">{f.label} *</label>
+                    <input required type={f.type} placeholder={f.placeholder}
+                      value={(form as any)[f.key]}
+                      onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
+                      className="w-full bg-white border border-black/12 rounded-xl px-4 py-3 text-sm text-[#111] placeholder-[#bbb] outline-none focus:border-[#111] transition-colors" />
+                  </div>
                 ))}
-              </div>
-            )}
-
-            {/* STEP 2: Sub-service Selection */}
-            {step === 'sub' && selectedService && (
-              <div>
-                <p className="text-sm text-[#666] mb-5">Toggle the deliverables you need. Estimate updates instantly.</p>
-
-                {/* Running total */}
-                <div className="bg-[#111] text-white rounded-2xl p-5 mb-6 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-white/60 uppercase tracking-widest mb-1">Estimated Total</p>
-                    <p className="text-3xl font-bold text-[#CCFF00]">
-                      {totalINR > 0 ? formatPrice(totalINR, currency) : `${currency.symbol}0`}
-                    </p>
-                    {currency.code !== 'INR' && totalINR > 0 && (
-                      <p className="text-xs text-white/40 mt-1">≈ ₹{totalINR.toLocaleString()} INR base</p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-white/60">{selectedSubs.length} selected</p>
-                    <p className="text-[10px] text-white/30 mt-1">Indicative pricing</p>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  {selectedService.subServices.map(sub => {
-                    const active = selectedSubs.includes(sub.id);
-                    return (
-                      <button
-                        key={sub.id}
-                        onClick={() => toggleSub(sub.id)}
-                        className={`w-full flex items-center justify-between px-5 py-3.5 rounded-xl border transition-all text-left ${
-                          active
-                            ? 'bg-[#CCFF00] border-[#CCFF00] text-[#111]'
-                            : 'bg-white border-black/8 text-[#333] hover:border-[#CCFF00]/50'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${active ? 'border-[#111] bg-[#111]' : 'border-black/20'}`}>
-                            {active && <div className="w-2 h-2 rounded-full bg-[#CCFF00]" />}
-                          </div>
-                          <span className="text-sm font-medium">{sub.label}</span>
-                        </div>
-                        <span className={`text-xs font-bold shrink-0 ml-4 ${active ? 'text-[#111]' : 'text-[#888]'}`}>
-                          {formatPrice(sub.price, currency)}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="flex gap-3 mt-6">
-                  <button onClick={() => setStep('service')} className="flex-1 border border-black/15 text-[#555] py-3 rounded-full text-sm font-semibold hover:bg-black/5 transition-colors">
-                    ← Back
-                  </button>
-                  <button
-                    onClick={() => setStep('contact')}
-                    disabled={selectedSubs.length === 0}
-                    className="flex-1 bg-[#111] text-white py-3 rounded-full text-sm font-semibold hover:bg-[#333] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    Get Full Estimate <ArrowRight size={14} />
-                  </button>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-widest text-[#888] mb-2">Your Country *</label>
+                  <select required value={form.country} onChange={e => setForm(p => ({ ...p, country: e.target.value }))}
+                    className="w-full bg-white border border-black/12 rounded-xl px-4 py-3 text-sm text-[#111] outline-none focus:border-[#111] transition-colors">
+                    {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.flag} {c.name}</option>)}
+                  </select>
                 </div>
               </div>
-            )}
+              <p className="text-xs text-[#bbb] mt-3">No spam. We'll only reach out with your custom proposal.</p>
+              <div className="flex gap-3 mt-5">
+                <button type="button" onClick={() => setStep('sub')} className="flex-1 border border-black/15 text-[#555] py-3 rounded-full text-sm font-semibold hover:bg-black/5 transition-colors">← Back</button>
+                <button type="submit" disabled={busy}
+                  className="flex-1 bg-[#CCFF00] text-[#111] py-3 rounded-full text-sm font-bold hover:scale-105 transition-transform disabled:opacity-60 flex items-center justify-center gap-2">
+                  {busy ? 'Sending…' : <><span>Submit Request</span><ArrowRight size={14} /></>}
+                </button>
+              </div>
+            </form>
+          )}
 
-            {/* STEP 3: Contact Form */}
-            {step === 'contact' && (
-              <form onSubmit={handleSubmit}>
-                <div className="bg-white border border-black/8 rounded-2xl p-5 mb-6">
-                  <p className="text-xs text-[#888] uppercase tracking-widest mb-1">Your selection</p>
-                  <p className="font-bold text-[#111]">{selectedService?.title}</p>
-                  <p className="text-sm text-[#555] mt-1">{selectedSubs.length} deliverable{selectedSubs.length !== 1 ? 's' : ''} selected</p>
-                  <p className="text-2xl font-bold text-[#111] mt-3">{formatPrice(totalINR, currency)}</p>
-                </div>
-
-                <p className="text-sm text-[#666] mb-5">Enter your details to receive the full breakdown and a personalised offer.</p>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-[#888] mb-2">Full Name *</label>
-                    <input
-                      required
-                      type="text"
-                      placeholder="Your name"
-                      value={form.name}
-                      onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-                      className="w-full bg-white border border-black/12 rounded-xl px-4 py-3 text-sm text-[#111] placeholder-[#aaa] outline-none focus:border-[#111] transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-[#888] mb-2">Email Address *</label>
-                    <input
-                      required
-                      type="email"
-                      placeholder="you@email.com"
-                      value={form.email}
-                      onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-                      className="w-full bg-white border border-black/12 rounded-xl px-4 py-3 text-sm text-[#111] placeholder-[#aaa] outline-none focus:border-[#111] transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-[#888] mb-2">Phone Number *</label>
-                    <input
-                      required
-                      type="tel"
-                      placeholder="+91 99999 99999"
-                      value={form.phone}
-                      onChange={e => setForm(p => ({ ...p, phone: e.target.value }))}
-                      className="w-full bg-white border border-black/12 rounded-xl px-4 py-3 text-sm text-[#111] placeholder-[#aaa] outline-none focus:border-[#111] transition-colors"
-                    />
-                  </div>
-                </div>
-
-                <p className="text-xs text-[#aaa] mt-4">We'll reach out with a personalised offer. No spam, ever.</p>
-
-                <div className="flex gap-3 mt-6">
-                  <button type="button" onClick={() => setStep('sub')} className="flex-1 border border-black/15 text-[#555] py-3 rounded-full text-sm font-semibold hover:bg-black/5 transition-colors">
-                    ← Back
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="flex-1 bg-[#CCFF00] text-[#111] py-3 rounded-full text-sm font-bold hover:scale-105 transition-transform disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {submitting ? 'Sending…' : <><span>Show My Estimate</span> <ArrowRight size={14} /></>}
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* STEP 4: Result */}
-            {step === 'result' && (
-              <div>
-                <div className="flex items-center gap-3 mb-6">
-                  <CheckCircle className="text-[#CCFF00] bg-[#111] rounded-full p-1 shrink-0" size={36} />
-                  <div>
-                    <p className="font-bold text-[#111]">Estimate sent to your email!</p>
-                    <p className="text-sm text-[#888]">Our team will reach out with a custom offer within 24 hours.</p>
-                  </div>
-                </div>
-
-                <div className="bg-[#111] rounded-3xl p-7 text-white mb-5">
-                  <p className="text-xs text-white/50 uppercase tracking-widest mb-2">Estimated Cost Range</p>
-                  <p className="text-5xl font-bold text-[#CCFF00] mb-1">{formatPrice(totalINR, currency)}</p>
-                  {currency.code !== 'INR' && (
-                    <p className="text-sm text-white/40 mb-4">≈ ₹{totalINR.toLocaleString()} INR</p>
-                  )}
-                  <div className="border-t border-white/10 pt-4 mt-4">
-                    <p className="text-xs text-white/50 uppercase tracking-widest mb-3">Selected: {selectedService?.title}</p>
-                    <div className="space-y-1.5">
-                      {selectedSubs.map(id => {
-                        const sub = selectedService?.subServices.find(s => s.id === id);
-                        if (!sub) return null;
-                        return (
-                          <div key={id} className="flex justify-between items-center text-sm">
-                            <span className="text-white/70">{sub.label}</span>
-                            <span className="text-[#CCFF00] font-semibold">{formatPrice(sub.price, currency)}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                <p className="text-xs text-[#999] mb-6 leading-relaxed">
-                  * This is an indicative estimate. Final pricing depends on site complexity, location, and scope. Our team will send a detailed proposal.
-                </p>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => { setStep('service'); setSelectedService(null); setSelectedSubs([]); setForm({ name: '', email: '', phone: '' }); setSubmitted(false); }}
-                    className="flex-1 border border-black/15 text-[#555] py-3 rounded-full text-sm font-semibold hover:bg-black/5 transition-colors"
-                  >
-                    New Estimate
-                  </button>
-                  <button onClick={onClose} className="flex-1 bg-[#111] text-white py-3 rounded-full text-sm font-bold hover:bg-[#333] transition-colors">
-                    Close
-                  </button>
+          {/* STEP 4: Result — Topmate CTA, no price */}
+          {step === 'result' && (
+            <div>
+              <div className="flex items-center gap-3 bg-[#CCFF00]/15 border border-[#CCFF00] rounded-2xl p-5 mb-6">
+                <CheckCircle className="text-[#111] shrink-0" size={28} />
+                <div>
+                  <p className="font-bold text-[#111]">Request received!</p>
+                  <p className="text-sm text-[#555] mt-0.5">We'll review your requirements and reach out within 24 hours with a custom proposal.</p>
                 </div>
               </div>
-            )}
-          </div>
-        </motion.div>
+
+              <div className="bg-[#111] rounded-3xl p-7 text-white mb-5 text-center">
+                <p className="text-sm text-white/50 mb-4">Want to discuss your project right away?</p>
+                <p className="text-xl font-bold text-white mb-2">Book a Free Consultation</p>
+                <p className="text-sm text-white/60 mb-5">15-minute intro call with Ar. Archana Gavas — no commitment needed.</p>
+                <a href={TOPMATE} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-7 py-3 rounded-full text-sm font-bold hover:scale-105 transition-transform">
+                  <Calendar size={16} /> Book Free Consultation
+                </a>
+              </div>
+
+              <p className="text-xs text-[#aaa] text-center mb-5">
+                We serve clients from {COUNTRIES.find(c => c.code === form.country)?.name || 'around the world'}. Pricing will be tailored to your project and location.
+              </p>
+
+              <div className="flex gap-3">
+                <button onClick={() => { setStep('service'); setSvc(null); setSelected([]); setForm({ name: '', email: '', phone: '', country: 'IN' }); }}
+                  className="flex-1 border border-black/15 text-[#555] py-3 rounded-full text-sm font-semibold hover:bg-black/5 transition-colors">
+                  New Estimate
+                </button>
+                <button onClick={onClose} className="flex-1 bg-[#111] text-white py-3 rounded-full text-sm font-bold hover:bg-[#333] transition-colors">Close</button>
+              </div>
+            </div>
+          )}
+        </div>
       </motion.div>
-    </AnimatePresence>
+    </div>
   );
+
+  return createPortal(content, document.body);
 }

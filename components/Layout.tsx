@@ -250,10 +250,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         )}
       </AnimatePresence>
 
-      {/* Estimator Modal */}
-      <AnimatePresence>
-        {estimatorOpen && <EstimatorModal onClose={() => setEstimatorOpen(false)} />}
-      </AnimatePresence>
+      {/* Estimator Modal — createPortal renders into document.body */}
+      {estimatorOpen && <EstimatorModal onClose={() => setEstimatorOpen(false)} />}
 
       {/* Main */}
       <main className="flex-grow">{children}</main>

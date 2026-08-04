@@ -7,7 +7,7 @@ import {
   Layout as LayoutIcon, ShoppingBag, Briefcase, MessageSquare, Mail,
   Globe, Download, CheckCircle, RefreshCw, Edit2, X, Eye, EyeOff,
   Image as ImageIcon, Tag, Save, ArrowLeft, Type, Hash, AlertCircle, Menu,
-  Database, Wifi, WifiOff, Shield, Lock, Zap, Activity, MessageCircle
+  Database, Wifi, WifiOff, Shield, Lock, Zap, Activity, MessageCircle, Calculator
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { generateSitemapXml, generateLlmsTxt, generateLlmsFullTxt, downloadFile } from '../utils/seoGenerator';
@@ -1481,6 +1481,7 @@ const Admin: React.FC = () => {
         <nav className="p-3 space-y-1 flex-1">
           <NavButton id="analytics" icon={ChartIcon} label="Dashboard" />
           <NavButton id="messages" icon={MessageSquare} label="Inquiries" />
+          <NavButton id="estimator" icon={Calculator} label="Estimate Leads" />
           <NavButton id="projects" icon={LayoutIcon} label="Projects" />
           <NavButton id="blog" icon={FileText} label="Journal / Blog" />
           <NavButton id="shop" icon={ShoppingBag} label="Shop / Products" />
@@ -1752,6 +1753,71 @@ const Admin: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* ── Estimate Leads ── */}
+        {activeTab === 'estimator' && (() => {
+          const leads = messages.filter(m => m.message?.includes('[ESTIMATE REQUEST]'));
+          return (
+            <div className="space-y-6 animate-fade-in">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold">Estimate Leads ({leads.length})</h2>
+                  <p className="text-sm text-gray-400 mt-0.5">Visitors who used the cost estimator tool</p>
+                </div>
+                <span className="text-xs text-green-600 bg-green-50 border border-green-200 rounded-full px-3 py-1 font-semibold flex items-center gap-1"><Database size={11} /> Synced to Neon DB</span>
+              </div>
+              <div className="space-y-3">
+                {leads.length === 0 ? (
+                  <div className="text-center py-20 bg-white rounded-xl border border-gray-100 text-gray-400">No estimate leads yet. Share the estimator tool to get started.</div>
+                ) : leads.map(msg => {
+                  const lines = (msg.message || '').split('\n');
+                  const get = (key: string) => lines.find(l => l.startsWith(key))?.replace(key, '').trim() || '';
+                  return (
+                    <div key={msg.id} className="bg-white p-5 rounded-xl border border-[#CCFF00]/40 shadow-sm">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-[10px] font-bold uppercase tracking-widest bg-[#CCFF00] text-[#111] px-2 py-0.5 rounded-full">Estimate Lead</span>
+                            <span className="font-bold text-gray-800 text-sm">{msg.name}</span>
+                            <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">{msg.date?.slice(0,10)}</span>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm mb-3">
+                            <a href={`mailto:${msg.email}`} className="text-green-600 hover:underline font-medium flex items-center gap-1"><Mail size={12}/>{msg.email}</a>
+                            {get('Phone:') && <span className="text-gray-500">{get('Phone:')}</span>}
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                            <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                              <p className="text-gray-400 uppercase tracking-widest text-[10px] font-bold mb-1">Service</p>
+                              <p className="font-semibold text-gray-800">{get('Service:')}</p>
+                            </div>
+                            <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                              <p className="text-gray-400 uppercase tracking-widest text-[10px] font-bold mb-1">Country</p>
+                              <p className="font-semibold text-gray-800">{get('Country:')}</p>
+                            </div>
+                            <div className="bg-gray-50 rounded-lg p-3 border border-gray-100 sm:col-span-2">
+                              <p className="text-gray-400 uppercase tracking-widest text-[10px] font-bold mb-1">Deliverables</p>
+                              <p className="text-gray-700 leading-relaxed">{get('Deliverables:')}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <a href={`mailto:${msg.email}?subject=Your Anvitam Design Estimate&body=Hi ${msg.name},%0A%0AThank you for using our estimator. Based on your selections, here is your personalised proposal...%0A%0A`}
+                            className="flex items-center gap-1 text-xs border border-blue-200 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition font-semibold">
+                            <Mail size={11}/> Reply
+                          </a>
+                          <button onClick={() => { if (confirm('Delete this lead?')) { deleteMessage(msg.id); showToast('Lead deleted.'); } }}
+                            className="text-red-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-lg transition">
+                            <Trash2 size={15}/>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── Projects ── */}
         {activeTab === 'projects' && (
