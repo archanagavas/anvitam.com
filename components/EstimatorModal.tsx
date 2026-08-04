@@ -103,7 +103,9 @@ export default function EstimatorModal({ onClose }: { onClose: () => void }) {
 
   const content = (
     <div
-      className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-6 modal-overlay"
       style={{ backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
       onClick={e => e.target === e.currentTarget && onClose()}
     >

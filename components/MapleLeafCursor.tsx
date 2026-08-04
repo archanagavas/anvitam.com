@@ -17,7 +17,15 @@ const MapleLeafCursor: React.FC = () => {
     const moveCursor = (e: MouseEvent) => {
       cursorX.set(e.clientX - 12);
       cursorY.set(e.clientY - 12);
-      if (!isVisible) setIsVisible(true);
+      
+      const target = e.target as HTMLElement | null;
+      const isOverModal = !!target?.closest('.modal-overlay, [role="dialog"]');
+
+      if (isOverModal) {
+        setIsVisible(false);
+      } else {
+        if (!isVisible) setIsVisible(true);
+      }
     };
 
     const handleMouseLeave = () => setIsVisible(false);

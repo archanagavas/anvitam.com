@@ -240,9 +240,33 @@
       }
 
       @media (min-width: 768px) {
-        .hide-default-cursor,
-        .hide-default-cursor * {
-          cursor: none !important;
+        body.hide-default-cursor {
+          cursor: none;
+        }
+        /* Always preserve default native pointers for modals, form inputs, buttons, selects, and links */
+        .modal-overlay,
+        .modal-overlay *,
+        input,
+        select,
+        textarea,
+        button,
+        a,
+        [role="button"] {
+          cursor: auto !important;
+        }
+        button,
+        a,
+        [role="button"],
+        select,
+        option,
+        .cursor-pointer {
+          cursor: pointer !important;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        textarea {
+          cursor: text !important;
         }
       }
 
