@@ -5,28 +5,9 @@ import { X, ArrowRight, CheckCircle, Calculator, ChevronRight, Calendar } from '
 import { useContent } from '../context/ContentContext';
 import { INITIAL_ESTIMATOR_SERVICES } from '../constants';
 import { EstimatorService } from '../types';
+import { PPP_COUNTRIES, calculatePPPPrice, getCountryByCode } from '../utils/pppPricing';
 
 const TOPMATE = 'https://topmate.io/archanagavas/1799075?utm_source=estimator&utm_campaign=estimate_lead';
-
-const COUNTRIES = [
-  { code: 'IN', name: 'India', flag: '🇮🇳', tier: 1 },
-  { code: 'US', name: 'United States', flag: '🇺🇸', tier: 4 },
-  { code: 'AU', name: 'Australia', flag: '🇦🇺', tier: 3.5 },
-  { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', tier: 4 },
-  { code: 'DE', name: 'Germany', flag: '🇩🇪', tier: 3.5 },
-  { code: 'FR', name: 'France', flag: '🇫🇷', tier: 3.5 },
-  { code: 'NL', name: 'Netherlands', flag: '🇳🇱', tier: 3.5 },
-  { code: 'SG', name: 'Singapore', flag: '🇸🇬', tier: 3 },
-  { code: 'AE', name: 'UAE', flag: '🇦🇪', tier: 3.5 },
-  { code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦', tier: 3 },
-  { code: 'CA', name: 'Canada', flag: '🇨🇦', tier: 3.5 },
-  { code: 'NZ', name: 'New Zealand', flag: '🇳🇿', tier: 3 },
-  { code: 'ZA', name: 'South Africa', flag: '🇿🇦', tier: 2 },
-  { code: 'ID', name: 'Indonesia', flag: '🇮🇩', tier: 1.5 },
-  { code: 'TH', name: 'Thailand', flag: '🇹🇭', tier: 2 },
-  { code: 'MY', name: 'Malaysia', flag: '🇲🇾', tier: 2 },
-  { code: 'OTHER', name: 'Other country', flag: '🌍', tier: 2.5 },
-];
 
 type Step = 'service' | 'sub' | 'contact' | 'result';
 
@@ -40,20 +21,11 @@ export default function EstimatorModal({ onClose }: { onClose: () => void }) {
   const [form, setForm] = useState({ name: '', email: '', phone: '', country: 'IN' });
   const [busy, setBusy] = useState(false);
 
-  const country = COUNTRIES.find(c => c.code === form.country) || COUNTRIES[0];
-  const totalINR = selected.reduce((s, i) => s + (svc?.baseINR[i] || 0), 0);
-
-  const getFormattedPrice = (baseINR: number) => {
-    const adjusted = baseINR * country.tier;
-    if (form.country === 'IN') {
-      return `₹${Math.round(adjusted).toLocaleString('en-IN')}`;
-    }
-    const usd = Math.round(adjusted / 83);
-    return `$${usd.toLocaleString('en-US')}`;
-  };
-
+  const country = getCountryByCode(form.country);
   const totalBase = selected.reduce((s, i) => s + (svc?.baseINR[i] || 0), 0);
-  const formattedTotal = getFormattedPrice(totalBase);
+  const formattedTotal = calculatePPPPrice(totalBase, form.country);
+
+  const getFormattedPrice = (baseINR: number) => calculatePPPPrice(baseINR, form.country);
 
   const toggle = (i: number) => setSelected(p => p.includes(i) ? p.filter(x => x !== i) : [...p, i]);
 
@@ -223,7 +195,7 @@ export default function EstimatorModal({ onClose }: { onClose: () => void }) {
                     onChange={e => setForm(p => ({ ...p, country: e.target.value }))}
                     className="w-full bg-white border border-black/12 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-[#111] outline-none focus:border-[#111] transition-colors cursor-pointer"
                   >
-                    {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.flag} {c.name}</option>)}
+                    {PPP_COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.flag} {c.name}</option>)}
                   </select>
                 </div>
               </div>

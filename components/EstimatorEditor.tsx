@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { useContent } from '../context/ContentContext';
 import { EstimatorService } from '../types';
-import { Plus, Trash2, Edit2, Save, ArrowLeft, AlertCircle, CheckCircle, Calculator } from 'lucide-react';
+import { Plus, Trash2, Edit2, Save, ArrowLeft, AlertCircle, CheckCircle, Calculator, Globe, ChevronDown, ChevronUp } from 'lucide-react';
+import { PPP_COUNTRIES, calculatePPPPrice, getCountryByCode } from '../utils/pppPricing';
 
 export default function EstimatorEditor({ showToast }: { showToast: (msg: string) => void }) {
   const { estimatorServices, addEstimatorService, updateEstimatorService, deleteEstimatorService } = useContent();
 
   const [editingService, setEditingService] = useState<EstimatorService | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [showPppTable, setShowPppTable] = useState(false);
 
   // Form states
   const [title, setTitle] = useState('');
@@ -32,8 +34,6 @@ export default function EstimatorEditor({ showToast }: { showToast: (msg: string
     setTitle('');
     setIcon('🌿');
     setDesc('');
-    setSubs(['Site Reading & Initial Layout', '3D Visualisation & Masterplan']);
-    setBaseINR[15000, 25000];
     setSubs(['Initial Consultation & Site Reading', 'Concept Layout & Master Plan']);
     setBaseINR([15000, 25000]);
   };
@@ -164,57 +164,68 @@ export default function EstimatorEditor({ showToast }: { showToast: (msg: string
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-base font-bold text-gray-800 flex items-center gap-2">
-                  <Calculator size={18} className="text-[#8bc34a]" /> Deliverables & Pricing Breakdown
+                  <Calculator size={18} className="text-[#8bc34a]" /> Deliverables & Base Pricing Breakdown (₹ INR)
                 </h3>
-                <p className="text-xs text-gray-500">Base prices are set in Indian Rupees (₹). Dynamic tiering automatically formats USD ($) for global clients based on country code.</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Set base price in Indian Rupees (₹). World Bank PPP parity automatically converts and scales pricing for USA, UK, Europe, Australia & 40+ countries.
+                </p>
               </div>
               <button
                 type="button"
                 onClick={addSubService}
-                className="inline-flex items-center gap-1.5 bg-black text-white px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-gray-800 transition cursor-pointer"
+                className="inline-flex items-center gap-1.5 bg-black text-white px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-gray-800 transition cursor-pointer shrink-0"
               >
                 <Plus size={14} /> Add Deliverable
               </button>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               {subs.map((subName, i) => {
                 const inr = baseINR[i] || 0;
-                const usdEst = Math.round((inr * 4) / 83); // Approx tier 4 USD estimation preview
                 return (
-                  <div key={i} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-3.5 bg-gray-50 rounded-xl border border-gray-200/80">
-                    <span className="text-xs font-bold text-gray-400 w-6 shrink-0">{i + 1}.</span>
-                    <input
-                      type="text"
-                      required
-                      value={subName}
-                      onChange={e => handleSubChange(i, e.target.value)}
-                      placeholder="Deliverable name (e.g. Master Plan Layout)"
-                      className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-xs font-medium bg-white focus:border-black outline-none"
-                    />
-                    <div className="flex items-center gap-2 shrink-0">
-                      <div className="relative w-36">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-bold">₹</span>
-                        <input
-                          type="number"
-                          required
-                          value={inr}
-                          onChange={e => handlePriceChange(i, e.target.value)}
-                          placeholder="Price in INR"
-                          className="w-full border border-gray-200 rounded-lg pl-7 pr-3 py-2 text-xs font-bold font-mono bg-white focus:border-black outline-none"
-                        />
+                  <div key={i} className="p-4 bg-gray-50 rounded-2xl border border-gray-200/90 space-y-2">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                      <span className="text-xs font-bold text-gray-400 w-6 shrink-0">{i + 1}.</span>
+                      <input
+                        type="text"
+                        required
+                        value={subName}
+                        onChange={e => handleSubChange(i, e.target.value)}
+                        placeholder="Deliverable name (e.g. Master Plan Layout)"
+                        className="flex-1 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold bg-white focus:border-black outline-none"
+                      />
+                      <div className="flex items-center gap-2 shrink-0">
+                        <div className="relative w-40">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-bold">₹</span>
+                          <input
+                            type="number"
+                            required
+                            value={inr}
+                            onChange={e => handlePriceChange(i, e.target.value)}
+                            placeholder="Base INR"
+                            className="w-full border border-gray-200 rounded-xl pl-7 pr-3 py-2.5 text-xs font-bold font-mono bg-white focus:border-black outline-none"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeSubService(i)}
+                          className="p-2.5 text-gray-400 hover:text-red-600 rounded-xl hover:bg-red-50 transition"
+                          title="Remove deliverable"
+                        >
+                          <Trash2 size={15} />
+                        </button>
                       </div>
-                      <span className="text-[11px] text-gray-400 font-medium w-24 text-right hidden lg:block">
-                        ≈ ${usdEst} USD (US)
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => removeSubService(i)}
-                        className="p-2 text-gray-400 hover:text-red-600 rounded-lg transition"
-                        title="Remove deliverable"
-                      >
-                        <Trash2 size={15} />
-                      </button>
+                    </div>
+
+                    {/* PPP Country Previews Pill */}
+                    <div className="pl-9 flex flex-wrap items-center gap-1.5 text-[11px]">
+                      <span className="text-gray-400 font-bold uppercase tracking-wider text-[9px] mr-1">PPP Live Previews:</span>
+                      <span className="bg-white border border-gray-200 text-gray-700 px-2 py-0.5 rounded-md font-mono">🇮🇳 {calculatePPPPrice(inr, 'IN')}</span>
+                      <span className="bg-white border border-gray-200 text-gray-700 px-2 py-0.5 rounded-md font-mono">🇺🇸 {calculatePPPPrice(inr, 'US')}</span>
+                      <span className="bg-white border border-gray-200 text-gray-700 px-2 py-0.5 rounded-md font-mono">🇬🇧 {calculatePPPPrice(inr, 'GB')}</span>
+                      <span className="bg-white border border-gray-200 text-gray-700 px-2 py-0.5 rounded-md font-mono">🇪🇺 {calculatePPPPrice(inr, 'DE')}</span>
+                      <span className="bg-white border border-gray-200 text-gray-700 px-2 py-0.5 rounded-md font-mono">🇦🇺 {calculatePPPPrice(inr, 'AU')}</span>
+                      <span className="bg-white border border-gray-200 text-gray-700 px-2 py-0.5 rounded-md font-mono">🇨🇦 {calculatePPPPrice(inr, 'CA')}</span>
                     </div>
                   </div>
                 );
@@ -322,6 +333,54 @@ export default function EstimatorEditor({ showToast }: { showToast: (msg: string
             </div>
           );
         })}
+      </div>
+
+      {/* World Bank Purchasing Power Parity (PPP) Reference Table */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <Globe className="text-blue-600" size={20} />
+            <div>
+              <h3 className="font-bold text-gray-800 text-sm">Purchasing Power Parity (PPP) Pricing Reference</h3>
+              <p className="text-xs text-gray-500">
+                Benchmarked against base ₹100 in India (IN) using World Bank PPP data. Default prices increase proportionally for high purchasing power countries.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowPppTable(!showPppTable)}
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition cursor-pointer self-start sm:self-auto shrink-0"
+          >
+            {showPppTable ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            {showPppTable ? 'Hide PPP Benchmarks' : 'View World Bank PPP Benchmarks'}
+          </button>
+        </div>
+
+        {showPppTable && (
+          <div className="border-t border-gray-100 pt-4 animate-fade-in">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 max-h-96 overflow-y-auto pr-1">
+              {PPP_COUNTRIES.map(c => {
+                const targetRatio = c.targetPriceRatio;
+                const sampleDisplay = calculatePPPPrice(100, c.code);
+                return (
+                  <div key={c.code} className="bg-gray-50 border border-gray-200/80 rounded-xl p-2.5 text-xs space-y-1">
+                    <div className="flex items-center justify-between font-bold text-gray-800">
+                      <span className="truncate">{c.flag} {c.name}</span>
+                      <span className="text-[10px] text-gray-400">({c.code})</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] font-mono">
+                      <span className="text-gray-400">Base ₹100</span>
+                      <span className="font-bold text-emerald-700">₹{targetRatio}</span>
+                    </div>
+                    <div className="text-[10px] text-gray-500 text-right font-bold font-mono border-t border-gray-200/60 pt-1">
+                      {sampleDisplay}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
