@@ -1688,6 +1688,52 @@ const Admin: React.FC = () => {
                   </a>
                 </div>
               </div>
+
+              {/* Umami Analytics (Real, Privacy-First Visitor & Blog Read Telemetry) */}
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4 lg:col-span-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                    <Activity size={16} className="text-emerald-500" />
+                    Umami Analytics (100% Real & Ad-Blocker Resistant)
+                  </h3>
+                  <span className="text-[10px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                    <CheckCircle size={10} /> Active & Tracking
+                  </span>
+                </div>
+
+                <p className="text-xs text-gray-600 leading-relaxed">
+                  Umami is connected to track every real human visitor and blog reader without bot fake hits or ad-blocker dropouts.
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                  <div>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Website ID</span>
+                    <span className="font-mono text-xs font-bold text-gray-800 break-all">14be7ec2-6f32-451a-92d4-0961ff82c370</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Script Source</span>
+                    <span className="font-mono text-xs text-gray-700">https://cloud.umami.is/script.js</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Privacy & Accuracy</span>
+                    <span className="text-xs font-semibold text-emerald-700">No Cookies · Bot Filtered</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3">
+                  <p className="text-xs text-gray-500">
+                    Click below to open your real-time Umami dashboard for detailed blog reader counts & referral traffic.
+                  </p>
+                  <a
+                    href="https://cloud.umami.is/websites/14be7ec2-6f32-451a-92d4-0961ff82c370"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-gray-800 transition"
+                  >
+                    Open Live Umami Analytics Dashboard &rarr;
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         )}

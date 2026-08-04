@@ -9,7 +9,7 @@ import EstimatorModal from '../components/EstimatorModal';
 
 
 /* ─── HERO BACKGROUND VIDEO/IMAGE URL ─── */
-const HERO_BG = 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=75&w=1200&auto=format&fit=crop';
+const HERO_BG = '/hero-image.jpg';
 const FEATURE_1 = 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=75&w=1200&auto=format&fit=crop';
 const FEATURE_2 = 'https://images.unsplash.com/photo-1571771019784-3ff35f4f4277?q=75&w=1200&auto=format&fit=crop';
 const FEATURE_3 = 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=75&w=1200&auto=format&fit=crop';
@@ -46,7 +46,7 @@ const Home: React.FC = () => {
   const recentBlogs = blogs?.filter(b => b.status === 'published').slice(0, 2) || [];
 
   const TOPMATE = 'https://topmate.io/archanagavas/1799075?utm_source=public_profile&utm_campaign=archanagavas';
-  const neonBtn = 'inline-flex items-center gap-2 bg-[#CCFF00] text-[#050505] px-6 py-3 rounded-full text-sm font-semibold hover:scale-105 transition-transform duration-300 cursor-pointer';
+  const neonBtn = 'inline-flex items-center gap-2 bg-[#CCFF00] text-[#050505] px-6 py-3 rounded-full text-sm font-bold hover:scale-105 transition-transform duration-300 cursor-pointer shadow-xl drop-shadow-md';
   const outlineBtn = 'inline-flex items-center gap-2 border border-[#111] text-[#111] bg-transparent px-6 py-3 rounded-full text-sm font-semibold hover:bg-[#111] hover:text-white transition-all duration-300 cursor-pointer';
 
   return (
@@ -67,22 +67,21 @@ const Home: React.FC = () => {
       </Helmet>
 
       {/* ══════════════════════════════════════════
-          HERO — full-bleed mountain image, centered text
+          HERO — full-bleed mountain & rainbow coastal image, centered high-contrast text
       ══════════════════════════════════════════ */}
-      <section ref={heroRef} className="relative h-screen min-h-[600px] flex flex-col items-center justify-center overflow-hidden">
+      <section ref={heroRef} className="relative h-screen min-h-[650px] flex flex-col items-center justify-center overflow-hidden">
         {/* BG image with parallax */}
         <motion.div style={{ y: heroY }} className="absolute inset-0 z-0">
           <img 
             src={HERO_BG} 
-            srcSet="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=75&w=640&auto=format&fit=crop 640w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=75&w=1200&auto=format&fit=crop 1200w"
-            sizes="100vw"
-            alt="Sustainable mountain retreat landscape architecture design" 
-            className="w-full h-full object-cover" 
+            alt="Sustainable coastal and mountain retreat architecture design" 
+            className="w-full h-full object-cover object-center" 
             fetchPriority="high"
             loading="eager"
           />
-          {/* subtle dark vignette overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
+          {/* Dual-layer dark gradient overlay for optimal text contrast and readability */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/50 to-black/85" />
+          <div className="absolute inset-0 bg-black/25" />
         </motion.div>
 
         {/* Centered hero text */}
@@ -91,7 +90,7 @@ const Home: React.FC = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="inline-block mb-6 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-medium tracking-widest uppercase"
+            className="inline-block mb-6 px-4 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/40 text-white text-xs font-semibold tracking-widest uppercase shadow-lg drop-shadow-md"
           >
             Eco Friendly Design
           </motion.div>
@@ -100,52 +99,52 @@ const Home: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-4xl sm:text-6xl md:text-7xl text-white font-bold leading-[1.1] tracking-tight mb-6"
+            className="text-4xl sm:text-6xl md:text-7xl text-white font-extrabold leading-[1.1] tracking-tight mb-6 drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]"
           >
             Sustainable Architecture for{' '}
-            <span className="text-[#CCFF00]">Modern Living</span>
+            <span className="text-[#CCFF00] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">Modern Living</span>
           </motion.h1>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8"
           >
             <a href={TOPMATE} target="_blank" rel="noreferrer" className={neonBtn}>
               Get a Design Consultation <ArrowRight size={16} />
             </a>
             <button
               onClick={() => setEstimatorOpen(true)}
-              className="inline-flex items-center gap-2 border-2 border-white text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-white hover:text-[#111] transition-all duration-300 cursor-pointer"
+              className="inline-flex items-center gap-2 bg-black/50 backdrop-blur-md border-2 border-white text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-white hover:text-[#111] transition-all duration-300 cursor-pointer shadow-lg drop-shadow-md"
             >
               <Calculator size={16} /> Get Instant Estimate
             </button>
           </motion.div>
 
-          {/* Benefit checks */}
+          {/* Benefit checks wrapped in dark blurred container for 100% naked eye visibility */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.8 }}
-            className="flex flex-wrap items-center justify-center gap-6 text-white text-sm"
+            className="bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl p-4 sm:p-5 shadow-2xl max-w-3xl mx-auto flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5 text-white text-xs sm:text-sm font-medium drop-shadow-sm"
           >
             {['Permaculture Design', 'Farm retreat', 'Airbnb', 'Homestay', 'Community Center', 'Weekend Villa', 'Eco Resort', 'Wellness Retreat Center', 'Food Forest', 'Agrotourism', 'Landscape Design', 'Terrace Garden'].map(b => (
-              <span key={b} className="flex items-center gap-1.5"><span className="text-[#CCFF00]">✓</span> {b}</span>
+              <span key={b} className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full border border-white/15 drop-shadow-sm"><span className="text-[#CCFF00] font-bold">✓</span> {b}</span>
             ))}
           </motion.div>
         </motion.div>
 
         {/* Stats bar at the bottom of hero */}
-        <div className="absolute bottom-0 left-0 right-0 z-10 grid grid-cols-3 border-t border-white/20 bg-black/40 backdrop-blur-md">
+        <div className="absolute bottom-0 left-0 right-0 z-10 grid grid-cols-3 border-t border-white/25 bg-black/75 backdrop-blur-lg shadow-2xl">
           {[
             { num: '12+', label: 'Projects Completed' },
             { num: 'Permaculture', label: 'Grounded in Principles' },
             { num: '100%', label: 'Climate-Aware Design' },
           ].map((s, i) => (
             <div key={i} className="py-3 md:py-6 px-1 sm:px-3 text-center text-white border-r last:border-r-0 border-white/20 flex flex-col justify-center items-center">
-              <p className="text-sm sm:text-2xl md:text-4xl font-bold leading-tight break-words">{s.num}</p>
-              <p className="text-[8px] sm:text-[10px] md:text-xs text-white/80 mt-1 uppercase tracking-wider text-center">{s.label}</p>
+              <p className="text-sm sm:text-2xl md:text-4xl font-extrabold leading-tight break-words text-white drop-shadow-md">{s.num}</p>
+              <p className="text-[9px] sm:text-[11px] md:text-xs text-gray-200 mt-1 uppercase tracking-wider text-center font-medium drop-shadow-sm">{s.label}</p>
             </div>
           ))}
         </div>
