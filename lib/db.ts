@@ -217,7 +217,6 @@ async function initDatabaseInternal() {
   await neonClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS meta_robots TEXT;`;
   await neonClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS youtube_url TEXT;`;
   await neonClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS videos JSONB DEFAULT '[]';`;
-  `;
 
   // Seed initial online courses if none exist
   const existingCourses = await neonClient`SELECT id FROM digital_products WHERE category = 'Online Courses' LIMIT 1`;
