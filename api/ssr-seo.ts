@@ -972,11 +972,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       keywords = blog.meta_keywords || blog.metaKeywords || (Array.isArray(tagsArr) && tagsArr.length > 0 ? tagsArr.join(', ') : keywords);
       robots = blog.meta_robots || blog.metaRobots || robots;
     } else {
-      // Blog not found in DB or constants — prevent Google from indexing a blank/generic page
-      console.warn(`[ssr-seo] Blog not found for id/slug: ${idOrSlug}`);
-      title = `Article Not Found | Anvitam`;
-      desc = 'The requested article could not be found on Anvitam.';
-      robots = 'noindex, follow';
+      // Blog not found in DB — serve generic indexable metadata so Google can crawl the client-rendered page
+      console.warn(`[ssr-seo] Blog not found in DB for id/slug: ${idOrSlug} — serving generic metadata`);
+      title = `Blog | Anvitam Sustainable Architecture`;
+      desc = 'Read articles and insights on sustainable architecture, permaculture, eco-design, and biophilic living by Anvitam.';
+      // Keep robots = 'index, follow' (default) — do NOT noindex, allow client-side hydration to be crawled
     }
   } else if (section === 'projects' && idOrSlug) {
     if (isDbConfigured) {
@@ -1009,11 +1009,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       keywords = project.meta_keywords || project.metaKeywords || (Array.isArray(tagsArr) && tagsArr.length > 0 ? tagsArr.join(', ') : keywords);
       robots = project.meta_robots || project.metaRobots || robots;
     } else {
-      // Project not found in DB or constants — prevent Google from indexing a blank/generic page
-      console.warn(`[ssr-seo] Project not found for id/slug: ${idOrSlug}`);
-      title = `Project Not Found | Anvitam`;
-      desc = 'The requested project could not be found on Anvitam.';
-      robots = 'noindex, follow';
+      // Project not found in DB — serve generic indexable metadata so Google can crawl the client-rendered page
+      console.warn(`[ssr-seo] Project not found in DB for id/slug: ${idOrSlug} — serving generic metadata`);
+      title = `Project | Anvitam Sustainable Architecture`;
+      desc = 'Explore sustainable architecture projects by Anvitam — farm retreats, eco-resorts, permaculture landscapes, and biophilic homes.';
+      // Keep robots = 'index, follow' (default) — do NOT noindex
     }
   } else if (section === 'services' && idOrSlug) {
     if (isDbConfigured) {
@@ -1047,11 +1047,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       keywords = service.meta_keywords || service.metaKeywords || [service.title, 'sustainable architecture', 'eco design', 'permaculture', ...(Array.isArray(props) ? props : [])].join(', ');
       robots = service.meta_robots || service.metaRobots || robots;
     } else {
-      // Service not found in DB or constants — prevent Google from indexing a blank/generic page
-      console.warn(`[ssr-seo] Service not found for id/slug: ${idOrSlug}`);
-      title = `Service Not Found | Anvitam`;
-      desc = 'The requested service could not be found on Anvitam.';
-      robots = 'noindex, follow';
+      // Service not found in DB — serve generic indexable metadata so Google can crawl the client-rendered page
+      console.warn(`[ssr-seo] Service not found in DB for id/slug: ${idOrSlug} — serving generic metadata`);
+      title = `Service | Anvitam Sustainable Architecture`;
+      desc = 'Explore sustainable design services by Anvitam — permaculture, farm retreats, eco-resorts, biophilic architecture, and more.';
+      // Keep robots = 'index, follow' (default) — do NOT noindex
     }
   } else if (section === 'seo' && idOrSlug) {
     const seoPages: Record<string, { title: string; desc: string }> = {
