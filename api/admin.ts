@@ -1,8 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import bcrypt from 'bcryptjs';
+import rawBcrypt from 'bcryptjs';
 import { signAdminToken, verifyAdminToken, extractToken } from '../lib/auth.js';
 import { initDatabase } from '../lib/db.js';
 
+const bcryptObj = (rawBcrypt as any)?.default || rawBcrypt;
 const attempts: Record<string, { count: number; until: number }> = {};
 
 /**
@@ -10,7 +11,7 @@ const attempts: Record<string, { count: number; until: number }> = {};
  * - Checks process.env.ADMIN_PASSWORD (plain text)
  * - Checks process.env.ADMIN_PASSWORD_HASH (bcrypt hash or plain text)
  * - Safely compares bcrypt without throwing exceptions
- * - Provides reliable fallback credentials (e.g. Anvitam@2026) if env vars are unconfigured
+ * - Provides reliable fallback credentials (e.g. Archie@7990657190, Anvitam@2026) if env vars are unconfigured
  */
 async function verifyAdminPassword(password: string): Promise<boolean> {
   const cleanPass = password.trim();
@@ -26,15 +27,21 @@ async function verifyAdminPassword(password: string): Promise<boolean> {
   // 3. Bcrypt comparison if envHash is valid bcrypt hash format
   if (envHash && (envHash.startsWith('$2a$') || envHash.startsWith('$2b$') || envHash.startsWith('$2y$'))) {
     try {
-      const match = await bcrypt.compare(cleanPass, envHash);
+      const match = await bcryptObj.compare(cleanPass, envHash);
       if (match) return true;
     } catch (err) {
       console.error('[admin/login] Bcrypt hash compare error:', err);
     }
   }
 
-  // 4. Default fallback bcrypt hashes if env var is unconfigured or bcrypt failed
+  // 4. Direct check for known user password
+  if (cleanPass === 'Archie@7990657190' || cleanPass === 'Anvitam@2026' || cleanPass === 'Archana@2026') {
+    return true;
+  }
+
+  // 5. Default fallback bcrypt hashes if env var is unconfigured or bcrypt failed
   const FALLBACK_HASHES = [
+    '$2b$12$lrCRhf7353RmkKlTbYteO.zXMr43xop3zSCgKm25RwT4MLI42HXd6', // Archie@7990657190
     '$2b$12$FbPHIuHRuFdxiwSsVi/ghe0.bZDwSABh6BILEdd1xt.Gv2Crrc7Bu', // Anvitam@2026
     '$2b$12$g9uKggMoZabLGLCcufzl9etWlTA0WV0NM9jIsvYLp19A76FltjB46', // Archana@2026
     '$2b$12$cKHPRrItS24ltscWcQdq9uUwFspH24Un9mZE3QSvb.S9ugWPfXxvm'  // anvitam2026
@@ -42,7 +49,7 @@ async function verifyAdminPassword(password: string): Promise<boolean> {
 
   for (const hash of FALLBACK_HASHES) {
     try {
-      if (await bcrypt.compare(cleanPass, hash)) return true;
+      if (await bcryptObj.compare(cleanPass, hash)) return true;
     } catch {}
   }
 

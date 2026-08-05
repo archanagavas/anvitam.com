@@ -3,7 +3,9 @@
  * Server-side JWT token helper for admin authentication.
  * Credentials are compared against Vercel env vars — fail-safe & resilient.
  */
-import jwt from 'jsonwebtoken';
+import rawJwt from 'jsonwebtoken';
+
+const jwtObj: typeof rawJwt = (rawJwt as any)?.default || rawJwt;
 
 const TOKEN_EXPIRY = '24h';
 
@@ -30,13 +32,13 @@ export interface AdminToken {
 
 export function signAdminToken(email: string): string {
   const secret = getJwtSecret();
-  return jwt.sign({ role: 'admin', email }, secret, { expiresIn: TOKEN_EXPIRY });
+  return jwtObj.sign({ role: 'admin', email }, secret, { expiresIn: TOKEN_EXPIRY });
 }
 
 export function verifyAdminToken(token: string): AdminToken | null {
   try {
     const secret = getJwtSecret();
-    const decoded = jwt.verify(token, secret) as AdminToken;
+    const decoded = jwtObj.verify(token, secret) as AdminToken;
     return decoded.role === 'admin' ? decoded : null;
   } catch {
     return null;
