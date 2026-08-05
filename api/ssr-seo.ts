@@ -971,6 +971,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       keywords = blog.meta_keywords || blog.metaKeywords || (Array.isArray(tagsArr) && tagsArr.length > 0 ? tagsArr.join(', ') : keywords);
       robots = blog.meta_robots || blog.metaRobots || robots;
+    } else {
+      // Blog not found in DB or constants — prevent Google from indexing a blank/generic page
+      console.warn(`[ssr-seo] Blog not found for id/slug: ${idOrSlug}`);
+      title = `Article Not Found | Anvitam`;
+      desc = 'The requested article could not be found on Anvitam.';
+      robots = 'noindex, follow';
     }
   } else if (section === 'projects' && idOrSlug) {
     if (isDbConfigured) {
@@ -1002,14 +1008,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       keywords = project.meta_keywords || project.metaKeywords || (Array.isArray(tagsArr) && tagsArr.length > 0 ? tagsArr.join(', ') : keywords);
       robots = project.meta_robots || project.metaRobots || robots;
+    } else {
+      // Project not found in DB or constants — prevent Google from indexing a blank/generic page
+      console.warn(`[ssr-seo] Project not found for id/slug: ${idOrSlug}`);
+      title = `Project Not Found | Anvitam`;
+      desc = 'The requested project could not be found on Anvitam.';
+      robots = 'noindex, follow';
     }
   } else if (section === 'services' && idOrSlug) {
     if (isDbConfigured) {
       try {
+        // Note: services table has no 'slug' column — match by id only
         const rows = await sql`
           SELECT id, title, description, icon, hero_image, value_props, what_it_is, who_its_for, process, pricing, faq, booking_link, meta_title, meta_description, meta_keywords, meta_robots 
           FROM services 
-          WHERE id = ${idOrSlug} OR slug = ${idOrSlug}
+          WHERE id = ${idOrSlug}
         `;
         if (rows.length > 0) {
           service = rows[0];
@@ -1033,6 +1046,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       keywords = service.meta_keywords || service.metaKeywords || [service.title, 'sustainable architecture', 'eco design', 'permaculture', ...(Array.isArray(props) ? props : [])].join(', ');
       robots = service.meta_robots || service.metaRobots || robots;
+    } else {
+      // Service not found in DB or constants — prevent Google from indexing a blank/generic page
+      console.warn(`[ssr-seo] Service not found for id/slug: ${idOrSlug}`);
+      title = `Service Not Found | Anvitam`;
+      desc = 'The requested service could not be found on Anvitam.';
+      robots = 'noindex, follow';
     }
   } else if (section === 'seo' && idOrSlug) {
     const seoPages: Record<string, { title: string; desc: string }> = {
@@ -1132,8 +1151,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Ensure title and desc lengths are appropriate for SEO
-  if (title.length < 40) title = `${title} | Sustainable Eco Design Studio`;
-  if (desc.length < 100) desc = `${desc} Professional architectural masterplanning grounded in biophilic design, carbon-negative local materials, and water harvesting.`;
+  // Only pad titles that are very short AND don't already contain a pipe/brand suffix
+  if (title.length < 30 && !title.includes('|')) title = `${title} | Anvitam Sustainable Architecture`;
+  if (desc.length < 80) desc = `${desc} Professional architectural masterplanning grounded in biophilic design, carbon-negative local materials, and water harvesting.`;
 
   // Load the index.html template
   let template = '';

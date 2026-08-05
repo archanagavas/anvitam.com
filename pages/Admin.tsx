@@ -1829,8 +1829,8 @@ const Admin: React.FC = () => {
                   {messages.filter(m => m.message !== 'Newsletter subscription request').length} inquiries · {messages.filter(m => m.message === 'Newsletter subscription request').length} newsletter subscribers
                 </p>
               </div>
-              <span className="text-xs text-green-600 bg-green-50 border border-green-200 rounded-full px-3 py-1 font-semibold flex items-center gap-1">
-                <Database size={11} /> Synced to Neon DB
+              <span className={`text-xs border rounded-full px-3 py-1 font-semibold flex items-center gap-1 ${isDbConnected ? 'text-green-600 bg-green-50 border-green-200' : 'text-amber-600 bg-amber-50 border-amber-200'}`}>
+                <Database size={11} /> {isDbConnected ? 'Synced to Neon DB' : 'Local Storage Mode'}
               </span>
             </div>
             <div className="space-y-3">
@@ -1893,7 +1893,7 @@ const Admin: React.FC = () => {
                   <h2 className="text-2xl font-bold">Estimate Leads ({leads.length})</h2>
                   <p className="text-sm text-gray-400 mt-0.5">Visitors who used the cost estimator tool</p>
                 </div>
-                <span className="text-xs text-green-600 bg-green-50 border border-green-200 rounded-full px-3 py-1 font-semibold flex items-center gap-1"><Database size={11} /> Synced to Neon DB</span>
+                <span className={`text-xs border rounded-full px-3 py-1 font-semibold flex items-center gap-1 ${isDbConnected ? 'text-green-600 bg-green-50 border-green-200' : 'text-amber-600 bg-amber-50 border-amber-200'}`}><Database size={11} /> {isDbConnected ? 'Synced to Neon DB' : 'Local Storage Mode'}</span>
               </div>
               <div className="space-y-3">
                 {leads.length === 0 ? (

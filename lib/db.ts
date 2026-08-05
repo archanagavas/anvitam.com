@@ -133,6 +133,56 @@ async function initDatabaseInternal() {
     );
   `;
 
+  await neonClient`
+    CREATE TABLE IF NOT EXISTS messages (
+      id         TEXT PRIMARY KEY,
+      name       TEXT NOT NULL,
+      email      TEXT NOT NULL,
+      message    TEXT NOT NULL,
+      date       TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
+  `;
+
+  await neonClient`
+    CREATE TABLE IF NOT EXISTS digital_products (
+      id          TEXT PRIMARY KEY,
+      title       TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      price       TEXT NOT NULL DEFAULT '',
+      link        TEXT NOT NULL DEFAULT '',
+      image       TEXT NOT NULL DEFAULT '',
+      tags        JSONB DEFAULT '[]',
+      category    TEXT NOT NULL DEFAULT 'E-Books',
+      youtube_url TEXT DEFAULT '',
+      videos      JSONB DEFAULT '[]',
+      created_at  TIMESTAMPTZ DEFAULT now()
+    );
+  `;
+
+  await neonClient`
+    CREATE TABLE IF NOT EXISTS testimonials (
+      id          TEXT PRIMARY KEY,
+      author      TEXT NOT NULL,
+      role        TEXT NOT NULL DEFAULT '',
+      text        TEXT NOT NULL,
+      image       TEXT NOT NULL DEFAULT '',
+      created_at  TIMESTAMPTZ DEFAULT now()
+    );
+  `;
+
+  await neonClient`
+    CREATE TABLE IF NOT EXISTS estimator_services (
+      id          TEXT PRIMARY KEY,
+      title       TEXT NOT NULL,
+      icon        TEXT NOT NULL DEFAULT '🌿',
+      description TEXT NOT NULL DEFAULT '',
+      subs        JSONB DEFAULT '[]',
+      base_inr    JSONB DEFAULT '[]',
+      created_at  TIMESTAMPTZ DEFAULT now()
+    );
+  `;
+
   // Migrations for existing databases
   await neonClient`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS meta_title TEXT;`;
   await neonClient`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS cover_image_alt TEXT;`;
@@ -165,41 +215,8 @@ async function initDatabaseInternal() {
   await neonClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS meta_description TEXT;`;
   await neonClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS meta_keywords TEXT;`;
   await neonClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS meta_robots TEXT;`;
-
-  await neonClient`
-    CREATE TABLE IF NOT EXISTS messages (
-      id         TEXT PRIMARY KEY,
-      name       TEXT NOT NULL,
-      email      TEXT NOT NULL,
-      message    TEXT NOT NULL,
-      date       TEXT NOT NULL,
-      created_at TIMESTAMPTZ DEFAULT now()
-    );
-  `;
-
-  await neonClient`
-    CREATE TABLE IF NOT EXISTS digital_products (
-      id          TEXT PRIMARY KEY,
-      title       TEXT NOT NULL,
-      description TEXT NOT NULL DEFAULT '',
-      price       TEXT NOT NULL DEFAULT '',
-      link        TEXT NOT NULL DEFAULT '',
-      image       TEXT NOT NULL DEFAULT '',
-      tags        JSONB DEFAULT '[]',
-      category    TEXT NOT NULL DEFAULT 'E-Books',
-      created_at  TIMESTAMPTZ DEFAULT now()
-    );
-  `;
-
-  await neonClient`
-    CREATE TABLE IF NOT EXISTS testimonials (
-      id          TEXT PRIMARY KEY,
-      author      TEXT NOT NULL,
-      role        TEXT NOT NULL DEFAULT '',
-      text        TEXT NOT NULL,
-      image       TEXT NOT NULL DEFAULT '',
-      created_at  TIMESTAMPTZ DEFAULT now()
-    );
+  await neonClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS youtube_url TEXT;`;
+  await neonClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS videos JSONB DEFAULT '[]';`;
   `;
 
   // Seed initial online courses if none exist
