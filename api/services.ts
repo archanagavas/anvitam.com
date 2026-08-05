@@ -128,7 +128,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               ${heroImage ?? ''}, ${JSON.stringify(whatItIs ?? [])}, ${JSON.stringify(whoItsFor ?? [])},
               ${caseStudyId ?? ''}, ${JSON.stringify(caseStudyIds ?? [])}, ${JSON.stringify(process ?? [])}, ${pricing ?? ''},
               ${JSON.stringify(faq ?? [])}, ${bookingLink ?? ''}, ${JSON.stringify(gallery ?? [])}, ${JSON.stringify(videos ?? [])},
-              ${metaTitle ?? null}, ${metaDescription ?? null}, ${metaKeywords ?? null}, ${metaRobots ?? null})
+              ${metaTitle ?? null}, ${metaDescription ?? null}, ${metaKeywords ?? null}, ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'})
       ON CONFLICT (id) DO UPDATE SET
         title = EXCLUDED.title, description = EXCLUDED.description, icon = EXCLUDED.icon,
         value_props = EXCLUDED.value_props, hero_image = EXCLUDED.hero_image, what_it_is = EXCLUDED.what_it_is,
@@ -167,7 +167,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         meta_title = ${metaTitle ?? null},
         meta_description = ${metaDescription ?? null},
         meta_keywords = ${metaKeywords ?? null},
-        meta_robots = ${metaRobots ?? null}
+        meta_robots = ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'}
       WHERE id = ${id}
     `;
     return res.status(200).json({ success: true });

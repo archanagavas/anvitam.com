@@ -67,9 +67,9 @@ const ProjectDetail: React.FC = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white text-[#111] font-sans">
         <Helmet>
-          <title>Project Not Found | Anvitam</title>
-          <meta name="description" content="The requested project could not be found." />
-          <meta name="robots" content="noindex, follow" />
+          <title>Project | Anvitam Sustainable Architecture</title>
+          <meta name="description" content="Explore sustainable architecture projects by Anvitam." />
+          <meta name="robots" content="index, follow" />
         </Helmet>
         <p className="text-xl mb-6">Project not found.</p>
         <Link to="/projects" className="text-sm font-semibold uppercase tracking-wider underline">Back to Projects</Link>
@@ -128,8 +128,8 @@ const ProjectDetail: React.FC = () => {
         <meta name="description" content={project.metaDescription || project.description} />
         <link rel="canonical" href={`https://www.anvitam.com/projects/${project.slug || project.id || id}`} />
         <meta name="keywords" content={project.metaKeywords || (project.tags && project.tags.length > 0 ? project.tags.join(', ') : 'architecture projects, sustainable design, permaculture design')} />
-        <meta name="robots" content={project.metaRobots || 'index, follow'} />
-        <meta name="X-Robots-Tag" content={project.metaRobots || 'index, follow'} />
+        <meta name="robots" content={project.metaRobots && project.metaRobots.trim() !== '' && !project.metaRobots.includes('noindex') ? project.metaRobots : 'index, follow'} />
+        <meta name="X-Robots-Tag" content={project.metaRobots && project.metaRobots.trim() !== '' && !project.metaRobots.includes('noindex') ? project.metaRobots : 'index, follow'} />
         <meta name="publisher" content="Anvitam" />
         <link rel="publisher" href="https://www.anvitam.com/" />
         {faqSchema && (

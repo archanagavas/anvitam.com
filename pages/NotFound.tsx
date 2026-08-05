@@ -10,7 +10,7 @@ const NotFound: React.FC = () => {
       <Helmet>
         <title>404 - Page Not Found | Anvitam</title>
         <meta name="description" content="The page you are looking for does not exist. Explore sustainable architecture and permaculture design on Anvitam." />
-        <meta name="robots" content="noindex, follow" />
+        <meta name="robots" content="index, follow" />
       </Helmet>
 
       {/* Floating abstract organic green blur blobs */}

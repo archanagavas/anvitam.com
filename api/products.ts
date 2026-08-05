@@ -144,7 +144,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                                     meta_title, meta_description, meta_keywords, meta_robots)
       VALUES (${targetId}, ${title}, ${description ?? ''}, ${price ?? ''}, ${link ?? ''}, ${image ?? ''}, ${JSON.stringify(tags ?? [])}, ${category ?? 'E-Books'},
               ${youtubeUrl ?? ''}, ${JSON.stringify(videos ?? [])},
-              ${metaTitle ?? null}, ${metaDescription ?? null}, ${metaKeywords ?? null}, ${metaRobots ?? null})
+              ${metaTitle ?? null}, ${metaDescription ?? null}, ${metaKeywords ?? null}, ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'})
       ON CONFLICT (id) DO UPDATE SET
         title = EXCLUDED.title,
         description = EXCLUDED.description,
@@ -184,7 +184,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         meta_title = ${metaTitle ?? null},
         meta_description = ${metaDescription ?? null},
         meta_keywords = ${metaKeywords ?? null},
-        meta_robots = ${metaRobots ?? null}
+        meta_robots = ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'}
       WHERE id = ${id}
     `;
     return res.status(200).json({ success: true });

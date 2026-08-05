@@ -78,9 +78,9 @@ const ServiceDetail: React.FC = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white text-[#111] font-sans">
         <Helmet>
-          <title>Service Not Found | Anvitam</title>
-          <meta name="description" content="The requested service could not be found." />
-          <meta name="robots" content="noindex, follow" />
+          <title>Service | Anvitam Sustainable Architecture</title>
+          <meta name="description" content="Explore sustainable design services by Anvitam." />
+          <meta name="robots" content="index, follow" />
         </Helmet>
         <p className="text-xl mb-6">Service not found.</p>
         <Link to="/services" className="text-sm font-semibold uppercase tracking-wider underline">Back to Services</Link>
@@ -147,8 +147,8 @@ const ServiceDetail: React.FC = () => {
         <meta name="description" content={service.metaDescription || service.description} />
         <link rel="canonical" href={`https://www.anvitam.com/services/${service.id || id}`} />
         <meta name="keywords" content={service.metaKeywords || [service.title, 'sustainable architecture', 'eco design', 'permaculture', ...(service.valueProps || [])].join(', ')} />
-        <meta name="robots" content={service.metaRobots || 'index, follow'} />
-        <meta name="X-Robots-Tag" content={service.metaRobots || 'index, follow'} />
+        <meta name="robots" content={service.metaRobots && service.metaRobots.trim() !== '' && !service.metaRobots.includes('noindex') ? service.metaRobots : 'index, follow'} />
+        <meta name="X-Robots-Tag" content={service.metaRobots && service.metaRobots.trim() !== '' && !service.metaRobots.includes('noindex') ? service.metaRobots : 'index, follow'} />
         <meta name="publisher" content="Anvitam" />
         <link rel="publisher" href="https://www.anvitam.com/" />
         <meta property="og:title" content={service.metaTitle || `${service.title} | Anvitam`} />

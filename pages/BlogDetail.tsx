@@ -94,9 +94,9 @@ const BlogDetail: React.FC = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white text-[#111]">
         <Helmet>
-          <title>Article Not Found | Anvitam</title>
-          <meta name="description" content="The requested article could not be found." />
-          <meta name="robots" content="noindex, follow" />
+          <title>Article | Anvitam Sustainable Architecture</title>
+          <meta name="description" content="Read articles and insights on sustainable architecture by Anvitam." />
+          <meta name="robots" content="index, follow" />
         </Helmet>
         <p className="text-xl font-medium mb-6">Article not found.</p>
         <Link to="/blog" className="text-sm font-semibold uppercase tracking-wider underline">Back to Journal</Link>
@@ -150,8 +150,8 @@ const BlogDetail: React.FC = () => {
         <meta name="description" content={blog.metaDescription || blog.excerpt} />
         <link rel="canonical" href={`https://www.anvitam.com/blog/${blog.slug || blog.id || id}`} />
         <meta name="keywords" content={blog.metaKeywords || (blog.tags && blog.tags.length > 0 ? blog.tags.join(', ') : 'architecture, sustainable architecture, permaculture design')} />
-        <meta name="robots" content={blog.metaRobots || 'index, follow'} />
-        <meta name="X-Robots-Tag" content={blog.metaRobots || 'index, follow'} />
+        <meta name="robots" content={blog.metaRobots && blog.metaRobots.trim() !== '' && !blog.metaRobots.includes('noindex') ? blog.metaRobots : 'index, follow'} />
+        <meta name="X-Robots-Tag" content={blog.metaRobots && blog.metaRobots.trim() !== '' && !blog.metaRobots.includes('noindex') ? blog.metaRobots : 'index, follow'} />
         <meta name="publisher" content="Anvitam" />
         <link rel="publisher" href="https://www.anvitam.com/" />
         {/* Open Graph */}

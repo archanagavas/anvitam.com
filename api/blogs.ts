@@ -109,7 +109,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               ${image}, ${author ?? 'Anvitam Team'}, ${metaDescription ?? null},
               ${metaTitle ?? null}, ${coverImageAlt ?? null}, ${JSON.stringify(faqs ?? [])},
               ${JSON.stringify(tags ?? [])}, ${status ?? 'draft'}, ${JSON.stringify(toc ?? [])}, ${authorBio ?? null}, ${authorImage ?? null},
-              ${metaKeywords ?? null}, ${metaRobots ?? null})
+              ${metaKeywords ?? null}, ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'})
       ON CONFLICT (id) DO UPDATE SET
         title = EXCLUDED.title, slug = EXCLUDED.slug, date = EXCLUDED.date,
         excerpt = EXCLUDED.excerpt, content = EXCLUDED.content, image = EXCLUDED.image,
@@ -144,7 +144,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         author_bio = ${authorBio ?? null},
         author_image = ${authorImage ?? null},
         meta_keywords = ${metaKeywords ?? null},
-        meta_robots = ${metaRobots ?? null}
+        meta_robots = ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'}
       WHERE id = ${id}
     `;
     return res.status(200).json({ success: true });

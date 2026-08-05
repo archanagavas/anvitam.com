@@ -284,7 +284,7 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
       metaTitle: metaTitle.trim() || title.trim(),
       metaDescription: metaDescription.trim() || description.trim(),
       metaKeywords: metaKeywords.trim(),
-      metaRobots: metaRobots.trim(),
+      metaRobots: metaRobots.trim() || 'index, follow',
     };
     onSave(project);
   };
