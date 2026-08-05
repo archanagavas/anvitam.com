@@ -5,7 +5,6 @@ import { useContent } from '../context/ContentContext';
 import { Project } from '../types';
 import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardList, PenTool, Wrench, Sprout, Check, HelpCircle } from 'lucide-react';
 import TestimonialCarousel from '../components/TestimonialCarousel';
-import '../blog-prose.css';
 
 // Helper to extract SSR-injected metadata from the DOM during hydration
 const getSSRMetadata = () => {
@@ -341,13 +340,11 @@ const ServiceDetail: React.FC = () => {
       {/* 5. Detailed paragraphs (What it is / concept details) */}
       {service.whatItIs && service.whatItIs.length > 0 && (
         <div className="max-w-4xl mx-auto px-6 mb-24">
-          <div className="case-study-card relative overflow-hidden bg-white border border-gray-200/90 rounded-3xl p-8 md:p-12 shadow-sm">
-            <h3 className="text-xl md:text-2xl font-bold text-[#111] mb-6 tracking-tight border-b border-gray-100 pb-4">Service Overview & Philosophy</h3>
-            <div className="case-study-prose blog-prose text-gray-800 leading-relaxed font-normal text-base md:text-lg space-y-4">
-              {service.whatItIs.map((para, idx) => (
-                <p key={idx}>{para}</p>
-              ))}
-            </div>
+          <h3 className="text-xl md:text-2xl font-bold text-[#111] mb-6 tracking-tight">Service Overview & Philosophy</h3>
+          <div className="space-y-6 text-gray-600 leading-relaxed font-light text-sm md:text-base max-w-3xl">
+            {service.whatItIs.map((para, idx) => (
+              <p key={idx}>{para}</p>
+            ))}
           </div>
         </div>
       )}
