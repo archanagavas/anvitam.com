@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { sql, isDbConfigured } from '../lib/db.js';
-import { INITIAL_BLOGS, INITIAL_PROJECTS, SERVICES } from '../constants.js';
-import { extractToken, verifyAdminToken } from '../lib/auth.js';
+import { sql, isDbConfigured } from '../lib/db';
+import { INITIAL_BLOGS, INITIAL_PROJECTS, SERVICES } from '../constants';
+import { extractToken, verifyAdminToken } from '../lib/auth';
 
 function stripHtml(html: string): string {
   if (!html) return '';

@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import crypto from 'crypto';
-import { sql, isDbConfigured } from '../lib/db.js';
-import { verifyAdminToken, extractToken } from '../lib/auth.js';
+import { sql, isDbConfigured } from '../lib/db';
+import { verifyAdminToken, extractToken } from '../lib/auth';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
