@@ -1,12 +1,14 @@
 /*
  * blog-prose.css
- * Scoped styles for blog body content rendered from Quill WYSIWYG.
- * ALL selectors are under .blog-prose — cannot leak into site layout.
+ * Scoped styles for blog & case study body content rendered from Quill WYSIWYG or CMS.
+ * ALL selectors target .blog-prose, .case-study-prose, .rich-content-prose.
  */
 
-/* ── Base Typography ─────────────────────────────────────────────────── */
-.blog-prose {
-  color: #444;
+/* ── Base Typography & Container ───────────────────────────────────────── */
+.blog-prose,
+.case-study-prose,
+.rich-content-prose {
+  color: #1f2937;
   font-size: 1.0625rem;
   line-height: 1.85;
   font-family: inherit;
@@ -14,96 +16,135 @@
   overflow-wrap: break-word;
 }
 
-.blog-prose > * + * {
+.blog-prose > * + *,
+.case-study-prose > * + *,
+.rich-content-prose > * + * {
   margin-top: 1.5em;
 }
 
 /* ── Headings ────────────────────────────────────────────────────────── */
-.blog-prose h1,
-.blog-prose h2,
-.blog-prose h3,
-.blog-prose h4,
-.blog-prose h5,
-.blog-prose h6 {
+.blog-prose h1, .case-study-prose h1, .rich-content-prose h1,
+.blog-prose h2, .case-study-prose h2, .rich-content-prose h2,
+.blog-prose h3, .case-study-prose h3, .rich-content-prose h3,
+.blog-prose h4, .case-study-prose h4, .rich-content-prose h4,
+.blog-prose h5, .case-study-prose h5, .rich-content-prose h5,
+.blog-prose h6, .case-study-prose h6, .rich-content-prose h6 {
   color: #111111;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.3;
   letter-spacing: -0.02em;
-  margin-top: 2.5em;
-  margin-bottom: 0.6em;
+  margin-top: 2.25em;
+  margin-bottom: 0.75em;
 }
 
-.blog-prose h2 { font-size: 1.65rem; }
-.blog-prose h3 { font-size: 1.35rem; }
-.blog-prose h4 { font-size: 1.15rem; }
+.blog-prose h1, .case-study-prose h1, .rich-content-prose h1 { font-size: 1.85rem; }
+
+.blog-prose h2, .case-study-prose h2, .rich-content-prose h2 {
+  font-size: 1.55rem;
+  border-left: 4px solid #8bc34a;
+  padding-left: 0.85rem;
+  margin-top: 2.5em;
+  color: #0f172a;
+}
+
+.blog-prose h3, .case-study-prose h3, .rich-content-prose h3 {
+  font-size: 1.3rem;
+  color: #1e293b;
+  border-left: 3px solid #cbd5e1;
+  padding-left: 0.65rem;
+}
+
+.blog-prose h4, .case-study-prose h4, .rich-content-prose h4 {
+  font-size: 1.125rem;
+  color: #334155;
+}
 
 /* ── Paragraphs ───────────────────────────────────────────────────────── */
-.blog-prose p {
+.blog-prose p,
+.case-study-prose p,
+.rich-content-prose p {
   margin: 0 0 1.25em;
-  color: #555;
-  font-size: 1.0625rem;
-  font-weight: 500;
+  color: #334155;
+  font-size: 1.05rem;
+  font-weight: 450;
+  line-height: 1.85;
 }
 
 /* ── Links ──────────────────────────────────────────────────────────── */
-.blog-prose a {
-  color: #8bc34a;
+.blog-prose a, .case-study-prose a, .rich-content-prose a {
+  color: #65a30d;
+  font-weight: 600;
   text-decoration: none;
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.2s;
+  border-bottom: 1.5px solid rgba(101, 163, 13, 0.3);
+  transition: all 0.2s ease;
 }
-.blog-prose a:hover { border-color: #8bc34a; }
+.blog-prose a:hover, .case-study-prose a:hover, .rich-content-prose a:hover {
+  color: #4d7c0f;
+  border-bottom-color: #65a30d;
+}
 
 /* ── Bold / Italic / Underline / Strike ─────────────────────────────── */
-.blog-prose strong { color: #111; font-weight: 700; }
-.blog-prose em     { font-style: italic; }
-.blog-prose s      { text-decoration: line-through; color: #888; }
-.blog-prose u      { text-decoration: underline; }
+.blog-prose strong, .case-study-prose strong, .rich-content-prose strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+.blog-prose em, .case-study-prose em, .rich-content-prose em { font-style: italic; }
+.blog-prose s, .case-study-prose s, .rich-content-prose s { text-decoration: line-through; color: #94a3b8; }
+.blog-prose u, .case-study-prose u, .rich-content-prose u { text-decoration: underline; }
 
 /* ── Lists ──────────────────────────────────────────────────────────── */
-.blog-prose ul,
-.blog-prose ol {
-  padding-left: 1.75em;
-  margin: 1em 0 1.25em;
+.blog-prose ul, .case-study-prose ul, .rich-content-prose ul,
+.blog-prose ol, .case-study-prose ol, .rich-content-prose ol {
+  padding-left: 1.5em;
+  margin: 1.25em 0 1.5em;
 }
-.blog-prose ul { list-style: disc; }
-.blog-prose ol { list-style: decimal; }
+.blog-prose ul, .case-study-prose ul, .rich-content-prose ul { list-style: disc; }
+.blog-prose ol, .case-study-prose ol, .rich-content-prose ol { list-style: decimal; }
 
-.blog-prose li {
-  color: #555;
-  font-weight: 500;
-  margin-bottom: 0.4em;
+.blog-prose li, .case-study-prose li, .rich-content-prose li {
+  color: #334155;
+  font-weight: 450;
+  margin-bottom: 0.5em;
+  line-height: 1.75;
 }
-.blog-prose li::marker { color: #8bc34a; }
+.blog-prose li::marker, .case-study-prose li::marker, .rich-content-prose li::marker {
+  color: #8bc34a;
+  font-weight: bold;
+}
 
-/* ── Blockquote ─────────────────────────────────────────────────────── */
-.blog-prose blockquote {
+/* ── Blockquote / Callouts ─────────────────────────────────────────── */
+.blog-prose blockquote, .case-study-prose blockquote, .rich-content-prose blockquote {
   border-left: 4px solid #8bc34a;
-  background: #f8fdf4;
+  background: #f7fbf3;
   margin: 2em 0;
   padding: 1.25em 1.75em;
-  border-radius: 0 8px 8px 0;
+  border-radius: 0 12px 12px 0;
   font-style: italic;
-  font-size: 1.1rem;
-  color: #333;
+  font-size: 1.075rem;
+  color: #1e293b;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
 }
-.blog-prose blockquote p { margin: 0; color: #333; }
+.blog-prose blockquote p, .case-study-prose blockquote p, .rich-content-prose blockquote p {
+  margin: 0;
+  color: #1e293b;
+  font-weight: 500;
+}
 
 /* ── Code ───────────────────────────────────────────────────────────── */
-.blog-prose code {
+.blog-prose code, .case-study-prose code, .rich-content-prose code {
   font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
   font-size: 0.88em;
   background: #1e1e2e;
   color: #a6e3a1;
-  padding: 0.15em 0.45em;
+  padding: 0.2em 0.5em;
   border-radius: 4px;
 }
 
-.blog-prose pre {
+.blog-prose pre, .case-study-prose pre, .rich-content-prose pre {
   background: #1e1e2e;
   color: #cdd6f4;
   padding: 1.5em 1.75em;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow-x: auto;
   margin: 2em 0;
   font-size: 0.875rem;
@@ -111,7 +152,7 @@
   -webkit-overflow-scrolling: touch;
 }
 
-.blog-prose pre code {
+.blog-prose pre code, .case-study-prose pre code, .rich-content-prose pre code {
   background: transparent;
   padding: 0;
   color: inherit;
@@ -119,73 +160,76 @@
 }
 
 /* ── Tables ─────────────────────────────────────────────────────────── */
-.blog-prose table {
+.blog-prose table, .case-study-prose table, .rich-content-prose table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.95rem;
   margin: 2em 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
-/* Responsive table wrapper — Quill wraps in <div class="ql-table-wrap"> */
-.blog-prose .ql-table-wrap,
-.blog-prose .overflow-x-auto {
+.blog-prose .ql-table-wrap, .case-study-prose .ql-table-wrap, .rich-content-prose .ql-table-wrap,
+.blog-prose .overflow-x-auto, .case-study-prose .overflow-x-auto, .rich-content-prose .overflow-x-auto {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-.blog-prose th {
-  background: #111;
-  color: #fff;
-  padding: 0.75em 1em;
+.blog-prose th, .case-study-prose th, .rich-content-prose th {
+  background: #0f172a;
+  color: #ffffff;
+  padding: 0.85em 1.1em;
   text-align: left;
   font-weight: 600;
-  font-size: 0.875rem;
-  letter-spacing: 0.04em;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
-.blog-prose td {
-  padding: 0.7em 1em;
-  border-bottom: 1px solid #e5e7eb;
-  color: #555;
+.blog-prose td, .case-study-prose td, .rich-content-prose td {
+  padding: 0.75em 1.1em;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
 }
-.blog-prose tr:last-child td { border-bottom: none; }
-.blog-prose tr:nth-child(even) td { background: #f9fafb; }
+.blog-prose tr:last-child td, .case-study-prose tr:last-child td, .rich-content-prose tr:last-child td { border-bottom: none; }
+.blog-prose tr:nth-child(even) td, .case-study-prose tr:nth-child(even) td, .rich-content-prose tr:nth-child(even) td { background: #f8fafc; }
 
-/* ── Images ─────────────────────────────────────────────────────────── */
-.blog-prose img {
+/* ── Images & Captions ──────────────────────────────────────────────── */
+.blog-prose img, .case-study-prose img, .rich-content-prose img {
   max-width: 100%;
   height: auto;
-  border-radius: 8px;
+  border-radius: 12px;
   display: block;
-  margin: 1.5em auto;
+  margin: 2em auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
 
-.blog-prose figure { margin: 2em 0; }
-.blog-prose figcaption {
+.blog-prose figure, .case-study-prose figure, .rich-content-prose figure { margin: 2em 0; }
+.blog-prose figcaption, .case-study-prose figcaption, .rich-content-prose figcaption {
   text-align: center;
   font-size: 0.825rem;
-  color: #888;
-  margin-top: 0.5em;
+  color: #64748b;
+  margin-top: 0.6em;
 }
 
-/* ── Embedded iFrames (YouTube, Twitter, etc.) ────────────────────────*/
-.blog-prose iframe {
+/* ── Embedded iFrames ───────────────────────────────────────────────── */
+.blog-prose iframe, .case-study-prose iframe, .rich-content-prose iframe {
   width: 100%;
   max-width: 100%;
-  border-radius: 10px;
+  border-radius: 12px;
   border: none;
 }
 
-.blog-prose .embed-block {
+.blog-prose .embed-block, .case-study-prose .embed-block, .rich-content-prose .embed-block {
   position: relative;
   width: 100%;
-  padding-bottom: 56.25%; /* 16:9 */
+  padding-bottom: 56.25%;
   height: 0;
   overflow: hidden;
-  border-radius: 10px;
+  border-radius: 12px;
   margin: 2em 0;
 }
-.blog-prose .embed-block iframe {
+.blog-prose .embed-block iframe, .case-study-prose .embed-block iframe, .rich-content-prose .embed-block iframe {
   position: absolute;
   top: 0; left: 0;
   width: 100%;
@@ -194,14 +238,14 @@
 }
 
 /* ── Horizontal Rule ────────────────────────────────────────────────── */
-.blog-prose hr {
+.blog-prose hr, .case-study-prose hr, .rich-content-prose hr {
   border: none;
-  border-top: 2px solid #e5e7eb;
+  border-top: 2px solid #e2e8f0;
   margin: 3em 0;
 }
 
 /* ── CTA Button ─────────────────────────────────────────────────────── */
-.blog-prose .cta-button {
+.blog-prose .cta-button, .case-study-prose .cta-button, .rich-content-prose .cta-button {
   display: inline-block;
   background: #8bc34a;
   color: #111 !important;
@@ -217,17 +261,17 @@
   text-decoration: none !important;
   margin: 1em 0;
 }
-.blog-prose .cta-button:hover {
+.blog-prose .cta-button:hover, .case-study-prose .cta-button:hover, .rich-content-prose .cta-button:hover {
   background: #7ab843;
   transform: translateY(-1px);
 }
 
-/* ── Quill-generated alignment classes ───────────────────────────────── */
-.blog-prose .ql-align-center  { text-align: center; }
-.blog-prose .ql-align-right   { text-align: right; }
-.blog-prose .ql-align-justify { text-align: justify; }
+/* ── Alignment ──────────────────────────────────────────────────────── */
+.blog-prose .ql-align-center, .case-study-prose .ql-align-center, .rich-content-prose .ql-align-center { text-align: center; }
+.blog-prose .ql-align-right, .case-study-prose .ql-align-right, .rich-content-prose .ql-align-right { text-align: right; }
+.blog-prose .ql-align-justify, .case-study-prose .ql-align-justify, .rich-content-prose .ql-align-justify { text-align: justify; }
 
-/* ── Tag chips ────────────────────────────────────────────────────────*/
+/* ── Tag Chips & Callout Cards ──────────────────────────────────────── */
 .blog-tag {
   display: inline-block;
   background: #f0f9e8;
@@ -239,4 +283,19 @@
   font-weight: 600;
   letter-spacing: 0.03em;
   margin: 0 0.25em 0.25em 0;
+}
+
+.case-study-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1.25rem;
+  padding: 2.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .case-study-card {
+    padding: 1.5rem;
+  }
 }

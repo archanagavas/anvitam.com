@@ -2,8 +2,43 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, HelpCircle, FileText, CheckCircle2 } from 'lucide-react';
 import DOMPurify from 'dompurify';
+import '../blog-prose.css';
+
+// Helper to intelligently format case study content (works for both Quill HTML and raw text)
+const formatCaseStudyContent = (rawContent: string): string => {
+  if (!rawContent || !rawContent.trim()) return '';
+
+  let html = rawContent.trim();
+
+  // If text doesn't contain HTML tags like <p>, <h2>, <h3>, <div>, <ul>, format raw text paragraphs
+  const hasHtmlTags = /<[a-z][\s\S]*>/i.test(html);
+
+  if (!hasHtmlTags) {
+    const paragraphs = html.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+    const formattedBlocks = paragraphs.map(para => {
+      // Check if line looks like a title/heading (short line without period, or single line under 80 chars)
+      const isShortHeading = para.length < 80 && !para.endsWith('.') && !para.includes('\n');
+      if (isShortHeading) {
+        return `<h2 class="text-xl md:text-2xl font-bold text-[#111] mt-8 mb-4 border-l-4 border-[#8bc34a] pl-4">${para}</h2>`;
+      }
+      const lineFormatted = para.replace(/\n/g, '<br/>');
+      return `<p class="text-gray-800 leading-relaxed mb-6 font-normal text-base">${lineFormatted}</p>`;
+    });
+    html = formattedBlocks.join('\n');
+  } else {
+    // Convert paragraph-wrapped strong titles (<p><strong>Title</strong></p>) into semantic <h2> tags for clean typography
+    html = html.replace(/<p>\s*<strong>\s*([^<]{3,80})\s*<\/strong>\s*<\/p>/gi, (match, p1) => {
+      if (!p1.endsWith('.')) {
+        return `<h2 class="text-xl md:text-2xl font-bold text-[#111] mt-8 mb-4 border-l-4 border-[#8bc34a] pl-4">${p1}</h2>`;
+      }
+      return match;
+    });
+  }
+
+  return DOMPurify.sanitize(html);
+};
 
 // Helper to extract SSR-injected metadata from the DOM during hydration
 const getSSRMetadata = () => {
@@ -337,11 +372,29 @@ const ProjectDetail: React.FC = () => {
       {/* 6. Rich HTML Case Study Details (CMS Content) */}
       {project.fullDescription && (
         <div className="max-w-4xl mx-auto px-6 mb-24">
-          <h3 className="text-xl md:text-2xl font-bold text-[#111] mb-6 tracking-tight">Detailed Case Study</h3>
-          <div 
-            className="prose prose-sm md:prose-base text-gray-600 leading-relaxed font-light space-y-4 ql-editor"
-            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(project.fullDescription) }}
-          />
+          <div className="case-study-card relative overflow-hidden bg-white border border-gray-200/90 rounded-3xl p-8 md:p-12 shadow-sm">
+            {/* Top Accent Pill Header */}
+            <div className="flex items-center justify-between border-b border-gray-100 pb-6 mb-8">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-[#f0f9e8] text-[#5a8a2d] border border-[#c3e88d] flex items-center justify-center font-bold text-lg shadow-2xs">
+                  <FileText className="w-5 h-5 text-[#5a8a2d]" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block">Architectural Documentation</span>
+                  <h3 className="text-xl md:text-2xl font-bold text-[#111] tracking-tight">Detailed Case Study</h3>
+                </div>
+              </div>
+              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-bold text-[#4d7c0f] bg-[#f0f9e8] border border-[#c3e88d] px-3.5 py-1.5 rounded-full shadow-2xs">
+                <CheckCircle2 className="w-3.5 h-3.5" /> Verified Documentation
+              </span>
+            </div>
+
+            {/* Formatted Case Study Content */}
+            <div 
+              className="case-study-prose blog-prose ql-editor font-normal text-gray-800"
+              dangerouslySetInnerHTML={{ __html: formatCaseStudyContent(project.fullDescription) }}
+            />
+          </div>
         </div>
       )}
 
