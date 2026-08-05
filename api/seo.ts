@@ -12,123 +12,116 @@ function stripHtml(html: string): string {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const action = (req.query.action as string) || '';
-  const url = req.url || '';
+  try {
+    const action = (req.query.action as string) || '';
+    const url = req.url || '';
 
-  // 1. IndexNow Key Verification (/apikey.txt)
-  if (action === 'indexnow-key' || (req.query.key && url.includes('.txt') && !url.includes('llms'))) {
-    const { key } = req.query;
-    const envKey = process.env.INDEXNOW_KEY;
-    if (envKey && key === envKey) {
-      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-      res.setHeader('Cache-Control', 'public, max-age=86400');
-      return res.status(200).send(envKey);
-    }
-    return res.status(404).send('Not Found');
-  }
-
-  // 2. IndexNow URL Submission (/api/indexnow)
-  if (action === 'indexnow' || url.includes('/api/indexnow')) {
-    const token = extractToken(req.headers.authorization);
-    if (!token || !verifyAdminToken(token)) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-    if (req.method !== 'POST') {
-      res.setHeader('Allow', 'POST');
-      return res.status(405).json({ error: 'Method not allowed' });
-    }
-    const { urlList } = req.body ?? {};
-    if (!urlList || !Array.isArray(urlList) || urlList.length === 0) {
-      return res.status(400).json({ error: 'Missing required field: urlList (must be non-empty string array)' });
-    }
-    const HOST = 'www.anvitam.com';
-    const KEY = process.env.INDEXNOW_KEY;
-    if (!KEY) {
-      console.error('[api/seo/indexnow] INDEXNOW_KEY env var not set.');
-      return res.status(500).json({ error: 'IndexNow is not configured on the server.' });
-    }
-    const KEY_LOCATION = `https://${HOST}/${KEY}.txt`;
-    const invalidUrls = urlList.filter(u => {
-      if (typeof u !== 'string') return true;
-      try {
-        const parsed = new URL(u);
-        return parsed.hostname !== HOST && parsed.hostname !== 'anvitam.com';
-      } catch { return true; }
-    });
-    if (invalidUrls.length > 0) {
-      return res.status(400).json({ error: `All URLs must belong to host ${HOST}. Invalid entries detected: ${invalidUrls.join(', ')}` });
-    }
-    const normalizedUrls = urlList.map(u => {
-      const parsed = new URL(u);
-      parsed.hostname = HOST;
-      return parsed.toString();
-    });
-    try {
-      const indexNowResponse = await fetch('https://api.indexnow.org/IndexNow', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json; charset=utf-8' },
-        body: JSON.stringify({ host: HOST, key: KEY, keyLocation: KEY_LOCATION, urlList: normalizedUrls })
-      });
-      const statusCode = indexNowResponse.status;
-      if (statusCode === 200) {
-        return res.status(200).json({ success: true, message: 'URLs submitted to IndexNow successfully!' });
-      } else {
-        const humanReasons: Record<number, string> = {
-          400: 'Bad request / Invalid format',
-          403: 'Forbidden — check that the key file exists at the correct URL',
-          422: 'Unprocessable Entity — URLs may not belong to the declared host',
-          429: 'Too many requests — IndexNow rate limit reached',
-        };
-        return res.status(statusCode).json({ success: false, error: `${humanReasons[statusCode] ?? 'Unexpected error from IndexNow'} (status ${statusCode})` });
+    // 1. IndexNow Key Verification (/apikey.txt)
+    if (action === 'indexnow-key' || (req.query.key && url.includes('.txt') && !url.includes('llms'))) {
+      const { key } = req.query;
+      const envKey = process.env.INDEXNOW_KEY;
+      if (envKey && key === envKey) {
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        return res.status(200).send(envKey);
       }
-    } catch (err: any) {
-      console.error('[api/seo/indexnow] HTTP post failed:', err);
-      return res.status(500).json({ success: false, error: 'Failed to communicate with IndexNow API.' });
+      return res.status(404).send('Not Found');
     }
-  }
 
-  // Fetch live content for Sitemap and LLMs
-  let blogs: any[] = [];
-  let projects: any[] = [];
-  let services: any[] = [];
+    // 2. IndexNow URL Submission (/api/indexnow)
+    if (action === 'indexnow' || url.includes('/api/indexnow')) {
+      const token = extractToken(req.headers.authorization);
+      if (!token || !verifyAdminToken(token)) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      if (req.method !== 'POST') {
+        res.setHeader('Allow', 'POST');
+        return res.status(405).json({ error: 'Method not allowed' });
+      }
+      const { urlList } = req.body ?? {};
+      if (!urlList || !Array.isArray(urlList) || urlList.length === 0) {
+        return res.status(400).json({ error: 'Missing required field: urlList (must be non-empty string array)' });
+      }
+      const HOST = 'www.anvitam.com';
+      const KEY = process.env.INDEXNOW_KEY;
+      if (!KEY) {
+        console.error('[api/seo/indexnow] INDEXNOW_KEY env var not set.');
+        return res.status(500).json({ error: 'IndexNow is not configured on the server.' });
+      }
+      const KEY_LOCATION = `https://${HOST}/${KEY}.txt`;
+      const invalidUrls = urlList.filter(u => {
+        if (typeof u !== 'string') return true;
+        try {
+          const parsed = new URL(u);
+          return parsed.hostname !== HOST && parsed.hostname !== 'anvitam.com';
+        } catch { return true; }
+      });
+      if (invalidUrls.length > 0) {
+        return res.status(400).json({ error: `All URLs must belong to host ${HOST}. Invalid entries detected: ${invalidUrls.join(', ')}` });
+      }
+      const normalizedUrls = urlList.map(u => {
+        const parsed = new URL(u);
+        parsed.hostname = HOST;
+        return parsed.toString();
+      });
+      try {
+        const indexNowResponse = await fetch('https://api.indexnow.org/IndexNow', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
+          body: JSON.stringify({ host: HOST, key: KEY, keyLocation: KEY_LOCATION, urlList: normalizedUrls })
+        });
+        const statusCode = indexNowResponse.status;
+        if (statusCode === 200) {
+          return res.status(200).json({ success: true, message: 'URLs submitted to IndexNow successfully!' });
+        } else {
+          const humanReasons: Record<number, string> = {
+            400: 'Bad request / Invalid format',
+            403: 'Forbidden — check that the key file exists at the correct URL',
+            422: 'Unprocessable Entity — URLs may not belong to the declared host',
+            429: 'Too many requests — IndexNow rate limit reached',
+          };
+          return res.status(statusCode).json({ success: false, error: `${humanReasons[statusCode] ?? 'Unexpected error from IndexNow'} (status ${statusCode})` });
+        }
+      } catch (err: any) {
+        console.error('[api/seo/indexnow] HTTP post failed:', err);
+        return res.status(500).json({ success: false, error: 'Failed to communicate with IndexNow API.' });
+      }
+    }
 
-  if (isDbConfigured) {
-    try {
-      const dbBlogs = await sql`SELECT * FROM blogs WHERE status != 'draft' OR status IS NULL ORDER BY created_at DESC`;
-      blogs = dbBlogs.length > 0 ? dbBlogs : INITIAL_BLOGS;
-    } catch (e) {
-      console.warn('[seo API] DB error fetching blogs, falling back to constants:', e);
+    // Fetch live content for Sitemap and LLMs
+    let blogs: any[] = [];
+    let projects: any[] = [];
+    let services: any[] = [];
+
+    if (isDbConfigured) {
+      try {
+        const dbBlogs = await sql`SELECT * FROM blogs WHERE status != 'draft' OR status IS NULL ORDER BY created_at DESC`;
+        blogs = dbBlogs.length > 0 ? dbBlogs : INITIAL_BLOGS;
+      } catch (e) {
+        console.warn('[seo API] DB error fetching blogs, falling back to constants:', e);
+        blogs = INITIAL_BLOGS;
+      }
+
+      try {
+        const dbProjects = await sql`SELECT * FROM projects ORDER BY created_at DESC`;
+        projects = dbProjects.length > 0 ? dbProjects : INITIAL_PROJECTS;
+      } catch (e) {
+        console.warn('[seo API] DB error fetching projects, falling back to constants:', e);
+        projects = INITIAL_PROJECTS;
+      }
+
+      try {
+        const dbServices = await sql`SELECT * FROM services ORDER BY created_at ASC`;
+        services = dbServices.length > 0 ? dbServices : SERVICES;
+      } catch (e) {
+        console.warn('[seo API] DB error fetching services, falling back to constants:', e);
+        services = SERVICES;
+      }
+    } else {
       blogs = INITIAL_BLOGS;
-    }
-
-    try {
-      const dbProjects = await sql`SELECT * FROM projects ORDER BY created_at DESC`;
-      projects = dbProjects.length > 0 ? dbProjects : INITIAL_PROJECTS;
-    } catch (e) {
-      console.warn('[seo API] DB error fetching projects, falling back to constants:', e);
       projects = INITIAL_PROJECTS;
-    }
-
-    try {
-      const dbServices = await sql`SELECT * FROM services ORDER BY created_at ASC`;
-      services = dbServices.length > 0 ? dbServices : SERVICES;
-    } catch (e) {
-      console.warn('[seo API] DB error fetching services, falling back to constants:', e);
       services = SERVICES;
     }
-  } else {
-    blogs = INITIAL_BLOGS;
-    projects = INITIAL_PROJECTS;
-    services = SERVICES;
-  }
-
-  const defaultDate = new Date().toISOString().split('T')[0];
-
-  // 3. XML Sitemap (/sitemap.xml)
-  if (action === 'sitemap' || url.includes('sitemap.xml')) {
-    const staticUrls = [
-      { loc: 'https://www.anvitam.com/', priority: '1.0', changefreq: 'daily', lastmod: defaultDate },
-      { loc: 'https://www.anvitam.com/why', priority: '0.8', changefreq: 'monthly', lastmod: defaultDate },
       { loc: 'https://www.anvitam.com/services', priority: '0.9', changefreq: 'weekly', lastmod: defaultDate },
       { loc: 'https://www.anvitam.com/projects', priority: '0.9', changefreq: 'weekly', lastmod: defaultDate },
       { loc: 'https://www.anvitam.com/blog', priority: '0.9', changefreq: 'daily', lastmod: defaultDate },
