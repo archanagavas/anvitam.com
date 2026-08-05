@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { sql, isDbConfigured } from '../lib/db';
-import { verifyAdminToken, extractToken } from '../lib/auth';
-import { DIGITAL_PRODUCTS } from '../constants';
+import { sql, isDbConfigured } from '../lib/db.js';
+import { verifyAdminToken, extractToken } from '../lib/auth.js';
+import { DIGITAL_PRODUCTS } from '../constants.js';
 
 const ALL_MOCK_PRODUCTS = [
   ...DIGITAL_PRODUCTS,

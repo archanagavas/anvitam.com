@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import fs from 'fs';
 import path from 'path';
-import { sql, isDbConfigured } from '../lib/db';
-import { INITIAL_BLOGS, INITIAL_PROJECTS, SERVICES, PROCESS_STEPS, TESTIMONIALS } from '../constants';
+import { sql, isDbConfigured } from '../lib/db.js';
+import { INITIAL_BLOGS, INITIAL_PROJECTS, SERVICES, PROCESS_STEPS, TESTIMONIALS } from '../constants.js';
 
 // --- Helper Functions for HTML and Schema Generation ---
 

@@ -26,7 +26,37 @@
   ],
   "functions": {
     "api/ssr-seo.ts": {
-      "includeFiles": "dist/index.html"
+      "includeFiles": "dist/index.html,lib/**,constants.ts"
+    },
+    "api/admin.ts": {
+      "includeFiles": "lib/**,constants.ts"
+    },
+    "api/blogs.ts": {
+      "includeFiles": "lib/**,constants.ts"
+    },
+    "api/projects.ts": {
+      "includeFiles": "lib/**,constants.ts"
+    },
+    "api/products.ts": {
+      "includeFiles": "lib/**,constants.ts"
+    },
+    "api/services.ts": {
+      "includeFiles": "lib/**,constants.ts"
+    },
+    "api/messages.ts": {
+      "includeFiles": "lib/**,constants.ts"
+    },
+    "api/testimonials.ts": {
+      "includeFiles": "lib/**,constants.ts"
+    },
+    "api/analytics.ts": {
+      "includeFiles": "lib/**,constants.ts"
+    },
+    "api/seo.ts": {
+      "includeFiles": "lib/**,constants.ts"
+    },
+    "api/estimator-services.ts": {
+      "includeFiles": "lib/**,constants.ts"
     }
   },
   "rewrites": [
