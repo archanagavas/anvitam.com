@@ -825,28 +825,7 @@ Additional Notes: ${formState.notes || 'None'}`;
             Ready to engage your students or corporate team with high-impact eco workshops? Reach out directly to book dates.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-4 mb-10">
-            <a
-              href="tel:+917990657190"
-              className="inline-flex items-center gap-2.5 px-5 py-3 rounded-full bg-white border border-gray-200 text-sm font-semibold text-gray-800 hover:bg-gray-50 shadow-sm transition-colors"
-            >
-              <Phone size={16} className="text-emerald-600" /> +91 7990657190
-            </a>
-            <a
-              href="mailto:nest.nurturee@gmail.com"
-              className="inline-flex items-center gap-2.5 px-5 py-3 rounded-full bg-white border border-gray-200 text-sm font-semibold text-gray-800 hover:bg-gray-50 shadow-sm transition-colors"
-            >
-              <Mail size={16} className="text-emerald-600" /> nest.nurturee@gmail.com
-            </a>
-            <a
-              href="https://instagram.com/nest_n_nurture"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2.5 px-5 py-3 rounded-full bg-white border border-gray-200 text-sm font-semibold text-gray-800 hover:bg-gray-50 shadow-sm transition-colors"
-            >
-              <Instagram size={16} className="text-emerald-600" /> @nest_n_nurture
-            </a>
-          </div>
+
 
           <button
             onClick={() => handleOpenLeadModal('Custom Proposal Request')}
