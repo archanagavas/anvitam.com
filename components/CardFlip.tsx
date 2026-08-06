@@ -8,6 +8,7 @@ export interface CardFlipProps {
   description: string;
   features: string[];
   ctaText?: string;
+  backImage?: string;
   onCtaClick?: () => void;
 }
 
@@ -18,6 +19,7 @@ export const CardFlip: React.FC<CardFlipProps> = ({
   description,
   features,
   ctaText = 'Book Workshop Inquiry',
+  backImage,
   onCtaClick,
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -64,7 +66,7 @@ export const CardFlip: React.FC<CardFlipProps> = ({
 
           <div className="relative z-10 pt-4 border-t border-gray-100 flex items-center justify-between">
             <span className="text-xs font-bold text-gray-500 group-hover:text-emerald-700 transition-colors flex items-center gap-1.5">
-              Hover / Tap to reveal details
+              Hover / Tap to flip photo
             </span>
             <div className="p-2 rounded-full bg-emerald-50 text-emerald-700 group-hover:rotate-180 transition-transform duration-500">
               <Repeat2 size={16} />
@@ -74,49 +76,82 @@ export const CardFlip: React.FC<CardFlipProps> = ({
 
         {/* ── BACK OF CARD ── */}
         <div
-          className="absolute inset-0 h-full w-full [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-3xl p-7 bg-gray-900 text-white border border-gray-800 shadow-2xl flex flex-col justify-between"
+          className="absolute inset-0 h-full w-full [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden rounded-3xl border border-gray-800 shadow-2xl relative"
         >
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="px-3 py-1 rounded-full bg-[#CCFF00] text-black text-[9px] font-black uppercase tracking-widest">
-                Key Benefits
-              </span>
-              <Repeat2 size={16} className="text-gray-400" />
-            </div>
-            <h3 className="text-xl font-extrabold text-white">
-              {title}
-            </h3>
-            <div className="space-y-2.5 pt-2">
-              {features.map((feature, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-2.5 text-xs text-gray-200 font-medium transition-all duration-300"
-                  style={{
-                    transform: isFlipped ? 'translateX(0)' : 'translateX(-12px)',
-                    opacity: isFlipped ? 1 : 0,
-                    transitionDelay: `${idx * 60 + 150}ms`,
-                  }}
-                >
-                  <CheckCircle2 size={15} className="text-[#CCFF00] shrink-0" />
-                  <span>{feature}</span>
+          {backImage ? (
+            <div className="relative w-full h-full">
+              <img
+                src={backImage}
+                alt={title}
+                className="w-full h-full object-cover rounded-3xl"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent p-6 flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <span className="px-3.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-[#D1F0AA] text-[10px] font-extrabold uppercase tracking-widest border border-white/10">
+                    {subtitle || title}
+                  </span>
+                  <div className="p-2 rounded-full bg-black/60 text-white backdrop-blur-md border border-white/10">
+                    <Repeat2 size={16} />
+                  </div>
                 </div>
-              ))}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onCtaClick) onCtaClick();
+                  }}
+                  className="w-full py-3.5 px-4 rounded-xl bg-[#CCFF00] text-black font-black text-xs hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-lime-400/20 cursor-pointer"
+                >
+                  <span>{ctaText}</span>
+                  <ArrowRight size={14} />
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="p-7 bg-gray-900 text-white flex flex-col justify-between h-full">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="px-3 py-1 rounded-full bg-[#CCFF00] text-black text-[9px] font-black uppercase tracking-widest">
+                    Key Benefits
+                  </span>
+                  <Repeat2 size={16} className="text-gray-400" />
+                </div>
+                <h3 className="text-xl font-extrabold text-white">
+                  {title}
+                </h3>
+                <div className="space-y-2.5 pt-2">
+                  {features.map((feature, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-2.5 text-xs text-gray-200 font-medium transition-all duration-300"
+                      style={{
+                        transform: isFlipped ? 'translateX(0)' : 'translateX(-12px)',
+                        opacity: isFlipped ? 1 : 0,
+                        transitionDelay: `${idx * 60 + 150}ms`,
+                      }}
+                    >
+                      <CheckCircle2 size={15} className="text-[#CCFF00] shrink-0" />
+                      <span>{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-          <div className="pt-4 border-t border-white/10">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onCtaClick) onCtaClick();
-              }}
-              className="w-full py-3.5 px-4 rounded-xl bg-[#CCFF00] text-black font-black text-xs hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-lime-300/20 cursor-pointer"
-            >
-              <span>{ctaText}</span>
-              <ArrowRight size={14} />
-            </button>
-          </div>
+              <div className="pt-4 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onCtaClick) onCtaClick();
+                  }}
+                  className="w-full py-3.5 px-4 rounded-xl bg-[#CCFF00] text-black font-black text-xs hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-lime-300/20 cursor-pointer"
+                >
+                  <span>{ctaText}</span>
+                  <ArrowRight size={14} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

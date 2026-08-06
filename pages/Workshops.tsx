@@ -141,7 +141,8 @@ const AUDIENCES = [
     title: 'Schools & K-12 Institutes',
     subtitle: 'Classes 5th to 10th Grade',
     desc: 'Foster creativity, hands-on crafting, and environmental stewardship through interactive campus activities and space makeovers.',
-    benefits: ['Curriculum-aligned STEM & Art learning', '95% student engagement boost', 'Hands-on campus improvement']
+    benefits: ['Curriculum-aligned STEM & Art learning', '95% student engagement boost', 'Hands-on campus improvement'],
+    backImage: '/workshops/audience/card_3.png'
   },
   {
     id: 'college',
@@ -149,7 +150,8 @@ const AUDIENCES = [
     title: 'Colleges & Design Universities',
     subtitle: 'Undergraduate & Graduate Students',
     desc: 'Deep dive into microclimate design, bird habitat architecture, and permanent sustainable installations on university grounds.',
-    benefits: ['Real-world design-build experience', 'Portfolio-grade installation work', 'Eco-material experimentation']
+    benefits: ['Real-world design-build experience', 'Portfolio-grade installation work', 'Eco-material experimentation'],
+    backImage: '/workshops/audience/card_1.png'
   },
   {
     id: 'corporate',
@@ -157,7 +159,8 @@ const AUDIENCES = [
     title: 'Workplaces & Corporate Teams',
     subtitle: 'Sustainability & ESG Offsites',
     desc: 'Engage employees in hands-on green retreats, office eco-upcycling, and collaborative biophilic installation projects.',
-    benefits: ['Unique team-building experience', 'Corporate ESG & Sustainability impact', 'Stress-relieving creative crafting']
+    benefits: ['Unique team-building experience', 'Corporate ESG & Sustainability impact', 'Stress-relieving creative crafting'],
+    backImage: '/workshops/audience/card_2.png'
   }
 ];
 
@@ -571,6 +574,7 @@ Additional Notes: ${formState.notes || 'None'}`;
               title={aud.title}
               description={aud.desc}
               features={aud.benefits}
+              backImage={aud.backImage}
               ctaText={`Book For ${aud.title.split(' ')[0]}`}
               onCtaClick={() => handleOpenLeadModal(`Audience: ${aud.title}`)}
             />
