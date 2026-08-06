@@ -39,7 +39,7 @@ const SERVICES_CHECKLIST = [
 ];
 
 /* ─── HERO BACKGROUND VIDEO/IMAGE URL ─── */
-const HERO_BG = '/hero-image.jpg';
+const HERO_BG = '/hero-image.png';
 const SERVICE_1 = 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=75&w=600&auto=format&fit=crop';
 const SERVICE_2 = 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=75&w=600&auto=format&fit=crop';
 const SERVICE_3 = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=75&w=600&auto=format&fit=crop';
