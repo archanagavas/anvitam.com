@@ -185,24 +185,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <button className="w-full bg-white text-[#111] font-semibold py-2.5 rounded-full text-sm hover:bg-[#CCFF00] transition-colors">
                 Submit
               </button>
-            </div>
-          </div>
-
-          {/* Contact icons row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-12 mb-10 border-b border-white/10">
-            {[
-              { icon: '📞', label: 'Phone No:', val: '+91 98765 43210' },
-              { icon: '✉️', label: 'Email Address:', val: 'anvitamarchitect@gmail.com' },
-              { icon: '📍', label: 'Location:', val: 'India · USA · Australia — serving worldwide' },
-            ].map((c, i) => (
-              <div key={i} className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-lg shrink-0">{c.icon}</div>
-                <div>
-                  <p className="text-[#CCFF00] text-xs font-bold mb-1">{c.label}</p>
-                  <p className="text-white/70 text-sm">{c.val}</p>
-                </div>
-              </div>
-            ))}
           </div>
 
           {/* Bottom bar */}

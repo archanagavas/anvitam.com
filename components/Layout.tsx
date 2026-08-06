@@ -340,26 +340,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <li><a href="mailto:ar.archanagavas@gmail.com" className="text-sm text-white/70 hover:text-[#CCFF00] transition-colors">ar.archanagavas@gmail.com</a></li>
                 <li><a href="tel:+917990657190" className="text-sm text-white/70 hover:text-[#CCFF00] transition-colors">+91 7990657190</a></li>
                 <li><span className="text-xs text-white/50 leading-relaxed block">2ND Floor, alisha chambers, Santram Mandir Rd, Nadiad, Gujarat 387001</span></li>
-                <li><Link to="/contact" className="text-sm text-white/70 hover:text-[#CCFF00] transition-colors">Send us a message</Link></li>
+                <li><Link to="/contact" className="text-sm text-[#CCFF00] hover:text-white transition-colors font-semibold">Send us a message →</Link></li>
               </ul>
             </div>
-          </div>
-
-          {/* Contact icons row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-12 mb-10 border-b border-white/10">
-            {[
-              { icon: '📞', label: 'Phone No:', val: '+91 7990657190' },
-              { icon: '✉️', label: 'Email Address:', val: 'ar.archanagavas@gmail.com' },
-              { icon: '📍', label: 'Studio Address:', val: '2ND Floor, alisha chambers, Santram Mandir Rd, Nadiad, Gujarat 387001' },
-            ].map((c, i) => (
-              <div key={i} className="flex items-center gap-5">
-                <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-lg shrink-0">{c.icon}</div>
-                <div className="flex flex-col justify-center">
-                  <p className="text-[#CCFF00] text-xs font-bold mb-1">{c.label}</p>
-                  <p className="text-white/70 text-xs md:text-sm leading-snug">{c.val}</p>
-                </div>
-              </div>
-            ))}
           </div>
 
           {/* Bottom bar */}
