@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Helmet } from 'react-helmet-async';
 import MapleLeafCursor from './MapleLeafCursor';
 import EstimatorModal from './EstimatorModal';
+import MorphicNavbar from './MorphicNavbar';
 
 // ── Newsletter Section Component ───────────────────────────────────────
 const NewsletterSection: React.FC = () => {
@@ -171,25 +172,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </Link>
           </div>
 
-          {/* Desktop Nav Links — Center */}
-          <div className="hidden md:flex items-center justify-center space-x-1 lg:space-x-2">
-            {navLinks.map((link) => {
-              const isActive = location.pathname === link.path;
-              return (
-                <Link
-                  key={link.name}
-                  to={link.path}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
-                    isActive
-                      ? 'bg-[#111] text-white shadow-xs'
-                      : 'text-gray-600 hover:text-black hover:bg-gray-100/80'
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              );
-            })}
-          </div>
+          {/* Desktop Morphic Navbar — Center */}
+          <MorphicNavbar items={navLinks} className="hidden md:flex" />
 
           {/* Action Buttons — Right */}
           <div className="hidden md:flex items-center gap-2">
