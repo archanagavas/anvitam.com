@@ -38,60 +38,60 @@ export const CardFlip: React.FC<CardFlipProps> = ({
       >
         {/* ── FRONT OF CARD ── */}
         <div
-          className="absolute inset-0 h-full w-full [backface-visibility:hidden] [transform:rotateY(0deg)] overflow-hidden rounded-3xl bg-white border border-gray-200 shadow-md transition-shadow duration-500 group-hover:shadow-2xl flex flex-col justify-between p-7"
+          className="absolute inset-0 h-full w-full [backface-visibility:hidden] [transform:rotateY(0deg)] overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-xs transition-shadow duration-500 group-hover:shadow-lg flex flex-col justify-between p-6"
         >
           {/* Ambient Glow */}
-          <div aria-hidden="true" className="absolute top-0 right-0 left-0 h-36 overflow-hidden pointer-events-none opacity-40">
-            <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full bg-[#CCFF00]/40 blur-2xl group-hover:scale-125 transition-transform duration-700" />
+          <div aria-hidden="true" className="absolute top-0 right-0 left-0 h-32 overflow-hidden pointer-events-none opacity-40">
+            <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full bg-[#CCFF00]/40 blur-xl group-hover:scale-125 transition-transform duration-700" />
           </div>
 
-          <div className="relative z-10 space-y-4">
+          <div className="relative z-10 space-y-3">
             {Icon && (
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700 shadow-xs">
-                <Icon size={24} />
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700 shadow-xs">
+                <Icon size={20} />
               </div>
             )}
             {subtitle && (
-              <p className="text-[10px] font-extrabold text-emerald-700 uppercase tracking-widest">
+              <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">
                 {subtitle}
               </p>
             )}
-            <h3 className="text-2xl font-extrabold text-gray-900 leading-tight">
+            <h3 className="text-xl font-bold text-gray-900 leading-tight">
               {title}
             </h3>
-            <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
+            <p className="text-xs text-gray-600 leading-relaxed line-clamp-3 font-normal">
               {description}
             </p>
           </div>
 
-          <div className="relative z-10 pt-4 border-t border-gray-100 flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-500 group-hover:text-emerald-700 transition-colors flex items-center gap-1.5">
+          <div className="relative z-10 pt-3 border-t border-gray-100 flex items-center justify-between">
+            <span className="text-xs font-semibold text-gray-500 group-hover:text-emerald-700 transition-colors flex items-center gap-1.5">
               Hover / Tap to flip photo
             </span>
-            <div className="p-2 rounded-full bg-emerald-50 text-emerald-700 group-hover:rotate-180 transition-transform duration-500">
-              <Repeat2 size={16} />
+            <div className="p-1.5 rounded-full bg-emerald-50 text-emerald-700 group-hover:rotate-180 transition-transform duration-500">
+              <Repeat2 size={15} />
             </div>
           </div>
         </div>
 
         {/* ── BACK OF CARD ── */}
         <div
-          className="absolute inset-0 h-full w-full [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden rounded-3xl border border-gray-800 shadow-2xl relative"
+          className="absolute inset-0 h-full w-full [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden rounded-2xl border border-gray-800 shadow-xl relative"
         >
           {backImage ? (
             <div className="relative w-full h-full">
               <img
                 src={backImage}
                 alt={title}
-                className="w-full h-full object-cover rounded-3xl"
+                className="w-full h-full object-cover rounded-2xl"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent p-6 flex flex-col justify-between">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent p-5 flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="px-3.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-[#D1F0AA] text-[10px] font-extrabold uppercase tracking-widest border border-white/10">
+                  <span className="px-3 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[#D1F0AA] text-[10px] font-bold uppercase tracking-wider border border-white/10">
                     {subtitle || title}
                   </span>
-                  <div className="p-2 rounded-full bg-black/60 text-white backdrop-blur-md border border-white/10">
-                    <Repeat2 size={16} />
+                  <div className="p-1.5 rounded-full bg-black/60 text-white backdrop-blur-md border border-white/10">
+                    <Repeat2 size={15} />
                   </div>
                 </div>
                 <button

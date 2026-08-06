@@ -310,97 +310,97 @@ Additional Notes: ${formState.notes || 'None'}`;
       {/* ══════════════════════════════════════════
           1. HERO SECTION — Clean High-Converting SaaS Funnel
       ══════════════════════════════════════════ */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+      <section className="relative pt-24 pb-12 md:pt-28 md:pb-16 overflow-hidden bg-white border-b border-gray-100">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           
           {/* Badge */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#CCFF00] text-[#111] text-xs font-black uppercase tracking-widest mb-6 shadow-sm border border-black/10"
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#CCFF00] text-[#111] text-[11px] font-bold uppercase tracking-wider mb-4 shadow-sm border border-black/10"
           >
-            <Sparkles size={14} /> Nest N Nurture Workshops
+            <Sparkles size={13} /> Nest N Nurture Workshops
           </motion.div>
 
           {/* Main Headline */}
           <motion.h1
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
-            className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6 max-w-5xl mx-auto text-gray-900"
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.18] mb-4 max-w-3xl mx-auto text-gray-900"
           >
             Hands-On Workshops for Schools &amp; Campuses
           </motion.h1>
 
           {/* Subtitle */}
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto mb-10 leading-relaxed font-normal"
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto mb-8 leading-relaxed font-normal"
           >
             Transforming school campuses, colleges, and workplaces with bird house architecture, plastic upcycling, and vibrant outdoor space makeovers.
           </motion.p>
 
           {/* Call to Action Buttons */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="flex flex-wrap items-center justify-center gap-4 mb-16"
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="flex flex-wrap items-center justify-center gap-3 mb-10"
           >
             <button
               onClick={() => handleOpenLeadModal('Book Workshop for Campus')}
-              className="inline-flex items-center gap-2.5 bg-[#CCFF00] text-black px-8 py-4 rounded-full text-base font-black hover:scale-105 transition-all duration-300 shadow-xl shadow-lime-200 border border-black/10 cursor-pointer"
+              className="inline-flex items-center gap-2 bg-[#CCFF00] text-black px-6 py-3 rounded-full text-xs sm:text-sm font-bold hover:scale-105 transition-all duration-300 shadow-md shadow-lime-200/80 border border-black/10 cursor-pointer"
             >
-              Book Workshop for Campus <ArrowRight size={18} />
+              Book Workshop for Campus <ArrowRight size={16} />
             </button>
             <a
               href="#offerings"
-              className="inline-flex items-center gap-2 border border-gray-300 text-gray-800 hover:bg-gray-100 px-8 py-4 rounded-full text-base font-bold transition-all duration-300"
+              className="inline-flex items-center gap-2 border border-gray-300 text-gray-800 hover:bg-gray-50 px-6 py-3 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300"
             >
               Explore 10+ Offerings
             </a>
           </motion.div>
 
           {/* Social Proof Stats Bar */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto p-6 rounded-3xl bg-white border border-gray-200 shadow-md mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto p-5 rounded-2xl bg-white border border-gray-200 shadow-sm mb-10">
             <div>
-              <p className="text-3xl md:text-4xl font-extrabold text-gray-900">95%</p>
-              <p className="text-xs text-gray-500 mt-1 uppercase font-bold tracking-wider">Educator Engagement</p>
+              <p className="text-2xl md:text-3xl font-bold text-gray-900">95%</p>
+              <p className="text-[10px] text-gray-500 mt-1 uppercase font-semibold tracking-wider">Educator Engagement</p>
             </div>
             <div>
-              <p className="text-3xl md:text-4xl font-extrabold text-gray-900">80%</p>
-              <p className="text-xs text-gray-500 mt-1 uppercase font-bold tracking-wider">Problem-Solving Growth</p>
+              <p className="text-2xl md:text-3xl font-bold text-gray-900">80%</p>
+              <p className="text-[10px] text-gray-500 mt-1 uppercase font-semibold tracking-wider">Problem-Solving Growth</p>
             </div>
             <div>
-              <p className="text-3xl md:text-4xl font-extrabold text-gray-900">500+</p>
-              <p className="text-xs text-gray-500 mt-1 uppercase font-bold tracking-wider">Student Capacity</p>
+              <p className="text-2xl md:text-3xl font-bold text-gray-900">500+</p>
+              <p className="text-[10px] text-gray-500 mt-1 uppercase font-semibold tracking-wider">Student Capacity</p>
             </div>
             <div>
-              <p className="text-3xl md:text-4xl font-extrabold text-gray-900">100%</p>
-              <p className="text-xs text-gray-500 mt-1 uppercase font-bold tracking-wider">NEP 2020 Aligned</p>
+              <p className="text-2xl md:text-3xl font-bold text-gray-900">100%</p>
+              <p className="text-[10px] text-gray-500 mt-1 uppercase font-semibold tracking-wider">NEP 2020 Aligned</p>
             </div>
           </div>
 
           {/* Institutional Partner Bar */}
-          <div className="pt-2 max-w-4xl mx-auto">
-            <p className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-4">
+          <div className="pt-1 max-w-3xl mx-auto">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">
               Trusted by Leading Educational &amp; Architectural Institutions
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8">
-              <div className="flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-gray-50 border border-gray-200 shadow-sm">
-                <img src="/workshops/logos/uss-logo.png" alt="Unique School of Science" className="w-7 h-7 rounded-full object-cover border border-gray-200" />
-                <span className="text-xs font-extrabold text-gray-800">Unique School of Science</span>
+            <div className="flex flex-wrap items-center justify-center gap-3 md:gap-6">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-50 border border-gray-200 shadow-xs">
+                <img src="/workshops/logos/uss-logo.png" alt="Unique School of Science" className="w-5 h-5 rounded-full object-cover border border-gray-200" />
+                <span className="text-xs font-bold text-gray-800">Unique School of Science</span>
               </div>
-              <div className="flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-gray-50 border border-gray-200 shadow-sm">
-                <img src="/workshops/logos/anant-logo.png" alt="Anant National University" className="w-7 h-7 rounded-lg object-contain bg-white p-0.5 border border-gray-200" />
-                <span className="text-xs font-extrabold text-gray-800">Anant National University</span>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-50 border border-gray-200 shadow-xs">
+                <img src="/workshops/logos/anant-logo.png" alt="Anant National University" className="w-5 h-5 rounded-lg object-contain bg-white p-0.5 border border-gray-200" />
+                <span className="text-xs font-bold text-gray-800">Anant National University</span>
               </div>
-              <div className="flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-gray-50 border border-gray-200 shadow-sm">
-                <img src="/workshops/logos/campleo-logo.png" alt="Camp Leo" className="w-7 h-7 rounded-full object-cover border border-gray-200" />
-                <span className="text-xs font-extrabold text-gray-800">Camp Leo Eco Resorts</span>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-50 border border-gray-200 shadow-xs">
+                <img src="/workshops/logos/campleo-logo.png" alt="Camp Leo" className="w-5 h-5 rounded-full object-cover border border-gray-200" />
+                <span className="text-xs font-bold text-gray-800">Camp Leo Eco Resorts</span>
               </div>
             </div>
           </div>
@@ -410,15 +410,18 @@ Additional Notes: ${formState.notes || 'None'}`;
       {/* ══════════════════════════════════════════
           2. PROVEN TRACK RECORD & PAST CAMPUS TRANSFORMATIONS
       ══════════════════════════════════════════ */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-14">
-          <span className="px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-extrabold uppercase tracking-wider">
+      {/* ══════════════════════════════════════════
+          2. PROVEN TRACK RECORD & PAST CAMPUS TRANSFORMATIONS
+      ══════════════════════════════════════════ */}
+      <section className="py-12 md:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <span className="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold uppercase tracking-wider">
             Proven Track Record
           </span>
-          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mt-3 mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-3">
             Past Campus Transformations
           </h2>
-          <p className="text-gray-600 text-base">
+          <p className="text-gray-600 text-sm sm:text-base font-normal">
             See how we collaborated with schools and design universities to build functional bird habitats and space makeovers.
           </p>
         </div>
@@ -439,16 +442,16 @@ Additional Notes: ${formState.notes || 'None'}`;
           const photosToDisplay = adminPhotos.length > 0 ? adminPhotos : GROUP_PHOTOS;
 
           return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
               {photosToDisplay.slice(0, 9).map((photo, idx) => (
                 <motion.div
                   key={idx}
-                  initial={{ opacity: 0, scale: 0.95 }}
+                  initial={{ opacity: 0, scale: 0.96 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: idx * 0.08 }}
+                  transition={{ duration: 0.4, delay: idx * 0.05 }}
                   onClick={() => handleOpenLeadModal(`Campus Transformation Photo — Book Similar Workshop`)}
-                  className="group relative rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer border border-gray-200 h-72 bg-gray-100"
+                  className="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-200 h-64 bg-gray-100"
                 >
                   <img
                     src={photo.src}
@@ -458,12 +461,12 @@ Additional Notes: ${formState.notes || 'None'}`;
                       (e.target as HTMLImageElement).src = '/workshops/birds house making.png';
                     }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90 group-hover:opacity-95 transition-opacity" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <span className="text-[10px] font-bold text-[#CCFF00] uppercase tracking-wider block mb-1">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-85 group-hover:opacity-95 transition-opacity" />
+                  <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+                    <span className="text-[10px] font-semibold text-[#CCFF00] uppercase tracking-wider block mb-1">
                       {photo.institution}
                     </span>
-                    <h3 className="text-lg font-bold mb-1">{photo.title}</h3>
+                    <h3 className="text-base font-bold mb-0.5">{photo.title}</h3>
                     <p className="text-xs text-gray-300 font-normal line-clamp-1">{photo.caption}</p>
                   </div>
                 </motion.div>
@@ -474,44 +477,44 @@ Additional Notes: ${formState.notes || 'None'}`;
 
         {/* Dynamic Database Workshops Showcase */}
         {publishedWorkshops.length > 0 && (
-          <div className="space-y-8 pt-8 border-t border-gray-150">
-            <h3 className="text-2xl font-extrabold text-gray-900 text-center mb-8">Featured Institutional Case Studies</h3>
-            <div className="space-y-8">
+          <div className="space-y-6 pt-6 border-t border-gray-150">
+            <h3 className="text-xl font-bold text-gray-900 text-center mb-6">Featured Institutional Case Studies</h3>
+            <div className="space-y-6">
               {publishedWorkshops.map((w) => (
                 <div 
                   key={w.id}
-                  className="rounded-3xl bg-white border border-gray-200 shadow-md p-6 md:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center hover:border-gray-300 transition-all"
+                  className="rounded-2xl bg-white border border-gray-200 shadow-sm p-5 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center hover:border-gray-300 transition-all"
                 >
-                  <div className="lg:col-span-7 space-y-4">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <span className="px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold">
+                  <div className="lg:col-span-7 space-y-3">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className="px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">
                         {w.category}
                       </span>
-                      <span className="flex items-center gap-1 text-xs text-gray-500 font-semibold">
+                      <span className="flex items-center gap-1 text-xs text-gray-500 font-medium">
                         <MapPin size={13} className="text-emerald-600" /> {w.location}
                       </span>
-                      <span className="flex items-center gap-1 text-xs text-gray-500 font-semibold">
+                      <span className="flex items-center gap-1 text-xs text-gray-500 font-medium">
                         <Calendar size={13} className="text-emerald-600" /> {w.date}
                       </span>
                     </div>
 
-                    <h3 className="text-2xl md:text-4xl font-extrabold text-gray-900">{w.title}</h3>
-                    <p className="text-sm font-bold text-emerald-700">{w.organization}</p>
-                    <p className="text-gray-600 text-sm leading-relaxed">{w.description}</p>
+                    <h3 className="text-xl md:text-3xl font-bold text-gray-900">{w.title}</h3>
+                    <p className="text-xs font-bold text-emerald-700">{w.organization}</p>
+                    <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">{w.description}</p>
 
                     {w.attendeesCount && (
-                      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 text-xs text-gray-800 font-semibold">
-                        <Users size={14} className="text-emerald-600" />
+                      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 text-xs text-gray-800 font-medium">
+                        <Users size={13} className="text-emerald-600" />
                         <span>{w.attendeesCount}</span>
                       </div>
                     )}
 
                     {w.offerings && w.offerings.length > 0 && (
-                      <div className="pt-2">
-                        <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Offerings Executed:</p>
-                        <div className="flex flex-wrap gap-2">
+                      <div className="pt-1">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Offerings Executed:</p>
+                        <div className="flex flex-wrap gap-1.5">
                           {w.offerings.map((offering, idx) => (
-                            <span key={idx} className="px-3 py-1 rounded-lg bg-gray-100 border border-gray-200 text-xs text-gray-700 font-medium">
+                            <span key={idx} className="px-2.5 py-0.5 rounded-md bg-gray-100 border border-gray-200 text-[11px] text-gray-700 font-medium">
                               {offering}
                             </span>
                           ))}
@@ -519,30 +522,30 @@ Additional Notes: ${formState.notes || 'None'}`;
                       </div>
                     )}
 
-                    <div className="pt-3 flex flex-wrap items-center gap-3">
+                    <div className="pt-2 flex flex-wrap items-center gap-2.5">
                       <Link
                         to={`/workshops/${w.slug || w.id}`}
-                        className="inline-flex items-center gap-2 bg-[#111] text-white px-5 py-2.5 rounded-full text-xs font-extrabold hover:bg-emerald-600 transition-all shadow-sm"
+                        className="inline-flex items-center gap-2 bg-[#111] text-white px-4 py-2 rounded-full text-xs font-bold hover:bg-emerald-600 transition-all shadow-xs"
                       >
                         View Full Story, Gallery & Videos →
                       </Link>
                       <button
                         onClick={() => handleOpenLeadModal(`Case Study Inquiry: ${w.title}`)}
-                        className="inline-flex items-center gap-2 bg-[#CCFF00] text-black px-5 py-2.5 rounded-full text-xs font-black hover:scale-105 transition-all shadow-sm"
+                        className="inline-flex items-center gap-2 bg-[#CCFF00] text-black px-4 py-2 rounded-full text-xs font-bold hover:scale-105 transition-all shadow-xs"
                       >
-                        Book Similar Workshop <ArrowRight size={14} />
+                        Book Similar Workshop <ArrowRight size={13} />
                       </button>
                     </div>
                   </div>
 
                   {/* Photo Gallery Grid */}
-                  <Link to={`/workshops/${w.slug || w.id}`} className="lg:col-span-5 grid grid-cols-2 gap-3 group/img">
+                  <Link to={`/workshops/${w.slug || w.id}`} className="lg:col-span-5 grid grid-cols-2 gap-2.5 group/img">
                     {(() => {
                       const validImages = (w.images && w.images.filter(img => Boolean(img && img.trim())).length > 0)
                         ? w.images.filter(img => Boolean(img && img.trim()))
                         : ['/workshops/birds house making.png'];
                       return validImages.slice(0, 4).map((img, idx) => (
-                        <div key={idx} className={`rounded-2xl overflow-hidden h-36 bg-gray-100 border border-gray-200 ${idx === 0 ? 'col-span-2 h-48' : ''} relative`}>
+                        <div key={idx} className={`rounded-xl overflow-hidden h-32 bg-gray-100 border border-gray-200 ${idx === 0 ? 'col-span-2 h-40' : ''} relative`}>
                           <img src={img} alt={`${w.title} highlight ${idx + 1}`} className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500" onError={(e) => { (e.target as HTMLImageElement).src = '/workshops/birds house making.png'; }} />
                           <div className="absolute inset-0 bg-black/10 group-hover/img:bg-transparent transition" />
                         </div>
@@ -559,46 +562,46 @@ Additional Notes: ${formState.notes || 'None'}`;
       {/* ══════════════════════════════════════════
           3. SOLUTIONS / 10+ CREATIVE OFFERINGS MATRIX
       ══════════════════════════════════════════ */}
-      <section id="offerings" className="py-20 bg-white border-y border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <p className="text-xs font-extrabold uppercase tracking-widest text-emerald-600 mb-2">Unleashing Creativity</p>
-            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4">Our Unique Workshop Offerings</h2>
-            <p className="text-gray-600 text-base">
+      <section id="offerings" className="py-12 md:py-16 bg-white border-y border-gray-100">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-emerald-600 mb-1.5">Unleashing Creativity</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3">Our Unique Workshop Offerings</h2>
+            <p className="text-gray-600 text-xs sm:text-sm font-normal leading-relaxed">
               Each workshop is fully customized with raw eco-materials, professional guidance, and permanent campus installations.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {OFFERINGS.map((item, idx) => (
               <motion.div
                 key={idx}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: idx * 0.05 }}
-                className="group rounded-3xl bg-white border border-gray-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-gray-300 transition-all duration-300 flex flex-col"
+                transition={{ duration: 0.4, delay: idx * 0.04 }}
+                className="group rounded-2xl bg-white border border-gray-200 shadow-xs overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all duration-300 flex flex-col"
               >
-                <div className="h-56 relative overflow-hidden bg-gray-100">
+                <div className="h-48 relative overflow-hidden bg-gray-100">
                   <img
                     src={item.image}
                     alt={item.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-xl shadow-md">
+                  <div className="absolute top-3.5 left-3.5 w-9 h-9 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-lg shadow-sm">
                     {item.icon}
                   </div>
                 </div>
-                <div className="p-6 flex-1 flex flex-col justify-between">
+                <div className="p-5 flex-1 flex flex-col justify-between">
                   <div>
-                    <h3 className="text-xl font-extrabold text-gray-900 mb-2 group-hover:text-emerald-700 transition-colors">{item.title}</h3>
-                    <p className="text-gray-600 text-sm leading-relaxed">{item.desc}</p>
+                    <h3 className="text-lg font-bold text-gray-900 mb-1.5 group-hover:text-emerald-700 transition-colors">{item.title}</h3>
+                    <p className="text-gray-600 text-xs leading-relaxed font-normal">{item.desc}</p>
                   </div>
                   <button
                     onClick={() => handleOpenLeadModal(`Offering: ${item.title}`)}
-                    className="mt-6 flex items-center gap-2 text-xs font-black text-emerald-700 hover:text-black transition-colors"
+                    className="mt-4 flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-black transition-colors"
                   >
-                    Request Offering Details &amp; Pricing <ArrowRight size={14} />
+                    Request Offering Details &amp; Pricing <ArrowRight size={13} />
                   </button>
                 </div>
               </motion.div>
@@ -610,13 +613,13 @@ Additional Notes: ${formState.notes || 'None'}`;
       {/* ══════════════════════════════════════════
           4. BENEFITS & AUDIENCE TARGETING
       ══════════════════════════════════════════ */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-2">Tailored For Institutions</p>
-          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900">Who Are Our Workshops Designed For?</h2>
+      <section className="py-12 md:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-10">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-emerald-600 mb-1.5">Tailored For Institutions</p>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">Who Are Our Workshops Designed For?</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {AUDIENCES.map((aud) => (
             <CardFlip
               key={aud.id}
@@ -636,106 +639,106 @@ Additional Notes: ${formState.notes || 'None'}`;
       {/* ══════════════════════════════════════════
           4B. CURRICULUM & NEP 2020 EDUCATIONAL ALIGNMENT (Redesigned Asymmetric Feature Grid)
       ══════════════════════════════════════════ */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-gray-100">
-        <div className="text-center max-w-3xl mx-auto mb-14">
-          <span className="px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-extrabold uppercase tracking-wider inline-block mb-3">
+      <section className="py-12 md:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-gray-100">
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <span className="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold uppercase tracking-wider inline-block mb-2">
             Academic Excellence &amp; Compliance
           </span>
-          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 tracking-tight">
             Aligned with NEP 2020 &amp; STEAM Curriculum
           </h2>
-          <p className="text-gray-600 text-base max-w-xl mx-auto font-normal">
+          <p className="text-gray-600 text-xs sm:text-sm max-w-xl mx-auto font-normal leading-relaxed">
             Our workshops go beyond simple crafts—they build tangible vocational skills, spatial geometry, and environmental responsibility required by modern education standards.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
           
           {/* Left Column: Featured Institutional Seal Banner */}
-          <div className="lg:col-span-5 bg-gradient-to-br from-emerald-50/80 via-white to-emerald-50/40 p-8 md:p-10 rounded-3xl border border-emerald-200/80 shadow-sm flex flex-col justify-between space-y-6">
-            <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold uppercase tracking-wider">
-                <GraduationCap size={16} /> Official Curriculum Seal
+          <div className="lg:col-span-5 bg-gradient-to-br from-emerald-50/80 via-white to-emerald-50/40 p-6 md:p-8 rounded-2xl border border-emerald-200/80 shadow-xs flex flex-col justify-between space-y-5">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold uppercase tracking-wider">
+                <GraduationCap size={15} /> Official Curriculum Seal
               </div>
-              <h3 className="text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight">
+              <h3 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
                 Hands-On Vocational Skill Credits for Campuses
               </h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
+              <p className="text-gray-600 text-xs leading-relaxed font-normal">
                 Designed alongside educators and ecological architects, our modules empower schools to fulfill national green mandates effortlessly.
               </p>
             </div>
 
-            <div className="space-y-3 pt-4 border-t border-emerald-200/60">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 size={18} className="text-emerald-700 mt-0.5 shrink-0" />
-                <p className="text-xs font-bold text-gray-800">Fulfills CBSE &amp; NEP 2020 mandatory vocational skill modules</p>
+            <div className="space-y-2.5 pt-3 border-t border-emerald-200/60">
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={16} className="text-emerald-700 mt-0.5 shrink-0" />
+                <p className="text-xs font-semibold text-gray-800">Fulfills CBSE &amp; NEP 2020 mandatory vocational skill modules</p>
               </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 size={18} className="text-emerald-700 mt-0.5 shrink-0" />
-                <p className="text-xs font-bold text-gray-800">Complete tool safety gear &amp; pre-sanded non-toxic timber provided</p>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={16} className="text-emerald-700 mt-0.5 shrink-0" />
+                <p className="text-xs font-semibold text-gray-800">Complete tool safety gear &amp; pre-sanded non-toxic timber provided</p>
               </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 size={18} className="text-emerald-700 mt-0.5 shrink-0" />
-                <p className="text-xs font-bold text-gray-800">Official STEAM participation certificates for every student</p>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={16} className="text-emerald-700 mt-0.5 shrink-0" />
+                <p className="text-xs font-semibold text-gray-800">Official STEAM participation certificates for every student</p>
               </div>
             </div>
 
             <button
               onClick={() => handleOpenLeadModal('Curriculum & Syllabus Request')}
-              className="w-full py-3.5 rounded-full bg-emerald-800 text-white font-extrabold text-xs hover:bg-emerald-900 transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3 rounded-full bg-emerald-800 text-white font-bold text-xs hover:bg-emerald-900 transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
             >
-              Request Syllabus &amp; Curriculum PDF <ArrowRight size={15} />
+              Request Syllabus &amp; Curriculum PDF <ArrowRight size={14} />
             </button>
           </div>
 
           {/* Right Column: 3 Structured Cards Grid */}
-          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-5">
             
-            <div className="bg-white p-7 rounded-3xl border border-gray-200 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all space-y-4 flex flex-col justify-between">
-              <div className="space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-100">
-                  <BookOpen size={24} />
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs hover:shadow-md hover:border-emerald-200 transition-all space-y-3 flex flex-col justify-between">
+              <div className="space-y-2.5">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-100">
+                  <BookOpen size={20} />
                 </div>
-                <h3 className="text-lg font-extrabold text-gray-900">STEAM Integration</h3>
+                <h3 className="text-base font-bold text-gray-900">STEAM Integration</h3>
                 <p className="text-xs text-gray-600 leading-relaxed font-normal">
                   Integrates Science (Ornithology), Technology (Tools), Engineering (Habitats), Art (Eco-paint), and Math (Geometry).
                 </p>
               </div>
-              <span className="inline-block text-[11px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-3 py-1 rounded-full w-max">
+              <span className="inline-block text-[10px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-2.5 py-0.5 rounded-full w-max">
                 Interdisciplinary
               </span>
             </div>
 
-            <div className="bg-white p-7 rounded-3xl border border-gray-200 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all space-y-4 flex flex-col justify-between">
-              <div className="space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-100">
-                  <Leaf size={24} />
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs hover:shadow-md hover:border-emerald-200 transition-all space-y-3 flex flex-col justify-between">
+              <div className="space-y-2.5">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-100">
+                  <Leaf size={20} />
                 </div>
-                <h3 className="text-lg font-extrabold text-gray-900">Eco-Club Directives</h3>
+                <h3 className="text-base font-bold text-gray-900">Eco-Club Directives</h3>
                 <p className="text-xs text-gray-600 leading-relaxed font-normal">
                   Empowers campus Eco-Clubs to achieve green school audit points with permanent bird nest installations and plastic waste reduction.
                 </p>
               </div>
-              <span className="inline-block text-[11px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-3 py-1 rounded-full w-max">
+              <span className="inline-block text-[10px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-2.5 py-0.5 rounded-full w-max">
                 Green Audit Points
               </span>
             </div>
 
-            <div className="bg-white p-7 rounded-3xl border border-gray-200 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all space-y-4 sm:col-span-2 flex flex-col justify-between">
-              <div className="space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-100">
-                  <ShieldCheck size={24} />
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs hover:shadow-md hover:border-emerald-200 transition-all space-y-3 sm:col-span-2 flex flex-col justify-between">
+              <div className="space-y-2.5">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-100">
+                  <ShieldCheck size={20} />
                 </div>
-                <h3 className="text-lg font-extrabold text-gray-900">100% Tool &amp; Material Safety Assurance</h3>
+                <h3 className="text-base font-bold text-gray-900">100% Tool &amp; Material Safety Assurance</h3>
                 <p className="text-xs text-gray-600 leading-relaxed font-normal">
                   All timber is pre-sanded with rounded edges. Child-safe hand tools, protective gloves, organic non-toxic paints, and certified instructor-to-student ratio (1:15) guaranteed.
                 </p>
               </div>
-              <div className="flex items-center gap-4 pt-2">
-                <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-3 py-1 rounded-full">
+              <div className="flex items-center gap-3 pt-1">
+                <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-2.5 py-0.5 rounded-full">
                   1:15 Instructor Ratio
                 </span>
-                <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-3 py-1 rounded-full">
+                <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-2.5 py-0.5 rounded-full">
                   Zero Harm Certified
                 </span>
               </div>
@@ -749,87 +752,87 @@ Additional Notes: ${formState.notes || 'None'}`;
       {/* ══════════════════════════════════════════
           5. PROCESS — 3 SIMPLE STEPS (Redesigned Connected Timeline)
       ══════════════════════════════════════════ */}
-      <section className="py-20 bg-white border-y border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-12 md:py-16 bg-white border-y border-gray-100">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-extrabold uppercase tracking-wider inline-block mb-3">
+          <div className="text-center max-w-xl mx-auto mb-10">
+            <span className="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold uppercase tracking-wider inline-block mb-2">
               Effortless Execution
             </span>
-            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 tracking-tight">
               How It Works in 3 Simple Steps
             </h2>
-            <p className="text-gray-600 text-sm md:text-base font-normal">
+            <p className="text-gray-600 text-xs sm:text-sm font-normal">
               From initial selection to live campus transformation—we handle materials, tools, and instructor logistics from start to finish.
             </p>
           </div>
 
           <div className="relative">
             {/* Horizontal Connecting Timeline Line on Desktop */}
-            <div className="hidden md:block absolute top-1/2 left-12 right-12 h-0.5 bg-gradient-to-r from-emerald-200 via-[#CCFF00] to-emerald-200 -translate-y-8 z-0" />
+            <div className="hidden md:block absolute top-1/2 left-12 right-12 h-0.5 bg-gradient-to-r from-emerald-200 via-[#CCFF00] to-emerald-200 -translate-y-6 z-0" />
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
               
               {/* Step 1 */}
-              <div className="bg-white p-8 rounded-3xl border border-gray-200/80 shadow-sm hover:shadow-xl hover:border-emerald-300 hover:-translate-y-1 transition-all duration-300 text-left relative flex flex-col justify-between space-y-6">
-                <div className="space-y-4">
+              <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs hover:shadow-lg hover:border-emerald-300 hover:-translate-y-1 transition-all duration-300 text-left relative flex flex-col justify-between space-y-4">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="w-14 h-14 rounded-2xl bg-[#CCFF00] text-black font-black flex items-center justify-center text-xl shadow-md shadow-lime-200/80 border border-black/10">
-                      <Palette size={24} />
+                    <div className="w-11 h-11 rounded-xl bg-[#CCFF00] text-black font-bold flex items-center justify-center text-lg shadow-sm border border-black/10">
+                      <Palette size={20} />
                     </div>
-                    <span className="text-xs font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                       Step 01
                     </span>
                   </div>
-                  <h3 className="text-xl font-extrabold text-gray-900">Choose Your Offerings</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed font-normal">
+                  <h3 className="text-lg font-bold text-gray-900">Choose Your Offerings</h3>
+                  <p className="text-gray-600 text-xs leading-relaxed font-normal">
                     Select from bird house making, space makeovers, or custom eco-crafts based on your institution's age group and goals.
                   </p>
                 </div>
-                <div className="pt-4 border-t border-gray-100 flex items-center gap-2 text-xs font-bold text-gray-800">
-                  <Sparkles size={14} className="text-emerald-600" /> Customized for age groups 6 to 22+
+                <div className="pt-3 border-t border-gray-100 flex items-center gap-1.5 text-xs font-semibold text-gray-800">
+                  <Sparkles size={13} className="text-emerald-600" /> Customized for age groups 6 to 22+
                 </div>
               </div>
 
               {/* Step 2 */}
-              <div className="bg-white p-8 rounded-3xl border border-gray-200/80 shadow-sm hover:shadow-xl hover:border-emerald-300 hover:-translate-y-1 transition-all duration-300 text-left relative flex flex-col justify-between space-y-6">
-                <div className="space-y-4">
+              <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs hover:shadow-lg hover:border-emerald-300 hover:-translate-y-1 transition-all duration-300 text-left relative flex flex-col justify-between space-y-4">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="w-14 h-14 rounded-2xl bg-[#CCFF00] text-black font-black flex items-center justify-center text-xl shadow-md shadow-lime-200/80 border border-black/10">
-                      <Compass size={24} />
+                    <div className="w-11 h-11 rounded-xl bg-[#CCFF00] text-black font-bold flex items-center justify-center text-lg shadow-sm border border-black/10">
+                      <Compass size={20} />
                     </div>
-                    <span className="text-xs font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                       Step 02
                     </span>
                   </div>
-                  <h3 className="text-xl font-extrabold text-gray-900">Co-Design &amp; Schedule</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed font-normal">
+                  <h3 className="text-lg font-bold text-gray-900">Co-Design &amp; Schedule</h3>
+                  <p className="text-gray-600 text-xs leading-relaxed font-normal">
                     We bring all raw building timber, safety gear, non-toxic paints, and certified lead instructors directly to your campus.
                   </p>
                 </div>
-                <div className="pt-4 border-t border-gray-100 flex items-center gap-2 text-xs font-bold text-gray-800">
-                  <Wrench size={14} className="text-emerald-600" /> Full logistics &amp; safety handled by us
+                <div className="pt-3 border-t border-gray-100 flex items-center gap-1.5 text-xs font-semibold text-gray-800">
+                  <Wrench size={13} className="text-emerald-600" /> Full logistics &amp; safety handled by us
                 </div>
               </div>
 
               {/* Step 3 */}
-              <div className="bg-white p-8 rounded-3xl border border-gray-200/80 shadow-sm hover:shadow-xl hover:border-emerald-300 hover:-translate-y-1 transition-all duration-300 text-left relative flex flex-col justify-between space-y-6">
-                <div className="space-y-4">
+              <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs hover:shadow-lg hover:border-emerald-300 hover:-translate-y-1 transition-all duration-300 text-left relative flex flex-col justify-between space-y-4">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="w-14 h-14 rounded-2xl bg-[#CCFF00] text-black font-black flex items-center justify-center text-xl shadow-md shadow-lime-200/80 border border-black/10">
-                      <Wrench size={24} />
+                    <div className="w-11 h-11 rounded-xl bg-[#CCFF00] text-black font-bold flex items-center justify-center text-lg shadow-sm border border-black/10">
+                      <Wrench size={20} />
                     </div>
-                    <span className="text-xs font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                       Step 03
                     </span>
                   </div>
-                  <h3 className="text-xl font-extrabold text-gray-900">Install &amp; Transform</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed font-normal">
+                  <h3 className="text-lg font-bold text-gray-900">Install &amp; Transform</h3>
+                  <p className="text-gray-600 text-xs leading-relaxed font-normal">
                     Students construct permanent campus installations, enhancing biodiversity and creating long-term environmental pride.
                   </p>
                 </div>
-                <div className="pt-4 border-t border-gray-100 flex items-center gap-2 text-xs font-bold text-gray-800">
-                  <CheckCircle2 size={14} className="text-emerald-600" /> Permanent green campus upgrade
+                <div className="pt-3 border-t border-gray-100 flex items-center gap-1.5 text-xs font-semibold text-gray-800">
+                  <CheckCircle2 size={13} className="text-emerald-600" /> Permanent green campus upgrade
                 </div>
               </div>
 
@@ -841,20 +844,20 @@ Additional Notes: ${formState.notes || 'None'}`;
       {/* ══════════════════════════════════════════
           6. PRICING & SUBSCRIPTION CARDS (Aligned with Brand Theme)
       ══════════════════════════════════════════ */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <span className="px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs font-extrabold uppercase tracking-wider inline-block mb-3">
+      <section className="py-12 md:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <span className="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-[11px] font-bold uppercase tracking-wider inline-block mb-2">
             Investment In Innovation
           </span>
-          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 tracking-tight">
             Pricing &amp; Subscription Plans
           </h2>
-          <p className="text-gray-600 text-base max-w-xl mx-auto font-normal">
+          <p className="text-gray-600 text-xs sm:text-sm max-w-xl mx-auto font-normal">
             Flexible options tailored for single-day campus events, multi-day space transformations, or long-term partnerships.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch pt-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch pt-2">
           {PRICING_PLANS.map((plan, idx) => {
             const icons = [Pencil, Star, Sparkles];
             const CardIcon = icons[idx % icons.length];
@@ -862,40 +865,40 @@ Additional Notes: ${formState.notes || 'None'}`;
             return (
               <motion.div
                 key={idx}
-                initial={{ opacity: 0, y: 25 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: idx * 0.12 }}
-                whileHover={{ y: -6, transition: { duration: 0.2 } }}
-                className={`bg-white rounded-3xl p-8 flex flex-col justify-between relative transition-all duration-300 border ${
+                transition={{ duration: 0.4, delay: idx * 0.08 }}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className={`bg-white rounded-2xl p-6 flex flex-col justify-between relative transition-all duration-300 border ${
                   plan.popular 
-                    ? 'border-[#CCFF00] ring-2 ring-[#CCFF00]/50 shadow-xl md:scale-[1.03] z-10' 
-                    : 'border-gray-200 shadow-sm hover:shadow-xl hover:border-emerald-200'
+                    ? 'border-[#CCFF00] ring-2 ring-[#CCFF00]/50 shadow-md md:scale-[1.02] z-10' 
+                    : 'border-gray-200 shadow-xs hover:shadow-lg hover:border-emerald-200'
                 }`}
               >
                 {plan.popular && (
-                  <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#CCFF00] text-black border border-black/10 font-black text-xs px-4 py-1 rounded-full uppercase tracking-wider shadow-md">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#CCFF00] text-black border border-black/10 font-bold text-[10px] px-3.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
                     Most Popular
                   </span>
                 )}
 
                 <div>
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-800 flex items-center justify-center mb-6 shadow-sm">
-                    <CardIcon size={22} className="stroke-[2.2]" />
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-800 flex items-center justify-center mb-4 shadow-xs">
+                    <CardIcon size={18} className="stroke-[2]" />
                   </div>
 
-                  <h3 className="text-2xl font-extrabold text-gray-900 tracking-tight mb-1">{plan.name}</h3>
-                  <p className="text-xs text-gray-500 font-medium mb-6 leading-relaxed">{plan.tagline}</p>
+                  <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-1">{plan.name}</h3>
+                  <p className="text-xs text-gray-500 font-medium mb-4 leading-relaxed">{plan.tagline}</p>
 
-                  <div className="flex items-baseline gap-1.5 mb-6">
-                    <span className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">{plan.price}</span>
-                    <span className="text-xs text-gray-500 font-bold">/ {plan.unit}</span>
+                  <div className="flex items-baseline gap-1 mb-5">
+                    <span className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">{plan.price}</span>
+                    <span className="text-xs text-gray-500 font-semibold">/ {plan.unit}</span>
                   </div>
 
-                  <div className="space-y-3.5 mb-8">
+                  <div className="space-y-2.5 mb-6">
                     {plan.features.map((f, fIdx) => (
-                      <div key={fIdx} className="flex items-start gap-3 text-xs text-gray-700 font-semibold">
-                        <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                      <div key={fIdx} className="flex items-start gap-2.5 text-xs text-gray-700 font-medium">
+                        <CheckCircle2 size={15} className="text-emerald-600 shrink-0 mt-0.5" />
                         <span className="pt-0.5 leading-relaxed">{f}</span>
                       </div>
                     ))}
@@ -905,117 +908,117 @@ Additional Notes: ${formState.notes || 'None'}`;
                 <motion.button
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleOpenLeadModal(`Pricing Plan: ${plan.name}`)}
-                  className={`w-full py-4 rounded-full text-xs font-black transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
+                  className={`w-full py-3 rounded-full text-xs font-bold transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer ${
                     plan.popular
-                      ? 'bg-[#CCFF00] text-black hover:scale-105 shadow-lg shadow-lime-200/60 border border-black/10'
-                      : 'border border-gray-300 text-gray-800 hover:bg-gray-100 hover:border-gray-400'
+                      ? 'bg-[#CCFF00] text-black hover:scale-105 shadow-md shadow-lime-200/60 border border-black/10'
+                      : 'border border-gray-300 text-gray-800 hover:bg-gray-50 hover:border-gray-400'
                   }`}
                 >
-                  {plan.cta} <ArrowRight size={15} />
+                  {plan.cta} <ArrowRight size={14} />
                 </motion.button>
               </motion.div>
             );
           })}
         </div>
 
-        <div className="mt-12 p-6 rounded-2xl bg-white border border-gray-200 shadow-sm text-center text-xs text-gray-600 space-y-2 max-w-4xl mx-auto">
-          <p><strong className="text-gray-900 font-bold">Payment Terms:</strong> 50% upfront upon booking confirmation, 50% upon completion of the workshop / makeover.</p>
-          <p><strong className="text-emerald-700 font-bold">Bulk Booking Discount:</strong> Special pricing available for annual school partnerships and multi-campus bookings.</p>
+        <div className="mt-8 p-5 rounded-xl bg-white border border-gray-200 shadow-xs text-center text-xs text-gray-600 space-y-1 max-w-3xl mx-auto">
+          <p><strong className="text-gray-900 font-semibold">Payment Terms:</strong> 50% upfront upon booking confirmation, 50% upon completion of the workshop / makeover.</p>
+          <p><strong className="text-emerald-700 font-semibold">Bulk Booking Discount:</strong> Special pricing available for annual school partnerships and multi-campus bookings.</p>
         </div>
       </section>
 
       {/* ══════════════════════════════════════════
           7. TESTIMONIALS & INSTITUTIONAL REVIEWS (Diagram Alignment)
       ══════════════════════════════════════════ */}
-      <section className="py-20 bg-white border-y border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-14">
-            <span className="px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold uppercase tracking-wider">
+      <section className="py-12 md:py-16 bg-white border-y border-gray-100">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold uppercase tracking-wider">
               Real Institutional Results
             </span>
-            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mt-3 mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-3">
               What School &amp; University Leaders Say
             </h2>
-            <p className="text-gray-600 text-base">
+            <p className="text-gray-600 text-xs sm:text-sm font-normal">
               Hear from educators, design professors, and administrators who transformed their campuses with Nest N Nurture.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm space-y-4 relative flex flex-col justify-between">
-              <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-3 relative flex flex-col justify-between">
+              <div className="space-y-2.5">
                 <div className="flex items-center gap-1 text-amber-400">
-                  <Star size={16} className="fill-amber-400" />
-                  <Star size={16} className="fill-amber-400" />
-                  <Star size={16} className="fill-amber-400" />
-                  <Star size={16} className="fill-amber-400" />
-                  <Star size={16} className="fill-amber-400" />
+                  <Star size={14} className="fill-amber-400" />
+                  <Star size={14} className="fill-amber-400" />
+                  <Star size={14} className="fill-amber-400" />
+                  <Star size={14} className="fill-amber-400" />
+                  <Star size={14} className="fill-amber-400" />
                 </div>
-                <p className="text-gray-700 text-sm italic leading-relaxed">
+                <p className="text-gray-700 text-xs italic leading-relaxed font-normal">
                   "The Nest N Nurture bird house workshop brought incredible energy to our school. Over 150 students from Class 5th to 10th built wooden habitats with their own hands. Our campus trees are now full of life!"
                 </p>
               </div>
-              <div className="pt-4 border-t border-gray-100 flex items-center gap-3">
+              <div className="pt-3 border-t border-gray-100 flex items-center gap-2.5">
                 <img
                   src="/workshops/logos/uss-logo.png"
                   alt="Unique School of Science Logo"
-                  className="w-12 h-12 rounded-full object-cover border border-gray-200 shadow-sm flex-shrink-0"
+                  className="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-xs flex-shrink-0"
                 />
                 <div>
-                  <h4 className="text-sm font-extrabold text-gray-900">Unique School of Science</h4>
-                  <p className="text-xs text-gray-500">School Administration, Nadiad</p>
+                  <h4 className="text-xs font-bold text-gray-900">Unique School of Science</h4>
+                  <p className="text-[11px] text-gray-500 font-medium">School Administration, Nadiad</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm space-y-4 relative flex flex-col justify-between">
-              <div className="space-y-3">
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-3 relative flex flex-col justify-between">
+              <div className="space-y-2.5">
                 <div className="flex items-center gap-1 text-amber-400">
-                  <Star size={16} className="fill-amber-400" />
-                  <Star size={16} className="fill-amber-400" />
-                  <Star size={16} className="fill-amber-400" />
-                  <Star size={16} className="fill-amber-400" />
-                  <Star size={16} className="fill-amber-400" />
+                  <Star size={14} className="fill-amber-400" />
+                  <Star size={14} className="fill-amber-400" />
+                  <Star size={14} className="fill-amber-400" />
+                  <Star size={14} className="fill-amber-400" />
+                  <Star size={14} className="fill-amber-400" />
                 </div>
-                <p className="text-gray-700 text-sm italic leading-relaxed">
+                <p className="text-gray-700 text-xs italic leading-relaxed font-normal">
                   "Archana and her team delivered a masterclass in bio-design and space makeover. Our undergraduate students gained hands-on experience building permanent microclimate bird structures on campus."
                 </p>
               </div>
-              <div className="pt-4 border-t border-gray-100 flex items-center gap-3">
+              <div className="pt-3 border-t border-gray-100 flex items-center gap-2.5">
                 <img
                   src="/workshops/logos/anant-logo.png"
                   alt="Anant National University Logo"
-                  className="w-12 h-12 rounded-lg object-contain bg-white p-1 border border-gray-200 shadow-sm flex-shrink-0"
+                  className="w-10 h-10 rounded-lg object-contain bg-white p-0.5 border border-gray-200 shadow-xs flex-shrink-0"
                 />
                 <div>
-                  <h4 className="text-sm font-extrabold text-gray-900">Anant National University</h4>
-                  <p className="text-xs text-gray-500">Design Faculty, Ahmedabad</p>
+                  <h4 className="text-xs font-bold text-gray-900">Anant National University</h4>
+                  <p className="text-[11px] text-gray-500 font-medium">Design Faculty, Ahmedabad</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm space-y-4 relative flex flex-col justify-between">
-              <div className="space-y-3">
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-3 relative flex flex-col justify-between">
+              <div className="space-y-2.5">
                 <div className="flex items-center gap-1 text-amber-400">
-                  <Star size={16} className="fill-amber-400" />
-                  <Star size={16} className="fill-amber-400" />
-                  <Star size={16} className="fill-amber-400" />
-                  <Star size={16} className="fill-amber-400" />
-                  <Star size={16} className="fill-amber-400" />
+                  <Star size={14} className="fill-amber-400" />
+                  <Star size={14} className="fill-amber-400" />
+                  <Star size={14} className="fill-amber-400" />
+                  <Star size={14} className="fill-amber-400" />
+                  <Star size={14} className="fill-amber-400" />
                 </div>
-                <p className="text-gray-700 text-sm italic leading-relaxed">
+                <p className="text-gray-700 text-xs italic leading-relaxed font-normal">
                   "The upcycling tin can and tote bag workshops engaged all our participants. It combined environmental education with genuine creative joy. Highly recommended for any educational institution."
                 </p>
               </div>
-              <div className="pt-4 border-t border-gray-100 flex items-center gap-3">
+              <div className="pt-3 border-t border-gray-100 flex items-center gap-2.5">
                 <img
                   src="/workshops/logos/campleo-logo.png"
                   alt="Camp Leo Logo"
-                  className="w-12 h-12 rounded-full object-cover border border-gray-200 shadow-sm flex-shrink-0"
+                  className="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-xs flex-shrink-0"
                 />
                 <div>
-                  <h4 className="text-sm font-extrabold text-gray-900">Camp Leo Jungle Theme Resorts</h4>
-                  <p className="text-xs text-gray-500">Resort Eco-Retreat &amp; Eco-Club Lead</p>
+                  <h4 className="text-xs font-bold text-gray-900">Camp Leo Jungle Theme Resorts</h4>
+                  <p className="text-[11px] text-gray-500 font-medium">Resort Eco-Retreat &amp; Eco-Club Lead</p>
                 </div>
               </div>
             </div>
@@ -1026,20 +1029,18 @@ Additional Notes: ${formState.notes || 'None'}`;
       {/* ══════════════════════════════════════════
           8. CONTACT & DIRECT COLLABORATION CTA
       ══════════════════════════════════════════ */}
-      <section className="py-20 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div className="p-10 md:p-16 rounded-3xl bg-white border border-gray-200 relative overflow-hidden shadow-lg">
-          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4">Let's Bring Creativity to Your Campus</h2>
-          <p className="text-gray-600 text-base max-w-2xl mx-auto mb-8 font-normal">
+      <section className="py-12 md:py-16 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="p-8 md:p-12 rounded-2xl bg-white border border-gray-200 relative overflow-hidden shadow-md">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3">Let's Bring Creativity to Your Campus</h2>
+          <p className="text-gray-600 text-xs sm:text-sm max-w-xl mx-auto mb-6 font-normal leading-relaxed">
             Ready to engage your students or corporate team with high-impact eco workshops? Reach out directly to book dates.
           </p>
 
-
-
           <button
             onClick={() => handleOpenLeadModal('Custom Proposal Request')}
-            className="inline-flex items-center gap-2 bg-[#CCFF00] text-black px-8 py-4 rounded-full text-sm font-black hover:scale-105 transition-all shadow-xl shadow-lime-200 border border-black/10 cursor-pointer"
+            className="inline-flex items-center gap-2 bg-[#CCFF00] text-black px-6 py-3 rounded-full text-xs sm:text-sm font-bold hover:scale-105 transition-all shadow-md shadow-lime-200/80 border border-black/10 cursor-pointer"
           >
-            Submit Custom Proposal Request <ArrowRight size={16} />
+            Submit Custom Proposal Request <ArrowRight size={15} />
           </button>
         </div>
       </section>
