@@ -95,49 +95,37 @@ const OFFERINGS = [
 
 const GROUP_PHOTOS = [
   {
-    src: '/workshops/workshops group images.png',
+    src: '/workshops/campus/campus1.png',
     title: 'Bird House Crafting Group Action',
     institution: 'Unique School of Science (Nadiad)',
-    caption: 'Class 5th–10th students assembling and painting eco-wooden bird houses'
+    caption: 'Students assembling and painting eco-wooden bird houses'
   },
   {
-    src: '/workshops/workshops group images2.png',
+    src: '/workshops/campus/campus2.png',
     title: 'School Campus Group Showcase',
     institution: 'Unique School of Science (Nadiad)',
     caption: 'Students displaying finished bird houses before campus installation'
   },
   {
-    src: '/workshops/innovation installtion and space makeover 1.png',
+    src: '/workshops/campus/campus3.png',
     title: 'Campus Space Makeover & Bio-Art',
     institution: 'Anant National University (Ahmedabad)',
     caption: 'University students collaborating on permanent campus bio-installations'
   },
   {
-    src: '/workshops/innovation installtion and space makeover 2.png',
-    title: 'Upcycled Outdoor Garden Installation',
+    src: '/workshops/campus/campus4.png',
+    title: 'Eco-Craft Workshop Assembly',
     institution: 'Anant National University (Ahmedabad)',
-    caption: 'Creating upcycled planters and green living structures on university grounds'
+    caption: 'Hands-on crafting with natural building materials'
   },
   {
-    src: '/workshops/innovation installtion and space makeover 3.png',
-    title: 'Campus Bio-Habitat Architecture',
-    institution: 'Campus Eco-Initiative',
-    caption: 'Design students installing micro-climate bird nesting units'
-  },
-  {
-    src: '/workshops/innovation installtion and space makeover 4.png',
+    src: '/workshops/campus/campus5.png',
     title: 'Environmental Design & Leadership',
     institution: 'Campus Outdoor Workshop',
     caption: 'Fostering environmental leadership through hands-on team projects'
   },
   {
-    src: '/workshops/innovation installtion and space makeover 5.png',
-    title: 'Eco-Craft Workshop Assembly',
-    institution: 'Unique School of Science (Nadiad)',
-    caption: 'Hands-on crafting session with natural building materials'
-  },
-  {
-    src: '/workshops/innovation installtion and space makeover 6.png',
+    src: '/workshops/campus/campus6.png',
     title: 'Permanent Campus Installation Grid',
     institution: 'Anant National University (Ahmedabad)',
     caption: 'Completed bird house and feeder grid integrated into campus trees'
@@ -374,42 +362,7 @@ Additional Notes: ${formState.notes || 'None'}`;
             </div>
           </div>
 
-          {/* Hero Demo Showcase Banner (Diagram Alignment: Product Demo / Video Showcase) */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="max-w-4xl mx-auto rounded-3xl overflow-hidden border border-gray-200 shadow-2xl bg-gray-950 p-2 sm:p-4 group relative"
-          >
-            <div className="relative aspect-[16/9] rounded-2xl overflow-hidden bg-black flex items-center justify-center">
-              <img
-                src="/workshops/workshops group images.png"
-                alt="Nest N Nurture Workshops in Action"
-                className="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-              
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 space-y-4">
-                <button
-                  onClick={() => handleOpenLeadModal('Hero Demo Play Request')}
-                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#CCFF00] hover:bg-white text-black flex items-center justify-center shadow-2xl transition transform hover:scale-110"
-                >
-                  <span className="text-black font-black text-xl ml-1">▶</span>
-                </button>
-                <div>
-                  <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-white/20">
-                    Watch Workshop Live Action
-                  </span>
-                  <h3 className="text-xl sm:text-3xl font-black text-white mt-2">
-                    See How Students Construct Bird Habitats Live
-                  </h3>
-                  <p className="text-xs text-gray-300 max-w-md mx-auto hidden sm:block">
-                    Unique School of Science &amp; Anant National University campus transformation highlights.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+
         </div>
       </section>
 
@@ -438,7 +391,7 @@ Additional Notes: ${formState.notes || 'None'}`;
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: idx * 0.08 }}
-              onClick={() => setActivePhotoModal(photo.src)}
+              onClick={() => handleOpenLeadModal('Campus Transformation Photo — Book Similar Workshop')}
               className="group relative rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer border border-gray-200 h-72 bg-gray-100"
             >
               <img
