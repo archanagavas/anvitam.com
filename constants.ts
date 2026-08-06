@@ -1,4 +1,53 @@
-import { Project, BlogPost, TeamMember, Award, Testimonial, ProcessStep, Service, DigitalProduct, EstimatorService, PartnerBrand } from './types';
+import { Project, BlogPost, TeamMember, Award, Testimonial, ProcessStep, Service, DigitalProduct, EstimatorService, PartnerBrand, Workshop } from './types';
+
+export const INITIAL_WORKSHOPS: Workshop[] = [
+  {
+    id: 'w-1',
+    title: 'Bird House Architecture & Campus Space Makeover',
+    organization: 'Unique School of Science, Nadiad',
+    location: 'Nadiad, Gujarat',
+    date: '2025',
+    category: 'School',
+    attendeesCount: '150+ Students (Class 5th - 10th)',
+    offerings: [
+      'Bird House Making',
+      'Space Makeover',
+      'Bird Feeder Making',
+      'Plastic Waste Transformation'
+    ],
+    description: 'Hands-on creative installation workshop conducted with students from Class 5th to 10th. Students built custom bird houses, crafted eco-feeders, and transformed outdoor campus spaces into vibrant, bird-friendly living installations.',
+    images: [
+      '/workshops/bird house making.png',
+      '/workshops/innovation installtion and space makeover 1.png',
+      '/workshops/workshops group images.png',
+      '/workshops/bird feeder making.png'
+    ],
+    status: 'published',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'w-2',
+    title: 'Bird House Architecture & Campus Installation',
+    organization: 'Anant National University, Ahmedabad',
+    location: 'Ahmedabad, Gujarat',
+    date: '2024',
+    category: 'College',
+    attendeesCount: 'College Design & Architecture Students',
+    offerings: [
+      'Bird House Architecture',
+      'Campus Installation',
+      'Natural Materials Crafting'
+    ],
+    description: 'Immersive architectural workshop with college students at Anant National University. Students designed, crafted, and permanently installed climate-responsive bird houses across the university green spaces.',
+    images: [
+      '/workshops/workshops group images2.png',
+      '/workshops/innovation installtion and space makeover 2.png',
+      '/workshops/innovation installtion and space makeover 3.png'
+    ],
+    status: 'published',
+    createdAt: new Date().toISOString(),
+  }
+];
 
 export const INITIAL_PARTNERS: PartnerBrand[] = [
   { id: 'p1', name: 'yourweb3guy', icon: '🌿', website: 'https://anvitam.com' },

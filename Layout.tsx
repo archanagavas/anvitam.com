@@ -20,11 +20,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const navLinks = [
     { name: 'Home', path: '/' },
+    { name: 'About', path: '/why' },
     { name: 'Services', path: '/services' },
+    { name: 'Workshops', path: '/workshops' },
     { name: 'Projects', path: '/projects' },
-    { name: 'Approach', path: '/#method' },
-    { name: 'About', path: '/team' },
-    { name: 'Journal', path: '/blog' },
+    { name: 'Shop', path: '/shop' },
+    { name: 'Blog', path: '/blog' },
   ];
 
   return (

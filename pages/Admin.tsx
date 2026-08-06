@@ -11,11 +11,12 @@ import {
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { generateSitemapXml, generateLlmsTxt, generateLlmsFullTxt, downloadFile } from '../utils/seoGenerator';
-import { BlogPost, Project, Service, DigitalProduct, Testimonial, PartnerBrand } from '../types';
+import { BlogPost, Project, Service, DigitalProduct, Testimonial, PartnerBrand, Workshop } from '../types';
 import ProjectEditor from '../components/ProjectEditor';
 import ServiceEditor from '../components/ServiceEditor';
 import ProductEditor from '../components/ProductEditor';
 import EstimatorEditor from '../components/EstimatorEditor';
+import WorkshopEditor from '../components/WorkshopEditor';
 
 // ── Mock Analytics ────────────────────────────────────────────────────
 const ANALYTICS_DATA = [
@@ -1184,7 +1185,7 @@ const Admin: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const [activeTab, setActiveTab] = useState<'projects' | 'blog' | 'analytics' | 'shop' | 'services' | 'messages' | 'seo' | 'testimonials' | 'partners' | 'estimator' | 'estimator-pricing'>('analytics');
+  const [activeTab, setActiveTab] = useState<'projects' | 'blog' | 'analytics' | 'shop' | 'services' | 'messages' | 'seo' | 'testimonials' | 'partners' | 'estimator' | 'estimator-pricing' | 'workshops'>('analytics');
   const [seoStatus, setSeoStatus] = useState<null | 'generating' | 'done'>(null);
   const [previewFile, setPreviewFile] = useState<{ name: string; content: string } | null>(null);
 
@@ -1211,6 +1212,9 @@ const Admin: React.FC = () => {
 
   const [partnerView, setPartnerView] = useState<'list' | 'editor'>('list');
   const [editingPartner, setEditingPartner] = useState<PartnerBrand | null>(null);
+
+  const [workshopView, setWorkshopView] = useState<'list' | 'editor'>('list');
+  const [editingWorkshop, setEditingWorkshop] = useState<Workshop | null>(null);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -1249,11 +1253,12 @@ const Admin: React.FC = () => {
   }, []);
 
   const {
-    projects, blogs, services, digitalProducts, messages, testimonials, partners, isDbConnected,
+    projects, blogs, services, digitalProducts, messages, testimonials, partners, workshops, isDbConnected,
     addProject, updateProject, addBlog, updateBlog, addService, updateService, 
     addDigitalProduct, updateDigitalProduct, deleteProject, deleteBlog, deleteService, 
     deleteDigitalProduct, deleteMessage, addTestimonial, updateTestimonial, deleteTestimonial,
-    addPartner, updatePartner, deletePartner, refreshFromDb
+    addPartner, updatePartner, deletePartner,
+    addWorkshop, updateWorkshop, deleteWorkshop, refreshFromDb
   } = useContent();
 
   const [newItemTitle, setNewItemTitle] = useState('');
@@ -1491,6 +1496,18 @@ const Admin: React.FC = () => {
     setEditingProduct(null);
   };
 
+  const handleWorkshopSave = (workshop: Workshop) => {
+    if (editingWorkshop) {
+      updateWorkshop(workshop);
+      showToast('Workshop updated successfully!');
+    } else {
+      addWorkshop(workshop);
+      showToast('Workshop created successfully!');
+    }
+    setWorkshopView('list');
+    setEditingWorkshop(null);
+  };
+
   // ── Auth checking splash ──────────────────────────────────────────
   if (isCheckingAuth) {
     return (
@@ -1654,6 +1671,7 @@ const Admin: React.FC = () => {
           <NavButton id="blog" icon={FileText} label="Journal / Blog" />
           <NavButton id="shop" icon={ShoppingBag} label="Shop / Products" />
           <NavButton id="services" icon={Briefcase} label="Services" />
+          <NavButton id="workshops" icon={Sparkles} label="Nest N Nurture Workshops" />
           <NavButton id="testimonials" icon={MessageCircle} label="Testimonials" />
           <NavButton id="partners" icon={Building2} label="Partner Brands" />
           <NavButton id="seo" icon={Globe} label="SEO Files" />
@@ -2983,6 +3001,105 @@ const Admin: React.FC = () => {
             </div>
           );
         })()}
+
+        {/* ── WORKSHOPS TAB ── */}
+        {activeTab === 'workshops' && (
+          <div className="space-y-6 animate-fade-in">
+            {workshopView === 'editor' ? (
+              <WorkshopEditor
+                initial={editingWorkshop}
+                onSave={handleWorkshopSave}
+                onCancel={() => {
+                  setWorkshopView('list');
+                  setEditingWorkshop(null);
+                }}
+              />
+            ) : (
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">Nest N Nurture Workshops</h2>
+                    <p className="text-xs text-gray-500 mt-1">Manage school, college, and corporate workshops, offerings & photos</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setEditingWorkshop(null);
+                      setWorkshopView('editor');
+                    }}
+                    className="inline-flex items-center gap-2 bg-black hover:bg-gray-800 text-white text-xs font-bold px-5 py-3 rounded-xl transition shadow-sm"
+                  >
+                    <Plus size={16} /> Add New Workshop
+                  </button>
+                </div>
+
+                {workshops.length === 0 ? (
+                  <div className="bg-white rounded-2xl p-12 text-center border border-gray-200">
+                    <p className="text-gray-500 text-sm">No workshops added yet. Click "Add New Workshop" to create your first entry.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {workshops.map((w) => (
+                      <div key={w.id} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col justify-between p-6">
+                        <div>
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="px-3 py-1 bg-gray-100 text-gray-800 text-xs font-bold rounded-lg uppercase tracking-wider">
+                              {w.category}
+                            </span>
+                            <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${w.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                              {w.status}
+                            </span>
+                          </div>
+                          <h3 className="text-lg font-bold text-gray-900 mb-1">{w.title}</h3>
+                          <p className="text-xs text-[#111] font-semibold mb-2">{w.organization} • {w.location} ({w.date})</p>
+                          <p className="text-xs text-gray-600 line-clamp-3 mb-4">{w.description}</p>
+                          {w.offerings && w.offerings.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mb-4">
+                              {w.offerings.map((off, idx) => (
+                                <span key={idx} className="text-[11px] bg-gray-50 border border-gray-200 text-gray-700 px-2.5 py-0.5 rounded-md font-medium">
+                                  {off}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
+                          <span className="text-xs text-gray-400 font-medium">
+                            {w.images ? `${w.images.length} photos` : 'No photos'}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                setEditingWorkshop(w);
+                                setWorkshopView('editor');
+                              }}
+                              className="p-2 text-gray-600 hover:text-black hover:bg-gray-100 rounded-lg transition"
+                              title="Edit Workshop"
+                            >
+                              <Edit2 size={16} />
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (confirm(`Are you sure you want to delete "${w.title}"?`)) {
+                                  deleteWorkshop(w.id);
+                                  showToast('Workshop deleted');
+                                }
+                              }}
+                              className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition"
+                              title="Delete Workshop"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
       </div>
 

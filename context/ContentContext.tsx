@@ -7,8 +7,8 @@
  *  3. Admin mutations hit the API and update local state
  */
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Project, BlogPost, Service, DigitalProduct, ContactMessage, Testimonial, EstimatorService, PartnerBrand } from '../types';
-import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES, DIGITAL_PRODUCTS, INITIAL_TESTIMONIALS, INITIAL_ESTIMATOR_SERVICES, INITIAL_PARTNERS } from '../constants';
+import { Project, BlogPost, Service, DigitalProduct, ContactMessage, Testimonial, EstimatorService, PartnerBrand, Workshop } from '../types';
+import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES, DIGITAL_PRODUCTS, INITIAL_TESTIMONIALS, INITIAL_ESTIMATOR_SERVICES, INITIAL_PARTNERS, INITIAL_WORKSHOPS } from '../constants';
 
 // ── Auth token helpers (JWT stored in sessionStorage — auto-clears on tab close) ──
 export const getAuthToken = (): string | null => {
@@ -42,6 +42,7 @@ interface ContentContextType {
   testimonials: Testimonial[];
   estimatorServices: EstimatorService[];
   partners: PartnerBrand[];
+  workshops: Workshop[];
   isDbConnected: boolean;
   isInitialSyncDone: boolean;
   addProject: (project: Project) => Promise<void>;
@@ -67,6 +68,9 @@ interface ContentContextType {
   addPartner: (p: PartnerBrand) => Promise<void>;
   updatePartner: (p: PartnerBrand) => Promise<void>;
   deletePartner: (id: string) => Promise<void>;
+  addWorkshop: (w: Workshop) => Promise<void>;
+  updateWorkshop: (w: Workshop) => Promise<void>;
+  deleteWorkshop: (id: string) => Promise<void>;
   refreshFromDb: () => Promise<void>;
 }
 
@@ -139,6 +143,9 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   );
   const [partners, setPartners] = useState<PartnerBrand[]>(() =>
     loadFromStorage<PartnerBrand>('anvitam_partners_v1', INITIAL_PARTNERS)
+  );
+  const [workshops, setWorkshops] = useState<Workshop[]>(() =>
+    loadFromStorage<Workshop>('anvitam_workshops_v1', INITIAL_WORKSHOPS)
   );
   const [isDbConnected, setIsDbConnected] = useState(false);
   const [isInitialSyncDone, setIsInitialSyncDone] = useState(false);
@@ -610,13 +617,52 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
+  const addWorkshop = async (w: Workshop) => {
+    setWorkshops(prev => [w, ...prev]);
+    const token = getAuthToken();
+    if (token) {
+      try {
+        await fetch('/api/workshops', { method: 'POST', headers: authHeaders(), body: JSON.stringify(w) });
+      } catch (err) {
+        console.error('Failed to save workshop to DB:', err);
+      }
+    }
+  };
+
+  const updateWorkshop = async (w: Workshop) => {
+    setWorkshops(prev => prev.map(item => item.id === w.id ? w : item));
+    const token = getAuthToken();
+    if (token) {
+      try {
+        await fetch(`/api/workshops/${w.id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(w) });
+      } catch (err) {
+        console.error('Failed to update workshop in DB:', err);
+      }
+    }
+  };
+
+  const deleteWorkshop = async (id: string) => {
+    setWorkshops(prev => prev.filter(item => item.id !== id));
+    const token = getAuthToken();
+    if (token) {
+      try {
+        await fetch(`/api/workshops/${id}`, { method: 'DELETE', headers: authHeaders() });
+      } catch (err) {
+        console.error('Failed to delete workshop from DB:', err);
+      }
+    }
+  };
+
+  useEffect(() => { saveToStorage('anvitam_workshops_v1', workshops); }, [workshops]);
+
   return (
     <ContentContext.Provider value={{
-      projects, blogs, services, digitalProducts, messages, testimonials, estimatorServices, partners,
+      projects, blogs, services, digitalProducts, messages, testimonials, estimatorServices, partners, workshops,
       isDbConnected, isInitialSyncDone,
       addProject, updateProject, addBlog, updateBlog, addService, updateService, addDigitalProduct, updateDigitalProduct, addMessage, addTestimonial, updateTestimonial,
       addEstimatorService, updateEstimatorService, deleteEstimatorService,
       addPartner, updatePartner, deletePartner,
+      addWorkshop, updateWorkshop, deleteWorkshop,
       deleteProject, deleteBlog, deleteService, deleteDigitalProduct, deleteMessage, deleteTestimonial,
       refreshFromDb,
     }}>

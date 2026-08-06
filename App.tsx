@@ -15,6 +15,7 @@ import Terms from './pages/Terms';
 import Services from './pages/Services'; // New
 import ServiceDetail from './pages/ServiceDetail'; // New
 import Shop from './pages/Shop'; // New
+import Workshops from './pages/Workshops'; // New
 import Admin from './pages/Admin';
 import NotFound from './pages/NotFound';
 import PageTransition from './components/PageTransition';
@@ -147,6 +148,7 @@ const App: React.FC = () => {
                           <Route path="/team" element={<Navigate to="/why" replace />} />
                           <Route path="/services" element={<Services />} />
                           <Route path="/services/:id" element={<ServiceDetail />} />
+                          <Route path="/workshops" element={<Workshops />} />
                           <Route path="/shop" element={<Shop />} />
                           <Route path="/blog" element={<Blog />} />
                           <Route path="/blog/:id" element={<BlogDetail />} />

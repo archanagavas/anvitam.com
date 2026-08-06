@@ -182,6 +182,23 @@ async function initDatabaseInternal() {
     );
   `;
 
+  await neonClient`
+    CREATE TABLE IF NOT EXISTS workshops (
+      id              TEXT PRIMARY KEY,
+      title           TEXT NOT NULL,
+      organization    TEXT NOT NULL DEFAULT '',
+      location        TEXT NOT NULL DEFAULT '',
+      date            TEXT NOT NULL DEFAULT '',
+      category        TEXT NOT NULL DEFAULT 'School',
+      description     TEXT NOT NULL DEFAULT '',
+      attendees_count TEXT DEFAULT '',
+      offerings       JSONB DEFAULT '[]',
+      images          JSONB DEFAULT '[]',
+      status          TEXT NOT NULL DEFAULT 'published',
+      created_at      TIMESTAMPTZ DEFAULT now()
+    );
+  `;
+
   // Seed initial partners if none exist
   const existingPartners = await neonClient`SELECT id FROM partners LIMIT 1`;
   if (existingPartners.length === 0) {

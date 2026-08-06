@@ -169,3 +169,18 @@ export interface EstimatorService {
   subs: string[];
   baseINR: number[];
 }
+
+export interface Workshop {
+  id: string;
+  title: string;
+  organization: string;
+  location: string;
+  date: string;
+  category: 'School' | 'College' | 'Workplace' | 'Community';
+  description: string;
+  attendeesCount?: string;
+  offerings?: string[];
+  images: string[];
+  status: 'published' | 'draft';
+  createdAt?: string;
+}
