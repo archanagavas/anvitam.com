@@ -13,12 +13,9 @@ import {
   Phone, 
   Mail, 
   Instagram, 
-  Award, 
   X,
   Send,
-  Layers,
-  HeartHandshake,
-  Image as ImageIcon
+  Star
 } from 'lucide-react';
 import { useContent } from '../context/ContentContext';
 
@@ -58,69 +55,29 @@ const OFFERINGS = [
     icon: '🎐',
     image: '/workshops/offerings/wind-chime.png',
     desc: 'Creating melodious outdoor wind chimes using upcycled metal, bamboo, and natural shell elements.'
-  },
-  {
-    title: 'Tin Can Art',
-    icon: '🥫',
-    image: '/workshops/offerings/upcycling.png',
-    desc: 'Transforming discarded tin food cans into decorative lantern lights and desktop succulent planters.'
-  },
-  {
-    title: 'Rainbow Twisters',
-    icon: '🌈',
-    image: '/workshops/offerings/wind-chime.png',
-    desc: 'Vibrant kinetic wind spinners crafted from eco-materials to bring dynamic color to school courtyards.'
-  },
-  {
-    title: 'DIY Painted Small Rocks',
-    icon: '🪨',
-    image: '/workshops/offerings/space-makeover.png',
-    desc: 'Botanical rock painting to label herb gardens and create inspirational pathway borders.'
-  },
-  {
-    title: 'DIY Straw Art',
-    icon: '🌾',
-    image: '/workshops/offerings/bird-feeder.png',
-    desc: 'Crafting intricate bio-degradable straw geometries and traditional natural weaving patterns.'
-  },
-  {
-    title: 'Glass Bulb Crafts',
-    icon: '💡',
-    image: '/workshops/offerings/bird-house.png',
-    desc: 'Repurposing fused lightbulbs into delicate hydroponic plant propagators and mini terrariums.'
   }
 ];
 
-const GROUP_PHOTOS = [
+const GALLERY_PHOTOS = [
   {
-    src: '/workshops/group/group1.png',
-    title: 'Bird House Crafting in Action',
-    caption: 'Students assembling and painting eco-wooden bird houses'
+    src: '/workshops/gallery/gallery1.png',
+    title: 'School Campus Courtyard Makeover',
+    caption: 'Handcrafted wooden birdhouse installation nestled in green campus trees'
   },
   {
-    src: '/workshops/group/group2.png',
-    title: 'School Campus Group Workshop',
-    caption: 'Class 5th–10th students showcasing their finished bird habitats'
+    src: '/workshops/gallery/gallery2.png',
+    title: 'University Design-Build Workshop',
+    caption: 'College architecture students assembling sustainable biophilic structures'
   },
   {
-    src: '/workshops/group/group3.png',
-    title: 'Innovation & Space Makeover',
-    caption: 'Students collaborating on outdoor campus installations'
+    src: '/workshops/gallery/gallery3.png',
+    title: 'Eco-Upcycling Garden Installation',
+    caption: 'Vibrant upcycled plant pots and habitat boxes in outdoor school space'
   },
   {
-    src: '/workshops/group/group4.png',
-    title: 'Hands-On Eco-Crafting',
-    caption: 'Creating upcycled planters and green living structures'
-  },
-  {
-    src: '/workshops/group/group5.png',
-    title: 'University Campus Installation',
-    caption: 'Design students building bird house grids on campus trees'
-  },
-  {
-    src: '/workshops/group/group6.png',
-    title: 'Teamwork & Sustainability',
-    caption: 'Fostering environmental leadership through team projects'
+    src: '/workshops/gallery/gallery4.png',
+    title: 'Hands-On Student Leadership',
+    caption: 'Young students proudly displaying handcrafted wooden bird habitats'
   }
 ];
 
@@ -249,7 +206,7 @@ export default function Workshops() {
   };
 
   return (
-    <div className="w-full bg-white text-[#111] min-h-screen font-sans overflow-hidden">
+    <div className="w-full bg-white text-[#111] font-sans overflow-hidden min-h-screen">
       <Helmet>
         <title>Nest N Nurture Workshops | Anvitam Campus & B2B Eco Bootcamps</title>
         <meta name="description" content="Nest N Nurture by Anvitam offers hands-on bird house architecture, campus space makeovers, and eco-craft workshops for schools, colleges, and workplaces." />
@@ -257,26 +214,41 @@ export default function Workshops() {
       </Helmet>
 
       {/* ══════════════════════════════════════════
-          HERO SECTION — White & Bright Design
+          HERO SECTION — Home.tsx Aesthetic Matching 1:1
       ══════════════════════════════════════════ */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-gradient-to-b from-gray-50 via-white to-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+      <section className="relative pt-36 pb-24 md:pt-44 md:pb-32 bg-white border-b border-gray-100">
+        <div className="max-w-5xl mx-auto px-6 text-center">
+          {/* Trust Pill Badge */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#CCFF00] text-[#111] text-xs font-black uppercase tracking-widest mb-6 shadow-sm"
+            className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-gray-100 border border-gray-200 shadow-sm text-[#111] text-xs font-semibold mb-8 hover:scale-[1.02] transition-transform cursor-pointer"
           >
-            <Sparkles size={14} /> Nest N Nurture Workshops
+            <div className="flex -space-x-2 overflow-hidden">
+              <img className="inline-block h-6 w-6 rounded-full ring-2 ring-white object-cover" src="/avatars/client1.jpg" alt="Client" />
+              <img className="inline-block h-6 w-6 rounded-full ring-2 ring-white object-cover" src="/avatars/client2.jpg" alt="Client" />
+              <img className="inline-block h-6 w-6 rounded-full ring-2 ring-white object-cover" src="/avatars/client3.jpg" alt="Client" />
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="flex text-amber-500 text-xs">
+                <Star size={12} fill="currentColor" />
+                <Star size={12} fill="currentColor" />
+                <Star size={12} fill="currentColor" />
+                <Star size={12} fill="currentColor" />
+                <Star size={12} fill="currentColor" />
+              </div>
+              <span className="text-[#111] font-bold text-xs">Nest N Nurture Campus Bootcamps</span>
+            </div>
           </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
-            className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6 max-w-5xl mx-auto text-gray-900"
+            className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-[#111] leading-[1.12] mb-6"
           >
-            Unleashing Creativity & Eco-Consciousness Through <span className="bg-gradient-to-r from-emerald-600 to-green-500 bg-clip-text text-transparent">Hands-On Workshops</span>
+            Hands-On Eco Workshops for <span className="bg-[#CCFF00] px-3 py-1 rounded-2xl text-[#111]">Schools & Campuses</span>
           </motion.h1>
 
           <motion.p
@@ -285,7 +257,7 @@ export default function Workshops() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto mb-10 leading-relaxed font-normal"
           >
-            Transforming school campuses, colleges, and workplaces with bird house architecture, plastic upcycling, and vibrant outdoor space makeovers.
+            Empowering students, universities, and corporate teams with bird house architecture, plastic upcycling, and outdoor campus space makeovers.
           </motion.p>
 
           <motion.div
@@ -299,77 +271,77 @@ export default function Workshops() {
                 setSelectedPlan('General Inquiry');
                 setInquiryModalOpen(true);
               }}
-              className="inline-flex items-center gap-2 bg-[#CCFF00] text-black px-8 py-4 rounded-full text-base font-extrabold hover:scale-105 transition-all duration-300 shadow-xl shadow-lime-200"
+              className="inline-flex items-center gap-2 bg-[#CCFF00] text-[#050505] px-8 py-4 rounded-full text-sm font-bold hover:scale-105 transition-transform duration-300 cursor-pointer shadow-sm"
             >
               Book Workshop for Campus <ArrowRight size={18} />
             </button>
             <a
               href="#offerings"
-              className="inline-flex items-center gap-2 border border-gray-300 text-gray-800 hover:bg-gray-100 px-8 py-4 rounded-full text-base font-bold transition-all duration-300"
+              className="inline-flex items-center gap-2 border border-[#111] text-[#111] bg-transparent px-8 py-4 rounded-full text-sm font-bold hover:bg-[#111] hover:text-white transition-all duration-300 cursor-pointer"
             >
-              Explore 10+ Offerings
+              Explore Creative Offerings
             </a>
           </motion.div>
 
           {/* Stats Bar */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto p-6 rounded-3xl bg-white border border-gray-200 shadow-lg">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto p-6 rounded-3xl bg-gray-50 border border-gray-200">
             <div>
-              <p className="text-3xl md:text-4xl font-extrabold text-gray-900">95%</p>
-              <p className="text-xs text-gray-500 mt-1 uppercase font-bold tracking-wider">Educator Engagement</p>
+              <p className="text-3xl md:text-4xl font-extrabold text-[#111]">95%</p>
+              <p className="text-xs text-gray-500 mt-1 uppercase font-semibold tracking-wider">Student Engagement</p>
             </div>
             <div>
-              <p className="text-3xl md:text-4xl font-extrabold text-gray-900">80%</p>
-              <p className="text-xs text-gray-500 mt-1 uppercase font-bold tracking-wider">Problem-Solving Growth</p>
+              <p className="text-3xl md:text-4xl font-extrabold text-[#111]">80%</p>
+              <p className="text-xs text-gray-500 mt-1 uppercase font-semibold tracking-wider">Problem-Solving Growth</p>
             </div>
             <div>
-              <p className="text-3xl md:text-4xl font-extrabold text-gray-900">500+</p>
-              <p className="text-xs text-gray-500 mt-1 uppercase font-bold tracking-wider">Student Capacity</p>
+              <p className="text-3xl md:text-4xl font-extrabold text-[#111]">500+</p>
+              <p className="text-xs text-gray-500 mt-1 uppercase font-semibold tracking-wider">Student Capacity</p>
             </div>
             <div>
-              <p className="text-3xl md:text-4xl font-extrabold text-gray-900">100%</p>
-              <p className="text-xs text-gray-500 mt-1 uppercase font-bold tracking-wider">Curriculum Aligned</p>
+              <p className="text-3xl md:text-4xl font-extrabold text-[#111]">100%</p>
+              <p className="text-xs text-gray-500 mt-1 uppercase font-semibold tracking-wider">Hands-On Learning</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* ══════════════════════════════════════════
-          REAL WORKSHOP GROUP PHOTOS SHOWCASE
+          CREATIVE AI GALLERY SHOWCASE
       ══════════════════════════════════════════ */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 max-w-7xl mx-auto px-6">
         <div className="text-center max-w-3xl mx-auto mb-14">
-          <span className="px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-extrabold uppercase tracking-wider">
-            Live Action & Real Impact
+          <span className="px-4 py-1.5 rounded-full bg-gray-100 border border-gray-200 text-[#111] text-xs font-bold uppercase tracking-wider">
+            Live Action & Transformations
           </span>
-          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mt-3 mb-4">
-            Students in Action Across Campuses
+          <h2 className="text-3xl md:text-5xl font-bold text-[#111] mt-4 mb-4 tracking-tight">
+            Past Campus Transformations
           </h2>
-          <p className="text-gray-600 text-base">
-            Real moments from our workshops at Unique School of Science (Nadiad) and Anant National University (Ahmedabad).
+          <p className="text-gray-600 text-base leading-relaxed">
+            Highlights from our workshops conducted at Unique School of Science (Nadiad) and Anant National University (Ahmedabad).
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {GROUP_PHOTOS.map((photo, idx) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+          {GALLERY_PHOTOS.map((photo, idx) => (
             <motion.div
               key={idx}
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: idx * 0.08 }}
+              transition={{ duration: 0.5, delay: idx * 0.1 }}
               onClick={() => setActivePhotoModal(photo.src)}
-              className="group relative rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer border border-gray-150 h-72 bg-gray-100"
+              className="group relative rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-200 h-80 bg-gray-50"
             >
               <img
                 src={photo.src}
                 alt={photo.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90 group-hover:opacity-95 transition-opacity" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <p className="text-xs font-bold text-[#CCFF00] uppercase tracking-wider mb-1">Nest N Nurture Live</p>
-                <h3 className="text-lg font-bold mb-1">{photo.title}</h3>
-                <p className="text-xs text-gray-300 font-normal line-clamp-1">{photo.caption}</p>
+                <p className="text-xs font-bold text-[#CCFF00] uppercase tracking-wider mb-1">Campus Project</p>
+                <h3 className="text-xl font-bold mb-1">{photo.title}</h3>
+                <p className="text-xs text-gray-200 font-normal">{photo.caption}</p>
               </div>
             </motion.div>
           ))}
@@ -379,11 +351,11 @@ export default function Workshops() {
       {/* ══════════════════════════════════════════
           B2B AUDIENCE TAB SECTION
       ══════════════════════════════════════════ */}
-      <section className="py-20 bg-gray-50 border-y border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 bg-gray-50 border-y border-gray-200">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-12">
-            <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-2">Tailored For Institutions</p>
-            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900">Who Are Our Workshops Designed For?</h2>
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Tailored For Institutions</p>
+            <h2 className="text-3xl md:text-5xl font-bold text-[#111] tracking-tight">Who Are Our Workshops Designed For?</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -396,20 +368,20 @@ export default function Workshops() {
                   onClick={() => setSelectedAudience(aud.id as any)}
                   className={`p-8 rounded-3xl cursor-pointer border transition-all duration-300 ${
                     isSelected 
-                      ? 'bg-white border-[#CCFF00] shadow-xl ring-2 ring-[#CCFF00]/40 scale-[1.02]' 
-                      : 'bg-white border-gray-200 hover:border-gray-300 shadow-sm'
+                      ? 'bg-white border-[#111] shadow-lg scale-[1.01]' 
+                      : 'bg-white border-gray-200 hover:border-gray-300 shadow-xs'
                   }`}
                 >
-                  <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-700 mb-6">
-                    <Icon size={28} />
+                  <div className="w-12 h-12 rounded-2xl bg-[#CCFF00] flex items-center justify-center text-[#111] mb-6">
+                    <Icon size={24} />
                   </div>
-                  <p className="text-xs font-extrabold text-emerald-700 uppercase tracking-wider mb-1">{aud.subtitle}</p>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">{aud.title}</h3>
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">{aud.subtitle}</p>
+                  <h3 className="text-2xl font-bold text-[#111] mb-3">{aud.title}</h3>
                   <p className="text-gray-600 text-sm leading-relaxed mb-6">{aud.desc}</p>
                   <div className="space-y-2.5">
                     {aud.benefits.map((b, idx) => (
                       <div key={idx} className="flex items-center gap-2 text-xs text-gray-700 font-medium">
-                        <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
+                        <CheckCircle2 size={15} className="text-[#111] shrink-0" />
                         <span>{b}</span>
                       </div>
                     ))}
@@ -424,11 +396,11 @@ export default function Workshops() {
       {/* ══════════════════════════════════════════
           10+ CREATIVE OFFERINGS MATRIX
       ══════════════════════════════════════════ */}
-      <section id="offerings" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="offerings" className="py-20 max-w-7xl mx-auto px-6">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <p className="text-xs font-extrabold uppercase tracking-widest text-emerald-600 mb-2">Unleashing Creativity</p>
-          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4">Our Unique Workshop Offerings</h2>
-          <p className="text-gray-600 text-base">
+          <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Unleashing Creativity</p>
+          <h2 className="text-3xl md:text-5xl font-bold text-[#111] mb-4 tracking-tight">Our Creative Workshop Offerings</h2>
+          <p className="text-gray-600 text-base leading-relaxed">
             Each workshop is fully customized with raw eco-materials, professional guidance, and permanent campus installations.
           </p>
         </div>
@@ -455,7 +427,7 @@ export default function Workshops() {
               </div>
               <div className="p-6 flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="text-xl font-extrabold text-gray-900 mb-2 group-hover:text-emerald-700 transition-colors">{item.title}</h3>
+                  <h3 className="text-xl font-bold text-[#111] mb-2 group-hover:text-black transition-colors">{item.title}</h3>
                   <p className="text-gray-600 text-sm leading-relaxed">{item.desc}</p>
                 </div>
                 <button
@@ -463,7 +435,7 @@ export default function Workshops() {
                     setSelectedPlan(item.title);
                     setInquiryModalOpen(true);
                   }}
-                  className="mt-6 flex items-center gap-2 text-xs font-extrabold text-emerald-700 hover:text-black transition-colors"
+                  className="mt-6 flex items-center gap-2 text-xs font-bold text-[#111] hover:underline transition-all"
                 >
                   Request Offering Details <ArrowRight size={14} />
                 </button>
@@ -474,178 +446,102 @@ export default function Workshops() {
       </section>
 
       {/* ══════════════════════════════════════════
-          PAST WORKSHOPS SHOWCASE (DYNAMIC FROM DB/CONTEXT)
+          PRICING & SUBSCRIPTION CARDS
       ══════════════════════════════════════════ */}
-      {publishedWorkshops.length > 0 && (
-        <section className="py-20 bg-gray-50 border-t border-gray-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-3xl mx-auto mb-16">
-              <p className="text-xs font-extrabold uppercase tracking-widest text-emerald-600 mb-2">Proven Track Record</p>
-              <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4">Past Campus Transformations</h2>
-              <p className="text-gray-600 text-base">
-                See how we collaborated with schools and design universities to build functional bird habitats and space makeovers.
-              </p>
-            </div>
+      <section className="py-20 bg-gray-50 border-t border-gray-200">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Transparent Pricing</p>
+            <h2 className="text-3xl md:text-5xl font-bold text-[#111] mb-4 tracking-tight">Workshop Pricing & Packages</h2>
+            <p className="text-gray-600 text-base leading-relaxed">
+              Flexible options tailored for single-day campus events, multi-day space transformations, or long-term partnerships.
+            </p>
+          </div>
 
-            <div className="space-y-12">
-              {publishedWorkshops.map((w) => (
-                <div 
-                  key={w.id}
-                  className="rounded-3xl bg-white border border-gray-200 shadow-md p-6 md:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
-                >
-                  <div className="lg:col-span-7 space-y-4">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <span className="px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold">
-                        {w.category}
-                      </span>
-                      <span className="flex items-center gap-1 text-xs text-gray-500 font-semibold">
-                        <MapPin size={13} className="text-emerald-600" /> {w.location}
-                      </span>
-                      <span className="flex items-center gap-1 text-xs text-gray-500 font-semibold">
-                        <Calendar size={13} className="text-emerald-600" /> {w.date}
-                      </span>
-                    </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {PRICING_PLANS.map((plan, idx) => (
+              <div
+                key={idx}
+                className={`rounded-3xl p-8 flex flex-col justify-between border relative transition-all duration-300 ${
+                  plan.popular 
+                    ? 'bg-white border-[#111] shadow-xl scale-[1.02]' 
+                    : 'bg-white border-gray-200 shadow-sm hover:shadow-md'
+                }`}
+              >
+                {plan.popular && (
+                  <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#CCFF00] text-black px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
+                    Most Popular
+                  </span>
+                )}
 
-                    <h3 className="text-2xl md:text-4xl font-extrabold text-gray-900">{w.title}</h3>
-                    <p className="text-sm font-bold text-emerald-700">{w.organization}</p>
-                    <p className="text-gray-600 text-sm leading-relaxed">{w.description}</p>
+                <div>
+                  <h3 className="text-2xl font-bold text-[#111] mb-1">{plan.name}</h3>
+                  <p className="text-xs text-gray-500 mb-6">{plan.tagline}</p>
 
-                    {w.attendeesCount && (
-                      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 text-xs text-gray-800 font-semibold">
-                        <Users size={14} className="text-emerald-600" />
-                        <span>{w.attendeesCount}</span>
-                      </div>
-                    )}
-
-                    {w.offerings && w.offerings.length > 0 && (
-                      <div className="pt-2">
-                        <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Offerings Executed:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {w.offerings.map((offering, idx) => (
-                            <span key={idx} className="px-3 py-1 rounded-lg bg-gray-100 border border-gray-200 text-xs text-gray-700 font-medium">
-                              {offering}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                  <div className="flex items-baseline gap-2 mb-6">
+                    <span className="text-4xl font-extrabold text-[#111]">{plan.price}</span>
+                    <span className="text-xs text-gray-500 font-semibold">{plan.unit}</span>
                   </div>
 
-                  {/* Photo Gallery Grid */}
-                  <div className="lg:col-span-5 grid grid-cols-2 gap-3">
-                    {w.images && w.images.slice(0, 4).map((img, idx) => (
-                      <div key={idx} className={`rounded-2xl overflow-hidden h-36 bg-gray-100 border border-gray-200 ${idx === 0 ? 'col-span-2 h-48' : ''}`}>
-                        <img src={img} alt={`${w.title} highlight ${idx + 1}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+                  <div className="space-y-3 mb-8">
+                    {plan.features.map((f, fIdx) => (
+                      <div key={fIdx} className="flex items-start gap-2.5 text-xs text-gray-700 font-medium">
+                        <CheckCircle2 size={15} className="text-[#111] shrink-0 mt-0.5" />
+                        <span>{f}</span>
                       </div>
                     ))}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
-      {/* ══════════════════════════════════════════
-          PRICING & SUBSCRIPTION CARDS
-      ══════════════════════════════════════════ */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <p className="text-xs font-extrabold uppercase tracking-widest text-emerald-600 mb-2">Investment In Innovation</p>
-          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4">Pricing & Subscription Plans</h2>
-          <p className="text-gray-600 text-base">
-            Flexible options tailored for single-day campus events, multi-day space transformations, or long-term partnerships.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {PRICING_PLANS.map((plan, idx) => (
-            <div
-              key={idx}
-              className={`rounded-3xl p-8 flex flex-col justify-between border relative transition-all duration-300 ${
-                plan.popular 
-                  ? 'bg-white border-[#CCFF00] shadow-2xl ring-2 ring-[#CCFF00]/40 scale-[1.02]' 
-                  : 'bg-white border-gray-200 shadow-sm hover:shadow-md'
-              }`}
-            >
-              {plan.popular && (
-                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#CCFF00] text-black px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-md">
-                  Most Popular
-                </span>
-              )}
-
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-1">{plan.name}</h3>
-                <p className="text-xs text-gray-500 mb-6">{plan.tagline}</p>
-
-                <div className="flex items-baseline gap-2 mb-6">
-                  <span className="text-4xl font-extrabold text-gray-900">{plan.price}</span>
-                  <span className="text-xs text-gray-500 font-semibold">{plan.unit}</span>
-                </div>
-
-                <div className="space-y-3 mb-8">
-                  {plan.features.map((f, fIdx) => (
-                    <div key={fIdx} className="flex items-start gap-2.5 text-xs text-gray-700 font-medium">
-                      <CheckCircle2 size={15} className="text-emerald-600 shrink-0 mt-0.5" />
-                      <span>{f}</span>
-                    </div>
-                  ))}
-                </div>
+                <button
+                  onClick={() => {
+                    setSelectedPlan(plan.name);
+                    setInquiryModalOpen(true);
+                  }}
+                  className={`w-full py-3.5 rounded-full text-xs font-bold transition-all duration-300 flex items-center justify-center gap-2 ${
+                    plan.popular
+                      ? 'bg-[#CCFF00] text-[#050505] hover:scale-105 shadow-sm'
+                      : 'border border-[#111] text-[#111] hover:bg-[#111] hover:text-white'
+                  }`}
+                >
+                  {plan.cta} <ArrowRight size={14} />
+                </button>
               </div>
-
-              <button
-                onClick={() => {
-                  setSelectedPlan(plan.name);
-                  setInquiryModalOpen(true);
-                }}
-                className={`w-full py-3.5 rounded-full text-xs font-bold transition-all duration-300 flex items-center justify-center gap-2 ${
-                  plan.popular
-                    ? 'bg-[#CCFF00] text-black hover:scale-105 shadow-md shadow-lime-200'
-                    : 'border border-gray-300 text-gray-800 hover:bg-gray-100'
-                }`}
-              >
-                {plan.cta} <ArrowRight size={14} />
-              </button>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-12 p-6 rounded-2xl bg-gray-50 border border-gray-200 text-center text-xs text-gray-600 space-y-2">
-          <p><strong className="text-gray-900 font-bold">Payment Terms:</strong> 50% upfront upon booking confirmation, 50% upon completion of the workshop / makeover.</p>
-          <p><strong className="text-emerald-700 font-bold">Bulk Booking Discount:</strong> Special pricing available for annual school partnerships and multi-campus bookings.</p>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ══════════════════════════════════════════
           CONTACT & DIRECT COLLABORATION CTA
       ══════════════════════════════════════════ */}
-      <section className="py-20 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div className="p-10 md:p-16 rounded-3xl bg-gradient-to-b from-emerald-50 via-white to-white border border-emerald-200 relative overflow-hidden shadow-lg">
-          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4">Let's Bring Creativity to Your Campus</h2>
-          <p className="text-gray-600 text-base max-w-2xl mx-auto mb-8 font-normal">
-            Ready to engage your students or corporate team with high-impact eco workshops? Reach out directly to book dates.
+      <section className="py-20 max-w-5xl mx-auto px-6 text-center">
+        <div className="p-10 md:p-16 rounded-3xl bg-gray-50 border border-gray-200 relative overflow-hidden shadow-sm">
+          <h2 className="text-3xl md:text-5xl font-bold text-[#111] mb-4 tracking-tight">Let's Host a Workshop on Your Campus</h2>
+          <p className="text-gray-600 text-base max-w-2xl mx-auto mb-8 font-normal leading-relaxed">
+            Ready to engage your students or team with high-impact eco workshops? Reach out directly to book available dates.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 mb-10">
             <a
               href="tel:+917990657190"
-              className="inline-flex items-center gap-2.5 px-5 py-3 rounded-full bg-white border border-gray-200 text-sm font-semibold text-gray-800 hover:bg-gray-50 shadow-sm transition-colors"
+              className="inline-flex items-center gap-2.5 px-5 py-3 rounded-full bg-white border border-gray-200 text-sm font-semibold text-gray-800 hover:bg-gray-100 shadow-xs transition-colors"
             >
-              <Phone size={16} className="text-emerald-600" /> +91 7990657190
+              <Phone size={16} className="text-gray-700" /> +91 7990657190
             </a>
             <a
               href="mailto:nest.nurturee@gmail.com"
-              className="inline-flex items-center gap-2.5 px-5 py-3 rounded-full bg-white border border-gray-200 text-sm font-semibold text-gray-800 hover:bg-gray-50 shadow-sm transition-colors"
+              className="inline-flex items-center gap-2.5 px-5 py-3 rounded-full bg-white border border-gray-200 text-sm font-semibold text-gray-800 hover:bg-gray-100 shadow-xs transition-colors"
             >
-              <Mail size={16} className="text-emerald-600" /> nest.nurturee@gmail.com
+              <Mail size={16} className="text-gray-700" /> nest.nurturee@gmail.com
             </a>
             <a
               href="https://instagram.com/nest_n_nurture"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2.5 px-5 py-3 rounded-full bg-white border border-gray-200 text-sm font-semibold text-gray-800 hover:bg-gray-50 shadow-sm transition-colors"
+              className="inline-flex items-center gap-2.5 px-5 py-3 rounded-full bg-white border border-gray-200 text-sm font-semibold text-gray-800 hover:bg-gray-100 shadow-xs transition-colors"
             >
-              <Instagram size={16} className="text-emerald-600" /> @nest_n_nurture
+              <Instagram size={16} className="text-gray-700" /> @nest_n_nurture
             </a>
           </div>
 
@@ -654,7 +550,7 @@ export default function Workshops() {
               setSelectedPlan('Campus Partnership');
               setInquiryModalOpen(true);
             }}
-            className="inline-flex items-center gap-2 bg-[#CCFF00] text-black px-8 py-4 rounded-full text-sm font-extrabold hover:scale-105 transition-all shadow-xl shadow-lime-200"
+            className="inline-flex items-center gap-2 bg-[#CCFF00] text-[#050505] px-8 py-4 rounded-full text-sm font-bold hover:scale-105 transition-all shadow-sm"
           >
             Submit Custom Proposal Request <ArrowRight size={16} />
           </button>
@@ -666,7 +562,7 @@ export default function Workshops() {
       ══════════════════════════════════════════ */}
       <AnimatePresence>
         {activePhotoModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
             <div className="relative max-w-4xl w-full">
               <button
                 onClick={() => setActivePhotoModal(null)}
@@ -685,7 +581,7 @@ export default function Workshops() {
       ══════════════════════════════════════════ */}
       <AnimatePresence>
         {inquiryModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -699,17 +595,17 @@ export default function Workshops() {
                 <X size={20} />
               </button>
 
-              <h3 className="text-2xl font-extrabold text-gray-900 mb-1">Book Nest N Nurture Workshop</h3>
-              <p className="text-xs text-emerald-700 font-bold mb-6">
+              <h3 className="text-2xl font-bold text-[#111] mb-1">Book Nest N Nurture Workshop</h3>
+              <p className="text-xs text-gray-500 font-semibold mb-6">
                 Selected Package: {selectedPlan || 'General Workshop Inquiry'}
               </p>
 
               {submitted ? (
                 <div className="text-center py-10 space-y-4">
-                  <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
+                  <div className="w-16 h-16 rounded-full bg-[#CCFF00] text-[#111] flex items-center justify-center mx-auto">
                     <CheckCircle2 size={36} />
                   </div>
-                  <h4 className="text-xl font-bold text-gray-900">Inquiry Sent Successfully!</h4>
+                  <h4 className="text-xl font-bold text-[#111]">Inquiry Sent Successfully!</h4>
                   <p className="text-xs text-gray-600">Our team will get in touch with you at {formState.phone || formState.email} within 24 hours.</p>
                 </div>
               ) : (
@@ -722,7 +618,7 @@ export default function Workshops() {
                       value={formState.name}
                       onChange={e => setFormState({ ...formState, name: e.target.value })}
                       placeholder="e.g. Principal / Event Coordinator"
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-600"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-[#111] placeholder-gray-400 focus:outline-none focus:border-[#111]"
                     />
                   </div>
 
@@ -735,7 +631,7 @@ export default function Workshops() {
                         value={formState.org}
                         onChange={e => setFormState({ ...formState, org: e.target.value })}
                         placeholder="e.g. Unique Science School"
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-600"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-[#111] placeholder-gray-400 focus:outline-none focus:border-[#111]"
                       />
                     </div>
                     <div>
@@ -746,7 +642,7 @@ export default function Workshops() {
                         value={formState.phone}
                         onChange={e => setFormState({ ...formState, phone: e.target.value })}
                         placeholder="+91 9876543210"
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-600"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-[#111] placeholder-gray-400 focus:outline-none focus:border-[#111]"
                       />
                     </div>
                   </div>
@@ -760,7 +656,7 @@ export default function Workshops() {
                         value={formState.email}
                         onChange={e => setFormState({ ...formState, email: e.target.value })}
                         placeholder="name@school.com"
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-600"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-[#111] placeholder-gray-400 focus:outline-none focus:border-[#111]"
                       />
                     </div>
                     <div>
@@ -768,7 +664,7 @@ export default function Workshops() {
                       <select
                         value={formState.studentsCount}
                         onChange={e => setFormState({ ...formState, studentsCount: e.target.value })}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-[#111] focus:outline-none focus:border-[#111]"
                       >
                         <option value="50-100">50 - 100 Students</option>
                         <option value="100-250">100 - 250 Students</option>
@@ -785,14 +681,14 @@ export default function Workshops() {
                       value={formState.notes}
                       onChange={e => setFormState({ ...formState, notes: e.target.value })}
                       placeholder="Mention your preferred workshop topics, campus location, or dates..."
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-600"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-[#111] placeholder-gray-400 focus:outline-none focus:border-[#111]"
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full py-3.5 bg-[#CCFF00] text-black font-extrabold rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-md"
+                    className="w-full py-3.5 bg-[#CCFF00] text-[#050505] font-bold rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-sm"
                   >
                     {submitting ? 'Submitting...' : 'Submit Booking Request'} <Send size={16} />
                   </button>
