@@ -22,7 +22,13 @@ import {
   Palette,
   Check,
   Star,
-  Pencil
+  Pencil,
+  Calculator,
+  GraduationCap,
+  Award,
+  BookOpen,
+  ShieldCheck,
+  Leaf
 } from 'lucide-react';
 import CardFlip from '../components/CardFlip';
 import { useContent } from '../context/ContentContext';
@@ -217,6 +223,10 @@ export default function Workshops() {
   const [selectedPlan, setSelectedPlan] = useState('General Campus Workshop Inquiry');
   const [activePhotoModal, setActivePhotoModal] = useState<string | null>(null);
 
+  // Interactive Campus Estimator State
+  const [estimatorStudents, setEstimatorStudents] = useState<number>(180);
+  const [estimatorType, setEstimatorType] = useState<'birdhouse' | 'makeover' | 'annual'>('birdhouse');
+
   // Structured Workshop Lead Capture Form State
   const [formState, setFormState] = useState({
     name: '',
@@ -374,11 +384,30 @@ Additional Notes: ${formState.notes || 'None'}`;
             </div>
             <div>
               <p className="text-3xl md:text-4xl font-extrabold text-gray-900">100%</p>
-              <p className="text-xs text-gray-500 mt-1 uppercase font-bold tracking-wider">Curriculum Aligned</p>
+              <p className="text-xs text-gray-500 mt-1 uppercase font-bold tracking-wider">NEP 2020 Aligned</p>
             </div>
           </div>
 
-
+          {/* Institutional Partner Bar */}
+          <div className="pt-2 max-w-4xl mx-auto">
+            <p className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-4">
+              Trusted by Leading Educational &amp; Architectural Institutions
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8">
+              <div className="flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-gray-50 border border-gray-200 shadow-sm">
+                <img src="/workshops/logos/uss-logo.png" alt="Unique School of Science" className="w-7 h-7 rounded-full object-cover border border-gray-200" />
+                <span className="text-xs font-extrabold text-gray-800">Unique School of Science</span>
+              </div>
+              <div className="flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-gray-50 border border-gray-200 shadow-sm">
+                <img src="/workshops/logos/anant-logo.png" alt="Anant National University" className="w-7 h-7 rounded-lg object-contain bg-white p-0.5 border border-gray-200" />
+                <span className="text-xs font-extrabold text-gray-800">Anant National University</span>
+              </div>
+              <div className="flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-gray-50 border border-gray-200 shadow-sm">
+                <img src="/workshops/logos/campleo-logo.png" alt="Camp Leo" className="w-7 h-7 rounded-full object-cover border border-gray-200" />
+                <span className="text-xs font-extrabold text-gray-800">Camp Leo Eco Resorts</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -532,6 +561,149 @@ Additional Notes: ${formState.notes || 'None'}`;
       </section>
 
       {/* ══════════════════════════════════════════
+          2B. INTERACTIVE CAMPUS IMPACT & WORKSHOP ESTIMATOR
+      ══════════════════════════════════════════ */}
+      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="rounded-3xl bg-gradient-to-br from-emerald-900 via-gray-900 to-black text-white p-8 md:p-14 shadow-2xl relative overflow-hidden border border-emerald-500/20">
+          
+          {/* Background Ambient Glow */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-[#CCFF00]/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            
+            {/* Left Controls */}
+            <div className="lg:col-span-6 space-y-6">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#CCFF00]/20 text-[#CCFF00] text-xs font-black uppercase tracking-wider border border-[#CCFF00]/30">
+                <Calculator size={14} /> Interactive Estimator
+              </div>
+
+              <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">
+                Estimate Your Campus Workshop &amp; Impact
+              </h2>
+
+              <p className="text-gray-300 text-sm md:text-base leading-relaxed">
+                Adjust student attendance and workshop type to calculate estimated bird habitats built, eco-materials upcycled, and STEAM learning hours.
+              </p>
+
+              {/* Scope Selector Tabs */}
+              <div className="space-y-2 pt-2">
+                <label className="text-xs font-extrabold uppercase tracking-wider text-gray-400 block">Select Workshop Scope:</label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEstimatorType('birdhouse')}
+                    className={`py-2.5 px-3 rounded-xl text-xs font-extrabold transition-all border ${
+                      estimatorType === 'birdhouse'
+                        ? 'bg-[#CCFF00] text-black border-[#CCFF00] shadow-md'
+                        : 'bg-white/10 text-white border-white/10 hover:bg-white/20'
+                    }`}
+                  >
+                    🐦 Bird Houses
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEstimatorType('makeover')}
+                    className={`py-2.5 px-3 rounded-xl text-xs font-extrabold transition-all border ${
+                      estimatorType === 'makeover'
+                        ? 'bg-[#CCFF00] text-black border-[#CCFF00] shadow-md'
+                        : 'bg-white/10 text-white border-white/10 hover:bg-white/20'
+                    }`}
+                  >
+                    🎨 Space Makeover
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEstimatorType('annual')}
+                    className={`py-2.5 px-3 rounded-xl text-xs font-extrabold transition-all border ${
+                      estimatorType === 'annual'
+                        ? 'bg-[#CCFF00] text-black border-[#CCFF00] shadow-md'
+                        : 'bg-white/10 text-white border-white/10 hover:bg-white/20'
+                    }`}
+                  >
+                    🔄 Annual Eco-Club
+                  </button>
+                </div>
+              </div>
+
+              {/* Attendance Slider */}
+              <div className="space-y-3 pt-2">
+                <div className="flex justify-between items-center text-sm font-bold">
+                  <span className="text-gray-300">Expected Student Attendees:</span>
+                  <span className="text-[#CCFF00] font-black text-xl">{estimatorStudents} Students</span>
+                </div>
+                <input
+                  type="range"
+                  min={30}
+                  max={600}
+                  step={10}
+                  value={estimatorStudents}
+                  onChange={(e) => setEstimatorStudents(Number(e.target.value))}
+                  className="w-full h-3 bg-white/20 rounded-lg appearance-none cursor-pointer accent-[#CCFF00]"
+                />
+                <div className="flex justify-between text-[11px] text-gray-400 font-semibold">
+                  <span>30 (Small Batch)</span>
+                  <span>250 (Full Grade)</span>
+                  <span>600+ (Whole Campus)</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Output Dashboard */}
+            <div className="lg:col-span-6 bg-white/10 backdrop-blur-xl border border-white/15 rounded-3xl p-6 md:p-8 space-y-6">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">Live Projected Impact</span>
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  NEP 2020 Compliant
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
+                  <p className="text-2xl md:text-3xl font-black text-[#CCFF00]">
+                    ~{Math.round(estimatorStudents * (estimatorType === 'makeover' ? 0.4 : estimatorType === 'annual' ? 0.8 : 0.5))}
+                  </p>
+                  <p className="text-xs font-bold text-gray-300">Wooden Bird Nests Installed</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
+                  <p className="text-2xl md:text-3xl font-black text-[#CCFF00]">
+                    ~{Math.round(estimatorStudents * (estimatorType === 'makeover' ? 1.5 : 0.8))} kg
+                  </p>
+                  <p className="text-xs font-bold text-gray-300">Eco-Materials Upcycled</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
+                  <p className="text-2xl md:text-3xl font-black text-[#CCFF00]">
+                    {estimatorStudents * (estimatorType === 'annual' ? 12 : estimatorType === 'makeover' ? 6 : 3)} hrs
+                  </p>
+                  <p className="text-xs font-bold text-gray-300">STEAM Learning Experience</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
+                  <p className="text-2xl md:text-3xl font-black text-[#CCFF00]">100%</p>
+                  <p className="text-xs font-bold text-gray-300">Tool Safety Guarantee</p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handleOpenLeadModal(`Estimator Booking: ${estimatorStudents} Students (${estimatorType.toUpperCase()} Scope)`)}
+                className="w-full py-4 rounded-full bg-[#CCFF00] text-black font-black text-sm hover:scale-[1.02] transition-all shadow-xl shadow-lime-300/20 border border-black/10 flex items-center justify-center gap-2.5 cursor-pointer"
+              >
+                Book Custom Slot for {estimatorStudents} Students <ArrowRight size={16} />
+              </button>
+
+              <p className="text-center text-[11px] text-gray-400 font-medium">
+                ⚡ We provide all raw materials, safety gear, and certified lead instructors on site.
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════
           3. SOLUTIONS / 10+ CREATIVE OFFERINGS MATRIX
       ══════════════════════════════════════════ */}
       <section id="offerings" className="py-20 bg-white border-y border-gray-100">
@@ -605,6 +777,65 @@ Additional Notes: ${formState.notes || 'None'}`;
               onCtaClick={() => handleOpenLeadModal(`Audience: ${aud.title}`)}
             />
           ))}
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          4B. CURRICULUM & NEP 2020 EDUCATIONAL ALIGNMENT
+      ══════════════════════════════════════════ */}
+      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-gray-100">
+        <div className="text-center max-w-3xl mx-auto mb-14">
+          <span className="px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-extrabold uppercase tracking-wider inline-block mb-3">
+            Academic Excellence &amp; Compliance
+          </span>
+          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
+            Aligned with NEP 2020 &amp; STEAM Curriculum
+          </h2>
+          <p className="text-gray-600 text-base max-w-xl mx-auto font-normal">
+            Our workshops go beyond simple crafts—they build tangible vocational skills, spatial geometry, and environmental responsibility required by modern education standards.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-white p-7 rounded-3xl border border-gray-200 shadow-sm hover:shadow-md transition-all space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-100">
+              <GraduationCap size={24} />
+            </div>
+            <h3 className="text-lg font-extrabold text-gray-900">NEP 2020 Experiential Learning</h3>
+            <p className="text-xs text-gray-600 leading-relaxed font-normal">
+              Fulfills National Education Policy mandatory hands-on vocational modules through woodworking, structural assembly, and tool operation.
+            </p>
+          </div>
+
+          <div className="bg-white p-7 rounded-3xl border border-gray-200 shadow-sm hover:shadow-md transition-all space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-100">
+              <BookOpen size={24} />
+            </div>
+            <h3 className="text-lg font-extrabold text-gray-900">STEAM Integration</h3>
+            <p className="text-xs text-gray-600 leading-relaxed font-normal">
+              Integrates Science (Ornithology &amp; Microclimates), Technology (Tool Usage), Engineering (Habitats), Art (Eco-painting), and Math (Geometry).
+            </p>
+          </div>
+
+          <div className="bg-white p-7 rounded-3xl border border-gray-200 shadow-sm hover:shadow-md transition-all space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-100">
+              <Leaf size={24} />
+            </div>
+            <h3 className="text-lg font-extrabold text-gray-900">Campus Eco-Club Directives</h3>
+            <p className="text-xs text-gray-600 leading-relaxed font-normal">
+              Empowers campus Eco-Clubs to achieve green school audit points with permanent bird nest installations and plastic waste reduction.
+            </p>
+          </div>
+
+          <div className="bg-white p-7 rounded-3xl border border-gray-200 shadow-sm hover:shadow-md transition-all space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-100">
+              <ShieldCheck size={24} />
+            </div>
+            <h3 className="text-lg font-extrabold text-gray-900">100% Tool &amp; Material Safety</h3>
+            <p className="text-xs text-gray-600 leading-relaxed font-normal">
+              All raw timber is sanded and pre-inspected. Non-toxic organic paints, child-safe tools, and certified instructor supervision guaranteed.
+            </p>
+          </div>
         </div>
       </section>
 
