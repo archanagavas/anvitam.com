@@ -13,12 +13,13 @@ import {
   Phone, 
   Mail, 
   Instagram, 
-  Award, 
   X,
   Send,
-  Layers,
-  HeartHandshake,
-  Image as ImageIcon
+  Wrench,
+  Compass,
+  Palette,
+  Check,
+  Star
 } from 'lucide-react';
 import { useContent } from '../context/ContentContext';
 
@@ -95,32 +96,38 @@ const GROUP_PHOTOS = [
   {
     src: '/workshops/group/group1.png',
     title: 'Bird House Crafting in Action',
-    caption: 'Students assembling and painting eco-wooden bird houses'
+    institution: 'Unique School of Science (Nadiad)',
+    caption: 'Class 5th–10th students assembling and painting eco-wooden bird houses'
   },
   {
     src: '/workshops/group/group2.png',
-    title: 'School Campus Group Workshop',
-    caption: 'Class 5th–10th students showcasing their finished bird habitats'
+    title: 'School Campus Group Showcase',
+    institution: 'Unique School of Science (Nadiad)',
+    caption: 'Students displaying finished bird houses before campus installation'
   },
   {
     src: '/workshops/group/group3.png',
     title: 'Innovation & Space Makeover',
-    caption: 'Students collaborating on outdoor campus installations'
+    institution: 'Anant National University (Ahmedabad)',
+    caption: 'University students collaborating on permanent campus bio-installations'
   },
   {
     src: '/workshops/group/group4.png',
-    title: 'Hands-On Eco-Crafting',
+    title: 'Hands-On Eco-Crafting Retreat',
+    institution: 'Campus Outdoor Workshop',
     caption: 'Creating upcycled planters and green living structures'
   },
   {
     src: '/workshops/group/group5.png',
-    title: 'University Campus Installation',
+    title: 'University Bird House Installation',
+    institution: 'Anant National University (Ahmedabad)',
     caption: 'Design students building bird house grids on campus trees'
   },
   {
     src: '/workshops/group/group6.png',
-    title: 'Teamwork & Sustainability',
-    caption: 'Fostering environmental leadership through team projects'
+    title: 'Teamwork & Environmental Leadership',
+    institution: 'Campus Eco-Initiative',
+    caption: 'Fostering environmental leadership through hands-on team projects'
   }
 ];
 
@@ -136,8 +143,8 @@ const AUDIENCES = [
   {
     id: 'college',
     icon: Building2,
-    title: 'Colleges & Architecture Universities',
-    subtitle: 'Undergraduate & Postgraduate Students',
+    title: 'Colleges & Design Universities',
+    subtitle: 'Undergraduate & Graduate Students',
     desc: 'Deep dive into microclimate design, bird habitat architecture, and permanent sustainable installations on university grounds.',
     benefits: ['Real-world design-build experience', 'Portfolio-grade installation work', 'Eco-material experimentation']
   },
@@ -145,7 +152,7 @@ const AUDIENCES = [
     id: 'corporate',
     icon: Users,
     title: 'Workplaces & Corporate Teams',
-    subtitle: 'Sustainability & Team Building',
+    subtitle: 'Sustainability & ESG Offsites',
     desc: 'Engage employees in hands-on green retreats, office eco-upcycling, and collaborative biophilic installation projects.',
     benefits: ['Unique team-building experience', 'Corporate ESG & Sustainability impact', 'Stress-relieving creative crafting']
   }
@@ -200,49 +207,69 @@ export default function Workshops() {
   const { workshops, addMessage } = useContent();
   const [selectedAudience, setSelectedAudience] = useState<'school' | 'college' | 'corporate'>('school');
   const [inquiryModalOpen, setInquiryModalOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState('');
+  const [selectedPlan, setSelectedPlan] = useState('General Campus Workshop Inquiry');
   const [activePhotoModal, setActivePhotoModal] = useState<string | null>(null);
+
+  // Structured Workshop Lead Capture Form State
   const [formState, setFormState] = useState({
     name: '',
     email: '',
     phone: '',
     org: '',
-    studentsCount: '100',
-    workshopType: '1-Day Workshop',
+    city: '',
+    studentsCount: '100-250',
+    selectedActivities: ['Bird House Making', 'Space Makeovers & Installations'],
     notes: ''
   });
+
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const publishedWorkshops = workshops?.filter(w => w.status === 'published') || [];
 
+  const handleOpenLeadModal = (planOrOffering: string = 'General Campus Workshop Inquiry') => {
+    setSelectedPlan(planOrOffering);
+    setSubmitted(false);
+    setInquiryModalOpen(true);
+  };
+
+  const toggleActivitySelect = (activityTitle: string) => {
+    setFormState(prev => {
+      const exists = prev.selectedActivities.includes(activityTitle);
+      return {
+        ...prev,
+        selectedActivities: exists
+          ? prev.selectedActivities.filter(a => a !== activityTitle)
+          : [...prev.selectedActivities, activityTitle]
+      };
+    });
+  };
+
   const handleInquirySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     try {
+      const formattedMessage = `[WORKSHOP BOOKING LEAD]
+Package/Target: ${selectedPlan}
+Organization/School: ${formState.org}
+Contact Person: ${formState.name}
+Phone/WhatsApp: ${formState.phone}
+Email: ${formState.email}
+City/Location: ${formState.city || 'Not specified'}
+Expected Attendees: ${formState.studentsCount}
+Requested Activities: ${formState.selectedActivities.join(', ') || 'General'}
+Additional Notes: ${formState.notes || 'None'}`;
+
       await addMessage({
         id: `msg-workshop-${Date.now()}`,
-        name: `${formState.name} (${formState.org})`,
+        name: `${formState.name} (${formState.org || 'Campus Lead'})`,
         email: formState.email,
-        message: `[WORKSHOP INQUIRY] Type: ${formState.workshopType} | Expected Students: ${formState.studentsCount} | Phone: ${formState.phone} | Notes: ${formState.notes}`,
+        message: formattedMessage,
         date: new Date().toISOString()
       });
       setSubmitted(true);
-      setTimeout(() => {
-        setSubmitted(false);
-        setInquiryModalOpen(false);
-        setFormState({
-          name: '',
-          email: '',
-          phone: '',
-          org: '',
-          studentsCount: '100',
-          workshopType: '1-Day Workshop',
-          notes: ''
-        });
-      }, 3000);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to submit workshop lead:', err);
     } finally {
       setSubmitting(false);
     }
@@ -251,34 +278,39 @@ export default function Workshops() {
   return (
     <div className="w-full bg-white text-[#111] min-h-screen font-sans overflow-hidden">
       <Helmet>
-        <title>Nest N Nurture Workshops | Anvitam Campus & B2B Eco Bootcamps</title>
+        <title>Hands-On Workshops for Schools & Campuses | Nest N Nurture</title>
         <meta name="description" content="Nest N Nurture by Anvitam offers hands-on bird house architecture, campus space makeovers, and eco-craft workshops for schools, colleges, and workplaces." />
         <meta name="keywords" content="nest n nurture, bird house workshop, sustainable architecture workshop, campus space makeover, eco school workshop, plastic waste upcycling" />
       </Helmet>
 
       {/* ══════════════════════════════════════════
-          HERO SECTION — White & Bright Design
+          1. HERO SECTION — Clean High-Converting SaaS Funnel
       ══════════════════════════════════════════ */}
       <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-gradient-to-b from-gray-50 via-white to-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+          
+          {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#CCFF00] text-[#111] text-xs font-black uppercase tracking-widest mb-6 shadow-sm"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#CCFF00] text-[#111] text-xs font-black uppercase tracking-widest mb-6 shadow-sm border border-black/10"
           >
             <Sparkles size={14} /> Nest N Nurture Workshops
           </motion.div>
 
+          {/* Main Headline */}
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
             className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6 max-w-5xl mx-auto text-gray-900"
           >
-            Unleashing Creativity & Eco-Consciousness Through <span className="bg-gradient-to-r from-emerald-600 to-green-500 bg-clip-text text-transparent">Hands-On Workshops</span>
+            Unleashing Creativity &amp; Eco-Consciousness Through <br />
+            <span className="text-[#00B843]">Hands-On Workshops for Schools &amp; Campuses</span>
           </motion.h1>
 
+          {/* Subtitle */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -288,6 +320,7 @@ export default function Workshops() {
             Transforming school campuses, colleges, and workplaces with bird house architecture, plastic upcycling, and vibrant outdoor space makeovers.
           </motion.p>
 
+          {/* Call to Action Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -295,11 +328,8 @@ export default function Workshops() {
             className="flex flex-wrap items-center justify-center gap-4 mb-16"
           >
             <button
-              onClick={() => {
-                setSelectedPlan('General Inquiry');
-                setInquiryModalOpen(true);
-              }}
-              className="inline-flex items-center gap-2 bg-[#CCFF00] text-black px-8 py-4 rounded-full text-base font-extrabold hover:scale-105 transition-all duration-300 shadow-xl shadow-lime-200"
+              onClick={() => handleOpenLeadModal('Book Workshop for Campus')}
+              className="inline-flex items-center gap-2.5 bg-[#CCFF00] text-black px-8 py-4 rounded-full text-base font-black hover:scale-105 transition-all duration-300 shadow-xl shadow-lime-200 border border-black/10 cursor-pointer"
             >
               Book Workshop for Campus <ArrowRight size={18} />
             </button>
@@ -311,8 +341,8 @@ export default function Workshops() {
             </a>
           </motion.div>
 
-          {/* Stats Bar */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto p-6 rounded-3xl bg-white border border-gray-200 shadow-lg">
+          {/* Social Proof Stats Bar */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto p-6 rounded-3xl bg-white border border-gray-200 shadow-md">
             <div>
               <p className="text-3xl md:text-4xl font-extrabold text-gray-900">95%</p>
               <p className="text-xs text-gray-500 mt-1 uppercase font-bold tracking-wider">Educator Engagement</p>
@@ -334,22 +364,23 @@ export default function Workshops() {
       </section>
 
       {/* ══════════════════════════════════════════
-          REAL WORKSHOP GROUP PHOTOS SHOWCASE
+          2. PROVEN TRACK RECORD & PAST CAMPUS TRANSFORMATIONS
       ══════════════════════════════════════════ */}
       <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-14">
           <span className="px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-extrabold uppercase tracking-wider">
-            Live Action & Real Impact
+            Proven Track Record
           </span>
           <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mt-3 mb-4">
-            Students in Action Across Campuses
+            Past Campus Transformations
           </h2>
           <p className="text-gray-600 text-base">
-            Real moments from our workshops at Unique School of Science (Nadiad) and Anant National University (Ahmedabad).
+            See how we collaborated with schools and design universities to build functional bird habitats and space makeovers.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Real Group Action Photos Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           {GROUP_PHOTOS.map((photo, idx) => (
             <motion.div
               key={idx}
@@ -358,7 +389,7 @@ export default function Workshops() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: idx * 0.08 }}
               onClick={() => setActivePhotoModal(photo.src)}
-              className="group relative rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer border border-gray-150 h-72 bg-gray-100"
+              className="group relative rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer border border-gray-200 h-72 bg-gray-100"
             >
               <img
                 src={photo.src}
@@ -367,131 +398,25 @@ export default function Workshops() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90 group-hover:opacity-95 transition-opacity" />
               <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <p className="text-xs font-bold text-[#CCFF00] uppercase tracking-wider mb-1">Nest N Nurture Live</p>
+                <span className="text-[10px] font-bold text-[#CCFF00] uppercase tracking-wider block mb-1">
+                  {photo.institution}
+                </span>
                 <h3 className="text-lg font-bold mb-1">{photo.title}</h3>
                 <p className="text-xs text-gray-300 font-normal line-clamp-1">{photo.caption}</p>
               </div>
             </motion.div>
           ))}
         </div>
-      </section>
 
-      {/* ══════════════════════════════════════════
-          B2B AUDIENCE TAB SECTION
-      ══════════════════════════════════════════ */}
-      <section className="py-20 bg-gray-50 border-y border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-2">Tailored For Institutions</p>
-            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900">Who Are Our Workshops Designed For?</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {AUDIENCES.map((aud) => {
-              const Icon = aud.icon;
-              const isSelected = selectedAudience === aud.id;
-              return (
-                <div
-                  key={aud.id}
-                  onClick={() => setSelectedAudience(aud.id as any)}
-                  className={`p-8 rounded-3xl cursor-pointer border transition-all duration-300 ${
-                    isSelected 
-                      ? 'bg-white border-[#CCFF00] shadow-xl ring-2 ring-[#CCFF00]/40 scale-[1.02]' 
-                      : 'bg-white border-gray-200 hover:border-gray-300 shadow-sm'
-                  }`}
-                >
-                  <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-700 mb-6">
-                    <Icon size={28} />
-                  </div>
-                  <p className="text-xs font-extrabold text-emerald-700 uppercase tracking-wider mb-1">{aud.subtitle}</p>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">{aud.title}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed mb-6">{aud.desc}</p>
-                  <div className="space-y-2.5">
-                    {aud.benefits.map((b, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-xs text-gray-700 font-medium">
-                        <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
-                        <span>{b}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════
-          10+ CREATIVE OFFERINGS MATRIX
-      ══════════════════════════════════════════ */}
-      <section id="offerings" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <p className="text-xs font-extrabold uppercase tracking-widest text-emerald-600 mb-2">Unleashing Creativity</p>
-          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4">Our Unique Workshop Offerings</h2>
-          <p className="text-gray-600 text-base">
-            Each workshop is fully customized with raw eco-materials, professional guidance, and permanent campus installations.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {OFFERINGS.map((item, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: idx * 0.05 }}
-              className="group rounded-3xl bg-white border border-gray-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-gray-300 transition-all duration-300 flex flex-col"
-            >
-              <div className="h-56 relative overflow-hidden bg-gray-100">
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-xl shadow-md">
-                  {item.icon}
-                </div>
-              </div>
-              <div className="p-6 flex-1 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-xl font-extrabold text-gray-900 mb-2 group-hover:text-emerald-700 transition-colors">{item.title}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">{item.desc}</p>
-                </div>
-                <button
-                  onClick={() => {
-                    setSelectedPlan(item.title);
-                    setInquiryModalOpen(true);
-                  }}
-                  className="mt-6 flex items-center gap-2 text-xs font-extrabold text-emerald-700 hover:text-black transition-colors"
-                >
-                  Request Offering Details <ArrowRight size={14} />
-                </button>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════
-          PAST WORKSHOPS SHOWCASE (DYNAMIC FROM DB/CONTEXT)
-      ══════════════════════════════════════════ */}
-      {publishedWorkshops.length > 0 && (
-        <section className="py-20 bg-gray-50 border-t border-gray-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-3xl mx-auto mb-16">
-              <p className="text-xs font-extrabold uppercase tracking-widest text-emerald-600 mb-2">Proven Track Record</p>
-              <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4">Past Campus Transformations</h2>
-              <p className="text-gray-600 text-base">
-                See how we collaborated with schools and design universities to build functional bird habitats and space makeovers.
-              </p>
-            </div>
-
-            <div className="space-y-12">
+        {/* Dynamic Database Workshops Showcase */}
+        {publishedWorkshops.length > 0 && (
+          <div className="space-y-8 pt-8 border-t border-gray-150">
+            <h3 className="text-2xl font-extrabold text-gray-900 text-center mb-8">Featured Institutional Case Studies</h3>
+            <div className="space-y-8">
               {publishedWorkshops.map((w) => (
                 <div 
                   key={w.id}
-                  className="rounded-3xl bg-white border border-gray-200 shadow-md p-6 md:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
+                  className="rounded-3xl bg-white border border-gray-200 shadow-md p-6 md:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center hover:border-gray-300 transition-all"
                 >
                   <div className="lg:col-span-7 space-y-4">
                     <div className="flex flex-wrap items-center gap-3">
@@ -529,6 +454,15 @@ export default function Workshops() {
                         </div>
                       </div>
                     )}
+
+                    <div className="pt-2">
+                      <button
+                        onClick={() => handleOpenLeadModal(`Case Study Inquiry: ${w.title}`)}
+                        className="inline-flex items-center gap-2 bg-[#CCFF00] text-black px-6 py-2.5 rounded-full text-xs font-black hover:scale-105 transition-all shadow-sm"
+                      >
+                        Book Similar Workshop For Your Campus <ArrowRight size={14} />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Photo Gallery Grid */}
@@ -543,16 +477,164 @@ export default function Workshops() {
               ))}
             </div>
           </div>
-        </section>
-      )}
+        )}
+      </section>
 
       {/* ══════════════════════════════════════════
-          PRICING & SUBSCRIPTION CARDS
+          3. SOLUTIONS / 10+ CREATIVE OFFERINGS MATRIX
+      ══════════════════════════════════════════ */}
+      <section id="offerings" className="py-20 bg-gray-50 border-y border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <p className="text-xs font-extrabold uppercase tracking-widest text-emerald-600 mb-2">Unleashing Creativity</p>
+            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4">Our Unique Workshop Offerings</h2>
+            <p className="text-gray-600 text-base">
+              Each workshop is fully customized with raw eco-materials, professional guidance, and permanent campus installations.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {OFFERINGS.map((item, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: idx * 0.05 }}
+                className="group rounded-3xl bg-white border border-gray-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-gray-300 transition-all duration-300 flex flex-col"
+              >
+                <div className="h-56 relative overflow-hidden bg-gray-100">
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-xl shadow-md">
+                    {item.icon}
+                  </div>
+                </div>
+                <div className="p-6 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-xl font-extrabold text-gray-900 mb-2 group-hover:text-emerald-700 transition-colors">{item.title}</h3>
+                    <p className="text-gray-600 text-sm leading-relaxed">{item.desc}</p>
+                  </div>
+                  <button
+                    onClick={() => handleOpenLeadModal(`Offering: ${item.title}`)}
+                    className="mt-6 flex items-center gap-2 text-xs font-black text-emerald-700 hover:text-black transition-colors"
+                  >
+                    Request Offering Details &amp; Pricing <ArrowRight size={14} />
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          4. BENEFITS & AUDIENCE TARGETING
+      ══════════════════════════════════════════ */}
+      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-2">Tailored For Institutions</p>
+          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900">Who Are Our Workshops Designed For?</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {AUDIENCES.map((aud) => {
+            const Icon = aud.icon;
+            const isSelected = selectedAudience === aud.id;
+            return (
+              <div
+                key={aud.id}
+                onClick={() => setSelectedAudience(aud.id as any)}
+                className={`p-8 rounded-3xl cursor-pointer border transition-all duration-300 flex flex-col justify-between ${
+                  isSelected 
+                    ? 'bg-white border-[#CCFF00] shadow-xl ring-2 ring-[#CCFF00]/40 scale-[1.02]' 
+                    : 'bg-white border-gray-200 hover:border-gray-300 shadow-sm'
+                }`}
+              >
+                <div>
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-700 mb-6">
+                    <Icon size={28} />
+                  </div>
+                  <p className="text-xs font-extrabold text-emerald-700 uppercase tracking-wider mb-1">{aud.subtitle}</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">{aud.title}</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed mb-6">{aud.desc}</p>
+                  <div className="space-y-2.5 mb-8">
+                    {aud.benefits.map((b, idx) => (
+                      <div key={idx} className="flex items-center gap-2 text-xs text-gray-700 font-medium">
+                        <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
+                        <span>{b}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenLeadModal(`Audience: ${aud.title}`);
+                  }}
+                  className="w-full py-3 rounded-full bg-gray-100 hover:bg-[#CCFF00] hover:text-black text-gray-900 font-extrabold text-xs transition-all duration-300 flex items-center justify-center gap-2"
+                >
+                  Book For {aud.title.split(' ')[0]} <ArrowRight size={14} />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          5. PROCESS — 3 SIMPLE STEPS
+      ══════════════════════════════════════════ */}
+      <section className="py-20 bg-gray-50 border-y border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-2">Effortless Execution</p>
+          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-12">How It Works in 3 Simple Steps</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm text-left relative">
+              <div className="w-12 h-12 rounded-full bg-[#CCFF00] text-black font-black flex items-center justify-center text-lg mb-6 shadow-md">
+                1
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Choose Your Offerings</h3>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                Select from bird house making, space makeovers, or custom eco-crafts based on your institution's age group and goals.
+              </p>
+            </div>
+
+            <div className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm text-left relative">
+              <div className="w-12 h-12 rounded-full bg-[#CCFF00] text-black font-black flex items-center justify-center text-lg mb-6 shadow-md">
+                2
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Co-Design & Schedule</h3>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                We bring all raw building materials, tools, safety gear, and expert instructors directly to your school or campus.
+              </p>
+            </div>
+
+            <div className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm text-left relative">
+              <div className="w-12 h-12 rounded-full bg-[#CCFF00] text-black font-black flex items-center justify-center text-lg mb-6 shadow-md">
+                3
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Install &amp; Transform</h3>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                Students construct permanent campus installations, enhancing biodiversity and creating long-term eco-pride.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          6. PRICING & SUBSCRIPTION CARDS
       ══════════════════════════════════════════ */}
       <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <p className="text-xs font-extrabold uppercase tracking-widest text-emerald-600 mb-2">Investment In Innovation</p>
-          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4">Pricing & Subscription Plans</h2>
+          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4">Pricing &amp; Subscription Plans</h2>
           <p className="text-gray-600 text-base">
             Flexible options tailored for single-day campus events, multi-day space transformations, or long-term partnerships.
           </p>
@@ -569,7 +651,7 @@ export default function Workshops() {
               }`}
             >
               {plan.popular && (
-                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#CCFF00] text-black px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-md">
+                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#CCFF00] text-black px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-md border border-black/10">
                   Most Popular
                 </span>
               )}
@@ -594,13 +676,10 @@ export default function Workshops() {
               </div>
 
               <button
-                onClick={() => {
-                  setSelectedPlan(plan.name);
-                  setInquiryModalOpen(true);
-                }}
-                className={`w-full py-3.5 rounded-full text-xs font-bold transition-all duration-300 flex items-center justify-center gap-2 ${
+                onClick={() => handleOpenLeadModal(`Pricing Plan: ${plan.name}`)}
+                className={`w-full py-3.5 rounded-full text-xs font-extrabold transition-all duration-300 flex items-center justify-center gap-2 ${
                   plan.popular
-                    ? 'bg-[#CCFF00] text-black hover:scale-105 shadow-md shadow-lime-200'
+                    ? 'bg-[#CCFF00] text-black hover:scale-105 shadow-md shadow-lime-200 border border-black/10'
                     : 'border border-gray-300 text-gray-800 hover:bg-gray-100'
                 }`}
               >
@@ -617,7 +696,7 @@ export default function Workshops() {
       </section>
 
       {/* ══════════════════════════════════════════
-          CONTACT & DIRECT COLLABORATION CTA
+          7. CONTACT & DIRECT COLLABORATION CTA
       ══════════════════════════════════════════ */}
       <section className="py-20 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="p-10 md:p-16 rounded-3xl bg-gradient-to-b from-emerald-50 via-white to-white border border-emerald-200 relative overflow-hidden shadow-lg">
@@ -650,11 +729,8 @@ export default function Workshops() {
           </div>
 
           <button
-            onClick={() => {
-              setSelectedPlan('Campus Partnership');
-              setInquiryModalOpen(true);
-            }}
-            className="inline-flex items-center gap-2 bg-[#CCFF00] text-black px-8 py-4 rounded-full text-sm font-extrabold hover:scale-105 transition-all shadow-xl shadow-lime-200"
+            onClick={() => handleOpenLeadModal('Custom Proposal Request')}
+            className="inline-flex items-center gap-2 bg-[#CCFF00] text-black px-8 py-4 rounded-full text-sm font-black hover:scale-105 transition-all shadow-xl shadow-lime-200 border border-black/10 cursor-pointer"
           >
             Submit Custom Proposal Request <ArrowRight size={16} />
           </button>
@@ -681,16 +757,16 @@ export default function Workshops() {
       </AnimatePresence>
 
       {/* ══════════════════════════════════════════
-          BOOKING & INQUIRY MODAL
+          WORKSHOP LEAD CAPTURE POPUP MODAL
       ══════════════════════════════════════════ */}
       <AnimatePresence>
         {inquiryModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white border border-gray-200 rounded-3xl p-6 md:p-8 max-w-lg w-full relative overflow-hidden shadow-2xl"
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-white border border-gray-200 rounded-3xl p-6 md:p-8 max-w-xl w-full relative overflow-hidden shadow-2xl max-h-[90vh] overflow-y-auto"
             >
               <button
                 onClick={() => setInquiryModalOpen(false)}
@@ -699,102 +775,176 @@ export default function Workshops() {
                 <X size={20} />
               </button>
 
-              <h3 className="text-2xl font-extrabold text-gray-900 mb-1">Book Nest N Nurture Workshop</h3>
-              <p className="text-xs text-emerald-700 font-bold mb-6">
-                Selected Package: {selectedPlan || 'General Workshop Inquiry'}
-              </p>
+              <div className="mb-6">
+                <span className="px-3 py-1 rounded-full bg-[#CCFF00] text-black text-[10px] font-black uppercase tracking-widest inline-block mb-2">
+                  Campus Workshop Booking
+                </span>
+                <h3 className="text-2xl md:text-3xl font-extrabold text-gray-900">Book Nest N Nurture Workshop</h3>
+                <p className="text-xs text-emerald-700 font-bold mt-1">
+                  Selected Target: <span className="text-gray-900">{selectedPlan}</span>
+                </p>
+              </div>
 
               {submitted ? (
-                <div className="text-center py-10 space-y-4">
-                  <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
-                    <CheckCircle2 size={36} />
+                <div className="text-center py-12 space-y-4">
+                  <div className="w-20 h-20 rounded-full bg-[#CCFF00] text-black flex items-center justify-center mx-auto shadow-lg">
+                    <CheckCircle2 size={44} />
                   </div>
-                  <h4 className="text-xl font-bold text-gray-900">Inquiry Sent Successfully!</h4>
-                  <p className="text-xs text-gray-600">Our team will get in touch with you at {formState.phone || formState.email} within 24 hours.</p>
+                  <h4 className="text-2xl font-extrabold text-gray-900">Inquiry Received!</h4>
+                  <p className="text-sm text-gray-600 max-w-md mx-auto leading-relaxed">
+                    Thank you, <strong className="text-gray-900">{formState.name}</strong>! Our workshop team will reach out to <strong className="text-gray-900">{formState.org || 'your institution'}</strong> via email or phone within 24 hours.
+                  </p>
+                  <button
+                    onClick={() => setInquiryModalOpen(false)}
+                    className="mt-4 px-6 py-2.5 rounded-full bg-black text-white text-xs font-bold hover:bg-gray-800 transition"
+                  >
+                    Close Window
+                  </button>
                 </div>
               ) : (
                 <form onSubmit={handleInquirySubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Your Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={formState.name}
-                      onChange={e => setFormState({ ...formState, name: e.target.value })}
-                      placeholder="e.g. Principal / Event Coordinator"
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-600"
-                    />
-                  </div>
-
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">School / Organization</label>
+                      <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
+                        Contact Person Name *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={formState.name}
+                        onChange={e => setFormState({ ...formState, name: e.target.value })}
+                        placeholder="e.g. Archana Gavas"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black transition"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
+                        School / Institution / Org *
+                      </label>
                       <input
                         type="text"
                         required
                         value={formState.org}
                         onChange={e => setFormState({ ...formState, org: e.target.value })}
-                        placeholder="e.g. Unique Science School"
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-600"
+                        placeholder="e.g. Unique Science School / University"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black transition"
                       />
                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Phone Number</label>
+                      <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
+                        Phone / WhatsApp Number *
+                      </label>
                       <input
                         type="tel"
                         required
                         value={formState.phone}
                         onChange={e => setFormState({ ...formState, phone: e.target.value })}
                         placeholder="+91 9876543210"
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-600"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black transition"
                       />
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Email Address</label>
+                      <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
+                        Email Address *
+                      </label>
                       <input
                         type="email"
                         required
                         value={formState.email}
                         onChange={e => setFormState({ ...formState, email: e.target.value })}
                         placeholder="name@school.com"
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-600"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black transition"
                       />
                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Expected Students</label>
+                      <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
+                        City / Campus Location
+                      </label>
+                      <input
+                        type="text"
+                        value={formState.city}
+                        onChange={e => setFormState({ ...formState, city: e.target.value })}
+                        placeholder="e.g. Nadiad / Ahmedabad / Mumbai"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black transition"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
+                        Expected Attendees
+                      </label>
                       <select
                         value={formState.studentsCount}
                         onChange={e => setFormState({ ...formState, studentsCount: e.target.value })}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-black transition"
                       >
-                        <option value="50-100">50 - 100 Students</option>
-                        <option value="100-250">100 - 250 Students</option>
-                        <option value="250-500">250 - 500 Students</option>
+                        <option value="50-100">50 – 100 Students</option>
+                        <option value="100-250">100 – 250 Students</option>
+                        <option value="250-500">250 – 500 Students</option>
                         <option value="500+">500+ Students</option>
                       </select>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Additional Notes / Preferred Dates</label>
+                    <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-2">
+                      Select Preferred Activities:
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        'Bird House Making',
+                        'Bird Feeder Making',
+                        'Space Makeovers &amp; Installations',
+                        'Plastic Waste Transformation',
+                        'Tote Bag Painting',
+                        'Upcycling Masterclass'
+                      ].map((activity) => {
+                        const isSelected = formState.selectedActivities.includes(activity);
+                        return (
+                          <button
+                            key={activity}
+                            type="button"
+                            onClick={() => toggleActivitySelect(activity)}
+                            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                              isSelected
+                                ? 'bg-emerald-600 text-white shadow-sm'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                          >
+                            {isSelected ? '✓ ' : '+ '}{activity.replace('&amp;', '&')}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
+                      Additional Requirements / Preferred Event Dates
+                    </label>
                     <textarea
                       rows={3}
                       value={formState.notes}
                       onChange={e => setFormState({ ...formState, notes: e.target.value })}
-                      placeholder="Mention your preferred workshop topics, campus location, or dates..."
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-600"
+                      placeholder="Mention any specific dates, student grade levels, or campus goals..."
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black transition resize-none"
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full py-3.5 bg-[#CCFF00] text-black font-extrabold rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-md"
+                    className="w-full py-3.5 bg-[#CCFF00] text-black font-black text-sm rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-lime-200 border border-black/10 cursor-pointer"
                   >
-                    {submitting ? 'Submitting...' : 'Submit Booking Request'} <Send size={16} />
+                    {submitting ? 'Submitting Inquiry...' : 'Submit Campus Booking Inquiry'} <Send size={16} />
                   </button>
                 </form>
               )}

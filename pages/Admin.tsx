@@ -2023,41 +2023,59 @@ const Admin: React.FC = () => {
                 <div className="text-center py-20 bg-white rounded-xl border border-gray-100 text-gray-400">No messages yet.</div>
               ) : messages.map(msg => {
                 const isNewsletter = msg.message === 'Newsletter subscription request';
+                const isWorkshopLead = msg.message?.includes('[WORKSHOP') || msg.message?.includes('WORKSHOP BOOKING');
+                
                 return (
-                  <div key={msg.id} className={`bg-white p-5 rounded-xl border shadow-sm flex flex-col md:flex-row justify-between items-start gap-4 ${isNewsletter ? 'border-[#CCFF00]/50 bg-[#CCFF00]/5' : 'border-gray-100'}`}>
+                  <div key={msg.id} className={`bg-white p-5 rounded-2xl border shadow-sm flex flex-col md:flex-row justify-between items-start gap-4 ${
+                    isWorkshopLead
+                      ? 'border-[#CCFF00] bg-emerald-50/20'
+                      : isNewsletter
+                      ? 'border-[#CCFF00]/50 bg-[#CCFF00]/5'
+                      : 'border-gray-150'
+                  }`}>
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        {isNewsletter ? (
-                          <span className="text-[10px] font-bold uppercase tracking-widest bg-[#CCFF00] text-[#111] px-2 py-0.5 rounded-full">Newsletter</span>
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        {isWorkshopLead ? (
+                          <span className="text-[10px] font-black uppercase tracking-widest bg-[#CCFF00] text-black px-3 py-1 rounded-full shadow-xs border border-black/10">
+                            🌿 WORKSHOP LEAD
+                          </span>
+                        ) : isNewsletter ? (
+                          <span className="text-[10px] font-bold uppercase tracking-widest bg-[#CCFF00] text-[#111] px-2.5 py-0.5 rounded-full">
+                            Newsletter
+                          </span>
                         ) : (
-                          <span className="text-[10px] font-bold uppercase tracking-widest bg-blue-50 text-blue-600 border border-blue-200 px-2 py-0.5 rounded-full">Inquiry</span>
+                          <span className="text-[10px] font-bold uppercase tracking-widest bg-blue-50 text-blue-600 border border-blue-200 px-2.5 py-0.5 rounded-full">
+                            Inquiry
+                          </span>
                         )}
-                        <span className="font-bold text-gray-800 text-sm">{msg.name}</span>
-                        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">{msg.date}</span>
+                        <span className="font-bold text-gray-900 text-sm">{msg.name}</span>
+                        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded font-mono">{msg.date?.slice(0, 10)}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-green-600 mb-3">
+                      <div className="flex items-center gap-2 text-sm text-green-700 mb-3">
                         <Mail size={13} />
-                        <a href={`mailto:${msg.email}`} className="hover:underline font-medium">{msg.email}</a>
+                        <a href={`mailto:${msg.email}`} className="hover:underline font-semibold">{msg.email}</a>
                       </div>
                       {!isNewsletter && (
-                        <p className="text-gray-500 bg-gray-50 p-3 rounded-lg text-sm italic border border-gray-100">"{msg.message}"</p>
+                        <div className="text-gray-800 bg-gray-50 p-4 rounded-xl text-xs font-mono whitespace-pre-wrap border border-gray-150 leading-relaxed select-text">
+                          {msg.message}
+                        </div>
                       )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       {!isNewsletter && (
                         <a
-                          href={`mailto:${msg.email}?subject=Re: Your inquiry to Anvitam&body=Hi ${msg.name},%0A%0AThank you for reaching out to Anvitam.%0A%0A`}
-                          className="flex items-center gap-1 text-xs border border-blue-200 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition font-semibold"
+                          href={`mailto:${msg.email}?subject=Re: Nest N Nurture Workshop Inquiry - Anvitam&body=Hi ${encodeURIComponent(msg.name.split(' ')[0])},%0A%0AThank you for reaching out regarding Nest N Nurture Workshops for your campus!%0A%0A`}
+                          className="flex items-center gap-1.5 text-xs border border-emerald-300 bg-emerald-50 text-emerald-800 px-3.5 py-2 rounded-xl hover:bg-emerald-100 transition font-extrabold"
                         >
-                          <Mail size={11} /> Reply
+                          <Mail size={12} /> Reply Lead
                         </a>
                       )}
                       <button onClick={() => {
-                        if (confirm('Are you sure you want to delete this inquiry?')) {
+                        if (confirm('Are you sure you want to delete this lead?')) {
                           deleteMessage(msg.id);
-                          showToast('Inquiry deleted successfully!');
+                          showToast('Lead deleted successfully!');
                         }
-                      }} className="text-red-400 hover:text-red-650 p-2 hover:bg-red-50 rounded-lg transition">
+                      }} className="text-red-400 hover:text-red-650 p-2.5 hover:bg-red-50 rounded-xl transition">
                         <Trash2 size={16} />
                       </button>
                     </div>
