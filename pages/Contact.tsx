@@ -427,10 +427,10 @@ ${formData.message}`;
             <div className="lg:col-span-7 h-[350px] md:h-[420px] w-full rounded-2xl overflow-hidden border border-white/10 shadow-lg bg-gray-900 relative">
               <iframe
                 title="Anvitam Studio Location Map"
-                src="https://maps.google.com/maps?q=22.6913212,72.8614304&hl=en&z=16&output=embed"
+                src="https://maps.google.com/maps?q=22.6913212,72.8614304+(Anvitam+Sustainable+Architecture)&t=&z=16&ie=UTF8&iwloc=B&output=embed"
                 width="100%"
                 height="100%"
-                style={{ border: 0, filter: 'contrast(1.05) saturate(1.1)' }}
+                style={{ border: 0 }}
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
