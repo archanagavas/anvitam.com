@@ -304,7 +304,7 @@ Additional Notes: ${formState.notes || 'None'}`;
       {/* ══════════════════════════════════════════
           1. HERO SECTION — Clean High-Converting SaaS Funnel
       ══════════════════════════════════════════ */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-gradient-to-b from-gray-50 via-white to-white border-b border-gray-100">
+      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           
           {/* Badge */}
@@ -534,7 +534,7 @@ Additional Notes: ${formState.notes || 'None'}`;
       {/* ══════════════════════════════════════════
           3. SOLUTIONS / 10+ CREATIVE OFFERINGS MATRIX
       ══════════════════════════════════════════ */}
-      <section id="offerings" className="py-20 bg-gray-50 border-y border-gray-100">
+      <section id="offerings" className="py-20 bg-white border-y border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <p className="text-xs font-extrabold uppercase tracking-widest text-emerald-600 mb-2">Unleashing Creativity</p>
@@ -611,7 +611,7 @@ Additional Notes: ${formState.notes || 'None'}`;
       {/* ══════════════════════════════════════════
           5. PROCESS — 3 SIMPLE STEPS
       ══════════════════════════════════════════ */}
-      <section className="py-20 bg-gray-50 border-y border-gray-100">
+      <section className="py-20 bg-white border-y border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-2">Effortless Execution</p>
           <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-12">How It Works in 3 Simple Steps</h2>
@@ -756,7 +756,7 @@ Additional Notes: ${formState.notes || 'None'}`;
       {/* ══════════════════════════════════════════
           7. TESTIMONIALS & INSTITUTIONAL REVIEWS (Diagram Alignment)
       ══════════════════════════════════════════ */}
-      <section className="py-20 bg-gray-50 border-y border-gray-100">
+      <section className="py-20 bg-white border-y border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-14">
             <span className="px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold uppercase tracking-wider">
@@ -856,7 +856,7 @@ Additional Notes: ${formState.notes || 'None'}`;
           8. CONTACT & DIRECT COLLABORATION CTA
       ══════════════════════════════════════════ */}
       <section className="py-20 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div className="p-10 md:p-16 rounded-3xl bg-gradient-to-b from-emerald-50 via-white to-white border border-emerald-200 relative overflow-hidden shadow-lg">
+        <div className="p-10 md:p-16 rounded-3xl bg-white border border-gray-200 relative overflow-hidden shadow-lg">
           <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4">Let's Bring Creativity to Your Campus</h2>
           <p className="text-gray-600 text-base max-w-2xl mx-auto mb-8 font-normal">
             Ready to engage your students or corporate team with high-impact eco workshops? Reach out directly to book dates.
