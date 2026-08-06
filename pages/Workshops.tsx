@@ -319,8 +319,7 @@ Additional Notes: ${formState.notes || 'None'}`;
             transition={{ duration: 0.8, delay: 0.1 }}
             className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6 max-w-5xl mx-auto text-gray-900"
           >
-            Unleashing Creativity &amp; Eco-Consciousness Through <br />
-            <span className="text-[#00B843]">Hands-On Workshops for Schools &amp; Campuses</span>
+            Hands-On Workshops for Schools &amp; Campuses
           </motion.h1>
 
           {/* Subtitle */}
