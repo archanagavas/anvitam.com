@@ -397,34 +397,54 @@ Additional Notes: ${formState.notes || 'None'}`;
           </p>
         </div>
 
-        {/* Real Group Action Photos Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-          {GROUP_PHOTOS.map((photo, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: idx * 0.08 }}
-              onClick={() => handleOpenLeadModal('Campus Transformation Photo — Book Similar Workshop')}
-              className="group relative rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer border border-gray-200 h-72 bg-gray-100"
-            >
-              <img
-                src={photo.src}
-                alt={photo.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90 group-hover:opacity-95 transition-opacity" />
-              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <span className="text-[10px] font-bold text-[#CCFF00] uppercase tracking-wider block mb-1">
-                  {photo.institution}
-                </span>
-                <h3 className="text-lg font-bold mb-1">{photo.title}</h3>
-                <p className="text-xs text-gray-300 font-normal line-clamp-1">{photo.caption}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        {/* Dynamic Admin Group Action Photos Grid */}
+        {(() => {
+          const adminPhotos = publishedWorkshops.flatMap(w => 
+            (w.images || [])
+              .filter(img => Boolean(img && img.trim()))
+              .map((img, i) => ({
+                src: img,
+                title: `${w.title} (${i + 1})`,
+                institution: w.organization || w.location || 'Campus Workshop',
+                caption: w.description || w.title,
+                workshopId: w.id || w.slug
+              }))
+          );
+          const photosToDisplay = adminPhotos.length > 0 ? adminPhotos : GROUP_PHOTOS;
+
+          return (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+              {photosToDisplay.slice(0, 9).map((photo, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: idx * 0.08 }}
+                  onClick={() => handleOpenLeadModal(`Campus Transformation Photo — Book Similar Workshop`)}
+                  className="group relative rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer border border-gray-200 h-72 bg-gray-100"
+                >
+                  <img
+                    src={photo.src}
+                    alt={photo.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/workshops/birds house making.png';
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90 group-hover:opacity-95 transition-opacity" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                    <span className="text-[10px] font-bold text-[#CCFF00] uppercase tracking-wider block mb-1">
+                      {photo.institution}
+                    </span>
+                    <h3 className="text-lg font-bold mb-1">{photo.title}</h3>
+                    <p className="text-xs text-gray-300 font-normal line-clamp-1">{photo.caption}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          );
+        })()}
 
         {/* Dynamic Database Workshops Showcase */}
         {publishedWorkshops.length > 0 && (

@@ -130,7 +130,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
     loadFromStorage<PartnerBrand>('anvitam_partners_v1', INITIAL_PARTNERS)
   );
   const [workshops, setWorkshops] = useState<Workshop[]>(() =>
-    loadFromStorage<Workshop>('anvitam_workshops_v1', INITIAL_WORKSHOPS)
+    loadFromStorage<Workshop>('anvitam_workshops_v2', INITIAL_WORKSHOPS)
   );
   const [isDbConnected, setIsDbConnected] = useState(false);
   const [isInitialSyncDone, setIsInitialSyncDone] = useState(false);
@@ -163,7 +163,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
         if (!isFallback) {
           if (dbWorkshops.length > 0) {
             setWorkshops(dbWorkshops);
-            saveToStorage('anvitam_workshops_v1', dbWorkshops);
+            saveToStorage('anvitam_workshops_v2', dbWorkshops);
           }
         } else {
           console.info('[ContentContext] workshops API returned fallback mock data; preserving local cache.');
@@ -654,7 +654,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
-  useEffect(() => { saveToStorage('anvitam_workshops_v1', workshops); }, [workshops]);
+  useEffect(() => { saveToStorage('anvitam_workshops_v2', workshops); }, [workshops]);
 
   return (
     <ContentContext.Provider value={{

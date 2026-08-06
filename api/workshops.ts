@@ -150,39 +150,55 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'PUT') {
     if (!id) return res.status(400).json({ error: 'Missing workshop ID' });
     const b = req.body ?? {};
+    const targetId = id || b.id;
     await sql`
-      UPDATE workshops SET
-        title = ${b.title},
-        organization = ${b.organization || ''},
-        location = ${b.location || ''},
-        city = ${b.city || ''},
-        state = ${b.state || ''},
-        country = ${b.country || ''},
-        date = ${b.date || ''},
-        category = ${b.category || 'School'},
-        description = ${b.description || ''},
-        attendees_count = ${b.attendeesCount || ''},
-        offerings = ${JSON.stringify(b.offerings || [])},
-        skills_outcomes = ${b.skillsOutcomes || ''},
-        materials_used = ${b.materialsUsed || ''},
-        impact = ${b.impact || ''},
-        outcomes = ${b.outcomes || ''},
-        images = ${JSON.stringify(b.images || [])},
-        gallery_details = ${JSON.stringify(b.galleryDetails || [])},
-        related_project_ids = ${JSON.stringify(b.relatedProjectIds || [])},
-        related_service_ids = ${JSON.stringify(b.relatedServiceIds || [])},
-        related_article_ids = ${JSON.stringify(b.relatedArticleIds || [])},
-        slug = ${b.slug || ''},
-        meta_title = ${b.metaTitle || ''},
-        meta_description = ${b.metaDescription || ''},
-        primary_keyword = ${b.primaryKeyword || ''},
-        secondary_keywords = ${b.secondaryKeywords || ''},
-        canonical_url = ${b.canonicalUrl || ''},
-        og_title = ${b.ogTitle || ''},
-        og_description = ${b.ogDescription || ''},
-        og_image = ${b.ogImage || ''},
-        status = ${b.status || 'published'}
-      WHERE id = ${id}
+      INSERT INTO workshops (
+        id, title, organization, location, city, state, country, date, category, description,
+        attendees_count, offerings, skills_outcomes, materials_used, impact, outcomes, images,
+        gallery_details, related_project_ids, related_service_ids, related_article_ids, slug,
+        meta_title, meta_description, primary_keyword, secondary_keywords, canonical_url,
+        og_title, og_description, og_image, status
+      )
+      VALUES (
+        ${targetId}, ${b.title}, ${b.organization || ''}, ${b.location || ''}, ${b.city || ''}, ${b.state || ''}, ${b.country || ''},
+        ${b.date || ''}, ${b.category || 'School'}, ${b.description || ''}, ${b.attendeesCount || ''},
+        ${JSON.stringify(b.offerings || [])}, ${b.skillsOutcomes || ''}, ${b.materialsUsed || ''}, ${b.impact || ''}, ${b.outcomes || ''},
+        ${JSON.stringify(b.images || [])}, ${JSON.stringify(b.galleryDetails || [])},
+        ${JSON.stringify(b.relatedProjectIds || [])}, ${JSON.stringify(b.relatedServiceIds || [])}, ${JSON.stringify(b.relatedArticleIds || [])},
+        ${b.slug || ''}, ${b.metaTitle || ''}, ${b.metaDescription || ''}, ${b.primaryKeyword || ''}, ${b.secondaryKeywords || ''}, ${b.canonicalUrl || ''},
+        ${b.ogTitle || ''}, ${b.ogDescription || ''}, ${b.ogImage || ''}, ${b.status || 'published'}
+      )
+      ON CONFLICT (id) DO UPDATE SET
+        title = EXCLUDED.title,
+        organization = EXCLUDED.organization,
+        location = EXCLUDED.location,
+        city = EXCLUDED.city,
+        state = EXCLUDED.state,
+        country = EXCLUDED.country,
+        date = EXCLUDED.date,
+        category = EXCLUDED.category,
+        description = EXCLUDED.description,
+        attendees_count = EXCLUDED.attendees_count,
+        offerings = EXCLUDED.offerings,
+        skills_outcomes = EXCLUDED.skills_outcomes,
+        materials_used = EXCLUDED.materials_used,
+        impact = EXCLUDED.impact,
+        outcomes = EXCLUDED.outcomes,
+        images = EXCLUDED.images,
+        gallery_details = EXCLUDED.gallery_details,
+        related_project_ids = EXCLUDED.related_project_ids,
+        related_service_ids = EXCLUDED.related_service_ids,
+        related_article_ids = EXCLUDED.related_article_ids,
+        slug = EXCLUDED.slug,
+        meta_title = EXCLUDED.meta_title,
+        meta_description = EXCLUDED.meta_description,
+        primary_keyword = EXCLUDED.primary_keyword,
+        secondary_keywords = EXCLUDED.secondary_keywords,
+        canonical_url = EXCLUDED.canonical_url,
+        og_title = EXCLUDED.og_title,
+        og_description = EXCLUDED.og_description,
+        og_image = EXCLUDED.og_image,
+        status = EXCLUDED.status
     `;
     return res.status(200).json({ success: true });
   }
