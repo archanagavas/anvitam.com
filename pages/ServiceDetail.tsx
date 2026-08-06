@@ -5,6 +5,8 @@ import { useContent } from '../context/ContentContext';
 import { Project } from '../types';
 import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardList, PenTool, Wrench, Sprout, Check, HelpCircle } from 'lucide-react';
 import TestimonialCarousel from '../components/TestimonialCarousel';
+import VerticalTimeline from '../components/VerticalTimeline';
+import FlowButton from '../components/ui/flow-button';
 
 // Helper to extract SSR-injected metadata from the DOM during hydration
 const getSSRMetadata = () => {
@@ -93,9 +95,8 @@ const ServiceDetail: React.FC = () => {
       href={service.bookingLink || 'https://topmate.io/archanagavas/1799075'} 
       target="_blank" 
       rel="noopener noreferrer" 
-      className="inline-flex items-center bg-[#CCFF00] text-[#111] px-6 py-3 rounded-full text-xs font-bold transition-colors hover:bg-[#bce600]"
     >
-      Book a Design Consultation <ArrowRight className="ml-2 w-4 h-4" />
+      <FlowButton text="Book a Design Consultation" variant="lime" />
     </a>
   );
 
@@ -314,28 +315,17 @@ const ServiceDetail: React.FC = () => {
       </div>
 
       {/* 4. Timeline / Step-by-Step implementation process */}
-      {service.process && service.process.length > 0 && (
-        <div className="max-w-4xl mx-auto px-6 mb-24">
-          <h3 className="text-xl md:text-2xl font-bold text-[#111] mb-2 tracking-tight">How We Work</h3>
-          <p className="text-gray-500 mb-10 text-sm md:text-base max-w-2xl leading-relaxed">
-            Our structured step-by-step process ensures a seamless journey from concept design to on-site execution.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {service.process.map((step, i) => {
-              const IconComponent = processIcons[i % processIcons.length];
-              return (
-                <div key={i} className="bg-gray-50 p-8 rounded-2xl border border-gray-100 hover:shadow-xs transition-shadow">
-                  <div className="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 mb-5">
-                    <IconComponent className="w-5 h-5" strokeWidth={1.5} />
-                  </div>
-                  <h4 className="font-bold text-[#111] text-lg mb-2 tracking-tight">{step.title}</h4>
-                  <p className="text-xs text-gray-500 leading-relaxed font-medium">{step.description}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      <div className="max-w-screen-xl mx-auto px-6 mb-24 border-t border-gray-150 pt-16">
+        <VerticalTimeline
+          steps={service.process && service.process.length > 0 ? service.process.map((step, i) => ({
+            n: `0${i + 1}`,
+            title: step.title,
+            body: step.description,
+            icon: ['🔍', '🗺️', '🌿', '📐', '🏗️'][i] || '🌱',
+            tags: service.valueProps ? service.valueProps.slice(i * 2, (i * 2) + 2) : undefined
+          })) : undefined}
+        />
+      </div>
 
       {/* 5. Detailed paragraphs (What it is / concept details) */}
       {service.whatItIs && service.whatItIs.length > 0 && (

@@ -7,8 +7,8 @@
  *  3. Admin mutations hit the API and update local state
  */
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Project, BlogPost, Service, DigitalProduct, ContactMessage, Testimonial, EstimatorService } from '../types';
-import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES, DIGITAL_PRODUCTS, INITIAL_TESTIMONIALS, INITIAL_ESTIMATOR_SERVICES } from '../constants';
+import { Project, BlogPost, Service, DigitalProduct, ContactMessage, Testimonial, EstimatorService, PartnerBrand } from '../types';
+import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES, DIGITAL_PRODUCTS, INITIAL_TESTIMONIALS, INITIAL_ESTIMATOR_SERVICES, INITIAL_PARTNERS } from '../constants';
 
 // ── Auth token helpers (JWT stored in sessionStorage — auto-clears on tab close) ──
 export const getAuthToken = (): string | null => {
@@ -41,6 +41,7 @@ interface ContentContextType {
   messages: ContactMessage[];
   testimonials: Testimonial[];
   estimatorServices: EstimatorService[];
+  partners: PartnerBrand[];
   isDbConnected: boolean;
   isInitialSyncDone: boolean;
   addProject: (project: Project) => Promise<void>;
@@ -63,6 +64,9 @@ interface ContentContextType {
   addEstimatorService: (s: EstimatorService) => Promise<void>;
   updateEstimatorService: (s: EstimatorService) => Promise<void>;
   deleteEstimatorService: (id: string) => Promise<void>;
+  addPartner: (p: PartnerBrand) => Promise<void>;
+  updatePartner: (p: PartnerBrand) => Promise<void>;
+  deletePartner: (id: string) => Promise<void>;
   refreshFromDb: () => Promise<void>;
 }
 
@@ -133,18 +137,22 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [estimatorServices, setEstimatorServices] = useState<EstimatorService[]>(() =>
     loadFromStorage<EstimatorService>('anvitam_estimator_services_v1', INITIAL_ESTIMATOR_SERVICES)
   );
+  const [partners, setPartners] = useState<PartnerBrand[]>(() =>
+    loadFromStorage<PartnerBrand>('anvitam_partners_v1', INITIAL_PARTNERS)
+  );
   const [isDbConnected, setIsDbConnected] = useState(false);
   const [isInitialSyncDone, setIsInitialSyncDone] = useState(false);
 
   // ── Fetch from Neon DB ────────────────────────────────────────────
   const refreshFromDb = async () => {
     try {
-      const [blogsRes, projectsRes, servicesRes, productsRes, testimonialsRes] = await Promise.all([
+      const [blogsRes, projectsRes, servicesRes, productsRes, testimonialsRes, partnersRes] = await Promise.all([
         fetch('/api/blogs'),
         fetch('/api/projects'),
         fetch('/api/services'),
         fetch('/api/products'),
-        fetch('/api/testimonials')
+        fetch('/api/testimonials'),
+        fetch('/api/partners')
       ]);
 
       const hasAnyFallback = 
@@ -152,7 +160,8 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
         projectsRes.headers.get('x-db-fallback') === 'true' ||
         servicesRes.headers.get('x-db-fallback') === 'true' ||
         productsRes.headers.get('x-db-fallback') === 'true' ||
-        testimonialsRes.headers.get('x-db-fallback') === 'true';
+        testimonialsRes.headers.get('x-db-fallback') === 'true' ||
+        partnersRes.headers.get('x-db-fallback') === 'true';
 
       if (blogsRes.ok) {
         const isFallback = blogsRes.headers.get('x-db-fallback') === 'true';
@@ -224,6 +233,20 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
         }
       }
 
+      if (partnersRes.ok) {
+        const isFallback = partnersRes.headers.get('x-db-fallback') === 'true';
+        const dbPartners: PartnerBrand[] = await partnersRes.json();
+        if (!isFallback) {
+          if (dbPartners.length > 0) {
+            setPartners(dbPartners);
+            saveToStorage('anvitam_partners_v1', dbPartners);
+          }
+        } else {
+          console.info('[ContentContext] partners API returned fallback mock data; preserving local cache.');
+          setPartners(prev => prev.length === 0 ? dbPartners : prev);
+        }
+      }
+
       // Fetch messages if admin token exists
       const token = getAuthToken();
       if (token) {
@@ -259,6 +282,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   useEffect(() => { saveToStorage('anvitam_blogs_v2', blogs); }, [blogs]);
   useEffect(() => { saveToStorage('anvitam_testimonials', testimonials); }, [testimonials]);
   useEffect(() => { saveToStorage('anvitam_estimator_services_v1', estimatorServices); }, [estimatorServices]);
+  useEffect(() => { saveToStorage('anvitam_partners_v1', partners); }, [partners]);
 
   // ── CRUD Operations ──────────────────────────────────────────────────────
   const addProject = async (project: Project) => {
@@ -550,12 +574,49 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
+  const addPartner = async (p: PartnerBrand) => {
+    setPartners(prev => [p, ...prev]);
+    const token = getAuthToken();
+    if (token) {
+      try {
+        await fetch('/api/partners', { method: 'POST', headers: authHeaders(), body: JSON.stringify(p) });
+      } catch (err) {
+        console.error('Failed to save partner brand to DB:', err);
+      }
+    }
+  };
+
+  const updatePartner = async (p: PartnerBrand) => {
+    setPartners(prev => prev.map(item => item.id === p.id ? p : item));
+    const token = getAuthToken();
+    if (token) {
+      try {
+        await fetch(`/api/partners/${p.id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(p) });
+      } catch (err) {
+        console.error('Failed to update partner brand in DB:', err);
+      }
+    }
+  };
+
+  const deletePartner = async (id: string) => {
+    setPartners(prev => prev.filter(item => item.id !== id));
+    const token = getAuthToken();
+    if (token) {
+      try {
+        await fetch(`/api/partners/${id}`, { method: 'DELETE', headers: authHeaders() });
+      } catch (err) {
+        console.error('Failed to delete partner brand from DB:', err);
+      }
+    }
+  };
+
   return (
     <ContentContext.Provider value={{
-      projects, blogs, services, digitalProducts, messages, testimonials, estimatorServices,
+      projects, blogs, services, digitalProducts, messages, testimonials, estimatorServices, partners,
       isDbConnected, isInitialSyncDone,
       addProject, updateProject, addBlog, updateBlog, addService, updateService, addDigitalProduct, updateDigitalProduct, addMessage, addTestimonial, updateTestimonial,
       addEstimatorService, updateEstimatorService, deleteEstimatorService,
+      addPartner, updatePartner, deletePartner,
       deleteProject, deleteBlog, deleteService, deleteDigitalProduct, deleteMessage, deleteTestimonial,
       refreshFromDb,
     }}>

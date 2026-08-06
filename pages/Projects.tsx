@@ -4,6 +4,7 @@ import { useContent } from '../context/ContentContext';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, MapPin, Calendar, ChevronRight, Ruler, Zap, Clock, Leaf } from 'lucide-react';
+import FlowButton from '../components/ui/flow-button';
 
 const Projects: React.FC = () => {
   const { projects } = useContent();
@@ -170,12 +171,11 @@ const Projects: React.FC = () => {
                       </div>
 
                       <div className="mt-10">
-                         <button 
-                            onClick={() => navigate(`/projects/${project.slug || project.id}`)} 
-                            className="bg-[#ccff00] text-[#0a0a0a] px-6 py-3 rounded-full text-xs font-bold hover:bg-[#bce600] inline-flex items-center gap-2 transition-colors"
-                         >
-                            View full study <ArrowRight size={14} />
-                         </button>
+                         <FlowButton 
+                            text="View full study"
+                            variant="lime"
+                            onClick={() => navigate(`/projects/${project.slug || project.id}`)}
+                         />
                       </div>
                    </div>
                 </motion.div>

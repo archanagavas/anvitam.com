@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
-import { ArrowRight, Plus, Minus, CheckCircle, Calendar } from 'lucide-react';
+import { ArrowRight, Plus, Minus, CheckCircle, Calendar, MapPin, Mail, Phone, Navigation, Clock } from 'lucide-react';
+import FlowButton from '../components/ui/flow-button';
 
 const Contact: React.FC = () => {
   const { addMessage } = useContent();
@@ -135,17 +136,60 @@ ${formData.message}`;
       <div className="max-w-6xl mx-auto px-6 mb-32">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
           
-          {/* Left: Titles */}
-          <div>
-            <div className="inline-block px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[#111] border border-gray-200 rounded-full mb-8">
-              Get A Quote
+          {/* Left: Titles & Studio Details */}
+          <div className="flex flex-col justify-between">
+            <div>
+              <div className="inline-block px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[#111] border border-gray-200 rounded-full mb-8">
+                Get A Quote
+              </div>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight text-[#111] leading-tight max-w-sm">
+                Send us a Message
+              </h2>
+              <p className="text-gray-500 text-sm mt-4 leading-relaxed max-w-sm">
+                Fill out your project details below so we can tailor our initial feedback and schedule a consultation tailored to your vision.
+              </p>
             </div>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight text-[#111] leading-tight max-w-sm">
-              Send us a Message
-            </h2>
-            <p className="text-gray-500 text-sm mt-4 leading-relaxed max-w-sm">
-              Fill out your project details below so we can tailor our initial feedback and schedule a consultation tailored to your vision.
-            </p>
+
+            {/* Quick Contact & Office Location Card */}
+            <div className="mt-12 space-y-4 pt-8 border-t border-gray-100">
+              <div className="flex items-start gap-4 p-4 rounded-2xl bg-gray-50/90 border border-gray-100">
+                <div className="p-2.5 rounded-full bg-[#D1F0AA] text-[#111] shrink-0 mt-0.5 shadow-xs">
+                  <MapPin size={18} />
+                </div>
+                <div>
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Studio Address</h4>
+                  <p className="text-xs sm:text-sm font-semibold text-[#111] leading-snug">
+                    2ND Floor, alisha chambers, Santram Mandir Rd, Nadiad, Gujarat 387001
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-gray-50/90 border border-gray-100">
+                  <div className="p-2 rounded-full bg-gray-200 text-[#111] shrink-0">
+                    <Phone size={15} />
+                  </div>
+                  <div>
+                    <h4 className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Phone</h4>
+                    <a href="tel:+917990657190" className="text-xs font-semibold text-[#111] hover:text-[#8bc34a]">
+                      +91 7990657190
+                    </a>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-gray-50/90 border border-gray-100">
+                  <div className="p-2 rounded-full bg-gray-200 text-[#111] shrink-0">
+                    <Mail size={15} />
+                  </div>
+                  <div>
+                    <h4 className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Email</h4>
+                    <a href="mailto:ar.archanagavas@gmail.com" className="text-xs font-semibold text-[#111] hover:text-[#8bc34a] truncate block">
+                      ar.archanagavas@gmail.com
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Right: Form */}
@@ -314,15 +358,85 @@ ${formData.message}`;
                   ></textarea>
                 </div>
 
-                <button 
+                <FlowButton
                   type="submit" 
                   disabled={status === 'submitting'}
-                  className="w-full bg-[#D1F0AA] text-[#111] rounded-full py-4 text-sm font-bold transition-all hover:bg-[#bceb81] mt-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer shadow-sm hover:shadow"
-                >
-                  {status === 'submitting' ? 'Submitting Details...' : 'Submit Inquiry'}
-                </button>
+                  text={status === 'submitting' ? 'Submitting Details...' : 'Submit Inquiry'}
+                  variant="lime"
+                  className="w-full py-4 mt-2"
+                />
               </form>
             )}
+          </div>
+        </div>
+      </div>
+
+      <div className="w-full h-px bg-gray-100 mb-24 max-w-7xl mx-auto"></div>
+
+      {/* Interactive Google Map Locator Section */}
+      <div className="max-w-6xl mx-auto px-6 mb-32">
+        <div className="bg-[#0a0a0a] text-white rounded-3xl p-8 lg:p-12 overflow-hidden shadow-2xl relative">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            {/* Left Info */}
+            <div className="lg:col-span-5 space-y-6">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 text-[10px] font-bold uppercase tracking-widest text-[#D1F0AA] border border-[#D1F0AA]/30 rounded-full">
+                <MapPin size={12} /> Studio Locator
+              </div>
+              <h2 className="text-3xl md:text-4xl font-medium tracking-tight text-white leading-tight">
+                Visit Our Studio in Nadiad
+              </h2>
+              <p className="text-gray-400 text-sm leading-relaxed font-light">
+                Drop by our workspace to discuss your sustainable architecture, farm retreat, or permaculture master plan in person.
+              </p>
+
+              <div className="space-y-4 pt-4 border-t border-white/10">
+                <div className="flex items-start gap-3">
+                  <MapPin className="text-[#D1F0AA] shrink-0 mt-1" size={18} />
+                  <div>
+                    <p className="text-xs text-white/50 font-medium">Exact Address</p>
+                    <p className="text-sm font-semibold text-white mt-0.5 leading-snug">
+                      2ND Floor, alisha chambers, Santram Mandir Rd, Nadiad, Gujarat 387001
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <Clock className="text-[#D1F0AA] shrink-0 mt-1" size={18} />
+                  <div>
+                    <p className="text-xs text-white/50 font-medium">Working Hours</p>
+                    <p className="text-sm font-semibold text-white mt-0.5">
+                      Mon – Sat: 10:00 AM – 7:00 PM IST
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <a
+                  href="https://www.google.com/maps/search/?api=1&query=22.6913212,72.8614304"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-[#D1F0AA] text-[#111] px-6 py-3 rounded-full text-xs font-bold hover:bg-[#bceb81] transition-all cursor-pointer shadow-md hover:scale-105"
+                >
+                  <Navigation size={14} /> Get Google Maps Directions
+                </a>
+              </div>
+            </div>
+
+            {/* Right Embedded Interactive Map */}
+            <div className="lg:col-span-7 h-[350px] md:h-[420px] w-full rounded-2xl overflow-hidden border border-white/10 shadow-lg bg-gray-900 relative">
+              <iframe
+                title="Anvitam Studio Location Map"
+                src="https://maps.google.com/maps?q=22.6913212,72.8614304&hl=en&z=16&output=embed"
+                width="100%"
+                height="100%"
+                style={{ border: 0, filter: 'contrast(1.05) saturate(1.1)' }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="w-full h-full"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -411,9 +525,8 @@ ${formData.message}`;
               href="https://topmate.io/archanagavas" 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="inline-flex items-center bg-[#D1F0AA] text-[#111] px-5 py-2.5 rounded-full text-[13px] font-semibold transition-colors hover:bg-[#bceb81]"
             >
-              Talk to our project expert <ArrowRight className="ml-2 w-4 h-4" />
+              <FlowButton text="Talk to our project expert" variant="lime" />
             </a>
           </div>
         </div>

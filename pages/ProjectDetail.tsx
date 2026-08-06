@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react';
 import DOMPurify from 'dompurify';
+import FlowButton from '../components/ui/flow-button';
 
 // Helper to extract SSR-injected metadata from the DOM during hydration
 const getSSRMetadata = () => {
@@ -85,9 +86,8 @@ const ProjectDetail: React.FC = () => {
       href="https://topmate.io/archanagavas/1799075" 
       target="_blank" 
       rel="noopener noreferrer" 
-      className="inline-flex items-center bg-[#CCFF00] text-[#111] px-6 py-3 rounded-full text-xs font-bold transition-colors hover:bg-[#bce600]"
     >
-      Talk to our project expert <ArrowRight className="ml-2 w-4 h-4" />
+      <FlowButton text="Talk to our project expert" variant="lime" />
     </a>
   );
 

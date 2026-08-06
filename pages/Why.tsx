@@ -44,7 +44,7 @@ const neonBtn =
 
 /* ── Stats ── */
 const STATS = [
-  { num: '12+', label: 'Projects Completed' },
+  { num: '10+', label: 'Projects Completed' },
   { num: '2022', label: 'Founded' },
   { num: '6+', label: 'Service Areas' },
   { num: '3', label: 'Countries Served' },
@@ -121,7 +121,7 @@ const Why: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <div className="flex -space-x-3">
                     {[
-                      'https://topmate.io/cdn-cgi/image/width=640,quality=90/https://static.topmate.io/da2bLpNHf3cETP6EKEtsXL.jpeg',
+                      '/archana.png',
                       '/uploads/akash.jpg',
                       '/uploads/rucha.jpg',
                       '/uploads/navin.jpg',
@@ -369,7 +369,7 @@ const Why: React.FC = () => {
             <div className="bg-[#0D0D0D] rounded-3xl overflow-hidden flex flex-col md:flex-row">
               <div className="md:w-1/3 relative">
                 <img
-                  src="https://topmate.io/cdn-cgi/image/width=640,quality=90/https://static.topmate.io/da2bLpNHf3cETP6EKEtsXL.jpeg"
+                  src="/archana.png"
                   alt="Archana Gavas — Principal Architect, Anvitam"
                   className="w-full h-80 md:h-full object-cover object-top"
                 />

@@ -71,6 +71,14 @@ export interface Award {
   year: string;
 }
 
+export interface PartnerBrand {
+  id: string;
+  name: string;
+  logo?: string;
+  icon?: string;
+  website?: string;
+}
+
 export interface Testimonial {
   id: string;
   text: string;

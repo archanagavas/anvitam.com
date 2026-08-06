@@ -7,11 +7,11 @@ import {
   Layout as LayoutIcon, ShoppingBag, Briefcase, MessageSquare, Mail,
   Globe, Download, CheckCircle, RefreshCw, Edit2, X, Eye, EyeOff,
   Image as ImageIcon, Tag, Save, ArrowLeft, Type, Hash, AlertCircle, Menu,
-  Database, Wifi, WifiOff, Shield, Lock, Zap, Activity, MessageCircle, Calculator
+  Database, Wifi, WifiOff, Shield, Lock, Zap, Activity, MessageCircle, Calculator, Building2
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { generateSitemapXml, generateLlmsTxt, generateLlmsFullTxt, downloadFile } from '../utils/seoGenerator';
-import { BlogPost, Project, Service, DigitalProduct, Testimonial } from '../types';
+import { BlogPost, Project, Service, DigitalProduct, Testimonial, PartnerBrand } from '../types';
 import ProjectEditor from '../components/ProjectEditor';
 import ServiceEditor from '../components/ServiceEditor';
 import ProductEditor from '../components/ProductEditor';
@@ -1006,6 +1006,168 @@ const TestimonialEditorForm: React.FC<{
   );
 };
 
+// ── Partner Editor Form Component ──────────────────────────────────────
+interface PartnerEditorFormProps {
+  initial?: PartnerBrand | null;
+  onSave: (partner: PartnerBrand) => void;
+  onCancel: () => void;
+}
+
+const PartnerEditorForm: React.FC<PartnerEditorFormProps> = ({ initial, onSave, onCancel }) => {
+  const [name, setName] = useState(initial?.name || '');
+  const [logo, setLogo] = useState(initial?.logo || '');
+  const [logoMode, setLogoMode] = useState<'url' | 'upload'>('url');
+  const [icon, setIcon] = useState(initial?.icon || '✦');
+  const [website, setWebsite] = useState(initial?.website || '');
+  const [error, setError] = useState<string | null>(null);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const base64 = await compressImage(file);
+      setLogo(base64);
+    } catch (err) {
+      console.error('Image compression failed:', err);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      setError('Brand name is required');
+      return;
+    }
+    const partner: PartnerBrand = {
+      id: initial?.id || `partner-${Date.now()}`,
+      name: name.trim(),
+      logo: logo.trim(),
+      icon: icon.trim(),
+      website: website.trim(),
+    };
+    onSave(partner);
+  };
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm max-w-2xl mx-auto space-y-6">
+      <div className="flex items-center justify-between border-b pb-4">
+        <h3 className="text-xl font-bold text-gray-900">{initial ? 'Edit Partner Brand' : 'Add New Partner Brand'}</h3>
+        <button onClick={onCancel} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
+      </div>
+
+      {error && (
+        <div className="bg-red-50 text-red-700 p-3 rounded-lg text-sm flex items-center gap-2">
+          <AlertCircle size={15} /> {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">Brand Name *</label>
+          <input
+            type="text"
+            required
+            placeholder="e.g. Unique School of Science"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:border-black"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">Brand Logo Image</label>
+          <div className="flex gap-2 mb-2">
+            <button
+              type="button"
+              onClick={() => setLogoMode('url')}
+              className={`flex-1 text-xs py-1.5 rounded font-semibold transition ${logoMode === 'url' ? 'bg-black text-white' : 'border border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+            >
+              URL Link
+            </button>
+            <button
+              type="button"
+              onClick={() => setLogoMode('upload')}
+              className={`flex-1 text-xs py-1.5 rounded font-semibold transition ${logoMode === 'upload' ? 'bg-black text-white' : 'border border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+            >
+              Upload Image File
+            </button>
+          </div>
+          {logoMode === 'url' ? (
+            <input
+              type="text"
+              placeholder="https://example.com/logo.png or /logos/brand.svg"
+              value={logo}
+              onChange={e => setLogo(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:border-black"
+            />
+          ) : (
+            <label className="block w-full border-2 border-dashed border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 transition bg-gray-50">
+              <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+              <ImageIcon size={20} className="mx-auto text-gray-400 mb-1" />
+              <span className="text-xs text-gray-600 font-medium">Click to upload logo image</span>
+            </label>
+          )}
+          {logo && (
+            <div className="mt-3 relative inline-block border p-2 rounded-lg bg-gray-50">
+              <img src={logo} alt="Logo preview" className="max-h-12 object-contain" />
+              <button
+                type="button"
+                onClick={() => setLogo('')}
+                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition shadow-sm"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">Fallback Emoji / Icon</label>
+            <input
+              type="text"
+              placeholder="e.g. 🌿, 🏫, 🏢, ✦"
+              value={icon}
+              onChange={e => setIcon(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:border-black"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">Website URL (Optional)</label>
+            <input
+              type="text"
+              placeholder="https://clientwebsite.com"
+              value={website}
+              onChange={e => setWebsite(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:border-black"
+            />
+          </div>
+        </div>
+
+        {/* Live Card Preview */}
+        <div className="pt-2">
+          <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Live Landing Page Card Preview</label>
+          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 flex items-center justify-center min-h-[110px]">
+            {logo ? (
+              <img src={logo} alt={name || 'Preview'} className="max-h-12 max-w-[160px] object-contain grayscale hover:grayscale-0 transition-all duration-300" />
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{icon || '✦'}</span>
+                <span className="font-bold text-gray-900 text-lg tracking-tight">{name || 'Partner Name'}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="pt-4 border-t flex justify-end gap-2">
+          <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-semibold border rounded-lg">Cancel</button>
+          <button type="submit" className="px-5 py-2 text-sm font-bold bg-black text-white rounded-lg hover:bg-gray-800 transition">Save Partner</button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
 // ── Main Admin Component ──────────────────────────────────────────────
 const Admin: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -1022,7 +1184,7 @@ const Admin: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const [activeTab, setActiveTab] = useState<'projects' | 'blog' | 'analytics' | 'shop' | 'services' | 'messages' | 'seo' | 'testimonials' | 'estimator' | 'estimator-pricing'>('analytics');
+  const [activeTab, setActiveTab] = useState<'projects' | 'blog' | 'analytics' | 'shop' | 'services' | 'messages' | 'seo' | 'testimonials' | 'partners' | 'estimator' | 'estimator-pricing'>('analytics');
   const [seoStatus, setSeoStatus] = useState<null | 'generating' | 'done'>(null);
   const [previewFile, setPreviewFile] = useState<{ name: string; content: string } | null>(null);
 
@@ -1046,6 +1208,9 @@ const Admin: React.FC = () => {
 
   const [testimonialView, setTestimonialView] = useState<'list' | 'editor'>('list');
   const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
+
+  const [partnerView, setPartnerView] = useState<'list' | 'editor'>('list');
+  const [editingPartner, setEditingPartner] = useState<PartnerBrand | null>(null);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -1084,10 +1249,11 @@ const Admin: React.FC = () => {
   }, []);
 
   const {
-    projects, blogs, services, digitalProducts, messages, testimonials, isDbConnected,
+    projects, blogs, services, digitalProducts, messages, testimonials, partners, isDbConnected,
     addProject, updateProject, addBlog, updateBlog, addService, updateService, 
     addDigitalProduct, updateDigitalProduct, deleteProject, deleteBlog, deleteService, 
-    deleteDigitalProduct, deleteMessage, addTestimonial, updateTestimonial, deleteTestimonial, refreshFromDb
+    deleteDigitalProduct, deleteMessage, addTestimonial, updateTestimonial, deleteTestimonial,
+    addPartner, updatePartner, deletePartner, refreshFromDb
   } = useContent();
 
   const [newItemTitle, setNewItemTitle] = useState('');
@@ -1489,6 +1655,7 @@ const Admin: React.FC = () => {
           <NavButton id="shop" icon={ShoppingBag} label="Shop / Products" />
           <NavButton id="services" icon={Briefcase} label="Services" />
           <NavButton id="testimonials" icon={MessageCircle} label="Testimonials" />
+          <NavButton id="partners" icon={Building2} label="Partner Brands" />
           <NavButton id="seo" icon={Globe} label="SEO Files" />
         </nav>
         <div className="p-3 border-t border-gray-100 space-y-1">
@@ -2384,6 +2551,106 @@ const Admin: React.FC = () => {
                 onCancel={() => {
                   setTestimonialView('list');
                   setEditingTestimonial(null);
+                }}
+              />
+            )}
+          </div>
+        )}
+
+        {/* ── Partner Brands ── */}
+        {activeTab === 'partners' && (
+          <div className="space-y-6 animate-fade-in">
+            {partnerView === 'list' ? (
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-2xl font-bold">Partner Brands</h2>
+                    <p className="text-sm text-gray-400 mt-0.5">{partners.length} total client/partner brands</p>
+                  </div>
+                  <button
+                    onClick={() => { setEditingPartner(null); setPartnerView('editor'); }}
+                    className="flex items-center gap-2 bg-black text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-800 transition"
+                  >
+                    <Plus size={15} /> New Partner Brand
+                  </button>
+                </div>
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                  {partners.length === 0 ? (
+                    <div className="text-center py-20 text-gray-400">
+                      <Building2 size={32} className="mx-auto mb-3 opacity-30" />
+                      <p className="text-sm">No partner brands added yet. Click "New Partner Brand" to get started.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-4">
+                      {partners.map(p => (
+                        <div key={p.id} className="bg-gray-50 border border-gray-200/80 rounded-xl p-4 flex flex-col justify-between space-y-3 relative group hover:border-gray-400 transition">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-mono text-gray-400">{p.id}</span>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => { setEditingPartner(p); setPartnerView('editor'); }}
+                                className="text-gray-500 hover:text-black p-1 rounded transition"
+                                title="Edit"
+                              >
+                                <Edit2 size={13} />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Are you sure you want to delete "${p.name}"?`)) {
+                                    deletePartner(p.id);
+                                    showToast('Partner brand deleted!');
+                                  }
+                                }}
+                                className="text-red-400 hover:text-red-600 p-1 rounded transition"
+                                title="Delete"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="min-h-[60px] flex items-center justify-center bg-white rounded-lg p-3 border border-gray-100">
+                            {p.logo ? (
+                              <img src={p.logo} alt={p.name} className="max-h-10 max-w-[140px] object-contain" />
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <span className="text-xl">{p.icon || '✦'}</span>
+                                <span className="font-bold text-gray-900 text-sm tracking-tight">{p.name}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="text-center pt-1">
+                            <p className="font-bold text-xs text-gray-900">{p.name}</p>
+                            {p.website && (
+                              <a href={p.website} target="_blank" rel="noreferrer" className="text-[11px] text-gray-400 hover:underline">
+                                {p.website.replace(/^https?:\/\//, '')}
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <PartnerEditorForm
+                initial={editingPartner}
+                onSave={async (p) => {
+                  if (editingPartner) {
+                    await updatePartner(p);
+                    showToast('Partner brand updated successfully!');
+                  } else {
+                    await addPartner(p);
+                    showToast('Partner brand added successfully!');
+                  }
+                  setPartnerView('list');
+                  setEditingPartner(null);
+                }}
+                onCancel={() => {
+                  setPartnerView('list');
+                  setEditingPartner(null);
                 }}
               />
             )}

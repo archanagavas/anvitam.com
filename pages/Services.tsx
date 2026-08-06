@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'motion/react';
 import { TESTIMONIALS } from '../constants';
+import VerticalTimeline from '../components/VerticalTimeline';
+import FlowButton from '../components/ui/flow-button';
 
 const Services: React.FC = () => {
   const { services, testimonials } = useContent();
@@ -69,9 +71,8 @@ const Services: React.FC = () => {
               href="https://topmate.io/archanagavas/1799075?utm_source=public_profile&utm_campaign=archanagavas" 
               target="_blank" 
               rel="noreferrer"
-              className="inline-flex items-center gap-2 bg-white text-[#0a0a0a] px-8 py-3.5 rounded-full text-sm font-semibold hover:bg-[#CCFF00] transition-colors"
             >
-              Free Design Consultation <ArrowRight size={16} />
+              <FlowButton text="Free Design Consultation" variant="dark" />
             </a>
           </motion.div>
         </div>
@@ -137,13 +138,12 @@ const Services: React.FC = () => {
                     href={service.bookingLink} 
                     target="_blank" 
                     rel="noreferrer" 
-                    className="inline-flex flex-nowrap shrink-0 whitespace-nowrap items-center gap-2 bg-[#CCFF00] text-[#0a0a0a] px-6 py-3 rounded-full text-xs font-bold hover:bg-[#bce600] transition-colors"
                   >
-                    Book a Design Consultation <ArrowRight size={14} />
+                    <FlowButton text="Book a Design Consultation" variant="lime" />
                   </a>
                   <button 
                     onClick={() => navigate(`/services/${service.id}`)} 
-                    className="text-xs font-bold flex items-center gap-1 hover:text-[#5A5A40] transition-colors pl-4 text-[#0a0a0a]/60 hover:text-[#0a0a0a]"
+                    className="text-xs font-bold flex items-center gap-1 hover:text-[#5A5A40] transition-colors pl-4 text-[#0a0a0a]/60 hover:text-[#0a0a0a] cursor-pointer"
                   >
                     <MoveUpRight size={14} /> Full Details
                   </button>
@@ -151,6 +151,13 @@ const Services: React.FC = () => {
               </div>
             </motion.div>
           ))}
+        </div>
+      </div>
+
+      {/* ── OUR METHODOLOGY SECTION ── */}
+      <div className="bg-[#f9f9f6] py-20 md:py-24 border-t border-b border-gray-200">
+        <div className="max-w-screen-xl mx-auto px-6 md:px-12">
+          <VerticalTimeline />
         </div>
       </div>
 

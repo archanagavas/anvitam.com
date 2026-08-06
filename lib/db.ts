@@ -4,7 +4,7 @@
  * The DATABASE_URL must be set in Vercel Dashboard → Project → Settings → Environment Variables.
  */
 import { neon } from '@neondatabase/serverless';
-import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES, INITIAL_TESTIMONIALS } from '../constants.js';
+import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES, INITIAL_TESTIMONIALS, INITIAL_PARTNERS } from '../constants.js';
 
 let neonClient: any;
 let isDbConfigured = false;
@@ -172,16 +172,27 @@ async function initDatabaseInternal() {
   `;
 
   await neonClient`
-    CREATE TABLE IF NOT EXISTS estimator_services (
+    CREATE TABLE IF NOT EXISTS partners (
       id          TEXT PRIMARY KEY,
-      title       TEXT NOT NULL,
-      icon        TEXT NOT NULL DEFAULT '🌿',
-      description TEXT NOT NULL DEFAULT '',
-      subs        JSONB DEFAULT '[]',
-      base_inr    JSONB DEFAULT '[]',
+      name        TEXT NOT NULL,
+      logo        TEXT NOT NULL DEFAULT '',
+      icon        TEXT NOT NULL DEFAULT '',
+      website     TEXT NOT NULL DEFAULT '',
       created_at  TIMESTAMPTZ DEFAULT now()
     );
   `;
+
+  // Seed initial partners if none exist
+  const existingPartners = await neonClient`SELECT id FROM partners LIMIT 1`;
+  if (existingPartners.length === 0) {
+    for (const p of INITIAL_PARTNERS) {
+      await neonClient`
+        INSERT INTO partners (id, name, logo, icon, website)
+        VALUES (${p.id}, ${p.name}, ${p.logo ?? ''}, ${p.icon ?? ''}, ${p.website ?? ''})
+        ON CONFLICT (id) DO NOTHING
+      `;
+    }
+  }
 
   // Migrations for existing databases
   await neonClient`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS meta_title TEXT;`;

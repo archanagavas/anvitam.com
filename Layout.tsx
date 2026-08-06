@@ -20,14 +20,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const navLinks = [
     { name: 'Home', path: '/' },
-    { name: 'About', path: '/why' },
     { name: 'Services', path: '/services' },
     { name: 'Projects', path: '/projects' },
-    { name: 'Blog', path: '/blog' },
+    { name: 'Approach', path: '/#method' },
+    { name: 'About', path: '/team' },
+    { name: 'Journal', path: '/blog' },
   ];
 
   return (
-    <div className="flex flex-col min-h-screen font-sans bg-[#EFEFEB] text-[#111] relative z-10">
+    <div className="flex flex-col min-h-screen font-sans bg-white text-[#111] relative z-10">
 
       {/* ── HEADER — Biogax style: white bg, logo left, nav center, neon CTA right ── */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-black/5 transition-all duration-300">
@@ -67,7 +68,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               to="/contact"
               className="inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-5 py-2.5 rounded-full text-sm font-semibold hover:scale-105 transition-transform duration-300"
             >
-              Free Design Consultation <span>→</span>
+              Discuss Your Project <span>→</span>
             </Link>
           </div>
 
@@ -99,7 +100,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               to="/contact"
               className="mt-4 inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-8 py-4 rounded-full text-base font-semibold"
             >
-              Free Design Consultation →
+              Discuss Your Project →
             </Link>
           </div>
         </div>
@@ -115,17 +116,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           {/* Top CTA row */}
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-8 pb-16 mb-16 border-b border-white/10">
             <h2 className="text-3xl md:text-5xl font-bold text-white leading-[1.15] max-w-xl">
-              Ready to Transform<br />Your Space With Anvitam?
+              Have Land and a Vision?<br /><span className="text-[#CCFF00]">Let's design what it could become.</span>
             </h2>
             <div className="md:pt-2 flex-shrink-0">
-              <a
-                href="https://topmate.io/archanagavas/1799075?utm_source=public_profile&utm_campaign=archanagavas"
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                to="/contact"
                 className="inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-7 py-3.5 rounded-full text-sm font-bold hover:scale-105 transition-transform duration-300"
               >
-                Free Design Consultation →
-              </a>
+                Discuss Your Project →
+              </Link>
             </div>
           </div>
 
@@ -135,14 +134,27 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="col-span-1 md:col-span-1">
               <p className="text-2xl font-bold mb-4">Anvitam</p>
               <p className="text-white/50 text-sm leading-relaxed">
-                Sustainable resort architect and eco retreat designer. Serving USA & Australia — and worldwide.
+                Regenerative Architecture &amp; Ecological Design
+              </p>
+              <p className="text-white/30 text-xs mt-2 leading-relaxed">
+                Global Regenerative Architecture Studio<br />Working across India, USA, Australia &amp; worldwide
               </p>
             </div>
             {/* Links */}
             <div>
-              <h4 className="text-white/40 text-xs font-bold uppercase tracking-widest mb-5">Links</h4>
+              <h4 className="text-white/40 text-xs font-bold uppercase tracking-widest mb-5">Services</h4>
               <ul className="space-y-3">
-                {[['About', '/why'], ['Services', '/services'], ['Projects', '/projects'], ['Blog', '/blog']].map(([n, p]) => (
+                {[['Permaculture Design', '/services'], ['Farm Retreat Architecture', '/seo/farm-retreat-architecture'], ['Eco Resort Design', '/services'], ['Wellness Retreat', '/seo/wellness-retreat'], ['Food Forest Design', '/services'], ['Natural Building', '/services']].map(([n, p]) => (
+                  <li key={n}>
+                    <Link to={p} className="text-sm text-white/70 hover:text-white transition-colors">{n}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-white/40 text-xs font-bold uppercase tracking-widest mb-5">Explore</h4>
+              <ul className="space-y-3">
+                {[['Projects', '/projects'], ['Approach', '/#method'], ['About Archana', '/team'], ['Journal', '/blog'], ['Contact', '/contact']].map(([n, p]) => (
                   <li key={n}>
                     <Link to={p} className="text-sm text-white/70 hover:text-white transition-colors">{n}</Link>
                   </li>

@@ -216,9 +216,21 @@
         scrollbar-width: none;  /* Firefox */
       }
 
-      @keyframes customMarquee {
+      @keyframes marqueeLeft {
         0% { transform: translate3d(0, 0, 0); }
         100% { transform: translate3d(-50%, 0, 0); }
+      }
+      @keyframes marqueeRight {
+        0% { transform: translate3d(-50%, 0, 0); }
+        100% { transform: translate3d(0, 0, 0); }
+      }
+      .animate-marquee-left {
+        animation: marqueeLeft 30s linear infinite;
+        will-change: transform;
+      }
+      .animate-marquee-right {
+        animation: marqueeRight 30s linear infinite;
+        will-change: transform;
       }
       .animate-marquee-infinite {
         display: flex;

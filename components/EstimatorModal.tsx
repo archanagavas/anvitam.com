@@ -11,12 +11,27 @@ const TOPMATE = 'https://topmate.io/archanagavas/1799075?utm_source=estimator&ut
 
 type Step = 'service' | 'sub' | 'contact' | 'result';
 
-export default function EstimatorModal({ onClose }: { onClose: () => void }) {
+export default function EstimatorModal({ onClose, initialServiceId }: { onClose: () => void; initialServiceId?: string }) {
   const contentCtx = useContent();
   const servicesList: EstimatorService[] = contentCtx?.estimatorServices?.length ? contentCtx.estimatorServices : INITIAL_ESTIMATOR_SERVICES;
 
-  const [step, setStep] = useState<Step>('service');
-  const [svc, setSvc] = useState<EstimatorService | null>(null);
+  const initialSvc = React.useMemo(() => {
+    if (!initialServiceId) return null;
+    const lower = initialServiceId.toLowerCase();
+    return servicesList.find(s => 
+      s.id.toLowerCase() === lower || 
+      s.title.toLowerCase().includes(lower) || 
+      lower.includes(s.id.toLowerCase()) ||
+      (lower.includes('farm') && s.id.includes('farm')) ||
+      (lower.includes('resort') && s.id.includes('resort')) ||
+      (lower.includes('home') && (s.id.includes('villa') || s.id.includes('homestay'))) ||
+      (lower.includes('food') && s.id.includes('permaculture')) ||
+      (lower.includes('wellness') && s.id.includes('eco-resort'))
+    ) || null;
+  }, [initialServiceId, servicesList]);
+
+  const [step, setStep] = useState<Step>(initialSvc ? 'sub' : 'service');
+  const [svc, setSvc] = useState<EstimatorService | null>(initialSvc);
   const [selected, setSelected] = useState<number[]>([]);
   const [form, setForm] = useState({ name: '', email: '', phone: '', country: 'IN', area: '', areaUnit: 'sqft' as AreaUnit });
   const [busy, setBusy] = useState(false);

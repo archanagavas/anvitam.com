@@ -99,7 +99,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [estimatorOpen, setEstimatorOpen] = useState(false);
+  const [estimatorServiceId, setEstimatorServiceId] = useState<string | undefined>(undefined);
   const location = useLocation();
+
+  useEffect(() => {
+    const handleOpenEstimator = (e: CustomEvent<{ serviceId?: string }>) => {
+      setEstimatorServiceId(e.detail?.serviceId);
+      setEstimatorOpen(true);
+    };
+    window.addEventListener('open-estimator', handleOpenEstimator as EventListener);
+    return () => window.removeEventListener('open-estimator', handleOpenEstimator as EventListener);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -145,67 +155,74 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Custom maple leaf cursor across all pages */}
       <MapleLeafCursor />
 
-      {/* ── HEADER ── */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-black/5' : 'bg-white/90 backdrop-blur-md border-b border-black/5'
-      }`}>
-        <div className="max-w-[95%] xl:max-w-[92%] mx-auto flex items-center justify-between py-3">
-          {/* Logo — Left balanced container */}
-          <div className="flex-1 flex items-center justify-start">
-            <Link to="/" className="z-50 flex items-center gap-2.5 text-xl md:text-2xl font-bold tracking-tight text-[#111] hover:opacity-85 transition-opacity duration-300 group">
-              <img src="/logo.png" alt="Anvitam Logo" className="h-10 w-10 object-contain" />
-              Anvitam
+      {/* ── FLOATING MINIMAL NAVBAR ── */}
+      <header className="fixed top-4 inset-x-0 z-50 max-w-6xl mx-3 sm:mx-4 md:mx-auto transition-all duration-300">
+        <nav className={`relative w-full rounded-full border transition-all duration-300 px-4 sm:px-6 py-2.5 flex items-center justify-between ${
+          scrolled 
+            ? 'bg-white/95 border-gray-300/80 shadow-xl shadow-black/[0.06] backdrop-blur-xl' 
+            : 'bg-white/85 border-gray-200/80 shadow-lg shadow-black/[0.04] backdrop-blur-xl'
+        }`}>
+          {/* Logo — Left */}
+          <div className="flex items-center gap-2">
+            <Link to="/" className="flex items-center gap-2.5 text-lg md:text-xl font-bold tracking-tight text-[#111] hover:opacity-85 transition-opacity group">
+              <img src="/logo.png" alt="Anvitam Logo" className="h-8 w-8 sm:h-9 sm:w-9 object-contain" />
+              <span>Anvitam</span>
             </Link>
           </div>
 
-          {/* Desktop Nav — Perfectly Centered */}
-          <nav className="hidden md:flex items-center justify-center space-x-6 lg:space-x-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.path}
-                className="text-sm font-medium text-[#333] hover:text-[#111] transition-colors"
-              >
-                {link.name}
-              </Link>
-            ))}
-          </nav>
+          {/* Desktop Nav Links — Center */}
+          <div className="hidden md:flex items-center justify-center space-x-1 lg:space-x-2">
+            {navLinks.map((link) => {
+              const isActive = location.pathname === link.path;
+              return (
+                <Link
+                  key={link.name}
+                  to={link.path}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+                    isActive
+                      ? 'bg-[#111] text-white shadow-xs'
+                      : 'text-gray-600 hover:text-black hover:bg-gray-100/80'
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
+          </div>
 
-          {/* CTA + Admin — Right balanced container */}
-          <div className="hidden md:flex items-center justify-end gap-2.5 xl:gap-3 flex-1">
+          {/* Action Buttons — Right */}
+          <div className="hidden md:flex items-center gap-2">
             <Link
               to="/admin"
-              className="text-xs font-semibold text-gray-400 hover:text-[#111] transition-colors border border-gray-200 rounded-full px-3 py-1.5 hover:border-gray-400"
+              className="text-xs font-semibold text-gray-500 hover:text-black transition-colors px-2.5 py-1.5"
             >
               Admin
             </Link>
             <button
               onClick={() => setEstimatorOpen(true)}
-              className="inline-flex items-center gap-1.5 border border-[#111] text-[#111] px-3.5 py-2 rounded-full text-xs xl:text-sm font-semibold hover:bg-[#111] hover:text-white transition-all duration-300"
+              className="inline-flex items-center gap-1.5 border border-gray-300 text-[#111] px-3.5 py-1.5 rounded-full text-xs font-semibold hover:border-black hover:bg-gray-50 transition-all duration-200"
             >
-              <Calculator size={14} /> Get Estimate
+              <Calculator size={13} /> Get Estimate
             </button>
             <a
               href={TOPMATE}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 bg-[#CCFF00] text-[#111] px-4 xl:px-5 py-2.5 rounded-full text-xs xl:text-sm font-semibold hover:scale-105 transition-transform duration-300"
+              className="inline-flex items-center gap-1 bg-[#CCFF00] text-[#111] px-4 py-1.5 rounded-full text-xs font-bold hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shadow-xs"
             >
-              Free Consultation →
+              Consultation →
             </a>
           </div>
 
-          {/* Mobile hamburger */}
+          {/* Mobile Toggle */}
           <button
-            className="md:hidden relative z-[60] p-2 text-[#111]"
+            className="md:hidden relative z-[60] p-1.5 text-gray-800 rounded-full hover:bg-gray-100 transition-colors"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
-
-          {/* Mobile overlay moved outside header to prevent backdrop-blur containment */}
-        </div>
+        </nav>
       </header>
 
       {/* Mobile overlay */}
@@ -259,7 +276,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </AnimatePresence>
 
       {/* Estimator Modal — createPortal renders into document.body */}
-      {estimatorOpen && <EstimatorModal onClose={() => setEstimatorOpen(false)} />}
+      {estimatorOpen && (
+        <EstimatorModal 
+          initialServiceId={estimatorServiceId} 
+          onClose={() => { setEstimatorOpen(false); setEstimatorServiceId(undefined); }} 
+        />
+      )}
 
       {/* Main */}
       <main className="flex-grow">{children}</main>
@@ -314,10 +336,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div>
               <h4 className="text-white/40 text-xs font-bold uppercase tracking-widest mb-5">Contact Us</h4>
               <ul className="space-y-3">
-                <li><a href="mailto:anvitamarchitects@gmail.com" className="text-sm text-white/70 hover:text-[#CCFF00] transition-colors">anvitamarchitects@gmail.com</a></li>
+                <li><a href="mailto:ar.archanagavas@gmail.com" className="text-sm text-white/70 hover:text-[#CCFF00] transition-colors">ar.archanagavas@gmail.com</a></li>
                 <li><a href="tel:+917990657190" className="text-sm text-white/70 hover:text-[#CCFF00] transition-colors">+91 7990657190</a></li>
+                <li><span className="text-xs text-white/50 leading-relaxed block">2ND Floor, alisha chambers, Santram Mandir Rd, Nadiad, Gujarat 387001</span></li>
                 <li><Link to="/contact" className="text-sm text-white/70 hover:text-[#CCFF00] transition-colors">Send us a message</Link></li>
-                <li><Link to="/shop" className="text-sm text-white/70 hover:text-[#CCFF00] transition-colors">Shop & Resources</Link></li>
               </ul>
             </div>
           </div>
@@ -326,14 +348,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-12 mb-10 border-b border-white/10">
             {[
               { icon: '📞', label: 'Phone No:', val: '+91 7990657190' },
-              { icon: '✉️', label: 'Email Address:', val: 'anvitamarchitects@gmail.com' },
-              { icon: '📍', label: 'Location:', val: 'India' },
+              { icon: '✉️', label: 'Email Address:', val: 'ar.archanagavas@gmail.com' },
+              { icon: '📍', label: 'Studio Address:', val: '2ND Floor, alisha chambers, Santram Mandir Rd, Nadiad, Gujarat 387001' },
             ].map((c, i) => (
               <div key={i} className="flex items-center gap-5">
                 <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-lg shrink-0">{c.icon}</div>
                 <div className="flex flex-col justify-center">
                   <p className="text-[#CCFF00] text-xs font-bold mb-1">{c.label}</p>
-                  <p className="text-white/70 text-sm leading-tight">{c.val}</p>
+                  <p className="text-white/70 text-xs md:text-sm leading-snug">{c.val}</p>
                 </div>
               </div>
             ))}

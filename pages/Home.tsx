@@ -2,17 +2,44 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
-import { ArrowRight, MapPin, Globe, Trees, Calculator } from 'lucide-react';
-import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
-import TestimonialCarousel from '../components/TestimonialCarousel';
-import EstimatorModal from '../components/EstimatorModal';
+import { ArrowRight, Trees, Linkedin, Mail, ArrowUpRight } from 'lucide-react';
+import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
+import SlidingTestimonials from '../components/SlidingTestimonials';
+import InfiniteMarquee from '../components/InfiniteMarquee';
+import VerticalTimeline from '../components/VerticalTimeline';
+import { FlowButton } from '../components/ui/flow-button';
 
+const FLIP_WORDS = [
+  "Farms",
+  "Eco Resorts",
+  "Airbnbs",
+  "Farm Retreats",
+  "Homestays",
+  "Weekend Villas",
+  "Wellness Centers",
+  "Food Forests",
+  "Agrotourism",
+  "Community Centers",
+  "Terrace Gardens"
+];
+
+const SERVICES_CHECKLIST = [
+  "Permaculture Design",
+  "Farm retreat",
+  "Airbnb",
+  "Homestay",
+  "Community Center",
+  "Weekend Villa",
+  "Eco Resort",
+  "Wellness Retreat Center",
+  "Food Forest",
+  "Agrotourism",
+  "Landscape Design",
+  "Terrace Garden"
+];
 
 /* ─── HERO BACKGROUND VIDEO/IMAGE URL ─── */
 const HERO_BG = '/hero-image.jpg';
-const FEATURE_1 = 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=75&w=1200&auto=format&fit=crop';
-const FEATURE_2 = 'https://images.unsplash.com/photo-1571771019784-3ff35f4f4277?q=75&w=1200&auto=format&fit=crop';
-const FEATURE_3 = 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=75&w=1200&auto=format&fit=crop';
 const SERVICE_1 = 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=75&w=600&auto=format&fit=crop';
 const SERVICE_2 = 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=75&w=600&auto=format&fit=crop';
 const SERVICE_3 = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=75&w=600&auto=format&fit=crop';
@@ -32,11 +59,58 @@ const FadeUp = React.forwardRef<HTMLDivElement, { children: React.ReactNode; del
   )
 );
 
+/* ── Typewriter Effect Component ── */
+const TypewriterHeadingWords: React.FC<{ words: string[] }> = ({ words }) => {
+  const [index, setIndex] = useState(0);
+  const [subIndex, setSubIndex] = useState(0);
+  const [reverse, setReverse] = useState(false);
+  const [blink, setBlink] = useState(true);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setBlink((prev) => !prev);
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [blink]);
+
+  useEffect(() => {
+    if (subIndex === words[index].length + 1 && !reverse) {
+      const timeout = setTimeout(() => {
+        setReverse(true);
+      }, 2000);
+      return () => clearTimeout(timeout);
+    }
+
+    if (subIndex === 0 && reverse) {
+      setReverse(false);
+      setIndex((prev) => (prev + 1) % words.length);
+      return;
+    }
+
+    const timeout = setTimeout(
+      () => {
+        setSubIndex((prev) => prev + (reverse ? -1 : 1));
+      },
+      reverse ? 45 : 85
+    );
+
+    return () => clearTimeout(timeout);
+  }, [subIndex, index, reverse, words]);
+
+  return (
+    <span className="inline-block relative text-[#CCFF00] font-bold">
+      {words[index].substring(0, subIndex)}
+      <span className={`inline-block ml-0.5 text-[#CCFF00] font-light ${blink ? 'opacity-100' : 'opacity-0'} transition-opacity duration-100`}>
+        |
+      </span>
+    </span>
+  );
+};
+
 const Home: React.FC = () => {
-  const { projects, blogs, services } = useContent();
+  const { projects, blogs, services, partners, openEstimator } = useContent();
   const navigate = useNavigate();
   const heroRef = useRef<HTMLDivElement>(null);
-  const [estimatorOpen, setEstimatorOpen] = useState(false);
 
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '25%']);
@@ -45,20 +119,16 @@ const Home: React.FC = () => {
   const showcaseProjects = projects?.slice(0, 2) || [];
   const recentBlogs = blogs?.filter(b => b.status === 'published').slice(0, 2) || [];
 
-  const TOPMATE = 'https://topmate.io/archanagavas/1799075?utm_source=public_profile&utm_campaign=archanagavas';
   const neonBtn = 'inline-flex items-center gap-2 bg-[#CCFF00] text-[#050505] px-6 py-3 rounded-full text-sm font-semibold hover:scale-105 transition-transform duration-300 cursor-pointer';
   const outlineBtn = 'inline-flex items-center gap-2 border border-[#111] text-[#111] bg-transparent px-6 py-3 rounded-full text-sm font-semibold hover:bg-[#111] hover:text-white transition-all duration-300 cursor-pointer';
 
   return (
-    <div className="w-full bg-[#EFEFEB] text-[#111] font-sans overflow-hidden">
-
-      {/* Estimator Modal — rendered via createPortal into document.body */}
-      {estimatorOpen && <EstimatorModal onClose={() => setEstimatorOpen(false)} />}
+    <div className="w-full bg-white text-[#111] font-sans overflow-hidden">
 
       <Helmet>
-        <title>Anvitam | Sustainable Architecture & Eco Design</title>
-        <meta name="description" content="Anvitam designs high-performing farm retreats, eco-resorts, Airbnbs, homestays, and wellness centers using permaculture and sustainable landscape design." />
-        <meta name="keywords" content="architecture firm, sustainable architecture, permaculture design, eco retreats, farm stays, biophilic design, green building, Vadodara, Gujarat, India" />
+        <title>Anvitam | Regenerative Architecture for Farms, Retreats & Resorts</title>
+        <meta name="description" content="Anvitam combines architecture, landscape, permaculture and climate-responsive design to create places that work with their land — not against it. Working across India, USA, Australia & globally." />
+        <meta name="keywords" content="regenerative architecture, sustainable architecture, farm retreat architect, eco resort architect, permaculture designer, food forest design, natural building" />
         <meta name="robots" content="index, follow" />
         <meta name="X-Robots-Tag" content="index, follow" />
         <meta name="publisher" content="Anvitam" />
@@ -69,7 +139,7 @@ const Home: React.FC = () => {
       {/* ══════════════════════════════════════════
           HERO — full-bleed mountain image, centered text
       ══════════════════════════════════════════ */}
-      <section ref={heroRef} className="relative h-screen min-h-[600px] flex flex-col items-center justify-center overflow-hidden">
+      <section ref={heroRef} className="relative h-screen min-h-[680px] flex flex-col items-center justify-center overflow-hidden">
         {/* BG image with parallax */}
         <motion.div style={{ y: heroY }} className="absolute inset-0 z-0">
           <img 
@@ -80,56 +150,72 @@ const Home: React.FC = () => {
             loading="eager"
           />
           {/* subtle dark vignette overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70" />
         </motion.div>
 
         {/* Centered hero text */}
-        <motion.div style={{ opacity: heroOpacity }} className="relative z-10 text-center px-6 max-w-4xl mx-auto">
+        <motion.div style={{ opacity: heroOpacity }} className="relative z-10 text-center px-6 max-w-4xl mx-auto pt-16">
+          {/* Trust Pill Badge */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="inline-block mb-6 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-medium tracking-widest uppercase"
+            className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/90 backdrop-blur-md border border-white/40 shadow-lg text-gray-900 text-xs font-semibold mb-8 hover:scale-[1.02] transition-transform cursor-pointer"
           >
-            Eco Friendly Design
+            <div className="flex -space-x-2.5 overflow-hidden">
+              <img className="inline-block h-7 w-7 rounded-full ring-2 ring-white object-cover" src="/avatars/client1.jpg" alt="Mahandra sinh Solanki" />
+              <img className="inline-block h-7 w-7 rounded-full ring-2 ring-white object-cover" src="/avatars/client2.jpg" alt="Akash Jha" />
+              <img className="inline-block h-7 w-7 rounded-full ring-2 ring-white object-cover" src="/avatars/client3.jpg" alt="Unique School of Science" />
+              <img className="inline-block h-7 w-7 rounded-full ring-2 ring-white object-cover" src="/avatars/client4.jpg" alt="Client" />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="flex text-amber-500 text-xs tracking-tighter">★ ★ ★ ★ ★</span>
+              <span className="text-gray-900 font-bold text-xs tracking-tight">Trusted by 20+ owners</span>
+            </div>
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-4xl sm:text-6xl md:text-7xl text-white font-bold leading-[1.1] tracking-tight mb-6"
+            className="text-4xl sm:text-6xl md:text-7xl text-white font-bold leading-[1.15] tracking-tight mb-8"
           >
-            Sustainable Architecture for{' '}
-            <span className="text-[#CCFF00]">Modern Living</span>
+            Regenerative Architecture for{' '}
+            <TypewriterHeadingWords words={FLIP_WORDS} />
           </motion.h1>
 
+          {/* 2 Prominent Hero Action Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10"
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="flex flex-wrap items-center justify-center gap-4 mb-10"
           >
-            <a href={TOPMATE} target="_blank" rel="noreferrer" className={neonBtn}>
-              Get a Design Consultation <ArrowRight size={16} />
-            </a>
-            <button
-              onClick={() => setEstimatorOpen(true)}
-              className="inline-flex items-center gap-2 border-2 border-white text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-white hover:text-[#111] transition-all duration-300 cursor-pointer"
-            >
-              <Calculator size={16} /> Get Instant Estimate
-            </button>
+            <Link to="/projects">
+              <FlowButton text="Explore Our Projects" variant="dark" className="shadow-lg" />
+            </Link>
+            <FlowButton
+              text="Get Estimate"
+              variant="lime"
+              onClick={() => window.dispatchEvent(new CustomEvent('open-estimator'))}
+            />
           </motion.div>
 
-          {/* Benefit checks */}
+          {/* Services Checklist Bar */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className="flex flex-wrap items-center justify-center gap-6 text-white text-sm"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="flex flex-wrap items-center justify-center gap-2 max-w-4xl mx-auto text-xs"
           >
-            {['Permaculture Design', 'Farm retreat', 'Airbnb', 'Homestay', 'Community Center', 'Weekend Villa', 'Eco Resort', 'Wellness Retreat Center', 'Food Forest', 'Agrotourism', 'Landscape Design', 'Terrace Garden'].map(b => (
-              <span key={b} className="flex items-center gap-1.5"><span className="text-[#CCFF00]">✓</span> {b}</span>
+            {SERVICES_CHECKLIST.map((item) => (
+              <span
+                key={item}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white font-medium shadow-xs hover:border-[#CCFF00]/60 transition-colors"
+              >
+                <span className="text-[#CCFF00] font-bold text-xs">✓</span>
+                <span className="text-white/95">{item}</span>
+              </span>
             ))}
           </motion.div>
         </motion.div>
@@ -137,119 +223,118 @@ const Home: React.FC = () => {
         {/* Stats bar at the bottom of hero */}
         <div className="absolute bottom-0 left-0 right-0 z-10 grid grid-cols-3 border-t border-white/20 bg-black/40 backdrop-blur-md">
           {[
-            { num: '12+', label: 'Projects Completed' },
-            { num: 'Permaculture', label: 'Grounded in Principles' },
-            { num: '100%', label: 'Climate-Aware Design' },
+            { num: '10+', label: 'Projects Delivered' },
+            { num: 'Global', label: 'Projects & Consultations' },
+            { num: '811,297 sq ft', label: 'Impacted by Anvitam' },
           ].map((s, i) => (
-            <div key={i} className="py-3 md:py-6 px-1 sm:px-3 text-center text-white border-r last:border-r-0 border-white/20 flex flex-col justify-center items-center">
-              <p className="text-sm sm:text-2xl md:text-4xl font-bold leading-tight break-words">{s.num}</p>
-              <p className="text-[8px] sm:text-[10px] md:text-xs text-white/80 mt-1 uppercase tracking-wider text-center">{s.label}</p>
+            <div key={i} className="py-3 md:py-6 px-2 sm:px-4 text-center text-white border-r last:border-r-0 border-white/20 flex flex-col justify-center items-center">
+              <p className="text-base sm:text-2xl md:text-3xl font-bold leading-tight break-words">{s.num}</p>
+              <p className="text-[9px] sm:text-[11px] md:text-xs text-white/80 mt-1 uppercase tracking-wider text-center">{s.label}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* ══ CLIENT LOGO SLIDER ══ */}
-      <div className="bg-white border-y border-black/5 py-5 overflow-hidden">
+      <div className="bg-white border-y border-black/5 py-6">
         <p className="text-center text-xs text-[#999] uppercase tracking-widest mb-4">Trusted by our clients</p>
-        <div className="relative flex overflow-hidden">
-          <div className="animate-marquee-infinite whitespace-nowrap text-[#333] text-sm font-semibold gap-0">
-            {[
-              'dwelvex studio', 'Unique school of science', 'Beer Bar', 'Shalimar',
-              'yourweb3guy', 'Saraya', 'Mahadev Construction', 'Mossaria', 'vanvagado Farm', 'Carpa Lupa', 'The Batukaru Yurt',
-              'dwelvex studio', 'Unique school of science', 'Beer Bar', 'Shalimar',
-              'yourweb3guy', 'Saraya', 'Mahadev Construction', 'Mossaria', 'vanvagado Farm', 'Carpa Lupa', 'The Batukaru Yurt',
-            ].map((name, i) => (
-              <span key={i} className="mx-10 opacity-40 hover:opacity-100 transition-opacity cursor-default">{name}</span>
-            ))}
-          </div>
-        </div>
+        <InfiniteMarquee
+          items={[
+            'dwelvex studio', 'Unique school of science', 'Beer Bar', 'Shalimar',
+            'yourweb3guy', 'Saraya', 'Mahadev Construction', 'Mossaria', 'vanvagado Farm', 'Carpa Lupa', 'The Batukaru Yurt'
+          ]}
+        />
       </div>
 
-      {/* ══════════════════════════════════════════
-          WHAT WE DO — 2 columns on light bg (Biogax section 2 style)
-      ══════════════════════════════════════════ */}
-      <section className="bg-[#EFEFEB] py-24 px-6 md:px-16 lg:px-24">
-        <div className="max-w-screen-xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-          {/* Left col — heading + pills + CTA */}
+      {/* ══ DIFFERENTIATOR ══ */}
+      <section className="bg-white py-24 px-6 md:px-16 lg:px-24 border-t border-gray-100">
+        <div className="max-w-screen-xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <FadeUp>
             <div className="inline-flex items-center gap-2 border border-[#111]/20 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#111] mb-8">
-              <span>↓</span> What We Do
+              <span>↓</span> Our Approach
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-[#111] mb-8">
-              Designing Nature-First Architecture for the World
+            <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-[#111] mb-6">
+              Your land already has a system.
             </h2>
-            {/* Tag pills — same as Biogax */}
-            <div className="flex flex-wrap gap-3 mb-10">
-              {['Visionary', 'Collaborative', 'Sustainable', 'Global', 'Impactful', 'Reliable', 'Adaptive', 'Efficient', 'Innovative'].map(tag => (
-                <span key={tag} className="border border-[#111]/15 rounded-full px-4 py-1.5 text-sm text-[#111]/70 hover:bg-[#111] hover:text-white transition-all cursor-default">{tag}</span>
-              ))}
-            </div>
-            <Link to="/contact" className={neonBtn}>
-              Get a Design Consultation <ArrowRight size={16} />
+            <p className="text-[#555] text-lg leading-relaxed mb-4">
+              We help you understand it <strong className="text-[#111]">before you build.</strong>
+            </p>
+            <p className="text-[#555] text-base leading-relaxed mb-8">
+              Most projects begin with <em>where should the building go?</em> We begin with <strong className="text-[#111]">what is the land already telling us?</strong> Climate, water, soil, sun, wind, topography and living systems come first. Architecture follows.
+            </p>
+            <Link to="/contact">
+              <FlowButton text="Discuss Your Project" />
             </Link>
           </FadeUp>
-
-          {/* Right col — description */}
           <FadeUp delay={0.15}>
-            <p className="text-3xl md:text-4xl font-bold leading-[1.2] text-[#111] mb-8">
-              We're helping property owners transform spaces into <span className="text-[#888]">nature-led, profitable sanctuaries.</span>
-            </p>
-            <p className="text-[#555] text-base leading-relaxed mb-4">
-              Our mission is simple: to make <strong className="text-[#111]">thoughtful, sustainable architecture</strong> accessible across the world. We design and deliver <strong className="text-[#111]">end-to-end solutions</strong> for farm retreats, wellness spaces, eco-resorts, and regenerative landscapes, where we are working with clients across the USA, Australia, India, Bali and beyond.
-            </p>
-            <p className="text-[#555] text-base leading-relaxed">
-              From <strong className="text-[#111]">intimate lifestyle farms</strong> to <strong className="text-[#111]">large commercial developments</strong>, our work adapts to your scale and vision, whether it’s a nature-led Airbnb, a weekend villa, or a land-based project rooted in <strong className="text-[#111]">permaculture principles</strong>.
-            </p>
+            <div className="grid grid-cols-3 gap-4">
+              {[
+                { icon: '☀️', label: 'Climate', body: 'Sun, shade, wind, heat, rainfall and seasonal comfort.' },
+                { icon: '💧', label: 'Water', body: 'Drainage, harvesting, recharge, irrigation and water resilience.' },
+                { icon: '🌱', label: 'Living Systems', body: 'Soil, vegetation, biodiversity, food production and landscape.' },
+              ].map((c, i) => (
+                <div key={i} className="bg-gray-50/70 rounded-2xl p-6 border border-gray-200/80 hover:shadow-lg hover:border-gray-300 transition-all flex flex-col">
+                  <span className="text-3xl mb-4">{c.icon}</span>
+                  <h3 className="font-bold text-[#111] mb-2">{c.label}</h3>
+                  <p className="text-[#555] text-sm leading-relaxed">{c.body}</p>
+                </div>
+              ))}
+            </div>
           </FadeUp>
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════
-          FEATURE BANNERS — full-width image cards (Biogax scroll banners)
-          Each is a wide rounded card image with text overlay bottom-left
-      ══════════════════════════════════════════ */}
-      <section className="bg-[#EFEFEB] py-4 px-6 md:px-16 lg:px-24 space-y-4">
-        {[
-          { img: FEATURE_1, h: 'Design Your Farm Retreat.', sub: 'Lower your impact and your costs with our farm retreat architecture design that works with the land.', kw: 'Farm retreat architecture' },
-          { img: FEATURE_2, h: 'Maximize Property Efficiency.', sub: 'Carefully planned wellness retreats and homestays designed for performance, longevity, and guest experience.', kw: 'Wellness retreat architect' },
-          { img: FEATURE_3, h: 'Grow Revenue from Nature.', sub: 'Regenerative landscapes and food forests that evolve into self-sustaining, productive ecosystems.', kw: 'Edible garden design services' },
-        ].map((b, i) => (
-          <FadeUp key={i} delay={i * 0.05}>
-            <div className="relative rounded-2xl overflow-hidden h-[480px] md:h-[560px] group cursor-pointer">
-              <img src={b.img} alt={b.h} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-              <div className="absolute bottom-0 left-0 p-10 max-w-xl">
-                <h3 className="text-white text-3xl md:text-4xl font-bold leading-[1.15] mb-3">{b.h}</h3>
-                <p className="text-white/75 text-sm md:text-base leading-relaxed mb-6">{b.sub}</p>
-                <Link to="/contact" className={neonBtn}>
-                  Get a Design Consultation <ArrowRight size={16} />
-                </Link>
-              </div>
-              <div className="absolute top-4 right-4 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 text-white/80 text-xs">
-                {b.kw}
-              </div>
+      {/* ══ WHAT ARE YOU PLANNING — self-selection ══ */}
+      <section className="bg-white py-24 px-6 md:px-16 lg:px-24 border-t border-gray-100">
+        <div className="max-w-screen-xl mx-auto">
+          <FadeUp>
+            <div className="text-center mb-14">
+              <div className="inline-flex items-center gap-2 border border-gray-300 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-6">↓ Find Your Path</div>
+              <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] text-gray-900 mb-4">What are you planning?</h2>
+              <p className="text-gray-500 max-w-xl mx-auto">Tell us what you're building and we'll calculate an instant cost estimate for you.</p>
             </div>
           </FadeUp>
-        ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { label: 'I want to build a farm retreat', icon: '🏕️', serviceId: 'farm-retreat' },
+              { label: 'I want to create an eco-resort', icon: '🏡', serviceId: 'eco-resort' },
+              { label: 'I want a nature-connected home', icon: '🌿', serviceId: 'weekend-villa' },
+              { label: 'I want to design a food forest', icon: '🌳', serviceId: 'permaculture-design' },
+              { label: 'I want a wellness destination', icon: '🧘', serviceId: 'eco-resort' },
+              { label: 'I own land and I\'m not sure what\'s possible yet', icon: '🌍', serviceId: 'farm-retreat' },
+            ].map((card, i) => (
+              <FadeUp key={i} delay={i * 0.07}>
+                <button
+                  type="button"
+                  onClick={() => window.dispatchEvent(new CustomEvent('open-estimator', { detail: { serviceId: card.serviceId } }))}
+                  className="w-full text-left group flex items-center gap-4 bg-gray-50/80 hover:bg-gray-900 border border-gray-200/80 hover:border-gray-900 rounded-2xl p-6 transition-all duration-300 cursor-pointer shadow-sm active:scale-[0.98]"
+                >
+                  <span className="text-3xl shrink-0">{card.icon}</span>
+                  <span className="text-gray-900 group-hover:text-white font-semibold text-sm leading-snug transition-colors">{card.label}</span>
+                  <ArrowRight size={16} className="ml-auto text-gray-400 group-hover:text-white shrink-0 transition-colors" />
+                </button>
+              </FadeUp>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* ══════════════════════════════════════════
           SERVICES — card carousel / centered heading + 3 portrait cards
       ══════════════════════════════════════════ */}
-      <section className="bg-[#EFEFEB] py-24 px-6 md:px-16 lg:px-24">
+      <section className="bg-white py-24 px-6 md:px-16 lg:px-24 border-t border-gray-100">
         <div className="max-w-screen-xl mx-auto">
           {/* Section label */}
           <FadeUp>
             <div className="text-center mb-16">
               <div className="inline-flex items-center gap-2 border border-[#111]/20 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#111] mb-6">
-                <span>↓</span> Services We Offer
+                <span>↓</span> What We Offer
               </div>
               <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-[#111] mb-4">
-                Architectural solutions built for nature
+                What can we help you create?
               </h2>
               <p className="text-[#555] max-w-2xl mx-auto text-base">
-                We work globally on <strong className="text-[#111]">landscape</strong> and <strong className="text-[#111]">sustainable building design</strong>, with projects across the USA, Australia, India, Bali and beyond.
+                Four core disciplines, integrated into a single design approach.
               </p>
             </div>
           </FadeUp>
@@ -257,7 +342,7 @@ const Home: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {services.slice(0, 3).map((s, i) => (
               <FadeUp key={s.id} delay={i * 0.1}>
-                <div className="bg-white rounded-2xl overflow-hidden flex flex-col h-full group cursor-pointer border border-black/5 hover:shadow-xl transition-shadow duration-300" onClick={() => navigate(`/services/${s.id}`)}>
+                <div className="bg-white rounded-2xl overflow-hidden flex flex-col h-full group cursor-pointer border border-gray-200 hover:shadow-xl transition-shadow duration-300" onClick={() => navigate(`/services/${s.id}`)}>
                   <div className="relative h-72 overflow-hidden">
                     <div className="absolute top-4 left-4 z-10 w-12 h-12 bg-[#CCFF00] rounded-full flex items-center justify-center text-2xl shadow-md">
                       {['🌿', '🌱', '🏡'][i] || '🏗️'}
@@ -270,8 +355,8 @@ const Home: React.FC = () => {
                     </div>
                   </div>
                   <div className="p-6 mt-auto">
-                    <Link to="/contact" className={neonBtn}>
-                      Get a Design Consultation <ArrowRight size={16} />
+                    <Link to={`/services/${s.id}`}>
+                      <FlowButton text="Explore Service" />
                     </Link>
                   </div>
                 </div>
@@ -280,51 +365,26 @@ const Home: React.FC = () => {
           </div>
 
           <div className="text-center mt-10">
-            <Link to="/services" className={outlineBtn}>View all services <ArrowRight size={14} /></Link>
+            <Link to="/services">
+              <FlowButton text="View All Services" />
+            </Link>
           </div>
         </div>
       </section>
 
       {/* ══════════════════════════════════════════
-          PROCESS — numbered steps on light bg
+          PROCESS — 2-Column Methodology Section
       ══════════════════════════════════════════ */}
-      <section className="bg-[#EFEFEB] py-24 px-6 md:px-16 lg:px-24 border-t border-black/5">
-        <div className="max-w-screen-xl mx-auto">
-          <FadeUp>
-            <div className="text-center mb-16">
-              <div className="inline-flex items-center gap-2 border border-[#111]/20 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#111] mb-6">
-                <span>↓</span> Our Process
-              </div>
-              <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-[#111] mb-4">Implementation Process.</h2>
-              <p className="text-[#555] max-w-xl mx-auto text-base">
-                From initial <strong className="text-[#111]">outdoor living design consultation</strong> to full project delivery, we manage every step.
-              </p>
-            </div>
-          </FadeUp>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { n: '01', title: 'Site Understanding & Analysis', body: 'We study the land in detail like its ecology, climate, contours, and rhythms to establish a grounded design intent.' },
-              { n: '02', title: 'Design Resolution', body: 'Architecture, landscape, and systems are developed together as a unified whole, balancing performance, regulation, and experience.' },
-              { n: '03', title: 'Guided Execution', body: 'From drawings to construction, we guide the project to completion, ensuring clarity, quality, and continuity of vision.' },
-            ].map((p, i) => (
-              <FadeUp key={i} delay={i * 0.1}>
-                <div className="bg-white rounded-2xl p-8 border border-black/5 hover:shadow-lg transition-shadow h-full flex flex-col">
-                  <span className="text-6xl font-bold text-[#111]/8 mb-4 block">{p.n}</span>
-                  <h3 className="text-xl font-bold text-[#111] mb-3">{p.title}</h3>
-                  <p className="text-[#555] text-sm leading-relaxed flex-grow">{p.body}</p>
-                </div>
-              </FadeUp>
-            ))}
-          </div>
+      <section className="bg-white py-24 px-6 md:px-16 lg:px-24 border-t border-gray-100">
+        <div className="max-w-screen-xl mx-auto" id="method">
+          <VerticalTimeline />
         </div>
       </section>
 
-
       {/* ══════════════════════════════════════════
-          PROJECTS — left image, right details (Biogax project card style)
+          PROJECTS — left image, right details
       ══════════════════════════════════════════ */}
-      <section className="bg-[#EFEFEB] py-24 px-6 md:px-16 lg:px-24 border-t border-black/5">
+      <section className="bg-white py-24 px-6 md:px-16 lg:px-24 border-t border-gray-100">
         <div className="max-w-screen-xl mx-auto">
           <FadeUp>
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
@@ -332,16 +392,18 @@ const Home: React.FC = () => {
                 <div className="inline-flex items-center gap-2 border border-[#111]/20 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#111] mb-6">
                   <span>↓</span> See Our Projects
                 </div>
-                <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-[#111]">Powering Change Around the World</h2>
+                <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-[#111]">Ideas are easy. We care about what works on site.</h2>
               </div>
-              <Link to="/projects" className={outlineBtn}>View all projects <ArrowRight size={14} /></Link>
+              <Link to="/projects">
+                <FlowButton text="View All Projects" />
+              </Link>
             </div>
           </FadeUp>
 
           <div className="space-y-8">
             {showcaseProjects.length > 0 ? showcaseProjects.map((project, i) => (
               <FadeUp key={project.id} delay={i * 0.1}>
-                <div className="bg-white rounded-2xl overflow-hidden flex flex-col md:flex-row border border-black/5 hover:shadow-xl transition-shadow group">
+                <div className="bg-white rounded-2xl overflow-hidden flex flex-col md:flex-row border border-gray-200 hover:shadow-xl transition-shadow group">
                   <div className="relative md:w-1/2 h-64 md:h-auto overflow-hidden">
                     <img src={project.image} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                   </div>
@@ -353,7 +415,7 @@ const Home: React.FC = () => {
                           <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
                             project.status === 'ongoing' 
                               ? 'bg-amber-100 text-amber-800 border border-amber-200' 
-                              : 'bg-green-150 text-green-800 border border-green-250'
+                              : 'bg-green-100 text-green-800 border border-green-200'
                           }`}>
                             {project.status === 'ongoing' ? 'Ongoing' : 'Delivered'}
                           </span>
@@ -379,8 +441,8 @@ const Home: React.FC = () => {
                         </div>
                       ))}
                     </div>
-                    <Link to={`/projects/${project.slug || project.id}`} className={neonBtn}>
-                      View Details <ArrowRight size={16} />
+                    <Link to={`/projects/${project.slug || project.id}`}>
+                      <FlowButton text="View Details" />
                     </Link>
                   </div>
                 </div>
@@ -389,7 +451,7 @@ const Home: React.FC = () => {
               /* Placeholder cards when no data */
               [0, 1].map(i => (
                 <FadeUp key={i} delay={i * 0.1}>
-                  <div className="bg-white rounded-2xl overflow-hidden flex flex-col md:flex-row border border-black/5 hover:shadow-xl transition-shadow group">
+                  <div className="bg-white rounded-2xl overflow-hidden flex flex-col md:flex-row border border-gray-200 hover:shadow-xl transition-shadow group">
                     <div className="relative md:w-1/2 h-64 md:h-80 overflow-hidden bg-[#ddd]">
                       <img src={i === 0 ? SERVICE_1 : SERVICE_2} alt="Project" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                     </div>
@@ -416,7 +478,9 @@ const Home: React.FC = () => {
                           </div>
                         ))}
                       </div>
-                      <Link to="/projects" className={neonBtn}>View Details <ArrowRight size={16} /></Link>
+                      <Link to="/projects">
+                        <FlowButton text="View Details" />
+                      </Link>
                     </div>
                   </div>
                 </FadeUp>
@@ -427,26 +491,28 @@ const Home: React.FC = () => {
       </section>
 
       {/* ══════════════════════════════════════════
-          BLOG — section label + grid (Biogax blog style)
+          BLOG — section label + grid
       ══════════════════════════════════════════ */}
-      <section className="bg-[#EFEFEB] py-24 px-6 md:px-16 lg:px-24 border-t border-black/5">
+      <section className="bg-white py-24 px-6 md:px-16 lg:px-24 border-t border-gray-100">
         <div className="max-w-screen-xl mx-auto">
           <FadeUp>
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
               <div>
                 <div className="inline-flex items-center gap-2 border border-[#111]/20 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#111] mb-6">
-                  <span>↓</span> Our Blog
+                  <span>↓</span> Our Journal
                 </div>
-                <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-[#111]">Our latest insights</h2>
+                <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-[#111]">Learn before you build.</h2>
               </div>
-              <Link to="/blog" className={neonBtn}>View all posts <ArrowRight size={14} /></Link>
+              <Link to="/blog">
+                <FlowButton text="Read the Journal" />
+              </Link>
             </div>
           </FadeUp>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {recentBlogs.length > 0 ? recentBlogs.map((post, i) => (
               <FadeUp key={post.id} delay={i * 0.1}>
-                <Link to={`/blog/${post.slug || post.id}`} className="bg-white rounded-2xl overflow-hidden flex flex-col border border-black/5 hover:shadow-xl transition-shadow group cursor-pointer">
+                <Link to={`/blog/${post.slug || post.id}`} className="bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 hover:shadow-xl transition-shadow group cursor-pointer">
                   {post.image && (
                     <div className="h-52 overflow-hidden">
                       <img src={post.image} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
@@ -472,7 +538,7 @@ const Home: React.FC = () => {
                 { tag: 'Villa Design', date: 'Feb 2025', title: 'Weekend Villa Architect: What to Look for in Australia', excerpt: 'Key questions to ask any landscape architect for villas before committing to a boutique villa landscape design project.' },
               ].map((post, i) => (
                 <FadeUp key={i} delay={i * 0.1}>
-                  <Link to="/blog" className="bg-white rounded-2xl overflow-hidden flex flex-col border border-black/5 hover:shadow-xl transition-shadow group cursor-pointer">
+                  <Link to="/blog" className="bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 hover:shadow-xl transition-shadow group cursor-pointer">
                     <div className="h-52 overflow-hidden">
                       <img src={i === 0 ? SERVICE_3 : SERVICE_1} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                     </div>
@@ -484,7 +550,7 @@ const Home: React.FC = () => {
                       <h3 className="text-xl font-bold mb-3 group-hover:text-[#555] transition-colors">{post.title}</h3>
                       <p className="text-[#555] text-sm leading-relaxed mb-6">{post.excerpt}</p>
                       <span className="inline-flex items-center gap-2 text-[#111] font-semibold text-sm group-hover:gap-4 transition-all">
-                        Read blog <ArrowRight size={14} />
+                        Read the Guide <ArrowRight size={14} />
                       </span>
                     </div>
                   </Link>
@@ -495,68 +561,186 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-
-
-      {/* ══ TESTIMONIALS — LOOPING CAROUSEL ══ */}
-      <section className="bg-white py-24 px-6 md:px-16 lg:px-24">
-        <div className="max-w-screen-xl mx-auto">
+      {/* ══ TESTIMONIALS — CONTINUOUS SLIDING BAND ══ */}
+      <section className="bg-white py-16 md:py-20 border-t border-gray-100 overflow-hidden">
+        <div className="max-w-screen-xl mx-auto px-6 md:px-16 lg:px-24 mb-6 md:mb-10">
           <FadeUp>
-            <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-[#111] text-center mb-12">Trusted by Our Clients</h2>
+            <div className="inline-flex items-center gap-2 border border-[#111]/20 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#111] mb-3">
+              <Trees size={14} className="text-[#111]" /> CLIENT FEEDBACK
+            </div>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight text-[#111]">
+              Trusted by Our Clients
+            </h2>
           </FadeUp>
-          <TestimonialCarousel />
         </div>
+        <SlidingTestimonials />
       </section>
 
-
-
       {/* ══ PARTNERS / BRANDS ══ */}
-      <section className="bg-white py-24 px-6 md:px-16 lg:px-24">
+      <section className="bg-white py-16 md:py-20 px-6 md:px-16 lg:px-24 border-t border-gray-100">
         <div className="max-w-screen-xl mx-auto">
           <FadeUp>
-            <div className="inline-flex items-center gap-2 border border-[#111]/20 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#111] mb-6">
-              <Trees size={14} className="text-[#111]" /> OUR PARTNERS
+            <div className="inline-flex items-center gap-2 border border-[#111]/20 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#111] mb-4">
+              <Trees size={14} className="text-[#111]" /> OUR CLIENTS &amp; PARTNERS
             </div>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-[#111] mb-12">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight text-[#111] mb-10">
               Brands we partner with
             </h2>
           </FadeUp>
-          
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-[1px] bg-black/10 border border-black/10 rounded-xl overflow-hidden p-[1px]">
-            {[
-              { label: 'yourweb3guy', icon: '🌿' },
-              { label: 'Unique School of Science', icon: '🏫' },
-              { label: 'Carpa Lupa', icon: '🏠' },
-              { label: 'Beer Bar', icon: '🍺' },
-              { label: 'Shalimar', icon: '✦' },
-              { label: 'The Batukaru Yurt', icon: '🏢' },
-              { label: 'Saraya', icon: '🌸' },
-              { label: 'Vanvagado Farm', icon: '🏗️' },
-              
-            ].map((partner, i) => {
-              // Row 1: 3 items (span 2 each)
-              // Row 2: 2 items (span 3 each)
-              // Row 3: 3 items (span 2 each)
-              const colSpan = (i === 3 || i === 4) ? 'md:col-span-3' : 'md:col-span-2';
-              
-              return (
-                <div key={i} className={`bg-white relative p-10 flex flex-col items-center justify-center min-h-[220px] transition-colors hover:bg-gray-50 group cursor-default ${colSpan}`}>
-                  <span className="absolute top-6 left-6 text-xs text-[#555] font-medium">{i + 1}. Client</span>
-                  <div className="flex items-center gap-4 transition-transform group-hover:scale-105 duration-500">
-                    <span className="text-3xl opacity-90">{partner.icon}</span>
-                    <span className="font-bold text-[#111] text-xl md:text-2xl tracking-tight">{partner.label}</span>
-                  </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-5">
+            {([
+              { id: '1', name: 'Camp Leo', logo: '/logos/Camp leo.png' },
+              { id: '2', name: 'Jay Bhole', logo: '/logos/Jay Bhole.png' },
+              { id: '3', name: 'Mahadev Construction', logo: '/logos/Mahadev Construction.png' },
+              { id: '4', name: 'Mossaria', logo: '/logos/Mossaria.png' },
+              { id: '5', name: 'RJ Organics', logo: '/logos/RJ Organics.png' },
+              { id: '6', name: 'SAC', logo: '/logos/SAC.png' },
+              { id: '7', name: 'Shalimar', logo: '/logos/Shalimar.png' },
+              { id: '8', name: 'Stone Age Huts & Hostel', logo: '/logos/Stone Age Huts and hostal.png' },
+              { id: '9', name: 'Unique School of Science', logo: '/logos/Unique School of Science.png' },
+              { id: '10', name: 'Vanvagado Farm', logo: '/logos/Vanvagado farm.png' },
+              { id: '11', name: 'Vergers du Monde', logo: '/logos/vergersdumonde.png' },
+              { id: '12', name: 'yourweb3guy', logo: '/logos/Yourweb3guy.png' },
+            ]).map((partner) => (
+              <div
+                key={partner.id}
+                className="group relative bg-gray-50/90 hover:bg-white border border-gray-200/90 hover:border-[#111] rounded-2xl p-5 flex items-center justify-center transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 h-28 sm:h-32 cursor-pointer"
+              >
+                <img
+                  src={partner.logo}
+                  alt={partner.name}
+                  className="max-h-16 max-w-[130px] object-contain transition-all duration-300 group-hover:scale-110"
+                />
+                {/* Floating Tooltip showing name on hover */}
+                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 translate-y-2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 pointer-events-none z-30 whitespace-nowrap">
+                  <span className="bg-[#111] text-[#CCFF00] text-xs font-bold px-3 py-1 rounded-full shadow-xl border border-white/10 flex items-center gap-1">
+                    {partner.name}
+                  </span>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
+      {/* ══ MEET ARCHANA (Image 1 Inspired Profile Card Layout) ══ */}
+      <section className="bg-white py-24 px-6 md:px-16 lg:px-24 border-t border-gray-100">
+        <div className="max-w-6xl mx-auto">
+          <FadeUp>
+            <div className="inline-flex items-center gap-2 border border-[#111]/20 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#111] mb-10">
+              ↓ The Architect
+            </div>
+          </FadeUp>
+
+          <FadeUp delay={0.1}>
+            <div className="relative flex flex-col lg:flex-row items-center justify-center">
+              {/* Left Profile Image Container */}
+              <div className="w-full lg:w-[480px] shrink-0 h-[480px] sm:h-[520px] rounded-[32px] overflow-hidden bg-[#e5dfd5] shadow-xl relative border border-gray-200">
+                <img
+                  src="/archana.png"
+                  alt="Archana Gavas - Principal Architect"
+                  className="w-full h-full object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+              </div>
+
+              {/* Overlapping Dark Card (Right) */}
+              <div className="w-full lg:w-[580px] bg-[#18181B] border border-white/10 rounded-[28px] p-8 sm:p-10 md:p-12 shadow-2xl mt-6 lg:mt-0 lg:-ml-24 z-10 text-white flex flex-col justify-between">
+                <div>
+                  <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-2">
+                    Archana Gavas
+                  </h2>
+                  <p className="text-sm sm:text-base text-gray-400 font-medium mb-6">
+                    Founder &amp; Principal Architect, Ecological Design
+                  </p>
+                  <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-8">
+                    Archana Gavas is an architect interested in what happens when we stop treating buildings, landscapes, and ecosystems as separate things. Her work sits at the intersection of architecture, permaculture, climate-responsive design, and natural building to create self-sustaining living spaces.
+                  </p>
+                </div>
+
+                {/* Circular Action / Social Buttons Row */}
+                <div className="flex items-center gap-4 pt-2">
+                  <a
+                    href="https://www.linkedin.com/in/archana-gavas/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="LinkedIn"
+                    className="w-12 h-12 rounded-full bg-white text-black hover:bg-[#CCFF00] hover:scale-110 flex items-center justify-center transition-all duration-300 shadow-md"
+                  >
+                    <Linkedin size={20} />
+                  </a>
+                  <a
+                    href="mailto:ar.archanagavas@gmail.com"
+                    aria-label="Email"
+                    className="w-12 h-12 rounded-full bg-white text-black hover:bg-[#CCFF00] hover:scale-110 flex items-center justify-center transition-all duration-300 shadow-md"
+                  >
+                    <Mail size={20} />
+                  </a>
+                  <Link
+                    to="/contact"
+                    className="ml-auto inline-flex items-center gap-2 text-xs uppercase tracking-widest font-bold text-gray-300 hover:text-white transition-colors"
+                  >
+                    Get in Touch <ArrowRight size={14} />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </FadeUp>
+        </div>
+      </section>
+
+      {/* ══ IS ANVITAM RIGHT FOR YOU ══ */}
+      <section className="bg-slate-50 py-24 px-6 md:px-16 lg:px-24 border-t border-b border-gray-200/80">
+        <div className="max-w-screen-xl mx-auto">
+          <FadeUp>
+            <div className="text-center mb-14">
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Is Anvitam the right fit<br/>for your project?</h2>
+              <p className="text-gray-600 max-w-xl mx-auto">Anvitam may be a good fit if you:</p>
+            </div>
+          </FadeUp>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
+            {[
+              'Own or are planning to acquire land',
+              'Want architecture connected to landscape and ecology',
+              'Are developing a farm, retreat, resort, villa or wellness project',
+              'Care about climate-responsive and natural design',
+              'Want to understand the land before building on it',
+              'Are looking for a long-term design approach rather than a generic plan',
+            ].map((item, i) => (
+              <FadeUp key={i} delay={i * 0.06}>
+                <div className="flex items-start gap-3 bg-white border border-gray-200/90 shadow-sm rounded-xl p-5">
+                  <span className="text-emerald-600 font-bold text-lg shrink-0">✓</span>
+                  <span className="text-gray-800 text-sm leading-relaxed">{item}</span>
+                </div>
+              </FadeUp>
+            ))}
+          </div>
+          <FadeUp>
+            <div className="text-center">
+              <Link to="/contact">
+                <FlowButton text="Tell Us About Your Project" />
+              </Link>
+            </div>
+          </FadeUp>
+        </div>
+      </section>
 
       {/* ══ FAQ ══ */}
       <FaqSection />
 
-
+      {/* ══ FINAL CTA ══ */}
+      <section className="bg-white py-24 px-6 md:px-16 lg:px-24 border-t border-gray-200">
+        <div className="max-w-screen-xl mx-auto text-center">
+          <FadeUp>
+            <h2 className="text-4xl md:text-6xl font-bold leading-[1.1] text-gray-900 mb-4">Have land and a vision?</h2>
+            <p className="text-gray-600 text-lg md:text-xl mb-8 max-w-xl mx-auto">Let's design what it could become. Tell us about your site, what you want to create, and where you are in the process.</p>
+            <Link to="/contact">
+              <FlowButton text="Discuss Your Project" className="px-10 py-4 text-base" />
+            </Link>
+          </FadeUp>
+        </div>
+      </section>
 
     </div>
   );
@@ -569,25 +753,26 @@ function FaqSection() {
   const [activeTab, setActiveTab] = React.useState(0);
   const [openIdx, setOpenIdx] = React.useState<number | null>(null);
 
-  const tabs = ['Getting started', 'Collaboration', 'Support'];
+  const tabs = ['Working with Us', 'Our Services', 'Process & Cost'];
   const faqs = [
     [
-      { q: 'How long does a farm retreat architecture project take?', a: 'Typically 6–18 months depending on scale, site conditions, and permitting. We\'ll give you a full timeline after the initial site audit.' },
-      { q: 'Do you provide weekend villa architect services in Australia?', a: 'Yes. We have dedicated teams across major Australian states including NSW, VIC, and QLD delivering weekend villa design and farm stay architecture.' },
-      { q: 'What is permaculture site planning?', a: 'It\'s a design methodology that works with natural systems to create self-sustaining, productive landscapes. We integrate it into every eco retreat design project.' },
-      { q: 'Can I get Airbnb homestay design services remotely?', a: 'Absolutely. We offer full digital discovery, remote design consultations, and partnered local build management across USA and Australia.' },
-      { q: 'Do you handle food forest design?', a: 'Yes — edible garden design services and food forest design are core to our offering and can be added to any retreat or villa landscape project.' },
+      { q: 'What locations do you serve?', a: 'We work with clients globally across India, USA, Australia, and internationally. Site visits and consultations are scheduled based on project scope.' },
+      { q: 'What happens after I get in touch?', a: 'You share details about your site and vision. We have an initial conversation to understand your project. If it\'s a good fit, we discuss scope and next steps — there\'s no commitment required from that first conversation.' },
+      { q: 'Do you work with international clients?', a: 'Yes. We work with clients across India and internationally, including remote consultations and digital project management for early-stage design work.' },
     ],
     [
-      { q: 'How do I collaborate with your team?', a: 'We begin with a design consultation, then assign you a dedicated project lead who manages communication across design, ecology, and build teams.' },
-      { q: 'Can I supply my own images and content?', a: 'Yes. We design around your vision. You can share references, images, and materials at any stage of the process.' },
-      { q: 'Do you work with international clients?', a: 'Yes — we serve clients globally with primary focus on USA and Australia markets, including remote consultations and digital project management.' },
+      { q: 'Do you design complete farm retreats, or just consult?', a: 'We can do both — from full architectural design and masterplanning to focused permaculture or landscape consultations depending on what stage you\'re at and what you need.' },
+      { q: 'Do you provide only architecture, or landscape and permaculture too?', a: 'Anvitam integrates architecture, landscape design, permaculture and natural building as a single practice. You don\'t need to hire separate consultants for each discipline.' },
+      { q: 'Do you work on agricultural land?', a: 'Yes. A significant part of our work involves farm land — whether for farm retreats, food forests, agroforestry systems or permaculture masterplanning on agricultural plots.' },
+      { q: 'Can you design a food forest?', a: 'Yes. Syntropic agroforestry and food forest design are core to our practice — we design multi-layered food systems that integrate with buildings and landscape.' },
     ],
     [
-      { q: 'What support do you offer post-completion?', a: 'We offer 12-month post-project support including seasonal garden reviews, permaculture maintenance guides, and landscape architect for villas check-ins.' },
-      { q: 'Is there a warranty on design work?', a: 'Yes. All architectural plans carry a design warranty. Landscaping and planting guarantees vary by service package.' },
+      { q: 'How much does a project cost?', a: 'Cost depends heavily on the scope, site, scale and services required. We don\'t publish a fixed rate because a site analysis for a farm and a full eco-resort masterplan are very different engagements. We discuss fees after understanding your project.' },
+      { q: 'How long does a project take?', a: 'Early-stage consultations can move quickly. Full design and masterplanning projects typically run over several months depending on complexity, approvals and the build phase.' },
+      { q: 'What happens during the process?', a: 'We begin by understanding your site and vision. We read the land — climate, water, soil, vegetation. Then we build a design strategy that integrates architecture, landscape and ecological systems before producing drawings and plans.' },
     ],
   ];
+
 
   return (
     <section className="bg-white py-24 px-6 md:px-16 lg:px-24 border-t border-black/5">
