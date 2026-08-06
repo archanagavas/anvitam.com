@@ -76,14 +76,18 @@ export const INITIAL_WORKSHOPS: Workshop[] = [
 ];
 
 export const INITIAL_PARTNERS: PartnerBrand[] = [
-  { id: 'p1', name: 'yourweb3guy', icon: '🌿', website: 'https://anvitam.com' },
-  { id: 'p2', name: 'Unique School of Science', icon: '🏫', website: 'https://anvitam.com' },
-  { id: 'p3', name: 'Carpa Lupa', icon: '🏠', website: 'https://anvitam.com' },
-  { id: 'p4', name: 'Beer Bar', icon: '🍺', website: 'https://anvitam.com' },
-  { id: 'p5', name: 'Shalimar', icon: '✦', website: 'https://anvitam.com' },
-  { id: 'p6', name: 'The Batukaru Yurt', icon: '🏢', website: 'https://anvitam.com' },
-  { id: 'p7', name: 'Saraya', icon: '🌸', website: 'https://anvitam.com' },
-  { id: 'p8', name: 'Vanvagado Farm', icon: '🚜', website: 'https://anvitam.com' }
+  { id: 'p1', name: 'Camp Leo', logo: '/logos/Camp leo.png', icon: '🏕️', website: 'https://www.anvitam.com' },
+  { id: 'p2', name: 'Jay Bhole', logo: '/logos/Jay Bhole.png', icon: '🌿', website: 'https://www.anvitam.com' },
+  { id: 'p3', name: 'Mahadev Construction', logo: '/logos/Mahadev Construction.png', icon: '🏗️', website: 'https://www.anvitam.com' },
+  { id: 'p4', name: 'Mossaria', logo: '/logos/Mossaria.png', icon: '🌱', website: 'https://www.anvitam.com' },
+  { id: 'p5', name: 'RJ Organics', logo: '/logos/RJ Organics.png', icon: '🍃', website: 'https://www.anvitam.com' },
+  { id: 'p6', name: 'SAC', logo: '/logos/SAC.png', icon: '🏫', website: 'https://www.anvitam.com' },
+  { id: 'p7', name: 'Shalimar', logo: '/logos/Shalimar.png', icon: '🌸', website: 'https://www.anvitam.com' },
+  { id: 'p8', name: 'Stone Age Huts & Hostel', logo: '/logos/Stone Age Huts and hostal.png', icon: '🏕️', website: 'https://www.anvitam.com' },
+  { id: 'p9', name: 'Unique School of Science', logo: '/logos/Unique School of Science.png', icon: '🏫', website: 'https://www.anvitam.com' },
+  { id: 'p10', name: 'Vanvagado Farm', logo: '/logos/Vanvagado farm.png', icon: '🚜', website: 'https://www.anvitam.com' },
+  { id: 'p11', name: 'Vergers du Monde', logo: '/logos/vergersdumonde.png', icon: '🌍', website: 'https://www.anvitam.com' },
+  { id: 'p12', name: 'yourweb3guy', logo: '/logos/Yourweb3guy.png', icon: '💻', website: 'https://www.anvitam.com' }
 ];
 
 export const INITIAL_TESTIMONIALS: Testimonial[] = [

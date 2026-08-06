@@ -615,7 +615,7 @@ const Home: React.FC = () => {
           </FadeUp>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-5">
-            {([
+            {(partners && partners.length > 0 ? partners : [
               { id: '1', name: 'Camp Leo', logo: '/logos/Camp leo.png' },
               { id: '2', name: 'Jay Bhole', logo: '/logos/Jay Bhole.png' },
               { id: '3', name: 'Mahadev Construction', logo: '/logos/Mahadev Construction.png' },
@@ -633,11 +633,18 @@ const Home: React.FC = () => {
                 key={partner.id}
                 className="group relative bg-gray-50/90 hover:bg-white border border-gray-200/90 hover:border-[#111] rounded-2xl p-5 flex items-center justify-center transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 h-28 sm:h-32 cursor-pointer"
               >
-                <img
-                  src={partner.logo}
-                  alt={partner.name}
-                  className="max-h-16 max-w-[130px] object-contain transition-all duration-300 group-hover:scale-110"
-                />
+                {partner.logo ? (
+                  <img
+                    src={partner.logo}
+                    alt={partner.name}
+                    className="max-h-16 max-w-[130px] object-contain transition-all duration-300 group-hover:scale-110"
+                  />
+                ) : (
+                  <div className="flex items-center gap-1.5 font-bold text-gray-900 text-sm">
+                    <span>{partner.icon || '✦'}</span>
+                    <span>{partner.name}</span>
+                  </div>
+                )}
                 {/* Floating Tooltip showing name on hover */}
                 <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 translate-y-2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 pointer-events-none z-30 whitespace-nowrap">
                   <span className="bg-[#111] text-[#CCFF00] text-xs font-bold px-3 py-1 rounded-full shadow-xl border border-white/10 flex items-center gap-1">

@@ -127,7 +127,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
     loadFromStorage<EstimatorService>('anvitam_estimator_services_v1', INITIAL_ESTIMATOR_SERVICES)
   );
   const [partners, setPartners] = useState<PartnerBrand[]>(() =>
-    loadFromStorage<PartnerBrand>('anvitam_partners_v1', INITIAL_PARTNERS)
+    loadFromStorage<PartnerBrand>('anvitam_partners_v2', INITIAL_PARTNERS)
   );
   const [workshops, setWorkshops] = useState<Workshop[]>(() =>
     loadFromStorage<Workshop>('anvitam_workshops_v2', INITIAL_WORKSHOPS)
@@ -247,7 +247,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
         if (!isFallback) {
           if (dbPartners.length > 0) {
             setPartners(dbPartners);
-            saveToStorage('anvitam_partners_v1', dbPartners);
+            saveToStorage('anvitam_partners_v2', dbPartners);
           }
         } else {
           console.info('[ContentContext] partners API returned fallback mock data; preserving local cache.');
@@ -290,7 +290,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   useEffect(() => { saveToStorage('anvitam_blogs_v2', blogs); }, [blogs]);
   useEffect(() => { saveToStorage('anvitam_testimonials', testimonials); }, [testimonials]);
   useEffect(() => { saveToStorage('anvitam_estimator_services_v1', estimatorServices); }, [estimatorServices]);
-  useEffect(() => { saveToStorage('anvitam_partners_v1', partners); }, [partners]);
+  useEffect(() => { saveToStorage('anvitam_partners_v2', partners); }, [partners]);
 
   // ── CRUD Operations ──────────────────────────────────────────────────────
   const addProject = async (project: Project) => {
