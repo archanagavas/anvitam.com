@@ -895,7 +895,7 @@ Additional Notes: ${formState.notes || 'None'}`;
                     </div>
                     <h4 className="text-2xl font-extrabold text-gray-900">Inquiry Received!</h4>
                     <p className="text-sm text-gray-600 max-w-md mx-auto leading-relaxed">
-                      Thank you, <strong className="text-gray-900">{formState.name}</strong>! Our workshop team will reach out to <strong className="text-gray-900">{formState.org || 'your institution'}</strong> via email or phone within 24 hours.
+                      Thank you, <strong className="text-gray-900">{formState.name}</strong>! Our workshop team will reach out to <strong className="text-gray-900">{formState.org || 'your institution'}</strong> via email or phone within 24 hours regarding <strong className="text-emerald-700">{selectedPlan}</strong>.
                     </p>
                     <button
                       onClick={() => setInquiryModalOpen(false)}
@@ -906,6 +906,83 @@ Additional Notes: ${formState.notes || 'None'}`;
                   </div>
                 ) : (
                   <form onSubmit={handleInquirySubmit} className="space-y-4">
+                    {/* ── PACKAGE / PLAN SELECTOR ── */}
+                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-2.5">
+                      <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-800 flex items-center justify-between">
+                        <span>Select Package / Plan To Buy or Inquire: *</span>
+                        <span className="text-[10px] text-emerald-700 font-bold">Tap to change option</span>
+                      </label>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        {[
+                          {
+                            id: '1-Day Workshop',
+                            label: '1-Day Workshop',
+                            price: '₹200 / student',
+                            tag: 'Single Day'
+                          },
+                          {
+                            id: '2-5 Days Bootcamp / Makeover',
+                            label: '2-5 Days Bootcamp',
+                            price: '₹40k - ₹2L',
+                            tag: 'Most Popular'
+                          },
+                          {
+                            id: '1-Month Subscription',
+                            label: '1-Month Subscription',
+                            price: '₹75,000 / mo',
+                            tag: 'Full Campus'
+                          }
+                        ].map(p => {
+                          const isSelected = selectedPlan.includes(p.id) || selectedPlan.includes(p.label);
+                          return (
+                            <button
+                              key={p.id}
+                              type="button"
+                              onClick={() => setSelectedPlan(p.id)}
+                              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer relative flex flex-col justify-between ${
+                                isSelected
+                                  ? 'bg-white border-emerald-600 ring-2 ring-emerald-600/30 text-gray-900 shadow-sm'
+                                  : 'bg-white/80 border-gray-200 text-gray-600 hover:bg-white hover:border-gray-300'
+                              }`}
+                            >
+                              <div>
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className={`text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full ${
+                                    isSelected ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700'
+                                  }`}>
+                                    {p.tag}
+                                  </span>
+                                  {isSelected && <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />}
+                                </div>
+                                <p className="text-xs font-extrabold text-gray-900 leading-tight mt-0.5">{p.label}</p>
+                              </div>
+                              <p className="text-[10px] font-extrabold text-emerald-700 mt-1">{p.price}</p>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <select
+                        value={selectedPlan}
+                        onChange={(e) => setSelectedPlan(e.target.value)}
+                        className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2 text-xs font-bold text-gray-800 focus:outline-none focus:border-black transition cursor-pointer"
+                      >
+                        <option value="1-Day Workshop">1-Day Workshop — ₹200 per student</option>
+                        <option value="2-5 Days Bootcamp / Makeover">2-5 Days Bootcamp / Makeover — ₹40,000 - ₹2,00,000</option>
+                        <option value="1-Month Subscription">1-Month Campus Eco-Subscription — ₹75,000 / month</option>
+                        <option value="Custom Proposal Request">Custom Campus Package Request</option>
+                        <option value="Audience: Schools & K-12 Institutes">Audience: Schools & K-12 Institutes</option>
+                        <option value="Audience: Colleges & Design Universities">Audience: Colleges & Design Universities</option>
+                        <option value="Audience: Workplaces & Corporate Teams">Audience: Workplaces & Corporate Teams</option>
+                        <option value="Bird House Making Workshop">Offering: Bird House Making Workshop</option>
+                        <option value="Bird Feeder Crafting Workshop">Offering: Bird Feeder Crafting Workshop</option>
+                        <option value="Campus Space Makeover & Bio-Art">Offering: Campus Space Makeover & Bio-Art</option>
+                        <option value="Plastic Waste Upcycling Workshop">Offering: Plastic Waste Upcycling Workshop</option>
+                        <option value="Tote Bag Painting Workshop">Offering: Tote Bag Painting Workshop</option>
+                        <option value="Upcycling Masterclass">Offering: Upcycling Masterclass</option>
+                      </select>
+                    </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
@@ -1047,7 +1124,7 @@ Additional Notes: ${formState.notes || 'None'}`;
                       disabled={submitting}
                       className="w-full py-3.5 bg-[#CCFF00] text-black font-black text-sm rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-lime-200 border border-black/10 cursor-pointer"
                     >
-                      {submitting ? 'Submitting Inquiry...' : 'Submit Campus Booking Inquiry'} <Send size={16} />
+                      {submitting ? 'Submitting Order / Inquiry...' : `Proceed with ${selectedPlan.replace('Pricing Plan: ', '')}`} <Send size={16} />
                     </button>
                   </form>
                 )}
