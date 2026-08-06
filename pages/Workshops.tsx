@@ -95,40 +95,52 @@ const OFFERINGS = [
 
 const GROUP_PHOTOS = [
   {
-    src: '/workshops/group/group1.png',
-    title: 'Bird House Crafting in Action',
+    src: '/workshops/workshops group images.png',
+    title: 'Bird House Crafting Group Action',
     institution: 'Unique School of Science (Nadiad)',
     caption: 'Class 5th–10th students assembling and painting eco-wooden bird houses'
   },
   {
-    src: '/workshops/group/group2.png',
+    src: '/workshops/workshops group images2.png',
     title: 'School Campus Group Showcase',
     institution: 'Unique School of Science (Nadiad)',
     caption: 'Students displaying finished bird houses before campus installation'
   },
   {
-    src: '/workshops/group/group3.png',
-    title: 'Innovation & Space Makeover',
+    src: '/workshops/innovation installtion and space makeover 1.png',
+    title: 'Campus Space Makeover & Bio-Art',
     institution: 'Anant National University (Ahmedabad)',
     caption: 'University students collaborating on permanent campus bio-installations'
   },
   {
-    src: '/workshops/group/group4.png',
-    title: 'Hands-On Eco-Crafting Retreat',
-    institution: 'Campus Outdoor Workshop',
-    caption: 'Creating upcycled planters and green living structures'
-  },
-  {
-    src: '/workshops/group/group5.png',
-    title: 'University Bird House Installation',
+    src: '/workshops/innovation installtion and space makeover 2.png',
+    title: 'Upcycled Outdoor Garden Installation',
     institution: 'Anant National University (Ahmedabad)',
-    caption: 'Design students building bird house grids on campus trees'
+    caption: 'Creating upcycled planters and green living structures on university grounds'
   },
   {
-    src: '/workshops/group/group6.png',
-    title: 'Teamwork & Environmental Leadership',
+    src: '/workshops/innovation installtion and space makeover 3.png',
+    title: 'Campus Bio-Habitat Architecture',
     institution: 'Campus Eco-Initiative',
+    caption: 'Design students installing micro-climate bird nesting units'
+  },
+  {
+    src: '/workshops/innovation installtion and space makeover 4.png',
+    title: 'Environmental Design & Leadership',
+    institution: 'Campus Outdoor Workshop',
     caption: 'Fostering environmental leadership through hands-on team projects'
+  },
+  {
+    src: '/workshops/innovation installtion and space makeover 5.png',
+    title: 'Eco-Craft Workshop Assembly',
+    institution: 'Unique School of Science (Nadiad)',
+    caption: 'Hands-on crafting session with natural building materials'
+  },
+  {
+    src: '/workshops/innovation installtion and space makeover 6.png',
+    title: 'Permanent Campus Installation Grid',
+    institution: 'Anant National University (Ahmedabad)',
+    caption: 'Completed bird house and feeder grid integrated into campus trees'
   }
 ];
 
@@ -371,7 +383,7 @@ Additional Notes: ${formState.notes || 'None'}`;
           >
             <div className="relative aspect-[16/9] rounded-2xl overflow-hidden bg-black flex items-center justify-center">
               <img
-                src="/workshops/group/group1.png"
+                src="/workshops/workshops group images.png"
                 alt="Nest N Nurture Workshops in Action"
                 className="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-700"
               />

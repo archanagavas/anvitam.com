@@ -17,10 +17,11 @@ export const INITIAL_WORKSHOPS: Workshop[] = [
     ],
     description: 'Hands-on creative installation workshop conducted with students from Class 5th to 10th. Students built custom bird houses, crafted eco-feeders, and transformed outdoor campus spaces into vibrant, bird-friendly living installations.',
     images: [
+      '/workshops/workshops group images.png',
       '/workshops/bird house making.png',
       '/workshops/innovation installtion and space makeover 1.png',
-      '/workshops/workshops group images.png',
-      '/workshops/bird feeder making.png'
+      '/workshops/bird feeder making.png',
+      '/workshops/innovation installtion and space makeover 5.png'
     ],
     status: 'published',
     createdAt: new Date().toISOString(),
@@ -42,7 +43,32 @@ export const INITIAL_WORKSHOPS: Workshop[] = [
     images: [
       '/workshops/workshops group images2.png',
       '/workshops/innovation installtion and space makeover 2.png',
-      '/workshops/innovation installtion and space makeover 3.png'
+      '/workshops/innovation installtion and space makeover 3.png',
+      '/workshops/innovation installtion and space makeover 4.png',
+      '/workshops/innovation installtion and space makeover 6.png'
+    ],
+    status: 'published',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'w-3',
+    title: 'Plastic Waste Transformation & Bio-Craft Masterclass',
+    organization: 'Campus Eco-Initiative & Upcycling Club',
+    location: 'Vadodara, Gujarat',
+    date: '2024',
+    category: 'Workplace',
+    attendeesCount: '80+ Corporate & Student Participants',
+    offerings: [
+      'Plastic Waste Transformation',
+      'Tin Can Art',
+      'Tote Bag Painting',
+      'Wind Chime Art'
+    ],
+    description: 'A vibrant sustainability retreat transforming discarded plastic bottles, aluminum cans, and organic cotton into functional outdoor garden art and bird feeding stations.',
+    images: [
+      '/workshops/plastic waste transformation 1.png',
+      '/workshops/tin can art 2.png',
+      '/workshops/innovation installtion and space makeover 7.png'
     ],
     status: 'published',
     createdAt: new Date().toISOString(),
