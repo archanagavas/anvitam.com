@@ -8,6 +8,7 @@ import SlidingTestimonials from '../components/SlidingTestimonials';
 import InfiniteMarquee from '../components/InfiniteMarquee';
 import VerticalTimeline from '../components/VerticalTimeline';
 import { FlowButton } from '../components/ui/flow-button';
+import { TypingAnimation } from '../components/TypingAnimation';
 
 const FLIP_WORDS = [
   "Farms",
@@ -223,13 +224,21 @@ const Home: React.FC = () => {
         {/* Stats bar at the bottom of hero */}
         <div className="absolute bottom-0 left-0 right-0 z-10 grid grid-cols-3 border-t border-white/20 bg-black/40 backdrop-blur-md">
           {[
-            { num: '10+', label: 'Projects Delivered' },
-            { num: 'Global', label: 'Projects & Consultations' },
-            { num: '811,297 sq ft', label: 'Impacted by Anvitam' },
+            { num: '10+', label: 'PROJECTS DELIVERED', delay: 300 },
+            { num: 'Global', label: 'PROJECTS & CONSULTATIONS', delay: 700 },
+            { num: '811,297 sq ft', label: 'IMPACTED BY ANVITAM', delay: 1100 },
           ].map((s, i) => (
             <div key={i} className="py-3 md:py-6 px-2 sm:px-4 text-center text-white border-r last:border-r-0 border-white/20 flex flex-col justify-center items-center">
-              <p className="text-base sm:text-2xl md:text-3xl font-bold leading-tight break-words">{s.num}</p>
-              <p className="text-[9px] sm:text-[11px] md:text-xs text-white/80 mt-1 uppercase tracking-wider text-center">{s.label}</p>
+              <p className="text-base sm:text-2xl md:text-3xl font-bold leading-tight break-words min-h-[1.5em] flex items-center justify-center">
+                <TypingAnimation delay={s.delay} duration={70}>
+                  {s.num}
+                </TypingAnimation>
+              </p>
+              <p className="text-[9px] sm:text-[11px] md:text-xs text-white/80 mt-1 uppercase tracking-wider text-center font-semibold min-h-[1.5em] flex items-center justify-center">
+                <TypingAnimation delay={s.delay + 300} duration={35}>
+                  {s.label}
+                </TypingAnimation>
+              </p>
             </div>
           ))}
         </div>
