@@ -22,26 +22,29 @@ export const MorphicNavbar: React.FC<MorphicNavbarProps> = ({ items, className =
   };
 
   return (
-    <div className={`flex items-center justify-center ${className}`}>
-      <div className="bg-gray-100/90 backdrop-blur-md p-1 flex items-center justify-between rounded-full border border-gray-200/80 shadow-xs">
-        {items.map(({ name, path }, index) => {
+    <nav className={`flex items-center justify-center ${className}`}>
+      <div className="flex items-center justify-between p-1">
+        {items.map(({ name, path }, index, array) => {
           const isActive = isActiveLink(path);
           const isFirst = index === 0;
-          const isLast = index === items.length - 1;
-          const prevPath = index > 0 ? items[index - 1].path : null;
-          const nextPath = index < items.length - 1 ? items[index + 1].path : null;
+          const isLast = index === array.length - 1;
+          const prevPath = index > 0 ? array[index - 1].path : null;
+          const nextPath = index < array.length - 1 ? array[index + 1].path : null;
+
+          const isPrevActive = prevPath ? isActiveLink(prevPath) : false;
+          const isNextActive = nextPath ? isActiveLink(nextPath) : false;
 
           return (
             <Link
               key={path}
               to={path}
-              className={`flex items-center justify-center px-3.5 py-1.5 text-xs font-bold transition-all duration-300 ${
+              className={`flex items-center justify-center py-2 px-3.5 text-xs transition-all duration-300 font-medium ${
                 isActive
-                  ? 'bg-black text-white shadow-md rounded-full px-4 font-extrabold scale-[1.02]'
-                  : `text-gray-700 hover:text-black hover:bg-gray-200/70 ${
-                      isActiveLink(prevPath || '') || isFirst ? 'rounded-l-full' : ''
+                  ? 'mx-2 rounded-xl font-extrabold bg-[#111] text-white shadow-md scale-[1.03]'
+                  : `bg-gray-100/90 text-gray-700 hover:text-black hover:bg-gray-200/90 ${
+                      isPrevActive || isFirst ? 'rounded-l-xl' : ''
                     } ${
-                      isActiveLink(nextPath || '') || isLast ? 'rounded-r-full' : ''
+                      isNextActive || isLast ? 'rounded-r-xl' : ''
                     }`
               }`}
             >
@@ -50,7 +53,7 @@ export const MorphicNavbar: React.FC<MorphicNavbarProps> = ({ items, className =
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 };
 
