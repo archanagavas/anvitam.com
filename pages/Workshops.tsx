@@ -343,7 +343,7 @@ Additional Notes: ${formState.notes || 'None'}`;
           </motion.div>
 
           {/* Social Proof Stats Bar */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto p-6 rounded-3xl bg-white border border-gray-200 shadow-md">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto p-6 rounded-3xl bg-white border border-gray-200 shadow-md mb-12">
             <div>
               <p className="text-3xl md:text-4xl font-extrabold text-gray-900">95%</p>
               <p className="text-xs text-gray-500 mt-1 uppercase font-bold tracking-wider">Educator Engagement</p>
@@ -361,6 +361,43 @@ Additional Notes: ${formState.notes || 'None'}`;
               <p className="text-xs text-gray-500 mt-1 uppercase font-bold tracking-wider">Curriculum Aligned</p>
             </div>
           </div>
+
+          {/* Hero Demo Showcase Banner (Diagram Alignment: Product Demo / Video Showcase) */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="max-w-4xl mx-auto rounded-3xl overflow-hidden border border-gray-200 shadow-2xl bg-gray-950 p-2 sm:p-4 group relative"
+          >
+            <div className="relative aspect-[16/9] rounded-2xl overflow-hidden bg-black flex items-center justify-center">
+              <img
+                src="/workshops/group/group1.png"
+                alt="Nest N Nurture Workshops in Action"
+                className="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+              
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 space-y-4">
+                <button
+                  onClick={() => handleOpenLeadModal('Hero Demo Play Request')}
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#CCFF00] hover:bg-white text-black flex items-center justify-center shadow-2xl transition transform hover:scale-110"
+                >
+                  <span className="text-black font-black text-xl ml-1">▶</span>
+                </button>
+                <div>
+                  <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-white/20">
+                    Watch Workshop Live Action
+                  </span>
+                  <h3 className="text-xl sm:text-3xl font-black text-white mt-2">
+                    See How Students Construct Bird Habitats Live
+                  </h3>
+                  <p className="text-xs text-gray-300 max-w-md mx-auto hidden sm:block">
+                    Unique School of Science &amp; Anant National University campus transformation highlights.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -704,7 +741,100 @@ Additional Notes: ${formState.notes || 'None'}`;
       </section>
 
       {/* ══════════════════════════════════════════
-          7. CONTACT & DIRECT COLLABORATION CTA
+          7. TESTIMONIALS & INSTITUTIONAL REVIEWS (Diagram Alignment)
+      ══════════════════════════════════════════ */}
+      <section className="py-20 bg-gray-50 border-y border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <span className="px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold uppercase tracking-wider">
+              Real Institutional Results
+            </span>
+            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mt-3 mb-4">
+              What School &amp; University Leaders Say
+            </h2>
+            <p className="text-gray-600 text-base">
+              Hear from educators, design professors, and administrators who transformed their campuses with Nest N Nurture.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm space-y-4 relative flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center gap-1 text-amber-400">
+                  <Star size={16} className="fill-amber-400" />
+                  <Star size={16} className="fill-amber-400" />
+                  <Star size={16} className="fill-amber-400" />
+                  <Star size={16} className="fill-amber-400" />
+                  <Star size={16} className="fill-amber-400" />
+                </div>
+                <p className="text-gray-700 text-sm italic leading-relaxed">
+                  "The Nest N Nurture bird house workshop brought incredible energy to our school. Over 150 students from Class 5th to 10th built wooden habitats with their own hands. Our campus trees are now full of life!"
+                </p>
+              </div>
+              <div className="pt-4 border-t border-gray-100 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 font-black flex items-center justify-center text-xs">
+                  US
+                </div>
+                <div>
+                  <h4 className="text-sm font-extrabold text-gray-900">Unique School of Science</h4>
+                  <p className="text-xs text-gray-500">School Administration, Nadiad</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm space-y-4 relative flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center gap-1 text-amber-400">
+                  <Star size={16} className="fill-amber-400" />
+                  <Star size={16} className="fill-amber-400" />
+                  <Star size={16} className="fill-amber-400" />
+                  <Star size={16} className="fill-amber-400" />
+                  <Star size={16} className="fill-amber-400" />
+                </div>
+                <p className="text-gray-700 text-sm italic leading-relaxed">
+                  "Archana and her team delivered a masterclass in bio-design and space makeover. Our undergraduate students gained hands-on experience building permanent microclimate bird structures on campus."
+                </p>
+              </div>
+              <div className="pt-4 border-t border-gray-100 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 font-black flex items-center justify-center text-xs">
+                  AU
+                </div>
+                <div>
+                  <h4 className="text-sm font-extrabold text-gray-900">Anant National University</h4>
+                  <p className="text-xs text-gray-500">Design Faculty, Ahmedabad</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm space-y-4 relative flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center gap-1 text-amber-400">
+                  <Star size={16} className="fill-amber-400" />
+                  <Star size={16} className="fill-amber-400" />
+                  <Star size={16} className="fill-amber-400" />
+                  <Star size={16} className="fill-amber-400" />
+                  <Star size={16} className="fill-amber-400" />
+                </div>
+                <p className="text-gray-700 text-sm italic leading-relaxed">
+                  "The upcycling tin can and tote bag workshops engaged all our participants. It combined environmental education with genuine creative joy. Highly recommended for any educational institution."
+                </p>
+              </div>
+              <div className="pt-4 border-t border-gray-100 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 font-black flex items-center justify-center text-xs">
+                  CE
+                </div>
+                <div>
+                  <h4 className="text-sm font-extrabold text-gray-900">Campus Eco-Club Lead</h4>
+                  <p className="text-xs text-gray-500">Student Affairs Committee</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          8. CONTACT & DIRECT COLLABORATION CTA
       ══════════════════════════════════════════ */}
       <section className="py-20 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="p-10 md:p-16 rounded-3xl bg-gradient-to-b from-emerald-50 via-white to-white border border-emerald-200 relative overflow-hidden shadow-lg">
