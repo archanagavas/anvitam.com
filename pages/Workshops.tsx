@@ -21,7 +21,8 @@ import {
   Compass,
   Palette,
   Check,
-  Star
+  Star,
+  Pencil
 } from 'lucide-react';
 import CardFlip from '../components/CardFlip';
 import { useContent } from '../context/ContentContext';
@@ -650,67 +651,103 @@ Additional Notes: ${formState.notes || 'None'}`;
       </section>
 
       {/* ══════════════════════════════════════════
-          6. PRICING & SUBSCRIPTION CARDS
+          6. PRICING & SUBSCRIPTION CARDS (Hand-Drawn Sketchy Style with Motion)
       ══════════════════════════════════════════ */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <p className="text-xs font-extrabold uppercase tracking-widest text-emerald-600 mb-2">Investment In Innovation</p>
-          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4">Pricing &amp; Subscription Plans</h2>
-          <p className="text-gray-600 text-base">
+      <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-3xl mx-auto mb-16 relative">
+          <motion.div 
+            animate={{ y: [-4, 6, -4], rotate: [-6, 6, -6] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -top-6 left-2 sm:-left-12 text-3xl select-none hidden sm:block"
+          >
+            ⭐
+          </motion.div>
+          <motion.div 
+            animate={{ y: [5, -5, 5], scale: [0.95, 1.15, 0.95] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -top-6 right-2 sm:-right-12 text-3xl select-none hidden sm:block"
+          >
+            ✨
+          </motion.div>
+
+          <p className="text-xs font-extrabold uppercase tracking-widest text-sky-500 mb-2">Simple Pricing</p>
+          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
+            Pricing &amp; Subscription Plans
+          </h2>
+          <p className="text-gray-600 text-sm md:text-base max-w-xl mx-auto font-medium">
             Flexible options tailored for single-day campus events, multi-day space transformations, or long-term partnerships.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {PRICING_PLANS.map((plan, idx) => (
-            <div
-              key={idx}
-              className={`rounded-3xl p-8 flex flex-col justify-between border relative transition-all duration-300 ${
-                plan.popular 
-                  ? 'bg-white border-[#CCFF00] shadow-2xl ring-2 ring-[#CCFF00]/40 scale-[1.02]' 
-                  : 'bg-white border-gray-200 shadow-sm hover:shadow-md'
-              }`}
-            >
-              {plan.popular && (
-                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#CCFF00] text-black px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-md border border-black/10">
-                  Most Popular
-                </span>
-              )}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-8 items-stretch pt-4">
+          {PRICING_PLANS.map((plan, idx) => {
+            const icons = [Pencil, Star, Sparkles];
+            const CardIcon = icons[idx % icons.length];
+            const tilts = ['md:rotate-[-1.2deg]', 'rotate-0 md:scale-[1.03]', 'md:rotate-[1.2deg]'];
+            const hoverTilts = ['hover:rotate-0', 'hover:rotate-[-0.5deg]', 'hover:rotate-0'];
 
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-1">{plan.name}</h3>
-                <p className="text-xs text-gray-500 mb-6">{plan.tagline}</p>
-
-                <div className="flex items-baseline gap-2 mb-6">
-                  <span className="text-4xl font-extrabold text-gray-900">{plan.price}</span>
-                  <span className="text-xs text-gray-500 font-semibold">{plan.unit}</span>
-                </div>
-
-                <div className="space-y-3 mb-8">
-                  {plan.features.map((f, fIdx) => (
-                    <div key={fIdx} className="flex items-start gap-2.5 text-xs text-gray-700 font-medium">
-                      <CheckCircle2 size={15} className="text-emerald-600 shrink-0 mt-0.5" />
-                      <span>{f}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <button
-                onClick={() => handleOpenLeadModal(`Pricing Plan: ${plan.name}`)}
-                className={`w-full py-3.5 rounded-full text-xs font-extrabold transition-all duration-300 flex items-center justify-center gap-2 ${
-                  plan.popular
-                    ? 'bg-[#CCFF00] text-black hover:scale-105 shadow-md shadow-lime-200 border border-black/10'
-                    : 'border border-gray-300 text-gray-800 hover:bg-gray-100'
+            return (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: idx * 0.15 }}
+                whileHover={{ y: -8, transition: { duration: 0.2 } }}
+                className={`bg-white rounded-[2.2rem] p-8 border-[2.5px] border-black flex flex-col justify-between relative transition-all duration-200 ${tilts[idx]} ${hoverTilts[idx]} ${
+                  plan.popular 
+                    ? 'shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] z-10' 
+                    : 'shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)]'
                 }`}
               >
-                {plan.cta} <ArrowRight size={14} />
-              </button>
-            </div>
-          ))}
+                {plan.popular && (
+                  <span className="absolute -top-4 right-6 bg-[#FFC72C] text-black border-2 border-black font-black text-[11px] px-4 py-1.5 rounded-full uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rotate-6">
+                    Popular
+                  </span>
+                )}
+
+                <div>
+                  <div className="w-11 h-11 rounded-full border-2 border-black flex items-center justify-center bg-amber-50/50 text-black mb-5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                    <CardIcon size={20} className="stroke-[2.2]" />
+                  </div>
+
+                  <h3 className="text-2xl font-black text-gray-900 tracking-tight mb-1">{plan.name}</h3>
+                  <p className="text-xs text-gray-500 font-medium mb-6 leading-relaxed">{plan.tagline}</p>
+
+                  <div className="flex items-baseline gap-1.5 mb-6">
+                    <span className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">{plan.price}</span>
+                    <span className="text-xs text-gray-500 font-bold">/ {plan.unit}</span>
+                  </div>
+
+                  <div className="space-y-3.5 mb-8">
+                    {plan.features.map((f, fIdx) => (
+                      <div key={fIdx} className="flex items-start gap-3 text-xs text-gray-700 font-semibold">
+                        <div className="w-5 h-5 rounded-full border-[1.5px] border-black flex items-center justify-center shrink-0 mt-0.5 bg-gray-50">
+                          <Check size={11} className="text-black stroke-[3]" />
+                        </div>
+                        <span className="pt-0.5">{f}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => handleOpenLeadModal(`Pricing Plan: ${plan.name}`)}
+                  className={`w-full py-4 rounded-xl border-2 border-black font-extrabold text-xs transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${
+                    plan.popular
+                      ? 'bg-[#FFC72C] text-black hover:bg-[#ffbe1a] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-0.5 hover:-translate-y-0.5'
+                      : 'bg-white text-black hover:bg-gray-100 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-0.5 hover:-translate-y-0.5'
+                  }`}
+                >
+                  {plan.cta} <ArrowRight size={14} className="stroke-[2.5]" />
+                </motion.button>
+              </motion.div>
+            );
+          })}
         </div>
 
-        <div className="mt-12 p-6 rounded-2xl bg-gray-50 border border-gray-200 text-center text-xs text-gray-600 space-y-2">
+        <div className="mt-14 p-6 rounded-2xl bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-center text-xs text-gray-700 space-y-2 max-w-4xl mx-auto">
           <p><strong className="text-gray-900 font-bold">Payment Terms:</strong> 50% upfront upon booking confirmation, 50% upon completion of the workshop / makeover.</p>
           <p><strong className="text-emerald-700 font-bold">Bulk Booking Discount:</strong> Special pricing available for annual school partnerships and multi-campus bookings.</p>
         </div>
