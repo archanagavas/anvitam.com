@@ -23,6 +23,7 @@ import {
   Check,
   Star
 } from 'lucide-react';
+import CardFlip from '../components/CardFlip';
 import { useContent } from '../context/ContentContext';
 
 const OFFERINGS = [
@@ -561,49 +562,19 @@ Additional Notes: ${formState.notes || 'None'}`;
           <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900">Who Are Our Workshops Designed For?</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {AUDIENCES.map((aud) => {
-            const Icon = aud.icon;
-            const isSelected = selectedAudience === aud.id;
-            return (
-              <div
-                key={aud.id}
-                onClick={() => setSelectedAudience(aud.id as any)}
-                className={`p-8 rounded-3xl cursor-pointer border transition-all duration-300 flex flex-col justify-between ${
-                  isSelected 
-                    ? 'bg-white border-[#CCFF00] shadow-xl ring-2 ring-[#CCFF00]/40 scale-[1.02]' 
-                    : 'bg-white border-gray-200 hover:border-gray-300 shadow-sm'
-                }`}
-              >
-                <div>
-                  <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-700 mb-6">
-                    <Icon size={28} />
-                  </div>
-                  <p className="text-xs font-extrabold text-emerald-700 uppercase tracking-wider mb-1">{aud.subtitle}</p>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">{aud.title}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed mb-6">{aud.desc}</p>
-                  <div className="space-y-2.5 mb-8">
-                    {aud.benefits.map((b, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-xs text-gray-700 font-medium">
-                        <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
-                        <span>{b}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleOpenLeadModal(`Audience: ${aud.title}`);
-                  }}
-                  className="w-full py-3 rounded-full bg-gray-100 hover:bg-[#CCFF00] hover:text-black text-gray-900 font-extrabold text-xs transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  Book For {aud.title.split(' ')[0]} <ArrowRight size={14} />
-                </button>
-              </div>
-            );
-          })}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {AUDIENCES.map((aud) => (
+            <CardFlip
+              key={aud.id}
+              icon={aud.icon}
+              subtitle={aud.subtitle}
+              title={aud.title}
+              description={aud.desc}
+              features={aud.benefits}
+              ctaText={`Book For ${aud.title.split(' ')[0]}`}
+              onCtaClick={() => handleOpenLeadModal(`Audience: ${aud.title}`)}
+            />
+          ))}
         </div>
       </section>
 
