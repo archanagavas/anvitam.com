@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'motion/react';
@@ -227,6 +228,17 @@ export default function Workshops() {
   const [submitting, setSubmitting] = useState(false);
 
   const publishedWorkshops = workshops?.filter(w => w.status === 'published') || [];
+
+  useEffect(() => {
+    if (inquiryModalOpen || activePhotoModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [inquiryModalOpen, activePhotoModal]);
 
   const handleOpenLeadModal = (planOrOffering: string = 'General Campus Workshop Inquiry') => {
     setSelectedPlan(planOrOffering);
@@ -841,220 +853,236 @@ Additional Notes: ${formState.notes || 'None'}`;
       </section>
 
       {/* ══════════════════════════════════════════
-          PHOTO LIGHTBOX MODAL
+          PHOTO LIGHTBOX MODAL (PORTAL)
       ══════════════════════════════════════════ */}
-      <AnimatePresence>
-        {activePhotoModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-            <div className="relative max-w-4xl w-full">
-              <button
-                onClick={() => setActivePhotoModal(null)}
-                className="absolute -top-12 right-0 text-white hover:text-gray-300 p-2"
-              >
-                <X size={28} />
-              </button>
-              <img src={activePhotoModal} alt="Workshop detail photo" className="w-full h-auto max-h-[85vh] object-contain rounded-2xl shadow-2xl" />
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {activePhotoModal && (
+            <div
+              className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setActivePhotoModal(null);
+              }}
+            >
+              <div className="relative max-w-4xl w-full">
+                <button
+                  onClick={() => setActivePhotoModal(null)}
+                  className="absolute -top-12 right-0 text-white hover:text-gray-300 p-2 cursor-pointer"
+                >
+                  <X size={28} />
+                </button>
+                <img src={activePhotoModal} alt="Workshop detail photo" className="w-full h-auto max-h-[85vh] object-contain rounded-2xl shadow-2xl" />
+              </div>
             </div>
-          </div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* ══════════════════════════════════════════
-          WORKSHOP LEAD CAPTURE POPUP MODAL
+          WORKSHOP LEAD CAPTURE POPUP MODAL (PORTAL)
       ══════════════════════════════════════════ */}
-      <AnimatePresence>
-        {inquiryModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-white border border-gray-200 rounded-3xl p-6 md:p-8 max-w-xl w-full relative overflow-hidden shadow-2xl max-h-[90vh] overflow-y-auto"
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {inquiryModalOpen && (
+            <div
+              className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md overflow-y-auto"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setInquiryModalOpen(false);
+              }}
             >
-              <button
-                onClick={() => setInquiryModalOpen(false)}
-                className="absolute top-5 right-5 text-gray-400 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100 transition-colors"
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                className="bg-white border border-gray-200 rounded-3xl p-6 sm:p-8 max-w-xl w-full relative shadow-2xl max-h-[90vh] overflow-y-auto my-auto"
               >
-                <X size={20} />
-              </button>
+                <button
+                  onClick={() => setInquiryModalOpen(false)}
+                  className="absolute top-5 right-5 text-gray-400 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+                >
+                  <X size={20} />
+                </button>
 
-              <div className="mb-6">
-                <span className="px-3 py-1 rounded-full bg-[#CCFF00] text-black text-[10px] font-black uppercase tracking-widest inline-block mb-2">
-                  Campus Workshop Booking
-                </span>
-                <h3 className="text-2xl md:text-3xl font-extrabold text-gray-900">Book Nest N Nurture Workshop</h3>
-                <p className="text-xs text-emerald-700 font-bold mt-1">
-                  Selected Target: <span className="text-gray-900">{selectedPlan}</span>
-                </p>
-              </div>
-
-              {submitted ? (
-                <div className="text-center py-12 space-y-4">
-                  <div className="w-20 h-20 rounded-full bg-[#CCFF00] text-black flex items-center justify-center mx-auto shadow-lg">
-                    <CheckCircle2 size={44} />
-                  </div>
-                  <h4 className="text-2xl font-extrabold text-gray-900">Inquiry Received!</h4>
-                  <p className="text-sm text-gray-600 max-w-md mx-auto leading-relaxed">
-                    Thank you, <strong className="text-gray-900">{formState.name}</strong>! Our workshop team will reach out to <strong className="text-gray-900">{formState.org || 'your institution'}</strong> via email or phone within 24 hours.
+                <div className="mb-6">
+                  <span className="px-3 py-1 rounded-full bg-[#CCFF00] text-black text-[10px] font-black uppercase tracking-widest inline-block mb-2">
+                    Campus Workshop Booking
+                  </span>
+                  <h3 className="text-2xl md:text-3xl font-extrabold text-gray-900">Book Nest N Nurture Workshop</h3>
+                  <p className="text-xs text-emerald-700 font-bold mt-1">
+                    Selected Target: <span className="text-gray-900">{selectedPlan}</span>
                   </p>
-                  <button
-                    onClick={() => setInquiryModalOpen(false)}
-                    className="mt-4 px-6 py-2.5 rounded-full bg-black text-white text-xs font-bold hover:bg-gray-800 transition"
-                  >
-                    Close Window
-                  </button>
                 </div>
-              ) : (
-                <form onSubmit={handleInquirySubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                {submitted ? (
+                  <div className="text-center py-12 space-y-4">
+                    <div className="w-20 h-20 rounded-full bg-[#CCFF00] text-black flex items-center justify-center mx-auto shadow-lg">
+                      <CheckCircle2 size={44} />
+                    </div>
+                    <h4 className="text-2xl font-extrabold text-gray-900">Inquiry Received!</h4>
+                    <p className="text-sm text-gray-600 max-w-md mx-auto leading-relaxed">
+                      Thank you, <strong className="text-gray-900">{formState.name}</strong>! Our workshop team will reach out to <strong className="text-gray-900">{formState.org || 'your institution'}</strong> via email or phone within 24 hours.
+                    </p>
+                    <button
+                      onClick={() => setInquiryModalOpen(false)}
+                      className="mt-4 px-6 py-2.5 rounded-full bg-black text-white text-xs font-bold hover:bg-gray-800 transition cursor-pointer"
+                    >
+                      Close Window
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleInquirySubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
+                          Contact Person Name *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={formState.name}
+                          onChange={e => setFormState({ ...formState, name: e.target.value })}
+                          placeholder="e.g. Archana Gavas"
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black transition"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
+                          School / Institution / Org *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={formState.org}
+                          onChange={e => setFormState({ ...formState, org: e.target.value })}
+                          placeholder="e.g. Unique Science School / University"
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black transition"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
+                          Phone / WhatsApp Number *
+                        </label>
+                        <input
+                          type="tel"
+                          required
+                          value={formState.phone}
+                          onChange={e => setFormState({ ...formState, phone: e.target.value })}
+                          placeholder="+91 9876543210"
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black transition"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
+                          Email Address *
+                        </label>
+                        <input
+                          type="email"
+                          required
+                          value={formState.email}
+                          onChange={e => setFormState({ ...formState, email: e.target.value })}
+                          placeholder="name@school.com"
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black transition"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
+                          City / Campus Location
+                        </label>
+                        <input
+                          type="text"
+                          value={formState.city}
+                          onChange={e => setFormState({ ...formState, city: e.target.value })}
+                          placeholder="e.g. Nadiad / Ahmedabad / Mumbai"
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black transition"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
+                          Expected Attendees
+                        </label>
+                        <select
+                          value={formState.studentsCount}
+                          onChange={e => setFormState({ ...formState, studentsCount: e.target.value })}
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-black transition"
+                        >
+                          <option value="50-100">50 – 100 Students</option>
+                          <option value="100-250">100 – 250 Students</option>
+                          <option value="250-500">250 – 500 Students</option>
+                          <option value="500+">500+ Students</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-2">
+                        Select Preferred Activities:
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          'Bird House Making',
+                          'Bird Feeder Making',
+                          'Space Makeovers & Installations',
+                          'Plastic Waste Transformation',
+                          'Tote Bag Painting',
+                          'Upcycling Masterclass'
+                        ].map((activity) => {
+                          const isSelected = formState.selectedActivities.includes(activity);
+                          return (
+                            <button
+                              key={activity}
+                              type="button"
+                              onClick={() => toggleActivitySelect(activity)}
+                              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                                isSelected
+                                  ? 'bg-emerald-600 text-white shadow-sm'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}
+                            >
+                              {isSelected ? '✓ ' : '+ '}{activity.replace('&amp;', '&')}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
                     <div>
                       <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
-                        Contact Person Name *
+                        Additional Requirements / Preferred Event Dates
                       </label>
-                      <input
-                        type="text"
-                        required
-                        value={formState.name}
-                        onChange={e => setFormState({ ...formState, name: e.target.value })}
-                        placeholder="e.g. Archana Gavas"
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black transition"
+                      <textarea
+                        rows={3}
+                        value={formState.notes}
+                        onChange={e => setFormState({ ...formState, notes: e.target.value })}
+                        placeholder="Mention any specific dates, student grade levels, or campus goals..."
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black transition resize-none"
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
-                        School / Institution / Org *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={formState.org}
-                        onChange={e => setFormState({ ...formState, org: e.target.value })}
-                        placeholder="e.g. Unique Science School / University"
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black transition"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
-                        Phone / WhatsApp Number *
-                      </label>
-                      <input
-                        type="tel"
-                        required
-                        value={formState.phone}
-                        onChange={e => setFormState({ ...formState, phone: e.target.value })}
-                        placeholder="+91 9876543210"
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black transition"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
-                        Email Address *
-                      </label>
-                      <input
-                        type="email"
-                        required
-                        value={formState.email}
-                        onChange={e => setFormState({ ...formState, email: e.target.value })}
-                        placeholder="name@school.com"
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black transition"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
-                        City / Campus Location
-                      </label>
-                      <input
-                        type="text"
-                        value={formState.city}
-                        onChange={e => setFormState({ ...formState, city: e.target.value })}
-                        placeholder="e.g. Nadiad / Ahmedabad / Mumbai"
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black transition"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
-                        Expected Attendees
-                      </label>
-                      <select
-                        value={formState.studentsCount}
-                        onChange={e => setFormState({ ...formState, studentsCount: e.target.value })}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-black transition"
-                      >
-                        <option value="50-100">50 – 100 Students</option>
-                        <option value="100-250">100 – 250 Students</option>
-                        <option value="250-500">250 – 500 Students</option>
-                        <option value="500+">500+ Students</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-2">
-                      Select Preferred Activities:
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        'Bird House Making',
-                        'Bird Feeder Making',
-                        'Space Makeovers &amp; Installations',
-                        'Plastic Waste Transformation',
-                        'Tote Bag Painting',
-                        'Upcycling Masterclass'
-                      ].map((activity) => {
-                        const isSelected = formState.selectedActivities.includes(activity);
-                        return (
-                          <button
-                            key={activity}
-                            type="button"
-                            onClick={() => toggleActivitySelect(activity)}
-                            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                              isSelected
-                                ? 'bg-emerald-600 text-white shadow-sm'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                          >
-                            {isSelected ? '✓ ' : '+ '}{activity.replace('&amp;', '&')}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-700 mb-1">
-                      Additional Requirements / Preferred Event Dates
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={formState.notes}
-                      onChange={e => setFormState({ ...formState, notes: e.target.value })}
-                      placeholder="Mention any specific dates, student grade levels, or campus goals..."
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-black transition resize-none"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="w-full py-3.5 bg-[#CCFF00] text-black font-black text-sm rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-lime-200 border border-black/10 cursor-pointer"
-                  >
-                    {submitting ? 'Submitting Inquiry...' : 'Submit Campus Booking Inquiry'} <Send size={16} />
-                  </button>
-                </form>
-              )}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="w-full py-3.5 bg-[#CCFF00] text-black font-black text-sm rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-lime-200 border border-black/10 cursor-pointer"
+                    >
+                      {submitting ? 'Submitting Inquiry...' : 'Submit Campus Booking Inquiry'} <Send size={16} />
+                    </button>
+                  </form>
+                )}
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }
