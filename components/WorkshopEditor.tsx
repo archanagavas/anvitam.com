@@ -93,19 +93,59 @@ export default function WorkshopEditor({ initial, onSave, onCancel }: WorkshopEd
     setImages(images.filter((_, i) => i !== idx));
   };
 
-  const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    Array.from(files).forEach((file: File) => {
+  const compressImageFile = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
       const reader = new FileReader();
-      reader.onload = (ev) => {
-        if (ev.target?.result) {
-          setImages(prev => [...prev, ev.target!.result as string]);
-        }
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1400;
+          const MAX_HEIGHT = 1400;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height = Math.round((height * MAX_WIDTH) / width);
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width = Math.round((width * MAX_HEIGHT) / height);
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+            resolve(dataUrl);
+          } else {
+            resolve(e.target?.result as string);
+          }
+        };
+        img.onerror = () => resolve(e.target?.result as string);
+        img.src = e.target?.result as string;
       };
       reader.readAsDataURL(file);
     });
+  };
+
+  const handleImageFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    try {
+      const compressedPromises = Array.from(files).map((file: File) => compressImageFile(file));
+      const compressedImages = await Promise.all(compressedPromises);
+      setImages(prev => [...prev, ...compressedImages.filter(Boolean)]);
+    } catch (err) {
+      console.error('Failed to compress uploaded images:', err);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {

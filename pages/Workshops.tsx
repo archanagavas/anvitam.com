@@ -491,12 +491,17 @@ Additional Notes: ${formState.notes || 'None'}`;
 
                   {/* Photo Gallery Grid */}
                   <Link to={`/workshops/${w.slug || w.id}`} className="lg:col-span-5 grid grid-cols-2 gap-3 group/img">
-                    {w.images && w.images.slice(0, 4).map((img, idx) => (
-                      <div key={idx} className={`rounded-2xl overflow-hidden h-36 bg-gray-100 border border-gray-200 ${idx === 0 ? 'col-span-2 h-48' : ''} relative`}>
-                        <img src={img} alt={`${w.title} highlight ${idx + 1}`} className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500" />
-                        <div className="absolute inset-0 bg-black/10 group-hover/img:bg-transparent transition" />
-                      </div>
-                    ))}
+                    {(() => {
+                      const validImages = (w.images && w.images.filter(img => Boolean(img && img.trim())).length > 0)
+                        ? w.images.filter(img => Boolean(img && img.trim()))
+                        : ['/workshops/birds house making.png'];
+                      return validImages.slice(0, 4).map((img, idx) => (
+                        <div key={idx} className={`rounded-2xl overflow-hidden h-36 bg-gray-100 border border-gray-200 ${idx === 0 ? 'col-span-2 h-48' : ''} relative`}>
+                          <img src={img} alt={`${w.title} highlight ${idx + 1}`} className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500" onError={(e) => { (e.target as HTMLImageElement).src = '/workshops/birds house making.png'; }} />
+                          <div className="absolute inset-0 bg-black/10 group-hover/img:bg-transparent transition" />
+                        </div>
+                      ));
+                    })()}
                   </Link>
                 </div>
               ))}

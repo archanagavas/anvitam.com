@@ -90,22 +90,7 @@ function loadFromStorage<T>(key: string, initialData: T[]): T[] {
 }
 
 function stripBase64(obj: any): any {
-  if (typeof obj === 'string') {
-    if (obj.startsWith('data:image/') && obj.includes(';base64,')) {
-      return '';
-    }
-    return obj.replace(/src=["']data:image\/[^"']*(?:;base64)[^"']*["']/gi, 'src=""');
-  }
-  if (Array.isArray(obj)) {
-    return obj.map(stripBase64);
-  }
-  if (obj !== null && typeof obj === 'object') {
-    const newObj: any = {};
-    for (const key in obj) {
-      newObj[key] = stripBase64(obj[key]);
-    }
-    return newObj;
-  }
+  // Preserve uploaded image data URLs so user image uploads are not destroyed/erased!
   return obj;
 }
 
@@ -153,13 +138,14 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   // ── Fetch from Neon DB ────────────────────────────────────────────
   const refreshFromDb = async () => {
     try {
-      const [blogsRes, projectsRes, servicesRes, productsRes, testimonialsRes, partnersRes] = await Promise.all([
+      const [blogsRes, projectsRes, servicesRes, productsRes, testimonialsRes, partnersRes, workshopsRes] = await Promise.all([
         fetch('/api/blogs'),
         fetch('/api/projects'),
         fetch('/api/services'),
         fetch('/api/products'),
         fetch('/api/testimonials'),
-        fetch('/api/partners')
+        fetch('/api/partners'),
+        fetch('/api/workshops')
       ]);
 
       const hasAnyFallback = 
@@ -168,7 +154,22 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
         servicesRes.headers.get('x-db-fallback') === 'true' ||
         productsRes.headers.get('x-db-fallback') === 'true' ||
         testimonialsRes.headers.get('x-db-fallback') === 'true' ||
-        partnersRes.headers.get('x-db-fallback') === 'true';
+        partnersRes.headers.get('x-db-fallback') === 'true' ||
+        workshopsRes.headers.get('x-db-fallback') === 'true';
+
+      if (workshopsRes.ok) {
+        const isFallback = workshopsRes.headers.get('x-db-fallback') === 'true';
+        const dbWorkshops: Workshop[] = await workshopsRes.json();
+        if (!isFallback) {
+          if (dbWorkshops.length > 0) {
+            setWorkshops(dbWorkshops);
+            saveToStorage('anvitam_workshops_v1', dbWorkshops);
+          }
+        } else {
+          console.info('[ContentContext] workshops API returned fallback mock data; preserving local cache.');
+          setWorkshops(prev => prev.length === 0 ? dbWorkshops : prev);
+        }
+      }
 
       if (blogsRes.ok) {
         const isFallback = blogsRes.headers.get('x-db-fallback') === 'true';

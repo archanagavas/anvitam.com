@@ -103,7 +103,8 @@ const WorkshopDetail: React.FC = () => {
   };
 
   const videoEmbedId = getYouTubeEmbedId(workshop.videoUrl || workshop.youtubeUrl);
-  const imagesList = workshop.images && workshop.images.length > 0 ? workshop.images : ['/workshops/birds house making.png'];
+  const rawImages = workshop.images ? workshop.images.filter(img => Boolean(img && img.trim())) : [];
+  const imagesList = rawImages.length > 0 ? rawImages : ['/workshops/birds house making.png'];
 
   const handleNextSlide = () => {
     setActiveSlide((prev) => (prev + 1) % imagesList.length);
@@ -236,6 +237,7 @@ Additional Notes: ${formState.notes || 'None'}`;
               src={imagesList[activeSlide]}
               alt={`${workshop.title} Slide ${activeSlide + 1}`}
               className="w-full h-full object-cover transition-all duration-500"
+              onError={(e) => { (e.target as HTMLImageElement).src = '/workshops/birds house making.png'; }}
             />
             
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
@@ -284,7 +286,7 @@ Additional Notes: ${formState.notes || 'None'}`;
                     activeSlide === idx ? 'border-[#CCFF00] opacity-100 scale-105' : 'border-transparent opacity-50 hover:opacity-100'
                   }`}
                 >
-                  <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                  <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/workshops/birds house making.png'; }} />
                 </button>
               ))}
             </div>
