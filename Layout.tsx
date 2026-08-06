@@ -185,10 +185,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <button className="w-full bg-white text-[#111] font-semibold py-2.5 rounded-full text-sm hover:bg-[#CCFF00] transition-colors">
                 Submit
               </button>
+            </div>
           </div>
 
           {/* Bottom bar */}
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-white/30">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-white/30 pt-8">
             <span>© {new Date().getFullYear()} Anvitam. All rights reserved.</span>
             <div className="flex gap-6">
               <Link to="/admin" className="text-[#CCFF00] hover:text-white transition-colors font-bold">Staff Login</Link>

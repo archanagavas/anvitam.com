@@ -3,6 +3,43 @@ import { sql, isDbConfigured } from '../lib/db.js';
 import { verifyAdminToken, extractToken } from '../lib/auth.js';
 import { INITIAL_WORKSHOPS } from '../constants.js';
 
+function formatWorkshopRow(row: any) {
+  return {
+    id: row.id,
+    title: row.title,
+    organization: row.organization || '',
+    location: row.location || '',
+    city: row.city || '',
+    state: row.state || '',
+    country: row.country || '',
+    date: row.date || '',
+    category: row.category || 'School',
+    description: row.description || '',
+    attendeesCount: row.attendees_count || '',
+    offerings: typeof row.offerings === 'string' ? JSON.parse(row.offerings) : row.offerings || [],
+    skillsOutcomes: row.skills_outcomes || '',
+    materialsUsed: row.materials_used || '',
+    impact: row.impact || '',
+    outcomes: row.outcomes || '',
+    images: typeof row.images === 'string' ? JSON.parse(row.images) : row.images || [],
+    galleryDetails: typeof row.gallery_details === 'string' ? JSON.parse(row.gallery_details) : row.gallery_details || [],
+    relatedProjectIds: typeof row.related_project_ids === 'string' ? JSON.parse(row.related_project_ids) : row.related_project_ids || [],
+    relatedServiceIds: typeof row.related_service_ids === 'string' ? JSON.parse(row.related_service_ids) : row.related_service_ids || [],
+    relatedArticleIds: typeof row.related_article_ids === 'string' ? JSON.parse(row.related_article_ids) : row.related_article_ids || [],
+    slug: row.slug || '',
+    metaTitle: row.meta_title || '',
+    metaDescription: row.meta_description || '',
+    primaryKeyword: row.primary_keyword || '',
+    secondaryKeywords: row.secondary_keywords || '',
+    canonicalUrl: row.canonical_url || '',
+    ogTitle: row.og_title || '',
+    ogDescription: row.og_description || '',
+    ogImage: row.og_image || '',
+    status: row.status || 'published',
+    createdAt: row.created_at
+  };
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const urlParts = (req.url || '').split('?')[0].split('/');
   const lastPart = urlParts[urlParts.length - 1];
@@ -25,7 +62,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'GET') {
     try {
       if (id) {
-        const rows = await sql`SELECT id, title, organization, location, date, category, description, attendees_count, offerings, images, status FROM workshops WHERE id = ${id}`;
+        const rows = await sql`SELECT * FROM workshops WHERE id = ${id}`;
         if (rows.length === 0) {
           const mockItem = INITIAL_WORKSHOPS.find(i => i.id === id);
           if (mockItem) {
@@ -34,39 +71,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           }
           return res.status(404).json({ error: 'Workshop not found' });
         }
-        const row = rows[0];
-        return res.status(200).json({
-          id: row.id,
-          title: row.title,
-          organization: row.organization,
-          location: row.location,
-          date: row.date,
-          category: row.category,
-          description: row.description,
-          attendeesCount: row.attendees_count,
-          offerings: typeof row.offerings === 'string' ? JSON.parse(row.offerings) : row.offerings || [],
-          images: typeof row.images === 'string' ? JSON.parse(row.images) : row.images || [],
-          status: row.status
-        });
+        return res.status(200).json(formatWorkshopRow(rows[0]));
       }
-      const rows = await sql`SELECT id, title, organization, location, date, category, description, attendees_count, offerings, images, status FROM workshops ORDER BY created_at DESC`;
+      const rows = await sql`SELECT * FROM workshops ORDER BY created_at DESC`;
       if (rows.length === 0) {
         return res.status(200).json(INITIAL_WORKSHOPS);
       }
-      const formatted = rows.map((row: any) => ({
-        id: row.id,
-        title: row.title,
-        organization: row.organization,
-        location: row.location,
-        date: row.date,
-        category: row.category,
-        description: row.description,
-        attendeesCount: row.attendees_count,
-        offerings: typeof row.offerings === 'string' ? JSON.parse(row.offerings) : row.offerings || [],
-        images: typeof row.images === 'string' ? JSON.parse(row.images) : row.images || [],
-        status: row.status
-      }));
-      return res.status(200).json(formatted);
+      return res.status(200).json(rows.map(formatWorkshopRow));
     } catch (dbError) {
       console.warn('[workshops API] Database query failed, falling back to static constants:', dbError);
       res.setHeader('x-db-fallback', 'true');
@@ -81,34 +92,56 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'POST') {
-    const { id: bodyId, title, organization, location, date, category, description, attendeesCount, offerings, images, status } = req.body ?? {};
-    const targetId = id || bodyId || `workshop-${Date.now()}`;
+    const b = req.body ?? {};
+    const targetId = id || b.id || `workshop-${Date.now()}`;
 
     await sql`
-      INSERT INTO workshops (id, title, organization, location, date, category, description, attendees_count, offerings, images, status)
+      INSERT INTO workshops (
+        id, title, organization, location, city, state, country, date, category, description,
+        attendees_count, offerings, skills_outcomes, materials_used, impact, outcomes, images,
+        gallery_details, related_project_ids, related_service_ids, related_article_ids, slug,
+        meta_title, meta_description, primary_keyword, secondary_keywords, canonical_url,
+        og_title, og_description, og_image, status
+      )
       VALUES (
-        ${targetId},
-        ${title},
-        ${organization || ''},
-        ${location || ''},
-        ${date || ''},
-        ${category || 'School'},
-        ${description || ''},
-        ${attendeesCount || ''},
-        ${JSON.stringify(offerings || [])},
-        ${JSON.stringify(images || [])},
-        ${status || 'published'}
+        ${targetId}, ${b.title}, ${b.organization || ''}, ${b.location || ''}, ${b.city || ''}, ${b.state || ''}, ${b.country || ''},
+        ${b.date || ''}, ${b.category || 'School'}, ${b.description || ''}, ${b.attendeesCount || ''},
+        ${JSON.stringify(b.offerings || [])}, ${b.skillsOutcomes || ''}, ${b.materialsUsed || ''}, ${b.impact || ''}, ${b.outcomes || ''},
+        ${JSON.stringify(b.images || [])}, ${JSON.stringify(b.galleryDetails || [])},
+        ${JSON.stringify(b.relatedProjectIds || [])}, ${JSON.stringify(b.relatedServiceIds || [])}, ${JSON.stringify(b.relatedArticleIds || [])},
+        ${b.slug || ''}, ${b.metaTitle || ''}, ${b.metaDescription || ''}, ${b.primaryKeyword || ''}, ${b.secondaryKeywords || ''}, ${b.canonicalUrl || ''},
+        ${b.ogTitle || ''}, ${b.ogDescription || ''}, ${b.ogImage || ''}, ${b.status || 'published'}
       )
       ON CONFLICT (id) DO UPDATE SET
         title = EXCLUDED.title,
         organization = EXCLUDED.organization,
         location = EXCLUDED.location,
+        city = EXCLUDED.city,
+        state = EXCLUDED.state,
+        country = EXCLUDED.country,
         date = EXCLUDED.date,
         category = EXCLUDED.category,
         description = EXCLUDED.description,
         attendees_count = EXCLUDED.attendees_count,
         offerings = EXCLUDED.offerings,
+        skills_outcomes = EXCLUDED.skills_outcomes,
+        materials_used = EXCLUDED.materials_used,
+        impact = EXCLUDED.impact,
+        outcomes = EXCLUDED.outcomes,
         images = EXCLUDED.images,
+        gallery_details = EXCLUDED.gallery_details,
+        related_project_ids = EXCLUDED.related_project_ids,
+        related_service_ids = EXCLUDED.related_service_ids,
+        related_article_ids = EXCLUDED.related_article_ids,
+        slug = EXCLUDED.slug,
+        meta_title = EXCLUDED.meta_title,
+        meta_description = EXCLUDED.meta_description,
+        primary_keyword = EXCLUDED.primary_keyword,
+        secondary_keywords = EXCLUDED.secondary_keywords,
+        canonical_url = EXCLUDED.canonical_url,
+        og_title = EXCLUDED.og_title,
+        og_description = EXCLUDED.og_description,
+        og_image = EXCLUDED.og_image,
         status = EXCLUDED.status
     `;
     return res.status(201).json({ success: true, id: targetId });
@@ -116,19 +149,39 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'PUT') {
     if (!id) return res.status(400).json({ error: 'Missing workshop ID' });
-    const { title, organization, location, date, category, description, attendeesCount, offerings, images, status } = req.body ?? {};
+    const b = req.body ?? {};
     await sql`
       UPDATE workshops SET
-        title = ${title},
-        organization = ${organization || ''},
-        location = ${location || ''},
-        date = ${date || ''},
-        category = ${category || 'School'},
-        description = ${description || ''},
-        attendees_count = ${attendeesCount || ''},
-        offerings = ${JSON.stringify(offerings || [])},
-        images = ${JSON.stringify(images || [])},
-        status = ${status || 'published'}
+        title = ${b.title},
+        organization = ${b.organization || ''},
+        location = ${b.location || ''},
+        city = ${b.city || ''},
+        state = ${b.state || ''},
+        country = ${b.country || ''},
+        date = ${b.date || ''},
+        category = ${b.category || 'School'},
+        description = ${b.description || ''},
+        attendees_count = ${b.attendeesCount || ''},
+        offerings = ${JSON.stringify(b.offerings || [])},
+        skills_outcomes = ${b.skillsOutcomes || ''},
+        materials_used = ${b.materialsUsed || ''},
+        impact = ${b.impact || ''},
+        outcomes = ${b.outcomes || ''},
+        images = ${JSON.stringify(b.images || [])},
+        gallery_details = ${JSON.stringify(b.galleryDetails || [])},
+        related_project_ids = ${JSON.stringify(b.relatedProjectIds || [])},
+        related_service_ids = ${JSON.stringify(b.relatedServiceIds || [])},
+        related_article_ids = ${JSON.stringify(b.relatedArticleIds || [])},
+        slug = ${b.slug || ''},
+        meta_title = ${b.metaTitle || ''},
+        meta_description = ${b.metaDescription || ''},
+        primary_keyword = ${b.primaryKeyword || ''},
+        secondary_keywords = ${b.secondaryKeywords || ''},
+        canonical_url = ${b.canonicalUrl || ''},
+        og_title = ${b.ogTitle || ''},
+        og_description = ${b.ogDescription || ''},
+        og_image = ${b.ogImage || ''},
+        status = ${b.status || 'published'}
       WHERE id = ${id}
     `;
     return res.status(200).json({ success: true });

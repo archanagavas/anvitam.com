@@ -243,6 +243,27 @@ async function initDatabaseInternal() {
   await neonClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS meta_description TEXT;`;
   await neonClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS meta_keywords TEXT;`;
   await neonClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS meta_robots TEXT;`;
+
+  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS city TEXT DEFAULT '';`;
+  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS state TEXT DEFAULT '';`;
+  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS country TEXT DEFAULT '';`;
+  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS skills_outcomes TEXT DEFAULT '';`;
+  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS materials_used TEXT DEFAULT '';`;
+  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS impact TEXT DEFAULT '';`;
+  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS outcomes TEXT DEFAULT '';`;
+  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS gallery_details JSONB DEFAULT '[]';`;
+  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS related_project_ids JSONB DEFAULT '[]';`;
+  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS related_service_ids JSONB DEFAULT '[]';`;
+  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS related_article_ids JSONB DEFAULT '[]';`;
+  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS slug TEXT;`;
+  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS meta_title TEXT;`;
+  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS meta_description TEXT;`;
+  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS primary_keyword TEXT;`;
+  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS secondary_keywords TEXT;`;
+  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS canonical_url TEXT;`;
+  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS og_title TEXT;`;
+  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS og_description TEXT;`;
+  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS og_image TEXT;`;
   await neonClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS youtube_url TEXT;`;
   await neonClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS videos JSONB DEFAULT '[]';`;
 

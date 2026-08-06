@@ -170,17 +170,44 @@ export interface EstimatorService {
   baseINR: number[];
 }
 
+export interface WorkshopGalleryItem {
+  url: string;
+  alt?: string;
+  caption?: string;
+  displayOrder?: number;
+}
+
 export interface Workshop {
   id: string;
   title: string;
   organization: string;
   location: string;
+  city?: string;
+  state?: string;
+  country?: string;
   date: string;
   category: 'School' | 'College' | 'Workplace' | 'Community';
   description: string;
   attendeesCount?: string;
   offerings?: string[];
+  skillsOutcomes?: string;
+  materialsUsed?: string;
+  impact?: string;
+  outcomes?: string;
   images: string[];
+  galleryDetails?: WorkshopGalleryItem[];
+  relatedProjectIds?: string[];
+  relatedServiceIds?: string[];
+  relatedArticleIds?: string[];
+  slug?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  primaryKeyword?: string;
+  secondaryKeywords?: string;
+  canonicalUrl?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
   status: 'published' | 'draft';
   createdAt?: string;
 }

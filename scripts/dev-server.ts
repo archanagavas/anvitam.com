@@ -15,9 +15,8 @@ import projectsHandler from '../api/projects';
 import messagesHandler from '../api/messages';
 import servicesHandler from '../api/services';
 import productsHandler from '../api/products';
-import testimonialsHandler from '../api/testimonials';
-import partnersHandler from '../api/partners';
-import estimatorServicesHandler from '../api/estimator-services';
+import metaHandler from '../api/meta';
+import workshopsHandler from '../api/workshops';
 import analyticsHandler from '../api/analytics';
 
 const PORT = 3005;
@@ -79,9 +78,7 @@ const server = createServer(async (req, res) => {
     const messagesIdMatch = pathname.match(/^\/api\/messages\/([^/]+)$/);
     const servicesIdMatch = pathname.match(/^\/api\/services\/([^/]+)$/);
     const productsIdMatch = pathname.match(/^\/api\/products\/([^/]+)$/);
-    const testimonialsIdMatch = pathname.match(/^\/api\/testimonials\/([^/]+)$/);
-    const partnersIdMatch = pathname.match(/^\/api\/partners\/([^/]+)$/);
-    const estimatorServicesIdMatch = pathname.match(/^\/api\/estimator-services\/([^/]+)$/);
+    const workshopsIdMatch = pathname.match(/^\/api\/workshops\/([^/]+)$/);
 
     if (pathname.startsWith('/api/admin') || pathname === '/api/db-init') {
       await adminHandler(vercelReq, vercelRes);
@@ -112,21 +109,13 @@ const server = createServer(async (req, res) => {
     } else if (productsIdMatch) {
       vercelReq.query.id = productsIdMatch[1];
       await productsHandler(vercelReq, vercelRes);
-    } else if (pathname === '/api/testimonials' || pathname === '/api/testimonials/') {
-      await testimonialsHandler(vercelReq, vercelRes);
-    } else if (testimonialsIdMatch) {
-      vercelReq.query.id = testimonialsIdMatch[1];
-      await testimonialsHandler(vercelReq, vercelRes);
-    } else if (pathname === '/api/partners' || pathname === '/api/partners/') {
-      await partnersHandler(vercelReq, vercelRes);
-    } else if (partnersIdMatch) {
-      vercelReq.query.id = partnersIdMatch[1];
-      await partnersHandler(vercelReq, vercelRes);
-    } else if (pathname === '/api/estimator-services' || pathname === '/api/estimator-services/') {
-      await estimatorServicesHandler(vercelReq, vercelRes);
-    } else if (estimatorServicesIdMatch) {
-      vercelReq.query.id = estimatorServicesIdMatch[1];
-      await estimatorServicesHandler(vercelReq, vercelRes);
+    } else if (pathname === '/api/workshops' || pathname === '/api/workshops/') {
+      await workshopsHandler(vercelReq, vercelRes);
+    } else if (workshopsIdMatch) {
+      vercelReq.query.id = workshopsIdMatch[1];
+      await workshopsHandler(vercelReq, vercelRes);
+    } else if (pathname.startsWith('/api/meta')) {
+      await metaHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/sitemap' || pathname === '/api/sitemap/' || pathname === '/api/sitemap.xml') {
       // Served as static pre-generated sitemap.xml on Vercel; dev-server mocks it
       res.setHeader('Content-Type', 'application/xml');

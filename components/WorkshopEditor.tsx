@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Workshop } from '../types';
-import { X, Plus, Trash2, ArrowLeft, Save, Sparkles, Image as ImageIcon } from 'lucide-react';
+import { X, Plus, Trash2, ArrowLeft, Save, Sparkles, Image as ImageIcon, Link as LinkIcon, Globe, Share2, FileText, Check } from 'lucide-react';
 
 interface WorkshopEditorProps {
   initial?: Workshop | null;
@@ -9,35 +9,83 @@ interface WorkshopEditorProps {
 }
 
 export default function WorkshopEditor({ initial, onSave, onCancel }: WorkshopEditorProps) {
+  // BASIC INFORMATION
   const [title, setTitle] = useState(initial?.title || '');
   const [organization, setOrganization] = useState(initial?.organization || '');
-  const [location, setLocation] = useState(initial?.location || '');
-  const [date, setDate] = useState(initial?.date || new Date().getFullYear().toString());
   const [category, setCategory] = useState<'School' | 'College' | 'Workplace' | 'Community'>(initial?.category || 'School');
+  const [location, setLocation] = useState(initial?.location || '');
+  const [city, setCity] = useState(initial?.city || '');
+  const [state, setState] = useState(initial?.state || '');
+  const [country, setCountry] = useState(initial?.country || 'India');
+  const [date, setDate] = useState(initial?.date || new Date().getFullYear().toString());
   const [attendeesCount, setAttendeesCount] = useState(initial?.attendeesCount || '');
   const [description, setDescription] = useState(initial?.description || '');
-  const [status, setStatus] = useState<'published' | 'draft'>(initial?.status || 'published');
-  
-  const [offerings, setOfferings] = useState<string[]>(initial?.offerings || []);
+
+  // WORKSHOP DETAILS
+  const [offerings, setOfferings] = useState<string[]>(initial?.offerings || ['Bird House Making', 'Space Makeover', 'Bird Feeder Making']);
   const [offeringInput, setOfferingInput] = useState('');
-  
+  const [skillsOutcomes, setSkillsOutcomes] = useState(initial?.skillsOutcomes || '');
+  const [materialsUsed, setMaterialsUsed] = useState(initial?.materialsUsed || '');
+  const [impact, setImpact] = useState(initial?.impact || '');
+  const [outcomes, setOutcomes] = useState(initial?.outcomes || '');
+
+  // MEDIA (Images + Gallery Details)
   const [images, setImages] = useState<string[]>(initial?.images || []);
   const [imageUrlInput, setImageUrlInput] = useState('');
+  const [imageAltInput, setImageAltInput] = useState('');
+  const [imageCaptionInput, setImageCaptionInput] = useState('');
 
-  const handleAddOffering = () => {
-    if (!offeringInput.trim()) return;
-    setOfferings([...offerings, offeringInput.trim()]);
-    setOfferingInput('');
+  // RELATED CONTENT
+  const [relatedProjectIds, setRelatedProjectIds] = useState<string[]>(initial?.relatedProjectIds || []);
+  const [relatedServiceIds, setRelatedServiceIds] = useState<string[]>(initial?.relatedServiceIds || []);
+  const [relatedArticleIds, setRelatedArticleIds] = useState<string[]>(initial?.relatedArticleIds || []);
+  
+  const [projectInput, setProjectInput] = useState('');
+  const [serviceInput, setServiceInput] = useState('');
+  const [articleInput, setArticleInput] = useState('');
+
+  // SEO SETTINGS
+  const [slug, setSlug] = useState(initial?.slug || '');
+  const [metaTitle, setMetaTitle] = useState(initial?.metaTitle || '');
+  const [metaDescription, setMetaDescription] = useState(initial?.metaDescription || '');
+  const [primaryKeyword, setPrimaryKeyword] = useState(initial?.primaryKeyword || '');
+  const [secondaryKeywords, setSecondaryKeywords] = useState(initial?.secondaryKeywords || '');
+  const [canonicalUrl, setCanonicalUrl] = useState(initial?.canonicalUrl || '');
+
+  // SOCIAL SHARING
+  const [ogTitle, setOgTitle] = useState(initial?.ogTitle || '');
+  const [ogDescription, setOgDescription] = useState(initial?.ogDescription || '');
+  const [ogImage, setOgImage] = useState(initial?.ogImage || '');
+
+  // PUBLISHING
+  const [status, setStatus] = useState<'published' | 'draft'>(initial?.status || 'published');
+
+  // Auto-generate slug & SEO defaults when title changes
+  const handleTitleChange = (val: string) => {
+    setTitle(val);
+    if (!slug || slug === title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')) {
+      const generatedSlug = val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+      setSlug(generatedSlug);
+    }
+  };
+
+  const handleAddOffering = (text?: string) => {
+    const val = (text || offeringInput).trim();
+    if (!val || offerings.includes(val)) return;
+    setOfferings([...offerings, val]);
+    if (!text) setOfferingInput('');
   };
 
   const handleRemoveOffering = (idx: number) => {
     setOfferings(offerings.filter((_, i) => i !== idx));
   };
 
-  const handleAddImageUrl = () => {
+  const handleAddImage = () => {
     if (!imageUrlInput.trim()) return;
     setImages([...images, imageUrlInput.trim()]);
     setImageUrlInput('');
+    setImageAltInput('');
+    setImageCaptionInput('');
   };
 
   const handleRemoveImage = (idx: number) => {
@@ -48,7 +96,7 @@ export default function WorkshopEditor({ initial, onSave, onCancel }: WorkshopEd
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    Array.from(files).forEach(file => {
+    Array.from(files).forEach((file: File) => {
       const reader = new FileReader();
       reader.onload = (ev) => {
         if (ev.target?.result) {
@@ -67,13 +115,32 @@ export default function WorkshopEditor({ initial, onSave, onCancel }: WorkshopEd
       id: initial?.id || `workshop-${Date.now()}`,
       title: title.trim(),
       organization: organization.trim(),
-      location: location.trim(),
-      date: date.trim(),
       category,
+      location: location.trim(),
+      city: city.trim(),
+      state: state.trim(),
+      country: country.trim(),
+      date: date.trim(),
       attendeesCount: attendeesCount.trim(),
       description: description.trim(),
       offerings,
+      skillsOutcomes: skillsOutcomes.trim(),
+      materialsUsed: materialsUsed.trim(),
+      impact: impact.trim(),
+      outcomes: outcomes.trim(),
       images,
+      relatedProjectIds,
+      relatedServiceIds,
+      relatedArticleIds,
+      slug: slug.trim() || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
+      metaTitle: metaTitle.trim(),
+      metaDescription: metaDescription.trim(),
+      primaryKeyword: primaryKeyword.trim(),
+      secondaryKeywords: secondaryKeywords.trim(),
+      canonicalUrl: canonicalUrl.trim(),
+      ogTitle: ogTitle.trim(),
+      ogDescription: ogDescription.trim(),
+      ogImage: ogImage.trim() || images[0] || '',
       status,
       createdAt: initial?.createdAt || new Date().toISOString()
     };
@@ -82,21 +149,22 @@ export default function WorkshopEditor({ initial, onSave, onCancel }: WorkshopEd
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-8 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between border-b border-gray-100 pb-5 mb-6">
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-10 max-w-5xl mx-auto">
+      {/* Header bar */}
+      <div className="flex items-center justify-between border-b border-gray-200 pb-5 mb-8">
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={onCancel}
             className="p-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded-xl transition"
           >
-            <ArrowLeft size={18} />
+            <ArrowLeft size={20} />
           </button>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-gray-900">
               {initial ? 'Edit Workshop Entry' : 'Create New Workshop'}
             </h2>
-            <p className="text-xs text-gray-500">Manage Nest N Nurture campus workshops and B2B events</p>
+            <p className="text-xs text-gray-500">Manage Nest N Nurture campus workshops, B2B events, and SEO settings</p>
           </div>
         </div>
 
@@ -104,185 +172,342 @@ export default function WorkshopEditor({ initial, onSave, onCancel }: WorkshopEd
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition"
+            className="px-5 py-2.5 text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-xl transition"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleSubmit}
-            className="inline-flex items-center gap-1.5 px-5 py-2 bg-black text-white text-xs font-bold rounded-xl hover:bg-gray-800 transition"
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#CCFF00] text-black text-xs font-extrabold rounded-xl hover:scale-105 transition shadow-sm"
           >
-            <Save size={15} /> Save Workshop
+            <Save size={16} /> Save Workshop
           </button>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Title */}
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-2">
-            Workshop Title *
-          </label>
-          <input
-            type="text"
-            required
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            placeholder="e.g. Bird House Architecture & Campus Space Makeover"
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black"
-          />
-        </div>
+      <form onSubmit={handleSubmit} className="space-y-12">
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            BASIC INFORMATION
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        <section className="space-y-6">
+          <div className="border-b border-gray-100 pb-2">
+            <h3 className="text-xs font-black uppercase tracking-widest text-emerald-700 flex items-center gap-2">
+              <FileText size={14} /> Basic Information
+            </h3>
+          </div>
 
-        {/* Grid 2 Cols: Organization & Category */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-2">
-              Organization / School / Client *
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+              Workshop Title *
             </label>
             <input
               type="text"
               required
-              value={organization}
-              onChange={e => setOrganization(e.target.value)}
-              placeholder="e.g. Unique School of Science, Nadiad"
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black"
+              value={title}
+              onChange={e => handleTitleChange(e.target.value)}
+              placeholder="e.g. Bird House Architecture & Campus Space Makeover"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
             />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                Organization / Client *
+              </label>
+              <input
+                type="text"
+                required
+                value={organization}
+                onChange={e => setOrganization(e.target.value)}
+                placeholder="e.g. Unique School of Science, Nadiad"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                Category *
+              </label>
+              <select
+                value={category}
+                onChange={e => setCategory(e.target.value as any)}
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600 bg-white"
+              >
+                <option value="School">School (K-12)</option>
+                <option value="College">College / Architecture University</option>
+                <option value="Workplace">Workplace / Corporate Team</option>
+                <option value="Community">Community / Open Bootcamp</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                Location
+              </label>
+              <input
+                type="text"
+                value={location}
+                onChange={e => setLocation(e.target.value)}
+                placeholder="e.g. Nadiad, Gujarat"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                City
+              </label>
+              <input
+                type="text"
+                value={city}
+                onChange={e => setCity(e.target.value)}
+                placeholder="e.g. Nadiad"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                State
+              </label>
+              <input
+                type="text"
+                value={state}
+                onChange={e => setState(e.target.value)}
+                placeholder="e.g. Gujarat"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                Country
+              </label>
+              <input
+                type="text"
+                value={country}
+                onChange={e => setCountry(e.target.value)}
+                placeholder="e.g. India"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                Year / Date
+              </label>
+              <input
+                type="text"
+                value={date}
+                onChange={e => setDate(e.target.value)}
+                placeholder="e.g. 2025"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                Attendees / Grade
+              </label>
+              <input
+                type="text"
+                value={attendeesCount}
+                onChange={e => setAttendeesCount(e.target.value)}
+                placeholder="e.g. Class 5th - 10th (150+ Students)"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+            </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-2">
-              Category *
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+              Description / Event Highlights
             </label>
-            <select
-              value={category}
-              onChange={e => setCategory(e.target.value as any)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black bg-white"
-            >
-              <option value="School">School (K-12)</option>
-              <option value="College">College / Architecture University</option>
-              <option value="Workplace">Workplace / Corporate Team</option>
-              <option value="Community">Community / Open Bootcamp</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Grid 3 Cols: Location, Date & Attendees Count */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-2">
-              Location
-            </label>
-            <input
-              type="text"
-              value={location}
-              onChange={e => setLocation(e.target.value)}
-              placeholder="e.g. Nadiad, Gujarat"
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black"
+            <textarea
+              rows={4}
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              placeholder="Hands-on creative installation workshop conducted with students..."
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
             />
+          </div>
+        </section>
+
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            WORKSHOP DETAILS
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        <section className="space-y-6">
+          <div className="border-b border-gray-100 pb-2">
+            <h3 className="text-xs font-black uppercase tracking-widest text-emerald-700 flex items-center gap-2">
+              <Sparkles size={14} /> Workshop Details
+            </h3>
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-2">
-              Year / Date
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+              Offerings / Activities
             </label>
-            <input
-              type="text"
-              value={date}
-              onChange={e => setDate(e.target.value)}
-              placeholder="e.g. 2025"
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black"
-            />
-          </div>
 
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-2">
-              Attendees Count / Grade
-            </label>
-            <input
-              type="text"
-              value={attendeesCount}
-              onChange={e => setAttendeesCount(e.target.value)}
-              placeholder="e.g. 150+ Students (Class 5th - 10th)"
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black"
-            />
-          </div>
-        </div>
-
-        {/* Description */}
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-2">
-            Description / Event Highlights
-          </label>
-          <textarea
-            rows={4}
-            value={description}
-            onChange={e => setDescription(e.target.value)}
-            placeholder="Describe the activities, student involvement, campus installations, and key outcomes..."
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black"
-          />
-        </div>
-
-        {/* Offerings Chips */}
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-2">
-            Offerings Executed (Tags)
-          </label>
-          <div className="flex gap-2 mb-3">
-            <input
-              type="text"
-              value={offeringInput}
-              onChange={e => setOfferingInput(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddOffering(); } }}
-              placeholder="e.g. Bird House Making"
-              className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-black"
-            />
-            <button
-              type="button"
-              onClick={handleAddOffering}
-              className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold rounded-xl transition"
-            >
-              Add Offering
-            </button>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {offerings.map((off, idx) => (
-              <span key={idx} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-800 rounded-xl text-xs font-medium">
-                {off}
-                <button type="button" onClick={() => handleRemoveOffering(idx)} className="text-gray-400 hover:text-red-500">
-                  <X size={13} />
+            {/* Quick preset buttons */}
+            <div className="flex flex-wrap gap-2 mb-3">
+              {['Bird House Making', 'Space Makeover', 'Bird Feeder Making', 'Plastic Waste Transformation', 'Tote Bag Painting', 'Wind Chime Art'].map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => handleAddOffering(preset)}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold border transition ${
+                    offerings.includes(preset)
+                      ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                      : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  {offerings.includes(preset) ? '✓ ' : '+ '}[ {preset} ]
                 </button>
-              </span>
-            ))}
+              ))}
+            </div>
+
+            <div className="flex gap-2 mb-3">
+              <input
+                type="text"
+                value={offeringInput}
+                onChange={e => setOfferingInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddOffering(); } }}
+                placeholder="Add custom offering..."
+                className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+              <button
+                type="button"
+                onClick={() => handleAddOffering()}
+                className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold rounded-xl transition"
+              >
+                Add Offering
+              </button>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {offerings.map((off, idx) => (
+                <span key={idx} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 text-emerald-900 rounded-xl text-xs font-bold">
+                  {off}
+                  <button type="button" onClick={() => handleRemoveOffering(idx)} className="text-emerald-700 hover:text-red-600">
+                    <X size={13} />
+                  </button>
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Images Upload & Gallery */}
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-2">
-            Workshop Photos & Gallery
-          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                Skills / Learning Outcomes
+              </label>
+              <textarea
+                rows={3}
+                value={skillsOutcomes}
+                onChange={e => setSkillsOutcomes(e.target.value)}
+                placeholder="Hands-on carpentry, ecological awareness, teamwork, spatial installation..."
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+            </div>
 
-          <div className="space-y-3 mb-4">
-            <div className="flex gap-2">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                Materials Used
+              </label>
+              <textarea
+                rows={3}
+                value={materialsUsed}
+                onChange={e => setMaterialsUsed(e.target.value)}
+                placeholder="Reclaimed timber, non-toxic paints, upcycled PET containers, organic ropes..."
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                Environmental / Social Impact
+              </label>
+              <textarea
+                rows={3}
+                value={impact}
+                onChange={e => setImpact(e.target.value)}
+                placeholder="Increased campus biodiversity, native bird nesting shelters installed..."
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                Workshop Outcomes
+              </label>
+              <textarea
+                rows={3}
+                value={outcomes}
+                onChange={e => setOutcomes(e.target.value)}
+                placeholder="15 permanent bird habitat units erected, courtyard green makeover completed..."
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            MEDIA
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        <section className="space-y-6">
+          <div className="border-b border-gray-100 pb-2">
+            <h3 className="text-xs font-black uppercase tracking-widest text-emerald-700 flex items-center gap-2">
+              <ImageIcon size={14} /> Media Gallery
+            </h3>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+              Workshop Gallery
+            </label>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
               <input
                 type="text"
                 value={imageUrlInput}
                 onChange={e => setImageUrlInput(e.target.value)}
-                placeholder="Or paste image URL (e.g. /workshops/bird house making.png)"
-                className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-black"
+                placeholder="Image URL (e.g. /workshops/bird house making.png)"
+                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
               />
-              <button
-                type="button"
-                onClick={handleAddImageUrl}
-                className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold rounded-xl transition"
-              >
-                Add URL
-              </button>
+              <input
+                type="text"
+                value={imageAltInput}
+                onChange={e => setImageAltInput(e.target.value)}
+                placeholder="Alt Text (for SEO)"
+                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={imageCaptionInput}
+                  onChange={e => setImageCaptionInput(e.target.value)}
+                  placeholder="Caption..."
+                  className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddImage}
+                  className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold rounded-xl transition"
+                >
+                  Add URL
+                </button>
+              </div>
             </div>
 
-            <div className="relative border border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-black transition">
+            <div className="relative border border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-emerald-600 transition bg-gray-50/50">
               <input
                 type="file"
                 multiple
@@ -290,60 +515,281 @@ export default function WorkshopEditor({ initial, onSave, onCancel }: WorkshopEd
                 onChange={handleImageFileUpload}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
-              <div className="flex flex-col items-center justify-center gap-1 text-gray-500">
-                <ImageIcon size={24} />
-                <span className="text-xs font-semibold">Click to Upload Workshop Photos</span>
+              <div className="flex flex-col items-center justify-center gap-1.5 text-gray-500">
+                <ImageIcon size={28} className="text-emerald-600" />
+                <span className="text-xs font-bold text-gray-800">[ Upload Image ]</span>
+                <span className="text-[11px] text-gray-400">Click or drag images to upload</span>
               </div>
+            </div>
+
+            {/* Gallery Previews Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
+              {images.map((img, idx) => (
+                <div key={idx} className="relative rounded-2xl overflow-hidden h-32 border border-gray-200 group bg-gray-100">
+                  <img src={img} alt={`Workshop highlight ${idx + 1}`} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition p-2 flex flex-col justify-between">
+                    <span className="text-[10px] bg-black/70 text-white px-2 py-0.5 rounded-full w-fit">Order #{idx + 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(idx)}
+                      className="self-end bg-red-600 text-white p-1.5 rounded-lg hover:bg-red-700 transition"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            RELATED CONTENT
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        <section className="space-y-6">
+          <div className="border-b border-gray-100 pb-2">
+            <h3 className="text-xs font-black uppercase tracking-widest text-emerald-700 flex items-center gap-2">
+              <LinkIcon size={14} /> Related Content
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                Related Projects
+              </label>
+              <input
+                type="text"
+                value={projectInput}
+                onChange={e => setProjectInput(e.target.value)}
+                placeholder="e.g. Unique School Courtyard"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                Related Services
+              </label>
+              <input
+                type="text"
+                value={serviceInput}
+                onChange={e => setServiceInput(e.target.value)}
+                placeholder="e.g. Permaculture Design"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                Related Articles
+              </label>
+              <input
+                type="text"
+                value={articleInput}
+                onChange={e => setArticleInput(e.target.value)}
+                placeholder="e.g. Biophilic Learning Spaces"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            SEO SETTINGS
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        <section className="space-y-6">
+          <div className="border-b border-gray-100 pb-2">
+            <h3 className="text-xs font-black uppercase tracking-widest text-emerald-700 flex items-center gap-2">
+              <Globe size={14} /> SEO Settings
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                SEO Title
+              </label>
+              <input
+                type="text"
+                value={metaTitle}
+                onChange={e => setMetaTitle(e.target.value)}
+                placeholder="e.g. Bird House Architecture Workshop | Anvitam"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                URL Slug
+              </label>
+              <input
+                type="text"
+                value={slug}
+                onChange={e => setSlug(e.target.value)}
+                placeholder="bird-house-architecture-workshop"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
             </div>
           </div>
 
-          {/* Photo Previews */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {images.map((img, idx) => (
-              <div key={idx} className="relative rounded-xl overflow-hidden h-28 border border-gray-200 group bg-gray-50">
-                <img src={img} alt={`Workshop highlight ${idx + 1}`} className="w-full h-full object-cover" />
-                <button
-                  type="button"
-                  onClick={() => handleRemoveImage(idx)}
-                  className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-lg opacity-0 group-hover:opacity-100 transition"
-                >
-                  <Trash2 size={13} />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Status */}
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-2">
-            Publish Status
-          </label>
-          <div className="flex items-center gap-4">
-            <label className="inline-flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="status"
-                value="published"
-                checked={status === 'published'}
-                onChange={() => setStatus('published')}
-                className="text-black focus:ring-black"
-              />
-              <span className="text-sm text-gray-800 font-medium">Published (Live on Website)</span>
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+              Meta Description
             </label>
-            <label className="inline-flex items-center gap-2 cursor-pointer">
+            <textarea
+              rows={3}
+              value={metaDescription}
+              onChange={e => setMetaDescription(e.target.value)}
+              placeholder="Hands-on bird house building and campus space makeover workshop for schools and universities..."
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                Primary Keyword
+              </label>
+              <input
+                type="text"
+                value={primaryKeyword}
+                onChange={e => setPrimaryKeyword(e.target.value)}
+                placeholder="e.g. bird house workshop"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                Secondary Keywords
+              </label>
+              <input
+                type="text"
+                value={secondaryKeywords}
+                onChange={e => setSecondaryKeywords(e.target.value)}
+                placeholder="campus makeover, school eco workshop"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                Canonical URL
+              </label>
+              <input
+                type="text"
+                value={canonicalUrl}
+                onChange={e => setCanonicalUrl(e.target.value)}
+                placeholder="https://anvitam.com/workshops/..."
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            SOCIAL SHARING
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        <section className="space-y-6">
+          <div className="border-b border-gray-100 pb-2">
+            <h3 className="text-xs font-black uppercase tracking-widest text-emerald-700 flex items-center gap-2">
+              <Share2 size={14} /> Social Sharing (Open Graph)
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                OG Title
+              </label>
+              <input
+                type="text"
+                value={ogTitle}
+                onChange={e => setOgTitle(e.target.value)}
+                placeholder="Title for social media shares"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                OG Image URL
+              </label>
+              <input
+                type="text"
+                value={ogImage}
+                onChange={e => setOgImage(e.target.value)}
+                placeholder="Social banner preview image"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+              OG Description
+            </label>
+            <input
+              type="text"
+              value={ogDescription}
+              onChange={e => setOgDescription(e.target.value)}
+              placeholder="Description displayed on Facebook/Twitter/LinkedIn cards..."
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+            />
+          </div>
+        </section>
+
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            PUBLISHING
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        <section className="space-y-4 pt-4 border-t border-gray-200">
+          <label className="block text-xs font-black uppercase tracking-widest text-gray-700 mb-2">
+            Publishing Status
+          </label>
+          <div className="flex items-center gap-6">
+            <label className="inline-flex items-center gap-2.5 cursor-pointer">
               <input
                 type="radio"
                 name="status"
                 value="draft"
                 checked={status === 'draft'}
                 onChange={() => setStatus('draft')}
-                className="text-black focus:ring-black"
+                className="w-4 h-4 text-emerald-600 focus:ring-emerald-600"
               />
-              <span className="text-sm text-gray-600">Draft</span>
+              <span className="text-sm text-gray-700 font-bold">Draft</span>
+            </label>
+            <label className="inline-flex items-center gap-2.5 cursor-pointer">
+              <input
+                type="radio"
+                name="status"
+                value="published"
+                checked={status === 'published'}
+                onChange={() => setStatus('published')}
+                className="w-4 h-4 text-emerald-600 focus:ring-emerald-600"
+              />
+              <span className="text-sm text-emerald-800 font-black flex items-center gap-1">
+                <Check size={16} /> Published (Live on Website)
+              </span>
             </label>
           </div>
-        </div>
+
+          <div className="flex items-center justify-end gap-3 pt-6">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-6 py-3 border border-gray-300 text-gray-700 text-xs font-extrabold rounded-xl hover:bg-gray-100 transition"
+            >
+              [ Cancel ]
+            </button>
+            <button
+              type="submit"
+              className="px-8 py-3 bg-[#CCFF00] text-black text-xs font-black rounded-xl hover:scale-105 transition shadow-md"
+            >
+              [ Save Workshop ]
+            </button>
+          </div>
+        </section>
       </form>
     </div>
   );
