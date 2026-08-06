@@ -634,7 +634,7 @@ Additional Notes: ${formState.notes || 'None'}`;
       </section>
 
       {/* ══════════════════════════════════════════
-          4B. CURRICULUM & NEP 2020 EDUCATIONAL ALIGNMENT
+          4B. CURRICULUM & NEP 2020 EDUCATIONAL ALIGNMENT (Redesigned Asymmetric Feature Grid)
       ══════════════════════════════════════════ */}
       <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-gray-100">
         <div className="text-center max-w-3xl mx-auto mb-14">
@@ -649,86 +649,190 @@ Additional Notes: ${formState.notes || 'None'}`;
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white p-7 rounded-3xl border border-gray-200 shadow-sm hover:shadow-md transition-all space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-100">
-              <GraduationCap size={24} />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          
+          {/* Left Column: Featured Institutional Seal Banner */}
+          <div className="lg:col-span-5 bg-gradient-to-br from-emerald-50/80 via-white to-emerald-50/40 p-8 md:p-10 rounded-3xl border border-emerald-200/80 shadow-sm flex flex-col justify-between space-y-6">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold uppercase tracking-wider">
+                <GraduationCap size={16} /> Official Curriculum Seal
+              </div>
+              <h3 className="text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight">
+                Hands-On Vocational Skill Credits for Campuses
+              </h3>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                Designed alongside educators and ecological architects, our modules empower schools to fulfill national green mandates effortlessly.
+              </p>
             </div>
-            <h3 className="text-lg font-extrabold text-gray-900">NEP 2020 Experiential Learning</h3>
-            <p className="text-xs text-gray-600 leading-relaxed font-normal">
-              Fulfills National Education Policy mandatory hands-on vocational modules through woodworking, structural assembly, and tool operation.
-            </p>
+
+            <div className="space-y-3 pt-4 border-t border-emerald-200/60">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 size={18} className="text-emerald-700 mt-0.5 shrink-0" />
+                <p className="text-xs font-bold text-gray-800">Fulfills CBSE &amp; NEP 2020 mandatory vocational skill modules</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle2 size={18} className="text-emerald-700 mt-0.5 shrink-0" />
+                <p className="text-xs font-bold text-gray-800">Complete tool safety gear &amp; pre-sanded non-toxic timber provided</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle2 size={18} className="text-emerald-700 mt-0.5 shrink-0" />
+                <p className="text-xs font-bold text-gray-800">Official STEAM participation certificates for every student</p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => handleOpenLeadModal('Curriculum & Syllabus Request')}
+              className="w-full py-3.5 rounded-full bg-emerald-800 text-white font-extrabold text-xs hover:bg-emerald-900 transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+            >
+              Request Syllabus &amp; Curriculum PDF <ArrowRight size={15} />
+            </button>
           </div>
 
-          <div className="bg-white p-7 rounded-3xl border border-gray-200 shadow-sm hover:shadow-md transition-all space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-100">
-              <BookOpen size={24} />
+          {/* Right Column: 3 Structured Cards Grid */}
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6">
+            
+            <div className="bg-white p-7 rounded-3xl border border-gray-200 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all space-y-4 flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-100">
+                  <BookOpen size={24} />
+                </div>
+                <h3 className="text-lg font-extrabold text-gray-900">STEAM Integration</h3>
+                <p className="text-xs text-gray-600 leading-relaxed font-normal">
+                  Integrates Science (Ornithology), Technology (Tools), Engineering (Habitats), Art (Eco-paint), and Math (Geometry).
+                </p>
+              </div>
+              <span className="inline-block text-[11px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-3 py-1 rounded-full w-max">
+                Interdisciplinary
+              </span>
             </div>
-            <h3 className="text-lg font-extrabold text-gray-900">STEAM Integration</h3>
-            <p className="text-xs text-gray-600 leading-relaxed font-normal">
-              Integrates Science (Ornithology &amp; Microclimates), Technology (Tool Usage), Engineering (Habitats), Art (Eco-painting), and Math (Geometry).
-            </p>
+
+            <div className="bg-white p-7 rounded-3xl border border-gray-200 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all space-y-4 flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-100">
+                  <Leaf size={24} />
+                </div>
+                <h3 className="text-lg font-extrabold text-gray-900">Eco-Club Directives</h3>
+                <p className="text-xs text-gray-600 leading-relaxed font-normal">
+                  Empowers campus Eco-Clubs to achieve green school audit points with permanent bird nest installations and plastic waste reduction.
+                </p>
+              </div>
+              <span className="inline-block text-[11px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-3 py-1 rounded-full w-max">
+                Green Audit Points
+              </span>
+            </div>
+
+            <div className="bg-white p-7 rounded-3xl border border-gray-200 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all space-y-4 sm:col-span-2 flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-100">
+                  <ShieldCheck size={24} />
+                </div>
+                <h3 className="text-lg font-extrabold text-gray-900">100% Tool &amp; Material Safety Assurance</h3>
+                <p className="text-xs text-gray-600 leading-relaxed font-normal">
+                  All timber is pre-sanded with rounded edges. Child-safe hand tools, protective gloves, organic non-toxic paints, and certified instructor-to-student ratio (1:15) guaranteed.
+                </p>
+              </div>
+              <div className="flex items-center gap-4 pt-2">
+                <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-3 py-1 rounded-full">
+                  1:15 Instructor Ratio
+                </span>
+                <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-3 py-1 rounded-full">
+                  Zero Harm Certified
+                </span>
+              </div>
+            </div>
+
           </div>
 
-          <div className="bg-white p-7 rounded-3xl border border-gray-200 shadow-sm hover:shadow-md transition-all space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-100">
-              <Leaf size={24} />
-            </div>
-            <h3 className="text-lg font-extrabold text-gray-900">Campus Eco-Club Directives</h3>
-            <p className="text-xs text-gray-600 leading-relaxed font-normal">
-              Empowers campus Eco-Clubs to achieve green school audit points with permanent bird nest installations and plastic waste reduction.
-            </p>
-          </div>
-
-          <div className="bg-white p-7 rounded-3xl border border-gray-200 shadow-sm hover:shadow-md transition-all space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-100">
-              <ShieldCheck size={24} />
-            </div>
-            <h3 className="text-lg font-extrabold text-gray-900">100% Tool &amp; Material Safety</h3>
-            <p className="text-xs text-gray-600 leading-relaxed font-normal">
-              All raw timber is sanded and pre-inspected. Non-toxic organic paints, child-safe tools, and certified instructor supervision guaranteed.
-            </p>
-          </div>
         </div>
       </section>
 
       {/* ══════════════════════════════════════════
-          5. PROCESS — 3 SIMPLE STEPS
+          5. PROCESS — 3 SIMPLE STEPS (Redesigned Connected Timeline)
       ══════════════════════════════════════════ */}
       <section className="py-20 bg-white border-y border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-2">Effortless Execution</p>
-          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-12">How It Works in 3 Simple Steps</h2>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-extrabold uppercase tracking-wider inline-block mb-3">
+              Effortless Execution
+            </span>
+            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
+              How It Works in 3 Simple Steps
+            </h2>
+            <p className="text-gray-600 text-sm md:text-base font-normal">
+              From initial selection to live campus transformation—we handle materials, tools, and instructor logistics from start to finish.
+            </p>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm text-left relative">
-              <div className="w-12 h-12 rounded-full bg-[#CCFF00] text-black font-black flex items-center justify-center text-lg mb-6 shadow-md">
-                1
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Choose Your Offerings</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
-                Select from bird house making, space makeovers, or custom eco-crafts based on your institution's age group and goals.
-              </p>
-            </div>
+          <div className="relative">
+            {/* Horizontal Connecting Timeline Line on Desktop */}
+            <div className="hidden md:block absolute top-1/2 left-12 right-12 h-0.5 bg-gradient-to-r from-emerald-200 via-[#CCFF00] to-emerald-200 -translate-y-8 z-0" />
 
-            <div className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm text-left relative">
-              <div className="w-12 h-12 rounded-full bg-[#CCFF00] text-black font-black flex items-center justify-center text-lg mb-6 shadow-md">
-                2
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+              
+              {/* Step 1 */}
+              <div className="bg-white p-8 rounded-3xl border border-gray-200/80 shadow-sm hover:shadow-xl hover:border-emerald-300 hover:-translate-y-1 transition-all duration-300 text-left relative flex flex-col justify-between space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="w-14 h-14 rounded-2xl bg-[#CCFF00] text-black font-black flex items-center justify-center text-xl shadow-md shadow-lime-200/80 border border-black/10">
+                      <Palette size={24} />
+                    </div>
+                    <span className="text-xs font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                      Step 01
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-extrabold text-gray-900">Choose Your Offerings</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed font-normal">
+                    Select from bird house making, space makeovers, or custom eco-crafts based on your institution's age group and goals.
+                  </p>
+                </div>
+                <div className="pt-4 border-t border-gray-100 flex items-center gap-2 text-xs font-bold text-gray-800">
+                  <Sparkles size={14} className="text-emerald-600" /> Customized for age groups 6 to 22+
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Co-Design & Schedule</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
-                We bring all raw building materials, tools, safety gear, and expert instructors directly to your school or campus.
-              </p>
-            </div>
 
-            <div className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm text-left relative">
-              <div className="w-12 h-12 rounded-full bg-[#CCFF00] text-black font-black flex items-center justify-center text-lg mb-6 shadow-md">
-                3
+              {/* Step 2 */}
+              <div className="bg-white p-8 rounded-3xl border border-gray-200/80 shadow-sm hover:shadow-xl hover:border-emerald-300 hover:-translate-y-1 transition-all duration-300 text-left relative flex flex-col justify-between space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="w-14 h-14 rounded-2xl bg-[#CCFF00] text-black font-black flex items-center justify-center text-xl shadow-md shadow-lime-200/80 border border-black/10">
+                      <Compass size={24} />
+                    </div>
+                    <span className="text-xs font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                      Step 02
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-extrabold text-gray-900">Co-Design &amp; Schedule</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed font-normal">
+                    We bring all raw building timber, safety gear, non-toxic paints, and certified lead instructors directly to your campus.
+                  </p>
+                </div>
+                <div className="pt-4 border-t border-gray-100 flex items-center gap-2 text-xs font-bold text-gray-800">
+                  <Wrench size={14} className="text-emerald-600" /> Full logistics &amp; safety handled by us
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Install &amp; Transform</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
-                Students construct permanent campus installations, enhancing biodiversity and creating long-term eco-pride.
-              </p>
+
+              {/* Step 3 */}
+              <div className="bg-white p-8 rounded-3xl border border-gray-200/80 shadow-sm hover:shadow-xl hover:border-emerald-300 hover:-translate-y-1 transition-all duration-300 text-left relative flex flex-col justify-between space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="w-14 h-14 rounded-2xl bg-[#CCFF00] text-black font-black flex items-center justify-center text-xl shadow-md shadow-lime-200/80 border border-black/10">
+                      <Wrench size={24} />
+                    </div>
+                    <span className="text-xs font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                      Step 03
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-extrabold text-gray-900">Install &amp; Transform</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed font-normal">
+                    Students construct permanent campus installations, enhancing biodiversity and creating long-term environmental pride.
+                  </p>
+                </div>
+                <div className="pt-4 border-t border-gray-100 flex items-center gap-2 text-xs font-bold text-gray-800">
+                  <CheckCircle2 size={14} className="text-emerald-600" /> Permanent green campus upgrade
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
