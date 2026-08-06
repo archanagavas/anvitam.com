@@ -748,9 +748,11 @@ Additional Notes: ${formState.notes || 'None'}`;
                 </p>
               </div>
               <div className="pt-4 border-t border-gray-100 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 font-black flex items-center justify-center text-xs">
-                  US
-                </div>
+                <img
+                  src="/workshops/logos/uss-logo.png"
+                  alt="Unique School of Science Logo"
+                  className="w-12 h-12 rounded-full object-cover border border-gray-200 shadow-sm flex-shrink-0"
+                />
                 <div>
                   <h4 className="text-sm font-extrabold text-gray-900">Unique School of Science</h4>
                   <p className="text-xs text-gray-500">School Administration, Nadiad</p>
@@ -772,9 +774,11 @@ Additional Notes: ${formState.notes || 'None'}`;
                 </p>
               </div>
               <div className="pt-4 border-t border-gray-100 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 font-black flex items-center justify-center text-xs">
-                  AU
-                </div>
+                <img
+                  src="/workshops/logos/anant-logo.png"
+                  alt="Anant National University Logo"
+                  className="w-12 h-12 rounded-lg object-contain bg-white p-1 border border-gray-200 shadow-sm flex-shrink-0"
+                />
                 <div>
                   <h4 className="text-sm font-extrabold text-gray-900">Anant National University</h4>
                   <p className="text-xs text-gray-500">Design Faculty, Ahmedabad</p>
@@ -796,12 +800,14 @@ Additional Notes: ${formState.notes || 'None'}`;
                 </p>
               </div>
               <div className="pt-4 border-t border-gray-100 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 font-black flex items-center justify-center text-xs">
-                  CE
-                </div>
+                <img
+                  src="/workshops/logos/campleo-logo.png"
+                  alt="Camp Leo Logo"
+                  className="w-12 h-12 rounded-full object-cover border border-gray-200 shadow-sm flex-shrink-0"
+                />
                 <div>
-                  <h4 className="text-sm font-extrabold text-gray-900">Campus Eco-Club Lead</h4>
-                  <p className="text-xs text-gray-500">Student Affairs Committee</p>
+                  <h4 className="text-sm font-extrabold text-gray-900">Camp Leo Jungle Theme Resorts</h4>
+                  <p className="text-xs text-gray-500">Resort Eco-Retreat &amp; Eco-Club Lead</p>
                 </div>
               </div>
             </div>
