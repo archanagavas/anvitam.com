@@ -16,6 +16,7 @@ import Services from './pages/Services'; // New
 import ServiceDetail from './pages/ServiceDetail'; // New
 import Shop from './pages/Shop'; // New
 import Workshops from './pages/Workshops'; // New
+import WorkshopDetail from './pages/WorkshopDetail'; // New
 import Admin from './pages/Admin';
 import NotFound from './pages/NotFound';
 import PageTransition from './components/PageTransition';
@@ -43,7 +44,8 @@ const DefaultSeo = () => {
   const location = useLocation();
   const isDetailsPage = location.pathname.startsWith('/blog/') || 
                         location.pathname.startsWith('/projects/') || 
-                        location.pathname.startsWith('/services/');
+                        location.pathname.startsWith('/services/') ||
+                        location.pathname.startsWith('/workshops/');
 
   if (isDetailsPage) return null;
 
@@ -160,6 +162,7 @@ const App: React.FC = () => {
                           <Route path="/services" element={<Services />} />
                           <Route path="/services/:id" element={<ServiceDetail />} />
                           <Route path="/workshops" element={<Workshops />} />
+                          <Route path="/workshops/:id" element={<WorkshopDetail />} />
                           <Route path="/shop" element={<Shop />} />
                           <Route path="/blog" element={<Blog />} />
                           <Route path="/blog/:id" element={<BlogDetail />} />

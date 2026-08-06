@@ -29,11 +29,12 @@ export default function WorkshopEditor({ initial, onSave, onCancel }: WorkshopEd
   const [impact, setImpact] = useState(initial?.impact || '');
   const [outcomes, setOutcomes] = useState(initial?.outcomes || '');
 
-  // MEDIA (Images + Gallery Details)
+  // MEDIA (Images + Gallery Details + Video)
   const [images, setImages] = useState<string[]>(initial?.images || []);
   const [imageUrlInput, setImageUrlInput] = useState('');
   const [imageAltInput, setImageAltInput] = useState('');
   const [imageCaptionInput, setImageCaptionInput] = useState('');
+  const [videoUrl, setVideoUrl] = useState(initial?.videoUrl || initial?.youtubeUrl || '');
 
   // RELATED CONTENT
   const [relatedProjectIds, setRelatedProjectIds] = useState<string[]>(initial?.relatedProjectIds || []);
@@ -129,6 +130,8 @@ export default function WorkshopEditor({ initial, onSave, onCancel }: WorkshopEd
       impact: impact.trim(),
       outcomes: outcomes.trim(),
       images,
+      videoUrl: videoUrl.trim(),
+      youtubeUrl: videoUrl.trim(),
       relatedProjectIds,
       relatedServiceIds,
       relatedArticleIds,
@@ -460,26 +463,69 @@ export default function WorkshopEditor({ initial, onSave, onCancel }: WorkshopEd
         </section>
 
         {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-            MEDIA
+            MEDIA (IMAGES & YOUTUBE VIDEO)
         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
         <section className="space-y-6">
           <div className="border-b border-gray-100 pb-2">
             <h3 className="text-xs font-black uppercase tracking-widest text-emerald-700 flex items-center gap-2">
-              <ImageIcon size={14} /> Media Gallery
+              <ImageIcon size={14} /> Media Gallery & Live Video Embed
             </h3>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-              Workshop Gallery
+          {/* YouTube Video Section */}
+          <div className="bg-emerald-50/40 p-5 rounded-2xl border border-emerald-200/70 space-y-3">
+            <label className="block text-xs font-bold uppercase tracking-wider text-emerald-950 flex items-center gap-2">
+              <Share2 size={14} className="text-emerald-700" /> YouTube Video URL (Live Action & Workshop Footage)
             </label>
+            <p className="text-xs text-gray-600">
+              Embed YouTube videos of campus workshops, student interviews, or space makeover transformations. These will be playable on the workshop sub-page.
+            </p>
+            <input
+              type="text"
+              value={videoUrl}
+              onChange={e => setVideoUrl(e.target.value)}
+              placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ or https://youtu.be/..."
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600 bg-white font-mono"
+            />
+
+            {/* YouTube Live Preview */}
+            {(() => {
+              const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+              const match = videoUrl.match(regExp);
+              const ytId = (match && match[2].length === 11) ? match[2] : null;
+              if (!ytId) return null;
+              return (
+                <div className="mt-3">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block mb-2">▶ Live Video Preview:</span>
+                  <div className="relative aspect-video rounded-xl overflow-hidden border border-emerald-300 max-w-md shadow-sm">
+                    <iframe
+                      src={`https://www.youtube-nocookie.com/embed/${ytId}`}
+                      title="YouTube Preview"
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Slideshow Gallery Images */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700">
+                Workshop Slideshow Gallery ({images.length} Images)
+              </label>
+              <span className="text-[11px] text-gray-400 font-mono">Use arrows to change slide sequence order</span>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
               <input
                 type="text"
                 value={imageUrlInput}
                 onChange={e => setImageUrlInput(e.target.value)}
-                placeholder="Image URL (e.g. /workshops/bird house making.png)"
+                placeholder="Image URL (e.g. /workshops/bird-house.png)"
                 className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
               />
               <input
@@ -517,25 +563,63 @@ export default function WorkshopEditor({ initial, onSave, onCancel }: WorkshopEd
               />
               <div className="flex flex-col items-center justify-center gap-1.5 text-gray-500">
                 <ImageIcon size={28} className="text-emerald-600" />
-                <span className="text-xs font-bold text-gray-800">[ Upload Image ]</span>
-                <span className="text-[11px] text-gray-400">Click or drag images to upload</span>
+                <span className="text-xs font-bold text-gray-800">[ Add / Upload Gallery Slides ]</span>
+                <span className="text-[11px] text-gray-400">Click or drag images to upload slideshow photos</span>
               </div>
             </div>
 
-            {/* Gallery Previews Grid */}
+            {/* Gallery Previews Grid with Re-ordering */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
               {images.map((img, idx) => (
-                <div key={idx} className="relative rounded-2xl overflow-hidden h-32 border border-gray-200 group bg-gray-100">
-                  <img src={img} alt={`Workshop highlight ${idx + 1}`} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition p-2 flex flex-col justify-between">
-                    <span className="text-[10px] bg-black/70 text-white px-2 py-0.5 rounded-full w-fit">Order #{idx + 1}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImage(idx)}
-                      className="self-end bg-red-600 text-white p-1.5 rounded-lg hover:bg-red-700 transition"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                <div key={idx} className="relative rounded-2xl overflow-hidden h-36 border border-gray-200 group bg-gray-100 shadow-sm flex flex-col justify-between">
+                  <img src={img} alt={`Workshop slide ${idx + 1}`} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition p-2 flex flex-col justify-between">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-bold bg-black/80 text-[#CCFF00] px-2 py-0.5 rounded-full">
+                        Slide #{idx + 1}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(idx)}
+                        className="bg-red-600 text-white p-1 rounded-lg hover:bg-red-700 transition"
+                        title="Remove slide"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+
+                    <div className="flex justify-between items-center gap-1">
+                      {idx > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newArr = [...images];
+                            const temp = newArr[idx - 1];
+                            newArr[idx - 1] = newArr[idx];
+                            newArr[idx] = temp;
+                            setImages(newArr);
+                          }}
+                          className="bg-white/90 text-black text-[10px] font-bold px-2 py-1 rounded hover:bg-white transition"
+                        >
+                          ← Move Left
+                        </button>
+                      )}
+                      {idx < images.length - 1 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newArr = [...images];
+                            const temp = newArr[idx + 1];
+                            newArr[idx + 1] = newArr[idx];
+                            newArr[idx] = temp;
+                            setImages(newArr);
+                          }}
+                          className="bg-white/90 text-black text-[10px] font-bold px-2 py-1 rounded hover:bg-white transition ml-auto"
+                        >
+                          Move Right →
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

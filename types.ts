@@ -196,6 +196,8 @@ export interface Workshop {
   outcomes?: string;
   images: string[];
   galleryDetails?: WorkshopGalleryItem[];
+  videoUrl?: string;
+  youtubeUrl?: string;
   relatedProjectIds?: string[];
   relatedServiceIds?: string[];
   relatedArticleIds?: string[];
