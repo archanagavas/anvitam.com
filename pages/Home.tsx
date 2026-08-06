@@ -267,7 +267,7 @@ const Home: React.FC = () => {
             </Link>
           </FadeUp>
           <FadeUp delay={0.15}>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
               {[
                 { icon: '☀️', label: 'Climate', body: 'Sun, shade, wind, heat, rainfall and seasonal comfort.' },
                 { icon: '💧', label: 'Water', body: 'Drainage, harvesting, recharge, irrigation and water resilience.' },
@@ -298,15 +298,15 @@ const Home: React.FC = () => {
             {[
               { label: 'I want to build a farm retreat', icon: '🏕️', serviceId: 'farm-retreat' },
               { label: 'I want to create an eco-resort', icon: '🏡', serviceId: 'eco-resort' },
-              { label: 'I want a nature-connected home', icon: '🌿', serviceId: 'weekend-villa' },
+              { label: 'I want to design interior of the home', icon: '🌿', serviceId: 'weekend-villa' },
               { label: 'I want to design a food forest', icon: '🌳', serviceId: 'permaculture-design' },
               { label: 'I want a wellness destination', icon: '🧘', serviceId: 'eco-resort' },
-              { label: 'I own land and I\'m not sure what\'s possible yet', icon: '🌍', serviceId: 'farm-retreat' },
+              { label: 'I own property and I\'m not sure what\'s possible yet', icon: '🌍', serviceId: undefined },
             ].map((card, i) => (
               <FadeUp key={i} delay={i * 0.07}>
                 <button
                   type="button"
-                  onClick={() => window.dispatchEvent(new CustomEvent('open-estimator', { detail: { serviceId: card.serviceId } }))}
+                  onClick={() => window.dispatchEvent(new CustomEvent('open-estimator', card.serviceId ? { detail: { serviceId: card.serviceId } } : {}))}
                   className="w-full text-left group flex items-center gap-4 bg-gray-50/80 hover:bg-gray-900 border border-gray-200/80 hover:border-gray-900 rounded-2xl p-6 transition-all duration-300 cursor-pointer shadow-sm active:scale-[0.98]"
                 >
                   <span className="text-3xl shrink-0">{card.icon}</span>
