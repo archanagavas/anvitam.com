@@ -54,7 +54,11 @@
     { "source": "/api/analytics", "destination": "/api/analytics.ts" },
     { "source": "/sitemap.xml", "destination": "/api/seo.ts?action=sitemap" },
     { "source": "/llms.txt", "destination": "/api/seo.ts?action=llms&mode=short" },
+    { "source": "/llm.txt", "destination": "/api/seo.ts?action=llms&mode=short" },
+    { "source": "/llm.tt", "destination": "/api/seo.ts?action=llms&mode=short" },
     { "source": "/llms-full.txt", "destination": "/api/seo.ts?action=llms&mode=full" },
+    { "source": "/llmsfull.txt", "destination": "/api/seo.ts?action=llms&mode=full" },
+    { "source": "/llmsfull", "destination": "/api/seo.ts?action=llms&mode=full" },
     { "source": "/api/indexnow", "destination": "/api/seo.ts?action=indexnow" },
     { "source": "/:key([a-zA-Z0-9_-]{8,128})\\.txt", "destination": "/api/seo.ts?action=indexnow-key&key=:key" },
     { "source": "/((?!api/|.*\\.[a-zA-Z0-9]+$).*)", "destination": "/api/ssr-seo?path=/$1" }
