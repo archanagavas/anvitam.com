@@ -676,9 +676,6 @@ const Home: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  <span className="font-bold text-gray-900 text-xs sm:text-sm line-clamp-1 group-hover:text-black transition-colors px-1 mt-3">
-                    {partner.name}
-                  </span>
                   {/* Floating Tooltip showing name on hover */}
                   <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 translate-y-2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 pointer-events-none z-30 whitespace-nowrap">
                     <span className="bg-[#111] text-[#CCFF00] text-xs font-bold px-3 py-1 rounded-full shadow-xl border border-white/10 flex items-center gap-1">
