@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
+import { INITIAL_PARTNERS } from '../constants';
 import { ArrowRight, Trees, Linkedin, Mail, ArrowUpRight } from 'lucide-react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
 import SlidingTestimonials from '../components/SlidingTestimonials';
@@ -615,44 +616,37 @@ const Home: React.FC = () => {
           </FadeUp>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-5">
-            {(partners && partners.length > 0 ? partners : [
-              { id: '1', name: 'Camp Leo', logo: '/logos/Camp leo.png' },
-              { id: '2', name: 'Jay Bhole', logo: '/logos/Jay Bhole.png' },
-              { id: '3', name: 'Mahadev Construction', logo: '/logos/Mahadev Construction.png' },
-              { id: '4', name: 'Mossaria', logo: '/logos/Mossaria.png' },
-              { id: '5', name: 'RJ Organics', logo: '/logos/RJ Organics.png' },
-              { id: '6', name: 'SAC', logo: '/logos/SAC.png' },
-              { id: '7', name: 'Shalimar', logo: '/logos/Shalimar.png' },
-              { id: '8', name: 'Stone Age Huts & Hostel', logo: '/logos/Stone Age Huts and hostal.png' },
-              { id: '9', name: 'Unique School of Science', logo: '/logos/Unique School of Science.png' },
-              { id: '10', name: 'Vanvagado Farm', logo: '/logos/Vanvagado farm.png' },
-              { id: '11', name: 'Vergers du Monde', logo: '/logos/vergersdumonde.png' },
-              { id: '12', name: 'yourweb3guy', logo: '/logos/Yourweb3guy.png' },
-            ]).map((partner) => (
-              <div
-                key={partner.id}
-                className="group relative bg-gray-50/90 hover:bg-white border border-gray-200/90 hover:border-[#111] rounded-2xl p-5 flex items-center justify-center transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 h-28 sm:h-32 cursor-pointer"
-              >
-                {partner.logo ? (
-                  <img
-                    src={partner.logo}
-                    alt={partner.name}
-                    className="max-h-16 max-w-[130px] object-contain transition-all duration-300 group-hover:scale-110"
-                  />
-                ) : (
-                  <div className="flex items-center gap-1.5 font-bold text-gray-900 text-sm">
-                    <span>{partner.icon || '✦'}</span>
-                    <span>{partner.name}</span>
+            {(partners && partners.length > 0 ? partners : INITIAL_PARTNERS).map((partner) => {
+              const initMatch = INITIAL_PARTNERS.find(ip => ip.id === partner.id || ip.name.toLowerCase() === partner.name.toLowerCase());
+              const logoSrc = partner.logo || initMatch?.logo;
+              return (
+                <div
+                  key={partner.id}
+                  className="group relative bg-gray-50/90 hover:bg-white border border-gray-200/90 hover:border-[#111] rounded-2xl p-4 sm:p-5 flex flex-col items-center justify-center gap-3 transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 min-h-[140px] cursor-pointer text-center"
+                >
+                  <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-white border border-gray-200/80 shadow-xs flex items-center justify-center overflow-hidden p-2 group-hover:border-[#111] group-hover:shadow-md transition-all duration-300">
+                    {logoSrc ? (
+                      <img
+                        src={logoSrc}
+                        alt={partner.name}
+                        className="w-full h-full object-contain rounded-full transition-transform duration-300 group-hover:scale-110"
+                      />
+                    ) : (
+                      <span className="text-2xl">{partner.icon || '✦'}</span>
+                    )}
                   </div>
-                )}
-                {/* Floating Tooltip showing name on hover */}
-                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 translate-y-2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 pointer-events-none z-30 whitespace-nowrap">
-                  <span className="bg-[#111] text-[#CCFF00] text-xs font-bold px-3 py-1 rounded-full shadow-xl border border-white/10 flex items-center gap-1">
+                  <span className="font-bold text-gray-900 text-xs sm:text-sm line-clamp-1 group-hover:text-black transition-colors px-1">
                     {partner.name}
                   </span>
+                  {/* Floating Tooltip showing name on hover */}
+                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 translate-y-2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 pointer-events-none z-30 whitespace-nowrap">
+                    <span className="bg-[#111] text-[#CCFF00] text-xs font-bold px-3 py-1 rounded-full shadow-xl border border-white/10 flex items-center gap-1">
+                      {partner.name}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

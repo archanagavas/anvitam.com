@@ -199,7 +199,7 @@ async function initDatabaseInternal() {
     );
   `;
 
-  // Seed initial partners if none exist
+  // Seed initial partners if none exist, or update logos if missing
   const existingPartners = await neonClient`SELECT id FROM partners LIMIT 1`;
   if (existingPartners.length === 0) {
     for (const p of INITIAL_PARTNERS) {
@@ -207,6 +207,13 @@ async function initDatabaseInternal() {
         INSERT INTO partners (id, name, logo, icon, website)
         VALUES (${p.id}, ${p.name}, ${p.logo ?? ''}, ${p.icon ?? ''}, ${p.website ?? ''})
         ON CONFLICT (id) DO NOTHING
+      `;
+    }
+  } else {
+    for (const p of INITIAL_PARTNERS) {
+      await neonClient`
+        UPDATE partners SET logo = ${p.logo ?? ''}
+        WHERE id = ${p.id} AND (logo IS NULL OR logo = '');
       `;
     }
   }

@@ -126,9 +126,16 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [estimatorServices, setEstimatorServices] = useState<EstimatorService[]>(() =>
     loadFromStorage<EstimatorService>('anvitam_estimator_services_v1', INITIAL_ESTIMATOR_SERVICES)
   );
-  const [partners, setPartners] = useState<PartnerBrand[]>(() =>
-    loadFromStorage<PartnerBrand>('anvitam_partners_v2', INITIAL_PARTNERS)
-  );
+  const [partners, setPartners] = useState<PartnerBrand[]>(() => {
+    const raw = loadFromStorage<PartnerBrand>('anvitam_partners_v3', INITIAL_PARTNERS);
+    return raw.map(p => {
+      if (!p.logo) {
+        const initP = INITIAL_PARTNERS.find(ip => ip.id === p.id || ip.name.toLowerCase() === p.name.toLowerCase());
+        if (initP?.logo) return { ...p, logo: initP.logo };
+      }
+      return p;
+    });
+  });
   const [workshops, setWorkshops] = useState<Workshop[]>(() =>
     loadFromStorage<Workshop>('anvitam_workshops_v2', INITIAL_WORKSHOPS)
   );
@@ -244,14 +251,21 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
       if (partnersRes.ok) {
         const isFallback = partnersRes.headers.get('x-db-fallback') === 'true';
         const dbPartners: PartnerBrand[] = await partnersRes.json();
+        const mergedDbPartners = dbPartners.map(p => {
+          if (!p.logo) {
+            const initP = INITIAL_PARTNERS.find(ip => ip.id === p.id || ip.name.toLowerCase() === p.name.toLowerCase());
+            if (initP?.logo) return { ...p, logo: initP.logo };
+          }
+          return p;
+        });
         if (!isFallback) {
-          if (dbPartners.length > 0) {
-            setPartners(dbPartners);
-            saveToStorage('anvitam_partners_v2', dbPartners);
+          if (mergedDbPartners.length > 0) {
+            setPartners(mergedDbPartners);
+            saveToStorage('anvitam_partners_v3', mergedDbPartners);
           }
         } else {
           console.info('[ContentContext] partners API returned fallback mock data; preserving local cache.');
-          setPartners(prev => prev.length === 0 ? dbPartners : prev);
+          setPartners(prev => prev.length === 0 ? mergedDbPartners : prev);
         }
       }
 
@@ -290,7 +304,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   useEffect(() => { saveToStorage('anvitam_blogs_v2', blogs); }, [blogs]);
   useEffect(() => { saveToStorage('anvitam_testimonials', testimonials); }, [testimonials]);
   useEffect(() => { saveToStorage('anvitam_estimator_services_v1', estimatorServices); }, [estimatorServices]);
-  useEffect(() => { saveToStorage('anvitam_partners_v2', partners); }, [partners]);
+  useEffect(() => { saveToStorage('anvitam_partners_v3', partners); }, [partners]);
 
   // ── CRUD Operations ──────────────────────────────────────────────────────
   const addProject = async (project: Project) => {

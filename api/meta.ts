@@ -55,7 +55,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           res.setHeader('x-db-fallback', 'true');
           return res.status(200).json(INITIAL_PARTNERS);
         }
-        return res.status(200).json(rows);
+        const mergedRows = rows.map((r: any) => {
+          if (!r.logo) {
+            const initP = INITIAL_PARTNERS.find(p => p.id === r.id || p.name.toLowerCase() === r.name.toLowerCase());
+            if (initP?.logo) return { ...r, logo: initP.logo };
+          }
+          return r;
+        });
+        return res.status(200).json(mergedRows);
       } catch (dbError) {
         res.setHeader('x-db-fallback', 'true');
         return res.status(200).json(INITIAL_PARTNERS);
