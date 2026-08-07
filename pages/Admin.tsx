@@ -1149,11 +1149,11 @@ const PartnerEditorForm: React.FC<PartnerEditorFormProps> = ({ initial, onSave, 
         <div className="pt-2">
           <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Live Landing Page Card Preview</label>
           <div className="bg-gray-50/80 border border-gray-200/90 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 min-h-[150px] text-center">
-            <div className="w-20 h-20 rounded-full bg-white border-2 border-gray-200 shadow-sm flex items-center justify-center overflow-hidden">
+            <div className="w-20 h-20 rounded-full bg-white border-2 border-gray-200 shadow-sm flex items-center justify-center p-3.5 overflow-hidden">
               {logo ? (
-                <img src={logo} alt={name || 'Preview'} className="w-full h-full object-cover rounded-full" />
+                <img src={logo} alt={name || 'Preview'} className="w-full h-full object-contain" />
               ) : (
-                <div className="w-full h-full bg-gray-100 flex items-center justify-center text-2xl font-bold text-gray-800">
+                <div className="w-full h-full bg-gray-100 flex items-center justify-center text-2xl font-bold text-gray-800 rounded-full">
                   {icon || '✦'}
                 </div>
               )}
@@ -2649,8 +2649,8 @@ const Admin: React.FC = () => {
 
                           <div className="min-h-[85px] flex items-center justify-center bg-white rounded-lg p-3 border border-gray-100">
                             {p.logo ? (
-                              <div className="w-16 h-16 rounded-full border-2 border-gray-200 bg-white shadow-xs flex items-center justify-center overflow-hidden">
-                                <img src={p.logo} alt={p.name} className="w-full h-full object-cover rounded-full" />
+                              <div className="w-16 h-16 rounded-full border-2 border-gray-200 bg-white shadow-xs flex items-center justify-center p-2.5 overflow-hidden">
+                                <img src={p.logo} alt={p.name} className="w-full h-full object-contain" />
                               </div>
                             ) : (
                               <div className="flex items-center gap-2">

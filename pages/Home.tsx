@@ -624,15 +624,15 @@ const Home: React.FC = () => {
                   key={partner.id}
                   className="group relative flex flex-col items-center justify-center cursor-pointer text-center py-2"
                 >
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white border-2 border-gray-200/90 group-hover:border-[#111] shadow-sm group-hover:shadow-xl flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:scale-110">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white border-2 border-gray-200/90 group-hover:border-[#111] shadow-sm group-hover:shadow-xl flex items-center justify-center p-3.5 sm:p-4 overflow-hidden transition-all duration-300 group-hover:scale-110">
                     {logoSrc ? (
                       <img
                         src={logoSrc}
                         alt={partner.name}
-                        className="w-full h-full object-cover rounded-full transition-transform duration-300"
+                        className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gray-100 flex items-center justify-center text-2xl font-bold text-gray-800">
+                      <div className="w-full h-full bg-gray-100 flex items-center justify-center text-2xl font-bold text-gray-800 rounded-full">
                         {partner.icon || '✦'}
                       </div>
                     )}
