@@ -43,8 +43,8 @@ const RICH_TEXT_CONFIG = {
     'href', 'src', 'class', 'target', 'rel', 'allowfullscreen',
     'width', 'height', 'data-value', 'alt',
   ],
-  // Only permit https, http, and base64-encoded images — blocks javascript: etc.
-  ALLOWED_URI_REGEXP: /^(?:https?:|data:image\/(?:png|jpe?g|gif|webp|svg\+xml);base64,)/i,
+  // Permit safe URL schemes — http, https, base64 images, blob URLs, and relative paths (/, ./, ../)
+  ALLOWED_URI_REGEXP: /^(?:https?:|data:image\/[a-z0-9\+\-\.]+;(?:base64,|[a-z0-9\=]+)|blob:|\/|\.\/|\.\.\/)/i,
   ALLOW_DATA_ATTR: false,
   FORCE_BODY: false,
 };
@@ -197,6 +197,12 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initial, onSave, onCancel }) =>
   const [embedUrl, setEmbedUrl] = useState('');
   const [embedError, setEmbedError] = useState<string | null>(null);
 
+  // ── Content Image Modal State (with Alt Text & Upload support) ────
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [bodyImageUrl, setBodyImageUrl] = useState('');
+  const [bodyImageAlt, setBodyImageAlt] = useState('');
+  const [bodyImageMode, setBodyImageMode] = useState<'url' | 'upload'>('url');
+
   const editorRef = useRef<HTMLDivElement>(null);
   const quillRef = useRef<any>(null);
   const [quillReady, setQuillReady] = useState(false);
@@ -224,6 +230,17 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initial, onSave, onCancel }) =>
         modules: { toolbar: toolbarOptions },
         placeholder: 'Start writing your article here...',
       });
+      
+      // Override default Quill image handler to open our custom Image + Alt Text modal
+      const toolbar = q.getModule('toolbar');
+      if (toolbar) {
+        toolbar.addHandler('image', () => {
+          setBodyImageUrl('');
+          setBodyImageAlt('');
+          setImageModalOpen(true);
+        });
+      }
+
       // Sanitize existing content before loading into editor (OWASP A03)
       if (initial?.content) {
         q.clipboard.dangerouslyPasteHTML(DOMPurify.sanitize(initial.content, RICH_TEXT_CONFIG));
@@ -340,6 +357,21 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initial, onSave, onCancel }) =>
     setEmbedUrl('');
   };
 
+  const handleInsertBodyImage = () => {
+    if (!bodyImageUrl || !quillRef.current) return;
+    const range = quillRef.current.getSelection(true) || { index: quillRef.current.getLength() };
+    const altText = bodyImageAlt.trim();
+    const altAttr = altText ? ` alt="${altText.replace(/"/g, '&quot;')}"` : '';
+    const imgHtml = `<p><img src="${bodyImageUrl}"${altAttr} class="rounded-lg my-4 max-w-full h-auto" /></p>`;
+    
+    const sanitized = DOMPurify.sanitize(imgHtml, RICH_TEXT_CONFIG) as string;
+    quillRef.current.clipboard.dangerouslyPasteHTML(range.index, sanitized);
+    
+    setImageModalOpen(false);
+    setBodyImageUrl('');
+    setBodyImageAlt('');
+  };
+
   const handleAIDraft = async () => {
     if (!title) { setEditorError('Please enter a post title before generating AI content.'); return; }
     setEditorError(null);
@@ -396,18 +428,12 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initial, onSave, onCancel }) =>
     <div className="space-y-6">
       <style>{`
         .ql-toolbar.ql-snow {
-          position: sticky;
-          top: -24px;
-          background: white;
-          z-index: 40;
+          position: sticky !important;
+          top: 0 !important;
+          background: white !important;
+          z-index: 40 !important;
           border-bottom: 1px solid #e2e8f0 !important;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-          transition: top 0.2s;
-        }
-        @media (min-width: 768px) {
-          .ql-toolbar.ql-snow {
-            top: -32px;
-          }
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
         }
         .ql-container.ql-snow {
           border-top: none !important;
@@ -874,6 +900,121 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initial, onSave, onCancel }) =>
             <div className="flex gap-2 mt-1">
               <button onClick={() => setEmbedModalOpen(false)} className="flex-1 border border-gray-200 py-2 rounded-lg text-sm hover:bg-gray-50 transition">Cancel</button>
               <button onClick={handleEmbedInsert} className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 transition">Insert</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Content Image Modal (URL / File Upload + Alt Text) ───── */}
+      {imageModalOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4"
+          onClick={() => setImageModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                <ImageIcon size={18} /> Insert Image in Article
+              </h3>
+              <button onClick={() => setImageModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setBodyImageMode('url')}
+                className={`flex-1 text-xs py-1.5 rounded font-semibold transition ${bodyImageMode === 'url' ? 'bg-black text-white' : 'border border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+              >
+                Image URL
+              </button>
+              <button
+                type="button"
+                onClick={() => setBodyImageMode('upload')}
+                className={`flex-1 text-xs py-1.5 rounded font-semibold transition ${bodyImageMode === 'upload' ? 'bg-black text-white' : 'border border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+              >
+                Upload File
+              </button>
+            </div>
+
+            {bodyImageMode === 'url' ? (
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">Image URL *</label>
+                <input
+                  type="text"
+                  placeholder="https://example.com/image.jpg or /uploads/..."
+                  value={bodyImageUrl}
+                  onChange={e => setBodyImageUrl(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-black transition"
+                  autoFocus
+                />
+              </div>
+            ) : (
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">Upload Image File</label>
+                <label className="block w-full border-2 border-dashed border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 transition bg-gray-50/50">
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        try {
+                          const base64 = await compressImage(file);
+                          setBodyImageUrl(base64);
+                        } catch (err) {
+                          console.error('Failed to process image upload:', err);
+                        }
+                      }
+                    }}
+                  />
+                  <ImageIcon size={20} className="mx-auto text-gray-400 mb-1" />
+                  <span className="text-xs text-gray-600 font-medium">Click to select image file</span>
+                </label>
+              </div>
+            )}
+
+            {bodyImageUrl && (
+              <div className="relative border rounded-lg overflow-hidden max-h-36 bg-gray-50 flex items-center justify-center p-2">
+                <img src={bodyImageUrl} alt="Preview" className="max-h-32 object-contain rounded" />
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
+                Alt Text (for Image SEO & Accessibility)
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. CenturyPly door wood comparison chart"
+                value={bodyImageAlt}
+                onChange={e => setBodyImageAlt(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-black transition"
+              />
+              <p className="text-[11px] text-gray-500 mt-1">Descriptive alt text helps Google Index & rank this image.</p>
+            </div>
+
+            <div className="flex gap-2 pt-2 border-t">
+              <button
+                type="button"
+                onClick={() => setImageModalOpen(false)}
+                className="flex-1 border border-gray-200 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50 transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleInsertBodyImage}
+                disabled={!bodyImageUrl}
+                className="flex-1 bg-black text-white py-2 rounded-lg text-sm font-bold hover:bg-gray-800 transition disabled:opacity-50"
+              >
+                Insert Image
+              </button>
             </div>
           </div>
         </div>
