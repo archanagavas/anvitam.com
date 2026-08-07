@@ -321,24 +321,63 @@ const Home: React.FC = () => {
               <p className="text-gray-500 max-w-xl mx-auto">Tell us what you're building and we'll calculate an instant cost estimate for you.</p>
             </div>
           </FadeUp>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
-              { label: 'I want to build a farm retreat', icon: '🏕️', serviceId: 'farm-retreat' },
-              { label: 'I want to create an eco-resort', icon: '🏡', serviceId: 'eco-resort' },
-              { label: 'I want to design interior of the home', icon: '🌿', serviceId: 'weekend-villa' },
-              { label: 'I want to design a food forest', icon: '🌳', serviceId: 'permaculture-design' },
-              { label: 'I want a wellness destination', icon: '🧘', serviceId: 'eco-resort' },
-              { label: 'I own property and I\'m not sure what\'s possible yet', icon: '🌍', serviceId: undefined },
+              { 
+                title: 'A Farmhouse or Weekend Home', 
+                subtitle: 'Build a home closer to nature', 
+                icon: '🏡', 
+                serviceId: 'farm-retreat' 
+              },
+              { 
+                title: 'A New Home or Renovation', 
+                subtitle: 'Design, renovate or improve your home', 
+                icon: '🏠', 
+                serviceId: 'weekend-villa' 
+              },
+              { 
+                title: 'A Garden or Landscape', 
+                subtitle: 'Create beautiful, useful outdoor spaces', 
+                icon: '🌿', 
+                serviceId: 'permaculture-design' 
+              },
+              { 
+                title: 'A Resort, Homestay or Airbnb', 
+                subtitle: 'Design a place people want to stay', 
+                icon: '🏨', 
+                serviceId: 'eco-resort' 
+              },
+              { 
+                title: 'A Farm or Productive Land', 
+                subtitle: 'Make your land work for you and nature', 
+                icon: '🌾', 
+                serviceId: 'permaculture-design' 
+              },
+              { 
+                title: 'An Idea for My Land', 
+                subtitle: 'Not sure what’s possible? Start here', 
+                icon: '💡', 
+                serviceId: undefined 
+              },
             ].map((card, i) => (
               <FadeUp key={i} delay={i * 0.07}>
                 <button
                   type="button"
                   onClick={() => window.dispatchEvent(new CustomEvent('open-estimator', card.serviceId ? { detail: { serviceId: card.serviceId } } : {}))}
-                  className="w-full text-left group flex items-center gap-4 bg-gray-50/80 hover:bg-gray-900 border border-gray-200/80 hover:border-gray-900 rounded-2xl p-6 transition-all duration-300 cursor-pointer shadow-sm active:scale-[0.98]"
+                  className="w-full text-left group flex items-center justify-between gap-4 bg-gray-50/80 hover:bg-gray-900 border border-gray-200/80 hover:border-gray-900 rounded-2xl p-6 transition-all duration-300 cursor-pointer shadow-xs hover:shadow-xl active:scale-[0.98] min-h-[105px]"
                 >
-                  <span className="text-3xl shrink-0">{card.icon}</span>
-                  <span className="text-gray-900 group-hover:text-white font-semibold text-sm leading-snug transition-colors">{card.label}</span>
-                  <ArrowRight size={16} className="ml-auto text-gray-400 group-hover:text-white shrink-0 transition-colors" />
+                  <div className="flex items-center gap-4">
+                    <span className="text-3xl shrink-0">{card.icon}</span>
+                    <div className="flex flex-col">
+                      <span className="text-gray-900 group-hover:text-white font-bold text-base leading-tight transition-colors">
+                        {card.title}
+                      </span>
+                      <span className="text-gray-500 group-hover:text-gray-300 text-xs sm:text-sm mt-1 transition-colors">
+                        {card.subtitle}
+                      </span>
+                    </div>
+                  </div>
+                  <ArrowRight size={18} className="text-gray-400 group-hover:text-[#CCFF00] shrink-0 transition-colors transform group-hover:translate-x-1 duration-300" />
                 </button>
               </FadeUp>
             ))}
