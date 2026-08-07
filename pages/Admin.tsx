@@ -1148,17 +1148,17 @@ const PartnerEditorForm: React.FC<PartnerEditorFormProps> = ({ initial, onSave, 
         {/* Live Card Preview */}
         <div className="pt-2">
           <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Live Landing Page Card Preview</label>
-          <div className="bg-white border border-gray-200/90 rounded-2xl p-5 flex flex-col items-center justify-center gap-3 min-h-[140px] text-center shadow-xs">
-            <div className="flex-1 flex items-center justify-center w-full min-h-[64px] px-2">
+          <div className="bg-gray-50/80 border border-gray-200/90 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 min-h-[150px] text-center">
+            <div className="w-20 h-20 rounded-full bg-white border-2 border-gray-200 shadow-sm flex items-center justify-center overflow-hidden">
               {logo ? (
-                <img src={logo} alt={name || 'Preview'} className="max-h-14 sm:max-h-16 max-w-[125px] w-auto h-auto object-contain" />
+                <img src={logo} alt={name || 'Preview'} className="w-full h-full object-cover rounded-full" />
               ) : (
-                <div className="w-12 h-12 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-xl text-gray-700">
+                <div className="w-full h-full bg-gray-100 flex items-center justify-center text-2xl font-bold text-gray-800">
                   {icon || '✦'}
                 </div>
               )}
             </div>
-            <span className="font-bold text-gray-800 text-xs sm:text-sm">{name || 'Partner Name'}</span>
+            <span className="font-bold text-gray-900 text-xs sm:text-sm">{name || 'Partner Name'}</span>
           </div>
         </div>
 
@@ -2647,9 +2647,11 @@ const Admin: React.FC = () => {
                             </div>
                           </div>
 
-                          <div className="min-h-[70px] flex items-center justify-center bg-white rounded-lg p-3 border border-gray-100">
+                          <div className="min-h-[85px] flex items-center justify-center bg-white rounded-lg p-3 border border-gray-100">
                             {p.logo ? (
-                              <img src={p.logo} alt={p.name} className="max-h-12 max-w-[130px] w-auto h-auto object-contain" />
+                              <div className="w-16 h-16 rounded-full border-2 border-gray-200 bg-white shadow-xs flex items-center justify-center overflow-hidden">
+                                <img src={p.logo} alt={p.name} className="w-full h-full object-cover rounded-full" />
+                              </div>
                             ) : (
                               <div className="flex items-center gap-2">
                                 <span className="text-xl">{p.icon || '✦'}</span>

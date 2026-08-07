@@ -615,33 +615,33 @@ const Home: React.FC = () => {
             </h2>
           </FadeUp>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 sm:gap-8">
             {(partners && partners.length > 0 ? partners : INITIAL_PARTNERS).map((partner) => {
               const initMatch = INITIAL_PARTNERS.find(ip => ip.id === partner.id || ip.name.toLowerCase() === partner.name.toLowerCase());
               const logoSrc = partner.logo || initMatch?.logo;
               return (
                 <div
                   key={partner.id}
-                  className="group relative bg-white border border-gray-200/80 hover:border-[#111] rounded-2xl p-5 flex flex-col items-center justify-center gap-3 transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 min-h-[140px] cursor-pointer text-center"
+                  className="group relative flex flex-col items-center justify-center gap-3 cursor-pointer text-center py-2"
                 >
-                  <div className="flex-1 flex items-center justify-center w-full min-h-[64px] px-2">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white border-2 border-gray-200/90 group-hover:border-[#111] shadow-sm group-hover:shadow-xl flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:scale-110">
                     {logoSrc ? (
                       <img
                         src={logoSrc}
                         alt={partner.name}
-                        className="max-h-14 sm:max-h-16 max-w-[125px] w-auto h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                        className="w-full h-full object-cover rounded-full transition-transform duration-300"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-xl text-gray-700">
+                      <div className="w-full h-full bg-gray-100 flex items-center justify-center text-2xl font-bold text-gray-800">
                         {partner.icon || '✦'}
                       </div>
                     )}
                   </div>
-                  <span className="font-bold text-gray-800 text-xs sm:text-sm line-clamp-1 group-hover:text-black transition-colors px-1">
+                  <span className="font-bold text-gray-900 text-xs sm:text-sm line-clamp-1 group-hover:text-black transition-colors px-1">
                     {partner.name}
                   </span>
                   {/* Floating Tooltip showing name on hover */}
-                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 translate-y-2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 pointer-events-none z-30 whitespace-nowrap">
+                  <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 translate-y-2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 pointer-events-none z-30 whitespace-nowrap">
                     <span className="bg-[#111] text-[#CCFF00] text-xs font-bold px-3 py-1 rounded-full shadow-xl border border-white/10 flex items-center gap-1">
                       {partner.name}
                     </span>
