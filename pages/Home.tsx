@@ -622,20 +622,22 @@ const Home: React.FC = () => {
               return (
                 <div
                   key={partner.id}
-                  className="group relative bg-gray-50/90 hover:bg-white border border-gray-200/90 hover:border-[#111] rounded-2xl p-4 sm:p-5 flex flex-col items-center justify-center gap-3 transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 min-h-[140px] cursor-pointer text-center"
+                  className="group relative bg-white border border-gray-200/80 hover:border-[#111] rounded-2xl p-5 flex flex-col items-center justify-center gap-3 transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 min-h-[140px] cursor-pointer text-center"
                 >
-                  <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-white border border-gray-200/80 shadow-xs flex items-center justify-center overflow-hidden p-2 group-hover:border-[#111] group-hover:shadow-md transition-all duration-300">
+                  <div className="flex-1 flex items-center justify-center w-full min-h-[64px] px-2">
                     {logoSrc ? (
                       <img
                         src={logoSrc}
                         alt={partner.name}
-                        className="w-full h-full object-contain rounded-full transition-transform duration-300 group-hover:scale-110"
+                        className="max-h-14 sm:max-h-16 max-w-[125px] w-auto h-auto object-contain transition-transform duration-300 group-hover:scale-105"
                       />
                     ) : (
-                      <span className="text-2xl">{partner.icon || '✦'}</span>
+                      <div className="w-12 h-12 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-xl text-gray-700">
+                        {partner.icon || '✦'}
+                      </div>
                     )}
                   </div>
-                  <span className="font-bold text-gray-900 text-xs sm:text-sm line-clamp-1 group-hover:text-black transition-colors px-1">
+                  <span className="font-bold text-gray-800 text-xs sm:text-sm line-clamp-1 group-hover:text-black transition-colors px-1">
                     {partner.name}
                   </span>
                   {/* Floating Tooltip showing name on hover */}
