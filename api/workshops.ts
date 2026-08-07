@@ -21,6 +21,7 @@ function formatWorkshopRow(row: any) {
     materialsUsed: row.materials_used || '',
     impact: row.impact || '',
     outcomes: row.outcomes || '',
+    faqs: typeof row.faqs === 'string' ? JSON.parse(row.faqs) : row.faqs || [],
     images: typeof row.images === 'string' ? JSON.parse(row.images) : row.images || [],
     galleryDetails: typeof row.gallery_details === 'string' ? JSON.parse(row.gallery_details) : row.gallery_details || [],
     relatedProjectIds: typeof row.related_project_ids === 'string' ? JSON.parse(row.related_project_ids) : row.related_project_ids || [],

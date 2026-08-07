@@ -6,6 +6,9 @@ export const INITIAL_WORKSHOPS: Workshop[] = [
     title: 'Bird House Architecture & Campus Space Makeover',
     organization: 'Unique School of Science, Nadiad',
     location: 'Nadiad, Gujarat',
+    city: 'Nadiad',
+    state: 'Gujarat',
+    country: 'India',
     date: '2025',
     category: 'School',
     attendeesCount: '150+ Students (Class 5th - 10th)',
@@ -15,7 +18,33 @@ export const INITIAL_WORKSHOPS: Workshop[] = [
       'Bird Feeder Making',
       'Plastic Waste Transformation'
     ],
+    skillsOutcomes: `Hands-on woodworking, joinery & tool safety
+Climate-responsive habitat design principles
+Collaborative teamwork & spatial installation
+Ecological biodiversity & avian conservation awareness`,
+    materialsUsed: `Reclaimed natural pine timber & non-toxic water paints
+Upcycled PET bottles for hanging seed dispensers
+Organic cotton ropes & rust-resistant hardware
+Native potted flora & bio-planters`,
+    impact: `Erected 15+ functional bird habitats on campus trees
+Diverted over 50kg of single-use plastic into garden art
+Boosted campus bird species visitations by 40%
+Fulfilled CBSE NEP 2020 vocational skill learning mandates`,
+    outcomes: `15 permanent weatherproof bird nest boxes installed
+Campus central courtyard transformed into a bio-diverse bird sanctuary
+Participating students awarded STEAM eco-stewardship certificates
+Eco-Club established for long-term campus habitat maintenance`,
     description: 'Hands-on creative installation workshop conducted with students from Class 5th to 10th. Students built custom bird houses, crafted eco-feeders, and transformed outdoor campus spaces into vibrant, bird-friendly living installations.',
+    faqs: [
+      { question: 'What grade levels participated in this workshop?', answer: 'Students from 5th to 10th grade participated in hands-on building, painting, and installation.' },
+      { question: 'Are all materials and tools provided by Nest N Nurture?', answer: 'Yes! We bring pre-sanded eco-timber, child-safe tool kits, non-toxic organic paints, and safety equipment.' },
+      { question: 'How long does a school campus makeover workshop take?', answer: 'Workshops typically run for 1 full day (4-6 hours) or can be expanded into 2-3 day masterclasses.' }
+    ],
+    slug: 'bird-house-architecture-campus-space-makeover-nadiad',
+    metaTitle: 'Bird House Architecture & Campus Makeover Workshop | Nest N Nurture',
+    metaDescription: 'Discover our hands-on bird house building and campus space makeover workshop at Unique School of Science, Nadiad. Empowering 150+ students with sustainable skills.',
+    primaryKeyword: 'bird house workshop school',
+    secondaryKeywords: 'campus space makeover, eco school workshop, bird feeder making',
     images: [
       '/workshops/workshops group images.png',
       '/workshops/bird house making.png',
@@ -31,6 +60,9 @@ export const INITIAL_WORKSHOPS: Workshop[] = [
     title: 'Bird House Architecture & Campus Installation',
     organization: 'Anant National University, Ahmedabad',
     location: 'Ahmedabad, Gujarat',
+    city: 'Ahmedabad',
+    state: 'Gujarat',
+    country: 'India',
     date: '2024',
     category: 'College',
     attendeesCount: 'College Design & Architecture Students',
@@ -39,7 +71,30 @@ export const INITIAL_WORKSHOPS: Workshop[] = [
       'Campus Installation',
       'Natural Materials Crafting'
     ],
+    skillsOutcomes: `Microclimate analysis for bird nest orientation
+Architectural prototyping with reclaimed timber
+Biophilic space integration & structural fastening
+Hands-on material testing for outdoor weathering`,
+    materialsUsed: `Seasoned reclaimed teak & pine timber
+Untreated bamboo structural dowels
+Eco-friendly weatherproof sealants
+Organic fiber lashings & stainless steel fixtures`,
+    impact: `Integrated bio-architecture directly into university courtyard trees
+Created live micro-habitats for urban bird species
+Engaged architecture students in real-world design-build execution`,
+    outcomes: `20 architectural bird shelters mounted at optimal canopy heights
+Comprehensive site thermal & wind orientation map completed
+Featured in university annual sustainable design exhibition`,
     description: 'Immersive architectural workshop with college students at Anant National University. Students designed, crafted, and permanently installed climate-responsive bird houses across the university green spaces.',
+    faqs: [
+      { question: 'Is this workshop suitable for architecture & design universities?', answer: 'Yes! It offers design-build experience in biophilic architecture, microclimate study, and natural materials.' },
+      { question: 'Do installed bird houses require ongoing university maintenance?', answer: 'They are engineered with durable, weather-resistant reclaimed timber requiring minimal maintenance.' }
+    ],
+    slug: 'bird-house-architecture-anant-national-university',
+    metaTitle: 'Architectural Bird House Workshop at Anant University | Anvitam',
+    metaDescription: 'Architectural design-build workshop for university students. Building climate-responsive bird house installations in Ahmedabad.',
+    primaryKeyword: 'architectural bird house workshop',
+    secondaryKeywords: 'biophilic architecture college, university green makeover',
     images: [
       '/workshops/workshops group images2.png',
       '/workshops/innovation installtion and space makeover 2.png',
@@ -55,6 +110,9 @@ export const INITIAL_WORKSHOPS: Workshop[] = [
     title: 'Plastic Waste Transformation & Bio-Craft Masterclass',
     organization: 'Campus Eco-Initiative & Upcycling Club',
     location: 'Vadodara, Gujarat',
+    city: 'Vadodara',
+    state: 'Gujarat',
+    country: 'India',
     date: '2024',
     category: 'Workplace',
     attendeesCount: '80+ Corporate & Student Participants',
@@ -64,7 +122,29 @@ export const INITIAL_WORKSHOPS: Workshop[] = [
       'Tote Bag Painting',
       'Wind Chime Art'
     ],
+    skillsOutcomes: `Circular design & zero-waste transformation
+Creative upcycling techniques for post-consumer waste
+Stress-relieving botanical rock & tote bag painting
+Team building through collaborative eco-art`,
+    materialsUsed: `Post-consumer plastic bottles & aluminium food cans
+Organic cotton canvas tote bags & non-toxic acrylics
+Reclaimed driftwood & metallic wind chime bells
+Selected native succulent & herb plants`,
+    impact: `Diverted 100+ kg of waste from municipal landfills
+Created 50+ desktop planters and bird feeders for office & home spaces
+Promoted ESG sustainability culture in corporate environments`,
+    outcomes: `50+ upcycled hanging planters & bird feeders crafted
+Custom organic tote bags completed by each participant
+Installed kinetic wind chime art garden on office balcony`,
     description: 'A vibrant sustainability retreat transforming discarded plastic bottles, aluminum cans, and organic cotton into functional outdoor garden art and bird feeding stations.',
+    faqs: [
+      { question: 'Can corporate workplaces book this as an ESG team retreat?', answer: 'Absolutely! It is a hands-on ESG team-building retreat fostering sustainability and creative focus.' }
+    ],
+    slug: 'plastic-waste-transformation-bio-craft-masterclass',
+    metaTitle: 'Plastic Waste Upcycling & Bio-Craft Workshop | Anvitam',
+    metaDescription: 'Hands-on corporate and campus eco-workshop turning plastic waste and tin cans into functional garden art and bird feeders.',
+    primaryKeyword: 'plastic waste upcycling workshop',
+    secondaryKeywords: 'corporate ESG eco workshop, upcycled planter making',
     images: [
       '/workshops/plastic waste transformation 1.png',
       '/workshops/tin can art 2.png',

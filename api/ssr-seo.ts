@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import fs from 'fs';
 import path from 'path';
 import { sql, isDbConfigured } from '../lib/db.js';
-import { INITIAL_BLOGS, INITIAL_PROJECTS, SERVICES, PROCESS_STEPS, TESTIMONIALS } from '../constants.js';
+import { INITIAL_BLOGS, INITIAL_PROJECTS, SERVICES, PROCESS_STEPS, TESTIMONIALS, INITIAL_WORKSHOPS } from '../constants.js';
 
 // --- Helper Functions for HTML and Schema Generation ---
 
@@ -41,7 +41,7 @@ function generateBreadcrumbSchema(section: string, idOrSlug: string, itemName?: 
   };
 }
 
-function generateSchemas(section: string, idOrSlug: string, data: { blog?: any, project?: any, service?: any }) {
+function generateSchemas(section: string, idOrSlug: string, data: { blog?: any, project?: any, service?: any, workshop?: any }) {
   const schemas: any[] = [];
 
   // Person schema for Archana Gavas (E-E-A-T)
@@ -106,6 +106,8 @@ function generateSchemas(section: string, idOrSlug: string, data: { blog?: any, 
       itemName = data.project.title;
     } else if (section === 'services' && data.service) {
       itemName = data.service.title;
+    } else if (section === 'workshops' && data.workshop) {
+      itemName = data.workshop.title;
     }
     
     const breadcrumbSchema = generateBreadcrumbSchema(section, idOrSlug, itemName);
@@ -426,10 +428,73 @@ function generateSchemas(section: string, idOrSlug: string, data: { blog?: any, 
     schemas.push(homeFaqSchema);
   }
 
+  // Event and FAQPage schema for workshops
+  if (section === 'workshops' && data.workshop) {
+    const workshop = data.workshop;
+    let faqsList = workshop.faqs || [];
+    if (typeof faqsList === 'string') {
+      try { faqsList = JSON.parse(faqsList); } catch (e) {}
+    }
+    if (!Array.isArray(faqsList) || faqsList.length === 0) {
+      faqsList = [
+        { question: `What is included in the ${workshop.title}?`, answer: `The workshop provides all reclaimed materials, non-toxic paints, child-safe tools, expert architectural guidance, and participation certificates.` },
+        { question: `Where was this workshop conducted?`, answer: `Conducted for ${workshop.organization || 'our partner institution'} at ${workshop.location || 'campus premises'}.` },
+        { question: `How can institutions book a similar workshop?`, answer: `Schools, universities, and corporate ESG teams can request a custom proposal via our website or by contacting ar.archanagavas@gmail.com.` }
+      ];
+    }
+
+    const eventSchema = {
+      "@context": "https://schema.org",
+      "@type": "Event",
+      "name": workshop.title,
+      "description": workshop.meta_description || workshop.metaDescription || workshop.description,
+      "image": (workshop.images && workshop.images[0]) || 'https://www.anvitam.com/workshops/birds%20house%20making.png',
+      "startDate": workshop.date ? `${workshop.date}-01-01` : new Date().toISOString().split('T')[0],
+      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+      "eventStatus": "https://schema.org/EventScheduled",
+      "location": {
+        "@type": "Place",
+        "name": workshop.organization || "Campus Venue",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": workshop.city || workshop.location || "Gujarat",
+          "addressRegion": workshop.state || "Gujarat",
+          "addressCountry": workshop.country || "India"
+        }
+      },
+      "organizer": {
+        "@type": "Organization",
+        "@id": "https://www.anvitam.com/#organization",
+        "name": "Nest N Nurture by Anvitam Architecture",
+        "url": "https://www.anvitam.com"
+      },
+      "performer": {
+        "@type": "Person",
+        "@id": "https://www.anvitam.com/#founder",
+        "name": "Ar. Archana Gavas"
+      }
+    };
+    schemas.push(eventSchema);
+
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": faqsList.map((f: any) => ({
+        "@type": "Question",
+        "name": f.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": f.answer
+        }
+      }))
+    };
+    schemas.push(faqSchema);
+  }
+
   return schemas;
 }
 
-function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, project?: any, service?: any }): string {
+function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, project?: any, service?: any, workshop?: any }): string {
   const headerHtml = `
     <header style="padding: 20px; background-color: #03160E; color: #FAFAFA; display: flex; justify-content: space-between; align-items: center; font-family: 'Playfair Display', serif;">
       <div style="font-size: 24px; font-weight: bold;"><a href="/" style="color: #CCFF00; text-decoration: none;">Anvitam</a></div>
@@ -747,6 +812,257 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
         </div>
       </main>
     `;
+  } else if (section === 'process') {
+    const phaseNames: Record<string, { title: string; desc: string }> = {
+      'understand': {
+        title: 'Phase 1: Understand',
+        desc: 'Every project begins with understanding—listening to client visions, sensing the site, and learning from local microclimates.'
+      },
+      'design': {
+        title: 'Phase 2: Design',
+        desc: 'Ideas take shape, evolving into conceptual designs that balance aesthetics, functional ecology, and budget alignment.'
+      },
+      'deliver': {
+        title: 'Phase 3: Deliver',
+        desc: 'Guiding the build on-site, ensuring precision in documentation, contractor selection, and sustainable material execution.'
+      }
+    };
+    const phaseInfo = phaseNames[idOrSlug] || {
+      title: 'Our 3-Step Ecological Design Process',
+      desc: 'Our iterative 3-step design workflow: Understand, Design, and Deliver.'
+    };
+    bodyHtml = `
+      <main style="max-width: 900px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', sans-serif; line-height: 1.8;">
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 40px; color: #03160E; margin-bottom: 20px;">${phaseInfo.title}</h1>
+        <p style="font-size: 18px; color: #555; margin-bottom: 40px;">${phaseInfo.desc}</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+          ${PROCESS_STEPS.map(p => `
+            <div style="border: 1px solid #E5E7EB; border-radius: 8px; padding: 20px; background: #FFF;">
+              <span style="font-size: 24px; font-weight: bold; color: #CCFF00; background: #03160E; width: 40px; height: 40px; display: inline-flex; justify-content: center; align-items: center; border-radius: 50%;">${p.number}</span>
+              <h3 style="font-family: 'Playfair Display', serif; margin-top: 10px; color: #03160E;">${p.title}</h3>
+              <p style="color: #666; font-size: 14px; line-height: 1.6;">${p.description}</p>
+            </div>
+          `).join('')}
+        </div>
+      </main>
+    `;
+  } else if (section === 'workshops') {
+    if (idOrSlug && data.workshop) {
+      const workshop = data.workshop;
+      const parseList = (str: any) => {
+        if (!str) return [];
+        if (Array.isArray(str)) return str;
+        if (typeof str === 'string') {
+          return str.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+        }
+        return [];
+      };
+
+      const skills = parseList(workshop.skills_outcomes || workshop.skillsOutcomes);
+      const materials = parseList(workshop.materials_used || workshop.materialsUsed);
+      const impact = parseList(workshop.impact);
+      const outcomes = parseList(workshop.outcomes);
+      let faqs = workshop.faqs || [];
+      if (typeof faqs === 'string') {
+        try { faqs = JSON.parse(faqs); } catch (e) {}
+      }
+      if (!Array.isArray(faqs) || faqs.length === 0) {
+        faqs = [
+          { question: `What is included in the ${workshop.title}?`, answer: `The workshop provides all reclaimed materials, non-toxic paints, child-safe tools, expert architectural guidance, and participation certificates.` },
+          { question: `Where was this workshop conducted?`, answer: `Conducted for ${workshop.organization || 'our partner institution'} at ${workshop.location || 'campus premises'}.` },
+          { question: `How can institutions book a similar workshop?`, answer: `Schools, universities, and corporate ESG teams can request a custom proposal via our website or by contacting ar.archanagavas@gmail.com.` }
+        ];
+      }
+
+      bodyHtml = `
+        <article style="max-width: 900px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', sans-serif; line-height: 1.8;">
+          <header style="margin-bottom: 30px;">
+            <span style="font-size: 14px; font-weight: 600; text-transform: uppercase; color: #CCFF00; background: #03160E; padding: 4px 12px; border-radius: 20px; display: inline-block; margin-bottom: 15px;">${workshop.category || 'Architectural Workshop'}</span>
+            <h1 style="font-family: 'Playfair Display', serif; font-size: 38px; color: #03160E; margin: 0 0 15px 0; line-height: 1.2;">${workshop.title}</h1>
+            <p style="font-size: 16px; color: #555; margin: 0;">
+              <strong>Organization:</strong> ${workshop.organization || 'Anvitam'} | 
+              <strong>Location:</strong> ${workshop.location || 'Gujarat, India'} | 
+              <strong>Date:</strong> ${workshop.date || '2025'}
+            </p>
+          </header>
+
+          ${(workshop.images && workshop.images[0]) ? `
+            <div style="margin-bottom: 40px; border-radius: 12px; overflow: hidden; max-height: 480px;">
+              <img src="${workshop.images[0]}" alt="${workshop.title}" style="width: 100%; height: 100%; object-fit: cover;" />
+            </div>
+          ` : ''}
+
+          <section aria-label="Executive Summary" style="background: #03160E; color: #FAFAFA; padding: 25px; border-radius: 12px; margin-bottom: 40px;">
+            <h2 style="font-family: 'Playfair Display', serif; color: #CCFF00; margin-top: 0; font-size: 22px;">Executive Overview</h2>
+            <p style="color: #A3B8AF; font-size: 16px; margin: 0; line-height: 1.7;">${workshop.description || workshop.meta_description || 'Hands-on architectural and ecological workshop designed to foster biophilic design awareness, hands-on craft skills, and sustainable campus transformation.'}</p>
+          </section>
+
+          ${skills.length > 0 ? `
+            <section style="margin-bottom: 35px;">
+              <h2 style="font-family: 'Playfair Display', serif; font-size: 26px; color: #03160E; border-bottom: 2px solid #CCFF00; padding-bottom: 8px;">Skills & Learning Outcomes</h2>
+              <ul style="padding-left: 20px;">
+                ${skills.map((s: string) => `<li style="margin-bottom: 8px; font-size: 16px; color: #222;">${s}</li>`).join('')}
+              </ul>
+            </section>
+          ` : ''}
+
+          ${materials.length > 0 ? `
+            <section style="margin-bottom: 35px;">
+              <h2 style="font-family: 'Playfair Display', serif; font-size: 26px; color: #03160E; border-bottom: 2px solid #CCFF00; padding-bottom: 8px;">Materials Used & Sustainable Craft</h2>
+              <ul style="padding-left: 20px;">
+                ${materials.map((m: string) => `<li style="margin-bottom: 8px; font-size: 16px; color: #222;">${m}</li>`).join('')}
+              </ul>
+            </section>
+          ` : ''}
+
+          ${impact.length > 0 ? `
+            <section style="margin-bottom: 35px;">
+              <h2 style="font-family: 'Playfair Display', serif; font-size: 26px; color: #03160E; border-bottom: 2px solid #CCFF00; padding-bottom: 8px;">Environmental & Social Impact</h2>
+              <ul style="padding-left: 20px;">
+                ${impact.map((i: string) => `<li style="margin-bottom: 8px; font-size: 16px; color: #222;">${i}</li>`).join('')}
+              </ul>
+            </section>
+          ` : ''}
+
+          ${outcomes.length > 0 ? `
+            <section style="margin-bottom: 35px;">
+              <h2 style="font-family: 'Playfair Display', serif; font-size: 26px; color: #03160E; border-bottom: 2px solid #CCFF00; padding-bottom: 8px;">Workshop Deliverables & Tangible Outcomes</h2>
+              <ul style="padding-left: 20px;">
+                ${outcomes.map((o: string) => `<li style="margin-bottom: 8px; font-size: 16px; color: #222;">${o}</li>`).join('')}
+              </ul>
+            </section>
+          ` : ''}
+
+          <section aria-label="Frequently Asked Questions" style="margin-top: 40px; background: #FFF; padding: 30px; border-radius: 12px; border: 1px solid #E5E7EB;">
+            <h2 style="font-family: 'Playfair Display', serif; font-size: 26px; color: #03160E; margin-top: 0;">Frequently Asked Questions (FAQ)</h2>
+            <dl>
+              ${faqs.map((f: any) => `
+                <dt style="font-weight: bold; font-size: 17px; color: #03160E; margin-top: 18px;">${f.question}</dt>
+                <dd style="color: #4A5568; font-size: 15px; margin-left: 0; margin-top: 6px; line-height: 1.6;">${f.answer}</dd>
+              `).join('')}
+            </dl>
+          </section>
+
+          <div style="margin: 40px 0; text-align: center;">
+            <a href="/contact" style="display: inline-block; padding: 15px 32px; background-color: #CCFF00; color: #03160E; font-weight: bold; border-radius: 30px; text-decoration: none; font-size: 18px;">Request Workshop Consultation</a>
+          </div>
+        </article>
+      `;
+    } else {
+      bodyHtml = `
+        <main style="max-width: 1000px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', sans-serif;">
+          <h1 style="font-family: 'Playfair Display', serif; font-size: 36px; color: #03160E; margin-bottom: 20px;">Ecological & Architectural Workshops</h1>
+          <p style="color: #666; font-size: 18px; margin-bottom: 40px;">Hands-on educational workshops blending natural building, avian habitat craft, plastic upcycling, and campus masterplanning.</p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+            ${INITIAL_WORKSHOPS.map(w => `
+              <div style="background: #FFF; border: 1px solid #E5E7EB; border-radius: 8px; overflow: hidden; padding: 20px;">
+                <h2 style="font-family: 'Playfair Display', serif; font-size: 22px; margin-top: 0;"><a href="/workshops/${w.slug || w.id}" style="color: #03160E; text-decoration: none;">${w.title}</a></h2>
+                <p style="color: #888; font-size: 12px;">${w.organization} | ${w.location}</p>
+                <p style="color: #555; line-height: 1.6;">${w.description || 'Hands-on architectural and ecological workshop.'}</p>
+                <a href="/workshops/${w.slug || w.id}" style="color: #03160E; font-weight: bold; text-decoration: underline;">View Workshop Details</a>
+              </div>
+            `).join('')}
+          </div>
+        </main>
+      `;
+    }
+  } else if (section === 'seo') {
+    const seoPageData: Record<string, { title: string; heading: string; body: string; faqs?: { question: string; answer: string }[] }> = {
+      'farm-retreat-architecture': {
+        title: 'Farm Retreat Architecture & Sustainable Eco-Resort Design',
+        heading: 'Farm Retreat Architecture & Sustainable Eco-Resort Masterplanning',
+        body: 'Anvitam specializes in designing regenerative farm retreats, eco-lodges, and rural stays. By combining bioclimatic design, natural building materials (earth, bamboo, lime), and permaculture water harvesting, we create low-carbon, high-occupancy hospitality experiences.',
+        faqs: [
+          { question: 'What is a farm retreat architecture project?', answer: 'It is a masterplanned hospitality or personal property combining agricultural food production, eco-lodging, and passive sustainable architecture.' },
+          { question: 'How long does site masterplanning take?', answer: 'Site masterplanning typically takes 4 to 8 weeks including hydrological mapping and solar orientation analysis.' }
+        ]
+      },
+      'weekend-villas': {
+        title: 'Sustainable Weekend Villas & Biophilic Second Homes',
+        heading: 'Sustainable Weekend Villas & Biophilic Off-Grid Escapes',
+        body: 'We design passive, climate-responsive weekend villas crafted with local stone, rammed earth, and natural lime renders. Our villa designs require 60% less cooling energy while offering seamless indoor-outdoor living.',
+        faqs: [
+          { question: 'Can weekend villas be built completely off-grid?', answer: 'Yes! We integrate rooftop solar PV systems, rainwater harvesting cisterns, and natural reedbed greywater filtration.' }
+        ]
+      },
+      'airbnb-homestay': {
+        title: 'Airbnb & Homestay Design for Maximum Revenue & Guest Experience',
+        heading: 'Architecture & Interior Design for High-Conversion Airbnb Stays',
+        body: 'Generic vacation rentals struggle with low occupancy. We design unique, Instagrammable, biophilic Airbnb cottages and homestays that stand out on global booking platforms and command premium nightly rates.',
+        faqs: [
+          { question: 'How does design impact Airbnb occupancy?', answer: 'Architectural character, natural lighting, and unique local material choices create memorable guest reviews and higher search placement on booking engines.' }
+        ]
+      },
+      'wellness-retreat': {
+        title: 'Wellness Retreat Architecture & Meditation Sanctuaries',
+        heading: 'Holistic Architecture for Yoga Shalas & Healing Sanctuaries',
+        body: 'Designing quiet, non-toxic environments built with breathable natural plasters, acoustic timber, and passive ventilation to support deep healing and meditation practices.',
+        faqs: [
+          { question: 'Why are natural building materials crucial for wellness retreats?', answer: 'Natural plasters and unrefined earth emit zero Volatile Organic Compounds (VOCs), ensuring healthy indoor air quality.' }
+        ]
+      },
+      'permaculture': {
+        title: 'Permaculture Design & Syntropic Agroforestry Masterplanning',
+        heading: 'Regenerative Permaculture Landscape & Soil Restoration',
+        body: 'We design multi-layered food forests, swales, and water retention ponds to restore degraded soil and build self-sustaining agricultural landscapes.',
+        faqs: [
+          { question: 'What is included in a permaculture consultation?', answer: 'Topographical mapping, soil hydrology analysis, plant guild selection, and phased implementation roadmaps.' }
+        ]
+      },
+      'terrace-garden': {
+        title: 'Terrace Garden & Urban Rooftop Sanctuary Design',
+        heading: 'Urban Rooftop Food Forests & Cool Roof Gardens',
+        body: 'Converting concrete roof heat sinks into lush, lightweight edible gardens that insulate buildings and produce fresh organic food in urban settings.'
+      },
+      'yard-landscape': {
+        title: 'Backyard & Ecological Landscape Design',
+        heading: 'Ecological Backyard Landscapes & Chemical-Free Natural Pools',
+        body: 'Designing chemical-free natural swimming ponds, native pollinator gardens, and outdoor living areas using local stone and permeable paving.'
+      },
+      'community-centre': {
+        title: 'Community Centers & Civic Eco-Architecture',
+        heading: 'Sustainable Civic & Community Architecture',
+        body: 'Designing accessible, solar-powered community centers built with upcycled materials to foster civic engagement and ecological education.'
+      }
+    };
+
+    const pData = seoPageData[idOrSlug] || {
+      title: 'Sustainable Architecture & Ecological Design',
+      heading: 'Specialized Sustainable Design Services by Anvitam',
+      body: 'Anvitam provides end-to-end architecture, permaculture design, and natural building consulting across India, USA, and Australia.'
+    };
+
+    bodyHtml = `
+      <article style="max-width: 900px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', sans-serif; line-height: 1.8;">
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 38px; color: #03160E; margin-bottom: 20px;">${pData.heading}</h1>
+        <p style="font-size: 18px; color: #444; margin-bottom: 30px; line-height: 1.7;">${pData.body}</p>
+        
+        <div style="background: #03160E; color: #FAFAFA; padding: 30px; border-radius: 12px; margin: 40px 0;">
+          <h2 style="font-family: 'Playfair Display', serif; color: #CCFF00; margin-top: 0;">Our Design Guarantees</h2>
+          <ul style="color: #A3B8AF; font-size: 16px; padding-left: 20px;">
+            <li style="margin-bottom: 10px;">Zero-VOC, non-toxic indoor air quality using breathable lime and clay renders</li>
+            <li style="margin-bottom: 10px;">100% rainwater retention and passive microclimate cooling</li>
+            <li style="margin-bottom: 10px;">Native plant guilds tailored to your site's specific hardiness zone</li>
+          </ul>
+        </div>
+
+        ${pData.faqs && pData.faqs.length > 0 ? `
+          <section aria-label="Frequently Asked Questions" style="margin-top: 40px; background: #FFF; padding: 30px; border-radius: 12px; border: 1px solid #E5E7EB;">
+            <h2 style="font-family: 'Playfair Display', serif; font-size: 26px; color: #03160E; margin-top: 0;">Frequently Asked Questions</h2>
+            <dl>
+              ${pData.faqs.map(f => `
+                <dt style="font-weight: bold; font-size: 17px; color: #03160E; margin-top: 18px;">${f.question}</dt>
+                <dd style="color: #4A5568; font-size: 15px; margin-left: 0; margin-top: 6px; line-height: 1.6;">${f.answer}</dd>
+              `).join('')}
+            </dl>
+          </section>
+        ` : ''}
+
+        <div style="margin: 40px 0; text-align: center;">
+          <a href="/contact" style="display: inline-block; padding: 15px 32px; background-color: #CCFF00; color: #03160E; font-weight: bold; border-radius: 30px; text-decoration: none; font-size: 18px;">Book a Design Discovery Call</a>
+        </div>
+      </article>
+    `;
   } else {
     // Default Home Page
     bodyHtml = `
@@ -939,6 +1255,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let blog: any = null;
   let project: any = null;
   let service: any = null;
+  let workshop: any = null;
 
   // Fetch data depending on the section
   if (section === 'blog' && idOrSlug) {
@@ -957,7 +1274,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
     if (!blog) {
-      blog = INITIAL_BLOGS.find(b => b.slug === idOrSlug || b.id === idOrSlug);
+      blog = INITIAL_BLOGS.find(b => 
+        b.slug === idOrSlug || 
+        b.id === idOrSlug || 
+        (b.slug && (idOrSlug.includes(b.slug) || b.slug.includes(idOrSlug))) || 
+        idOrSlug.includes(b.id)
+      );
     }
 
     if (blog) {
@@ -976,7 +1298,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.warn(`[ssr-seo] Blog not found in DB for id/slug: ${idOrSlug} — serving generic metadata`);
       title = `Blog | Anvitam Sustainable Architecture`;
       desc = 'Read articles and insights on sustainable architecture, permaculture, eco-design, and biophilic living by Anvitam.';
-      // Keep robots = 'index, follow' (default) — do NOT noindex, allow client-side hydration to be crawled
     }
   } else if (section === 'projects' && idOrSlug) {
     if (isDbConfigured) {
@@ -994,7 +1315,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
     if (!project) {
-      project = INITIAL_PROJECTS.find(p => p.slug === idOrSlug || p.id === idOrSlug);
+      project = INITIAL_PROJECTS.find(p => 
+        p.slug === idOrSlug || 
+        p.id === idOrSlug || 
+        (p.slug && (idOrSlug.includes(p.slug) || p.slug.includes(idOrSlug))) || 
+        idOrSlug.includes(p.id) || 
+        p.id.includes(idOrSlug)
+      );
     }
 
     if (project) {
@@ -1013,7 +1340,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.warn(`[ssr-seo] Project not found in DB for id/slug: ${idOrSlug} — serving generic metadata`);
       title = `Project | Anvitam Sustainable Architecture`;
       desc = 'Explore sustainable architecture projects by Anvitam — farm retreats, eco-resorts, permaculture landscapes, and biophilic homes.';
-      // Keep robots = 'index, follow' (default) — do NOT noindex
     }
   } else if (section === 'services' && idOrSlug) {
     if (isDbConfigured) {
@@ -1032,14 +1358,40 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
     if (!service) {
-      service = SERVICES.find(s => s.id === idOrSlug);
+      const serviceAliases: Record<string, string> = {
+        'permaculture': 'permaculture-design',
+        'permaculture-design': 'permaculture-design',
+        'farm-retreat': 'farm-retreat',
+        'farm-retreats': 'farm-retreat',
+        'resort-design': 'eco-resort',
+        'eco-resort': 'eco-resort',
+        'natural-building': 'farm-retreat',
+        'agroforestry': 'food-forest',
+        'food-forest': 'food-forest',
+        'airbnb': 'airbnb',
+        'airbnb-design': 'airbnb',
+        'homestay': 'homestay',
+        'homestay-design': 'homestay',
+        'community-center': 'community-center',
+        'terrace-garden': 'terrace-garden',
+        'backyard-design': 'backyard-design',
+        'weekend-villa': 'weekend-villa'
+      };
+      const mappedId = serviceAliases[idOrSlug] || idOrSlug;
+      service = SERVICES.find(s => 
+        s.id === mappedId || 
+        s.id === idOrSlug || 
+        s.id.replace(/-design$/, '') === idOrSlug || 
+        idOrSlug.includes(s.id) || 
+        s.id.includes(idOrSlug)
+      );
     }
 
     if (service) {
       title = service.meta_title || service.metaTitle || `${service.title} | Services | Anvitam`;
       desc = service.meta_description || service.metaDescription || service.description || desc;
       imageUrl = service.hero_image || service.heroImage || imageUrl;
-      canonicalUrl = `https://www.anvitam.com/services/${idOrSlug}`;
+      canonicalUrl = `https://www.anvitam.com/services/${service.id}`;
       let props = service.value_props || service.valueProps;
       if (typeof props === 'string') {
         try { props = JSON.parse(props); } catch (e) {}
@@ -1051,7 +1403,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.warn(`[ssr-seo] Service not found in DB for id/slug: ${idOrSlug} — serving generic metadata`);
       title = `Service | Anvitam Sustainable Architecture`;
       desc = 'Explore sustainable design services by Anvitam — permaculture, farm retreats, eco-resorts, biophilic architecture, and more.';
-      // Keep robots = 'index, follow' (default) — do NOT noindex
+    }
+  } else if (section === 'workshops') {
+    if (idOrSlug) {
+      if (isDbConfigured) {
+        try {
+          const rows = await sql`
+            SELECT id, title, slug, organization, location, city, state, country, date, category, description, skills_outcomes, materials_used, impact, outcomes, faqs, images, meta_title, meta_description, primary_keyword, meta_robots 
+            FROM workshops 
+            WHERE slug = ${idOrSlug} OR id = ${idOrSlug}
+          `;
+          if (rows.length > 0) {
+            workshop = rows[0];
+          }
+        } catch (e) {
+          console.error('Error fetching workshop SEO data from DB:', e);
+        }
+      }
+      if (!workshop) {
+        workshop = INITIAL_WORKSHOPS.find(w => 
+          w.slug === idOrSlug || 
+          w.id === idOrSlug || 
+          (w.slug && (idOrSlug.includes(w.slug) || w.slug.includes(idOrSlug))) || 
+          idOrSlug.includes(w.id) ||
+          (idOrSlug.includes('bird-house-architecture-campus-space-makeover') && w.id === 'w-1') ||
+          (idOrSlug.includes('bird-house') && idOrSlug.includes('anant') && w.id === 'w-2') ||
+          (idOrSlug.includes('plastic-waste') && w.id === 'w-3')
+        );
+      }
+
+      if (workshop) {
+        title = workshop.meta_title || workshop.metaTitle || `${workshop.title} | Anvitam Workshops`;
+        desc = workshop.meta_description || workshop.metaDescription || workshop.description || desc;
+        imageUrl = (workshop.images && workshop.images[0]) || 'https://www.anvitam.com/workshops/birds%20house%20making.png';
+        canonicalUrl = `https://www.anvitam.com/workshops/${workshop.slug || workshop.id}`;
+        keywords = workshop.primary_keyword || workshop.primaryKeyword || `${workshop.title}, architecture workshop, bird house making, sustainable design, Nadiad, Gujarat`;
+        robots = workshop.meta_robots || workshop.metaRobots || robots;
+      } else {
+        console.warn(`[ssr-seo] Workshop not found in DB for id/slug: ${idOrSlug} — serving generic metadata`);
+        title = `Workshop | Anvitam Sustainable Architecture`;
+        desc = 'Hands-on architectural, ecological, and sustainable craft workshops by Anvitam.';
+      }
+    } else {
+      title = 'Ecological & Architectural Workshops | Anvitam';
+      desc = 'Explore our hands-on workshops on bird house making, natural building, and sustainable campus space makeovers.';
+      canonicalUrl = 'https://www.anvitam.com/workshops';
     }
   } else if (section === 'seo' && idOrSlug) {
     const seoPages: Record<string, { title: string; desc: string }> = {
@@ -1128,6 +1524,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       'blog': {
         title: 'Blog & Insights | Anvitam',
         desc: 'Read articles and research on biophilic design, natural building materials, clay/lime plasters, and sustainable engineering.'
+      },
+      'process': {
+        title: 'Our 3-Step Process | Anvitam Sustainable Architecture',
+        desc: 'Discover our 3-step design workflow: Understand, Design, and Deliver. Tailored site analysis, masterplanning, and on-site supervision.'
       },
       'privacy': {
         title: 'Privacy Policy | Anvitam',
@@ -1220,7 +1620,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   template = template.replace('</head>', `  ${publisherTag}\n</head>`);
 
   // --- Inject JSON-LD Schema Marks ---
-  const schemas = generateSchemas(section, idOrSlug, { blog, project, service });
+  const schemas = generateSchemas(section, idOrSlug, { blog, project, service, workshop });
   let schemaTags = '';
   for (const schema of schemas) {
     if (schema) {
@@ -1232,7 +1632,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // --- Inject Semantic Pre-Rendered HTML inside <div id="root"> ---
-  const ssrHtml = generateSsrHtml(section, idOrSlug, { blog, project, service });
+  const ssrHtml = generateSsrHtml(section, idOrSlug, { blog, project, service, workshop });
   template = template.replace(
     /<div id="root">(?:[\s\S]*?<\/noscript>\s*)?<\/div>/i,
     `<div id="root">${ssrHtml}</div>`

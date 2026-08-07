@@ -19,7 +19,10 @@ import {
   Check, 
   Wrench, 
   Share2,
-  Award
+  Award,
+  Leaf,
+  HelpCircle,
+  ChevronDown
 } from 'lucide-react';
 import FlowButton from '../components/ui/flow-button';
 
@@ -29,6 +32,23 @@ const WorkshopDetail: React.FC = () => {
   
   // Find workshop by ID or slug
   const workshop = workshops.find(w => w.id === id || w.slug === id);
+
+  // FAQ Accordion State
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+
+  // Helper to parse strings into point-wise lists
+  const parsePoints = (input?: string): string[] => {
+    if (!input || !input.trim()) return [];
+    const lines = input
+      .split(/\n|•|·|▪|‣|\r/)
+      .map(line => line.replace(/^[\s\-\*\•\d\.\>\–\—\+]+/, '').trim())
+      .filter(Boolean);
+    if (lines.length > 0) return lines;
+    if (input.includes(',')) {
+      return input.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    return [input.trim()];
+  };
 
   // Slideshow State
   const [activeSlide, setActiveSlide] = useState(0);
@@ -152,10 +172,60 @@ Additional Notes: ${formState.notes || 'None'}`;
     }, 2800);
   };
 
-  // SEO details
+  // SEO & AEO Data setup
   const pageTitle = workshop.metaTitle || `${workshop.title} | Nest N Nurture Workshops by Anvitam`;
   const pageDesc = workshop.metaDescription || workshop.description || `Explore ${workshop.title} conducted for ${workshop.organization} at ${workshop.location}.`;
   const canonicalUrl = workshop.canonicalUrl || `https://www.anvitam.com/workshops/${workshop.slug || workshop.id}`;
+
+  const skillsPoints = parsePoints(workshop.skillsOutcomes);
+  const materialsPoints = parsePoints(workshop.materialsUsed);
+  const impactPoints = parsePoints(workshop.impact);
+  const outcomesPoints = parsePoints(workshop.outcomes);
+
+  const activeFaqs = (workshop.faqs && workshop.faqs.length > 0) ? workshop.faqs : [
+    { question: `What is included in the ${workshop.title}?`, answer: `The workshop provides all reclaimed materials, non-toxic paints, child-safe tools, expert architectural guidance, and participation certificates.` },
+    { question: `Where was this workshop conducted?`, answer: `Conducted for ${workshop.organization} at ${workshop.location || 'campus premises'}.` },
+    { question: `How can institutions book a similar workshop?`, answer: `Schools, universities, and corporate ESG teams can request a custom proposal via our website or by contacting ar.archanagavas@gmail.com.` }
+  ];
+
+  const jsonLdEventSchema = {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "name": workshop.title,
+    "description": pageDesc,
+    "image": imagesList[0],
+    "startDate": workshop.date ? `${workshop.date}-01-01` : new Date().toISOString().split('T')[0],
+    "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    "eventStatus": "https://schema.org/EventScheduled",
+    "location": {
+      "@type": "Place",
+      "name": workshop.organization || "Campus Venue",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": workshop.city || workshop.location || "Gujarat",
+        "addressRegion": workshop.state || "Gujarat",
+        "addressCountry": workshop.country || "India"
+      }
+    },
+    "organizer": {
+      "@type": "Organization",
+      "name": "Nest N Nurture by Anvitam Architecture",
+      "url": "https://www.anvitam.com"
+    }
+  };
+
+  const jsonLdFaqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": activeFaqs.map(faq => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  };
 
   return (
     <div className="bg-white min-h-screen text-gray-900 font-sans selection:bg-[#CCFF00] selection:text-black">
@@ -169,6 +239,12 @@ Additional Notes: ${formState.notes || 'None'}`;
         <meta property="og:description" content={workshop.ogDescription || pageDesc} />
         <meta property="og:image" content={workshop.ogImage || imagesList[0]} />
         <meta property="og:url" content={canonicalUrl} />
+        <script type="application/ld+json">
+          {JSON.stringify(jsonLdEventSchema)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(jsonLdFaqSchema)}
+        </script>
       </Helmet>
 
       {/* ── TOP BREADCRUMB NAVIGATION ── */}
@@ -325,6 +401,34 @@ Additional Notes: ${formState.notes || 'None'}`;
       <section className="max-w-6xl mx-auto px-4 sm:px-6 mb-20 grid grid-cols-1 lg:grid-cols-3 gap-12">
         {/* Main Left Content */}
         <div className="lg:col-span-2 space-y-10">
+          {/* AEO / GEO EXECUTIVE SUMMARY BOX */}
+          <div className="bg-slate-900 text-white p-6 sm:p-8 rounded-3xl space-y-4 border border-slate-800 shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <span className="text-[11px] font-black uppercase tracking-widest text-[#CCFF00] flex items-center gap-1.5">
+                <Sparkles size={14} /> At-A-Glance Executive Summary
+              </span>
+              <span className="text-[10px] font-bold text-slate-400 font-mono">GEO & AEO Verified</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+              <div>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">Institution</span>
+                <span className="font-extrabold text-white">{workshop.organization}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">Location</span>
+                <span className="font-extrabold text-white">{workshop.location || 'Gujarat'}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">Audience</span>
+                <span className="font-extrabold text-white">{workshop.attendeesCount || workshop.category}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">Category</span>
+                <span className="font-extrabold text-[#CCFF00]">{workshop.category} Masterclass</span>
+              </div>
+            </div>
+          </div>
+
           {/* Highlights & Description */}
           <div className="space-y-4">
             <h2 className="text-2xl font-black text-gray-950 flex items-center gap-2">
@@ -338,11 +442,11 @@ Additional Notes: ${formState.notes || 'None'}`;
           {/* Offerings Matrix */}
           {workshop.offerings && workshop.offerings.length > 0 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-extrabold text-gray-900">Key Offerings & Activities Conducted</h3>
+              <h3 className="text-lg font-extrabold text-gray-900">Key Modules & Activities Conducted</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {workshop.offerings.map((off, idx) => (
-                  <div key={idx} className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                  <div key={idx} className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
                       <CheckCircle2 size={18} />
                     </div>
                     <span className="font-bold text-sm text-gray-900">{off}</span>
@@ -352,33 +456,143 @@ Additional Notes: ${formState.notes || 'None'}`;
             </div>
           )}
 
-          {/* Skills & Learning Outcomes */}
-          {workshop.skillsOutcomes && (
-            <div className="space-y-3 bg-emerald-50/40 p-6 rounded-2xl border border-emerald-100">
-              <h3 className="text-base font-extrabold text-emerald-950 flex items-center gap-2">
-                <Wrench size={18} className="text-emerald-700" /> Educational & Practical Learning Outcomes
-              </h3>
-              <p className="text-sm text-emerald-900 leading-relaxed font-medium">
-                {workshop.skillsOutcomes}
-              </p>
+          {/* 1. SKILLS & LEARNING OUTCOMES (POINT-WISE) */}
+          {skillsPoints.length > 0 && (
+            <div className="space-y-4 bg-emerald-50/60 p-6 sm:p-8 rounded-3xl border border-emerald-200/80 shadow-xs">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-black text-emerald-950 flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                    <Wrench size={16} />
+                  </div>
+                  Educational & Learning Outcomes
+                </h3>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100/90 px-3 py-1 rounded-full border border-emerald-200">
+                  {skillsPoints.length} Core Competencies
+                </span>
+              </div>
+              <ul className="space-y-2.5 pt-1">
+                {skillsPoints.map((point, idx) => (
+                  <li key={idx} className="flex items-start gap-3 text-sm text-emerald-950 font-semibold bg-white p-3.5 rounded-2xl border border-emerald-100 shadow-2xs">
+                    <CheckCircle2 size={18} className="text-emerald-600 shrink-0 mt-0.5" />
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 
-          {/* Materials Used & Impact Grid */}
+          {/* 2 & 3. MATERIALS USED & ECOLOGICAL IMPACT (POINT-WISE GRID) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {workshop.materialsUsed && (
-              <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200 space-y-2">
-                <h4 className="text-xs font-black uppercase tracking-wider text-gray-500">Sustainable Materials</h4>
-                <p className="text-sm font-semibold text-gray-900">{workshop.materialsUsed}</p>
+            {/* Sustainable Materials */}
+            {materialsPoints.length > 0 && (
+              <div className="bg-gray-50 p-6 sm:p-7 rounded-3xl border border-gray-200 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-black uppercase tracking-wider text-gray-700 flex items-center gap-2">
+                    <Leaf size={15} className="text-emerald-600" /> Sustainable Materials
+                  </h4>
+                  <span className="text-[10px] font-bold text-gray-500 bg-gray-200 px-2.5 py-0.5 rounded-full">
+                    {materialsPoints.length} Items
+                  </span>
+                </div>
+                <ul className="space-y-2">
+                  {materialsPoints.map((point, idx) => (
+                    <li key={idx} className="flex items-start gap-2.5 text-xs text-gray-800 font-semibold">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 mt-1.5" />
+                      <span>{point}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
-            {workshop.impact && (
-              <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-200 space-y-2">
-                <h4 className="text-xs font-black uppercase tracking-wider text-emerald-700">Ecological Impact</h4>
-                <p className="text-sm font-semibold text-emerald-950">{workshop.impact}</p>
+
+            {/* Environmental & Social Impact */}
+            {impactPoints.length > 0 && (
+              <div className="bg-emerald-950 text-white p-6 sm:p-7 rounded-3xl space-y-4 shadow-xl border border-emerald-900">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-black uppercase tracking-wider text-[#CCFF00] flex items-center gap-2">
+                    <Sparkles size={15} /> Ecological & Social Impact
+                  </h4>
+                  <span className="text-[10px] font-bold text-emerald-300 bg-emerald-900 px-2.5 py-0.5 rounded-full border border-emerald-700">
+                    {impactPoints.length} Direct Impacts
+                  </span>
+                </div>
+                <ul className="space-y-2">
+                  {impactPoints.map((point, idx) => (
+                    <li key={idx} className="flex items-start gap-2.5 text-xs text-emerald-100 font-semibold">
+                      <Check size={14} className="text-[#CCFF00] shrink-0 mt-0.5" />
+                      <span>{point}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
           </div>
+
+          {/* 4. WORKSHOP OUTCOMES (DEDICATED POINT-WISE CARD) */}
+          {outcomesPoints.length > 0 && (
+            <div className="bg-gradient-to-br from-amber-500/10 via-emerald-500/10 to-transparent p-6 sm:p-8 rounded-3xl border border-amber-200/80 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-black text-gray-950 flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-xs">
+                    <Award size={18} />
+                  </div>
+                  Key Deliverables & Workshop Outcomes
+                </h3>
+                <span className="text-[11px] font-extrabold text-amber-900 bg-amber-100 px-3 py-1 rounded-full border border-amber-200">
+                  {outcomesPoints.length} Tangible Results
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                {outcomesPoints.map((point, idx) => (
+                  <div key={idx} className="bg-white p-4 rounded-2xl border border-amber-150 shadow-xs flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 mt-0.5">
+                      <Check size={14} className="font-black" />
+                    </div>
+                    <span className="font-bold text-xs text-gray-900 leading-snug">{point}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 5. AEO & GEO FAQ ACCORDION SECTION */}
+          {activeFaqs.length > 0 && (
+            <div className="space-y-4 pt-4 border-t border-gray-100">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-extrabold text-gray-950 flex items-center gap-2">
+                  <HelpCircle size={18} className="text-emerald-600" /> Frequently Asked Questions (FAQ)
+                </h3>
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                  AEO Optimized
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                {activeFaqs.map((faq, idx) => {
+                  const isOpen = openFaqIndex === idx;
+                  return (
+                    <div key={idx} className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-2xs transition">
+                      <button
+                        onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                        className="w-full p-4 text-left font-bold text-sm text-gray-900 flex items-center justify-between gap-4 hover:bg-gray-50 transition"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="text-emerald-600 font-black">Q:</span> {faq.question}
+                        </span>
+                        <ChevronDown size={18} className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180 text-emerald-600' : ''}`} />
+                      </button>
+                      {isOpen && (
+                        <div className="px-4 pb-4 text-xs text-gray-600 leading-relaxed border-t border-gray-100 bg-gray-50/50 pt-3">
+                          <span className="text-emerald-700 font-extrabold block mb-1">Answer:</span>
+                          {faq.answer}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Sidebar B2B Card */}

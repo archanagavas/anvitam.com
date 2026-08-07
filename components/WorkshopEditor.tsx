@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Workshop } from '../types';
-import { X, Plus, Trash2, ArrowLeft, Save, Sparkles, Image as ImageIcon, Link as LinkIcon, Globe, Share2, FileText, Check } from 'lucide-react';
+import { X, Plus, Trash2, ArrowLeft, Save, Sparkles, Image as ImageIcon, Link as LinkIcon, Globe, Share2, FileText, Check, CheckCircle2, HelpCircle } from 'lucide-react';
 
 interface WorkshopEditorProps {
   initial?: Workshop | null;
@@ -60,6 +60,78 @@ export default function WorkshopEditor({ initial, onSave, onCancel }: WorkshopEd
 
   // PUBLISHING
   const [status, setStatus] = useState<'published' | 'draft'>(initial?.status || 'published');
+
+  // SEO & AEO FAQ BUILDER
+  const [faqs, setFaqs] = useState<{ question: string; answer: string }[]>(initial?.faqs || []);
+  const [newFaqQ, setNewFaqQ] = useState('');
+  const [newFaqA, setNewFaqA] = useState('');
+
+  // POINT-WISE PARSING & PRESET HELPER
+  const parsePoints = (text?: string): string[] => {
+    if (!text || !text.trim()) return [];
+    const lines = text
+      .split(/\n|•|·|▪|‣|\r/)
+      .map(line => line.replace(/^[\s\-\*\•\d\.\>\–\—\+]+/, '').trim())
+      .filter(Boolean);
+    if (lines.length > 0) return lines;
+    if (text.includes(',')) {
+      return text.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    return [text.trim()];
+  };
+
+  const appendPoint = (currentVal: string, setFn: (val: string) => void, pointText: string) => {
+    const trimmed = currentVal.trim();
+    if (!trimmed) {
+      setFn(pointText);
+    } else if (!trimmed.includes(pointText)) {
+      setFn(`${trimmed}\n${pointText}`);
+    }
+  };
+
+  const handleAddFaq = () => {
+    if (!newFaqQ.trim() || !newFaqA.trim()) return;
+    setFaqs([...faqs, { question: newFaqQ.trim(), answer: newFaqA.trim() }]);
+    setNewFaqQ('');
+    setNewFaqA('');
+  };
+
+  const handleRemoveFaq = (index: number) => {
+    setFaqs(faqs.filter((_, i) => i !== index));
+  };
+
+  const handleAutoGenerateSeoAeo = () => {
+    if (!title) return;
+    const cleanTitle = title.trim();
+    const org = organization.trim() ? ` for ${organization.trim()}` : '';
+    const loc = location.trim() ? ` in ${location.trim()}` : '';
+
+    setMetaTitle(`${cleanTitle}${loc} | Nest N Nurture Anvitam`);
+    setMetaDescription(`Hands-on workshop: ${cleanTitle}${org}${loc}. Explore learning outcomes, eco materials used, and campus transformation gallery.`);
+    setPrimaryKeyword(`${cleanTitle.toLowerCase()} workshop`);
+    setSecondaryKeywords(`${category.toLowerCase()} workshop, campus space makeover, bird house making, sustainable architecture`);
+    
+    if (!slug) {
+      setSlug(cleanTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''));
+    }
+
+    if (faqs.length === 0) {
+      setFaqs([
+        {
+          question: `What is the objective of the ${cleanTitle} workshop?`,
+          answer: `The ${cleanTitle}${org} equips participants with hands-on skills in eco-friendly building, biophilic design, and campus space makeovers.`
+        },
+        {
+          question: `Who can host or attend this workshop?`,
+          answer: `Designed for ${category} campuses (students, faculty, and corporate teams). All tools, eco-timber, and safety gear are provided.`
+        },
+        {
+          question: `What are the tangible outcomes of this workshop?`,
+          answer: `Participants construct permanent bird habitat units and transform campus spaces into vibrant, bio-diverse outdoor gardens.`
+        }
+      ]);
+    }
+  };
 
   // Auto-generate slug & SEO defaults when title changes
   const handleTitleChange = (val: string) => {
@@ -169,6 +241,7 @@ export default function WorkshopEditor({ initial, onSave, onCancel }: WorkshopEd
       materialsUsed: materialsUsed.trim(),
       impact: impact.trim(),
       outcomes: outcomes.trim(),
+      faqs,
       images,
       videoUrl: videoUrl.trim(),
       youtubeUrl: videoUrl.trim(),
@@ -445,59 +518,213 @@ export default function WorkshopEditor({ initial, onSave, onCancel }: WorkshopEd
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-                Skills / Learning Outcomes
-              </label>
+          {/* POINT-WISE DETAILED SECTIONS */}
+          <div className="bg-emerald-50/40 p-5 rounded-2xl border border-emerald-100/80 mb-6">
+            <span className="text-[11px] font-black uppercase tracking-wider text-emerald-800 flex items-center gap-1.5 mb-1">
+              <CheckCircle2 size={14} className="text-emerald-600" /> Point-Wise Display Guide
+            </span>
+            <p className="text-xs text-emerald-950 font-medium">
+              Enter each outcome or material on a <strong>new line</strong> (or separated by commas/bullet points). They will automatically render as clean, elegant <strong>bulleted points</strong> on your published workshop page!
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {/* 1. Skills / Learning Outcomes */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-800">
+                  Skills / Learning Outcomes (Point-Wise)
+                </label>
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                  {parsePoints(skillsOutcomes).length} Points
+                </span>
+              </div>
+              
+              {/* Presets */}
+              <div className="flex flex-wrap gap-1 mb-2">
+                {['Hands-on Carpentry & Joinery', 'Climate-Responsive Design', 'Campus Eco-Stewardship', 'Teamwork & Leadership', 'Upcycling & Eco-Art'].map(preset => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => appendPoint(skillsOutcomes, setSkillsOutcomes, preset)}
+                    className="text-[10px] font-semibold bg-gray-100 hover:bg-emerald-100 text-gray-700 hover:text-emerald-900 px-2 py-1 rounded-md border border-gray-200 transition"
+                  >
+                    + {preset}
+                  </button>
+                ))}
+              </div>
+
               <textarea
-                rows={3}
+                rows={4}
                 value={skillsOutcomes}
                 onChange={e => setSkillsOutcomes(e.target.value)}
-                placeholder="Hands-on carpentry, ecological awareness, teamwork, spatial installation..."
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+                placeholder="• Hands-on woodworking & tool safety&#10;• Climate-responsive design principles&#10;• Collaborative teamwork & spatial installation"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600 font-mono"
               />
+
+              {/* Point-wise Live Preview */}
+              {parsePoints(skillsOutcomes).length > 0 && (
+                <div className="bg-white p-3 rounded-xl border border-emerald-200 shadow-2xs space-y-1">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 block">▶ Live Point-Wise Preview:</span>
+                  <ul className="space-y-1 pl-1">
+                    {parsePoints(skillsOutcomes).map((pt, i) => (
+                      <li key={i} className="text-xs text-gray-800 font-medium flex items-start gap-1.5">
+                        <span className="text-emerald-600 font-bold shrink-0">✓</span>
+                        <span>{pt}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-                Materials Used
-              </label>
+            {/* 2. Materials Used */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-800">
+                  Materials Used (Point-Wise)
+                </label>
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                  {parsePoints(materialsUsed).length} Points
+                </span>
+              </div>
+
+              {/* Presets */}
+              <div className="flex flex-wrap gap-1 mb-2">
+                {['Reclaimed Natural Timber', 'Non-Toxic Organic Paints', 'Upcycled PET Containers', 'Bamboo Dowels & Hemp Rope', 'Native Bio-Planters'].map(preset => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => appendPoint(materialsUsed, setMaterialsUsed, preset)}
+                    className="text-[10px] font-semibold bg-gray-100 hover:bg-emerald-100 text-gray-700 hover:text-emerald-900 px-2 py-1 rounded-md border border-gray-200 transition"
+                  >
+                    + {preset}
+                  </button>
+                ))}
+              </div>
+
               <textarea
-                rows={3}
+                rows={4}
                 value={materialsUsed}
                 onChange={e => setMaterialsUsed(e.target.value)}
-                placeholder="Reclaimed timber, non-toxic paints, upcycled PET containers, organic ropes..."
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+                placeholder="• Reclaimed natural pine timber&#10;• Non-toxic water-based acrylic paints&#10;• Upcycled PET plastic dispensers"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600 font-mono"
               />
+
+              {/* Point-wise Live Preview */}
+              {parsePoints(materialsUsed).length > 0 && (
+                <div className="bg-white p-3 rounded-xl border border-emerald-200 shadow-2xs space-y-1">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 block">▶ Live Point-Wise Preview:</span>
+                  <ul className="space-y-1 pl-1">
+                    {parsePoints(materialsUsed).map((pt, i) => (
+                      <li key={i} className="text-xs text-gray-800 font-medium flex items-start gap-1.5">
+                        <span className="text-emerald-600 font-bold shrink-0">✓</span>
+                        <span>{pt}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-                Environmental / Social Impact
-              </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {/* 3. Environmental / Social Impact */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-800">
+                  Environmental / Social Impact (Point-Wise)
+                </label>
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                  {parsePoints(impact).length} Points
+                </span>
+              </div>
+
+              {/* Presets */}
+              <div className="flex flex-wrap gap-1 mb-2">
+                {['Increased Campus Bird Biodiversity', '50+ kg Plastic Diverted', 'Student Eco-Stewardship Growth', 'NEP 2020 Vocational Mandate'].map(preset => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => appendPoint(impact, setImpact, preset)}
+                    className="text-[10px] font-semibold bg-gray-100 hover:bg-emerald-100 text-gray-700 hover:text-emerald-900 px-2 py-1 rounded-md border border-gray-200 transition"
+                  >
+                    + {preset}
+                  </button>
+                ))}
+              </div>
+
               <textarea
-                rows={3}
+                rows={4}
                 value={impact}
                 onChange={e => setImpact(e.target.value)}
-                placeholder="Increased campus biodiversity, native bird nesting shelters installed..."
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+                placeholder="• Erected 15+ functional bird habitats on campus&#10;• Diverted 50kg plastic waste from landfills&#10;• Boosted campus bird species visitations by 40%"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600 font-mono"
               />
+
+              {/* Point-wise Live Preview */}
+              {parsePoints(impact).length > 0 && (
+                <div className="bg-white p-3 rounded-xl border border-emerald-200 shadow-2xs space-y-1">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 block">▶ Live Point-Wise Preview:</span>
+                  <ul className="space-y-1 pl-1">
+                    {parsePoints(impact).map((pt, i) => (
+                      <li key={i} className="text-xs text-gray-800 font-medium flex items-start gap-1.5">
+                        <span className="text-emerald-600 font-bold shrink-0">✓</span>
+                        <span>{pt}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-                Workshop Outcomes
-              </label>
+            {/* 4. Workshop Outcomes */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-800">
+                  Workshop Outcomes (Point-Wise)
+                </label>
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                  {parsePoints(outcomes).length} Points
+                </span>
+              </div>
+
+              {/* Presets */}
+              <div className="flex flex-wrap gap-1 mb-2">
+                {['15 Weatherproof Nest Boxes Installed', 'Courtyard Space Transformation', 'STEAM Eco Certificates Awarded', 'Campus Eco-Club Established'].map(preset => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => appendPoint(outcomes, setOutcomes, preset)}
+                    className="text-[10px] font-semibold bg-gray-100 hover:bg-emerald-100 text-gray-700 hover:text-emerald-900 px-2 py-1 rounded-md border border-gray-200 transition"
+                  >
+                    + {preset}
+                  </button>
+                ))}
+              </div>
+
               <textarea
-                rows={3}
+                rows={4}
                 value={outcomes}
                 onChange={e => setOutcomes(e.target.value)}
-                placeholder="15 permanent bird habitat units erected, courtyard green makeover completed..."
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
+                placeholder="• 15 permanent weatherproof bird nest boxes installed&#10;• Campus courtyard transformed into a bio-sanctuary&#10;• Participating students awarded STEAM certificates"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-emerald-600 font-mono"
               />
+
+              {/* Point-wise Live Preview */}
+              {parsePoints(outcomes).length > 0 && (
+                <div className="bg-white p-3 rounded-xl border border-emerald-200 shadow-2xs space-y-1">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 block">▶ Live Point-Wise Preview:</span>
+                  <ul className="space-y-1 pl-1">
+                    {parsePoints(outcomes).map((pt, i) => (
+                      <li key={i} className="text-xs text-gray-800 font-medium flex items-start gap-1.5">
+                        <span className="text-emerald-600 font-bold shrink-0">✓</span>
+                        <span>{pt}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -720,13 +947,20 @@ export default function WorkshopEditor({ initial, onSave, onCancel }: WorkshopEd
         </section>
 
         {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-            SEO SETTINGS
+            SEO, AEO & GEO OPTIMIZATION
         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
         <section className="space-y-6">
-          <div className="border-b border-gray-100 pb-2">
+          <div className="border-b border-gray-100 pb-2 flex items-center justify-between">
             <h3 className="text-xs font-black uppercase tracking-widest text-emerald-700 flex items-center gap-2">
-              <Globe size={14} /> SEO Settings
+              <Globe size={14} /> SEO, AEO & GEO Optimization
             </h3>
+            <button
+              type="button"
+              onClick={handleAutoGenerateSeoAeo}
+              className="px-3 py-1.5 bg-emerald-600 text-white text-[11px] font-black rounded-lg hover:bg-emerald-700 transition flex items-center gap-1.5 shadow-2xs"
+            >
+              <Sparkles size={13} /> Auto-Generate SEO & AEO Snippets
+            </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -808,6 +1042,67 @@ export default function WorkshopEditor({ initial, onSave, onCancel }: WorkshopEd
                 placeholder="https://anvitam.com/workshops/..."
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-emerald-600"
               />
+            </div>
+          </div>
+
+          {/* FAQ / Q&A BUILDER FOR AEO (AI Search Engine Optimization) */}
+          <div className="bg-slate-900 text-white p-5 rounded-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div>
+                <h4 className="text-xs font-black uppercase tracking-widest text-[#CCFF00] flex items-center gap-2">
+                  <HelpCircle size={14} /> AEO & GEO FAQ Builder (Schema Markup)
+                </h4>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Q&As are automatically compiled into Schema.org JSON-LD so Google, Perplexity & ChatGPT cite your workshop in direct search answers.
+                </p>
+              </div>
+              <span className="text-[10px] font-extrabold bg-slate-800 text-emerald-400 px-2.5 py-1 rounded-full">
+                {faqs.length} Q&As Added
+              </span>
+            </div>
+
+            {faqs.length > 0 && (
+              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                {faqs.map((faq, idx) => (
+                  <div key={idx} className="bg-slate-800 p-3 rounded-xl border border-slate-700 flex items-start justify-between gap-3">
+                    <div className="space-y-1 text-xs">
+                      <p className="font-bold text-white">Q: {faq.question}</p>
+                      <p className="text-slate-300">A: {faq.answer}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveFaq(idx)}
+                      className="text-slate-400 hover:text-red-400 p-1 transition"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="space-y-3 pt-2">
+              <input
+                type="text"
+                value={newFaqQ}
+                onChange={e => setNewFaqQ(e.target.value)}
+                placeholder="Question (e.g. What safety equipment is provided for students?)"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#CCFF00]"
+              />
+              <textarea
+                rows={2}
+                value={newFaqA}
+                onChange={e => setNewFaqA(e.target.value)}
+                placeholder="Answer (e.g. Child-safe toolkits, safety gloves, and safety goggles are provided...)"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#CCFF00]"
+              />
+              <button
+                type="button"
+                onClick={handleAddFaq}
+                className="px-4 py-2 bg-[#CCFF00] text-black text-xs font-black rounded-xl hover:scale-105 transition shadow-sm flex items-center gap-1.5"
+              >
+                <Plus size={14} /> Add Q&A to Workshop FAQ
+              </button>
             </div>
           </div>
         </section>

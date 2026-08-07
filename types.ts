@@ -194,6 +194,7 @@ export interface Workshop {
   materialsUsed?: string;
   impact?: string;
   outcomes?: string;
+  faqs?: { question: string; answer: string }[];
   images: string[];
   galleryDetails?: WorkshopGalleryItem[];
   videoUrl?: string;
