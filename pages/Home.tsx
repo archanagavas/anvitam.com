@@ -281,13 +281,13 @@ const Home: React.FC = () => {
               <span>↓</span> Our Approach
             </div>
             <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-[#111] mb-6">
-              Your land already has a system.
+              Your land already has a natural flow.
             </h2>
             <p className="text-[#555] text-lg leading-relaxed mb-4">
               We help you understand it <strong className="text-[#111]">before you build.</strong>
             </p>
             <p className="text-[#555] text-base leading-relaxed mb-8">
-              Most projects begin with <em>where should the building go?</em> We begin with <strong className="text-[#111]">what is the land already telling us?</strong> Climate, water, soil, sun, wind, topography and living systems come first. Architecture follows.
+              Most people ask: <em>Where should the house go?</em> We ask: <strong className="text-[#111]">What does your land need first?</strong> We check sunlight, cool wind, rainwater, and soil first. Then we design your home or farm to stay cool, save water, and last for years.
             </p>
             <Link to="/contact">
               <FlowButton text="Discuss Your Project" />
@@ -296,9 +296,9 @@ const Home: React.FC = () => {
           <FadeUp delay={0.15}>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
               {[
-                { icon: '☀️', label: 'Climate', body: 'Sun, shade, wind, heat, rainfall and seasonal comfort.' },
-                { icon: '💧', label: 'Water', body: 'Drainage, harvesting, recharge, irrigation and water resilience.' },
-                { icon: '🌱', label: 'Living Systems', body: 'Soil, vegetation, biodiversity, food production and landscape.' },
+                { icon: '☀️', label: 'Sun & Breeze', body: 'Placing rooms to capture cool breezes and block summer heat.' },
+                { icon: '💧', label: 'Rainwater', body: 'Saving rainwater on site so your land stays green year-round.' },
+                { icon: '🌱', label: 'Soil & Trees', body: 'Building healthy soil and planting fruit trees that grow easily.' },
               ].map((c, i) => (
                 <div key={i} className="bg-gray-50/70 rounded-2xl p-6 border border-gray-200/80 hover:shadow-lg hover:border-gray-300 transition-all flex flex-col">
                   <span className="text-3xl mb-4">{c.icon}</span>

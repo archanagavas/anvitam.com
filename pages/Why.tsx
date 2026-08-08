@@ -55,23 +55,23 @@ const FEATURES = [
   {
     // Lush green tropical canopy — passive solar / biophilic ecology
     img: 'https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=900&auto=format&fit=crop',
-    title: 'Sustainable Practices',
+    title: 'Natural Cooling & Eco Design',
     body:
-      'Every design decision at Anvitam starts with ecology first with passive solar, natural ventilation, locally sourced materials, and biophilic integration that reduces carbon footprint without compromising beauty.',
+      'We place windows, courtyards, and trees to catch cool breeze and block hot summer sun. This keeps rooms fresh naturally without running ACs all day.',
   },
   {
     // Natural wood grain / bamboo craft — artisanal earth materials
     img: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=900&auto=format&fit=crop',
-    title: 'Earth & Craft',
+    title: 'Local Earth & Natural Crafts',
     body:
-      'We find joy in materiality by working with lime plaster, reclaimed wood, rammed earth, and bamboo-crete. Our artisanal approach gives each space a texture and warmth that mass production simply cannot achieve.',
+      'We build with natural clay plaster, local stone, reused wood, and bamboo. These natural textures give your rooms warmth and fresh air while lasting for generations.',
   },
   {
     // Sun-drenched interior with plants and light — biophilic interiors
     img: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=80&w=900&auto=format&fit=crop',
-    title: 'Meaningful, Light-Filled Spaces',
+    title: 'Comfortable, Light-Filled Rooms',
     body:
-      'Architecture, to us, is a fluid relationship between the physical, psychological, and cultural. We create spaces that blur the boundary between built form and natural context by inviting light, air, and land inside.',
+      'We bring sunlight, fresh breeze, and lush garden views right into your living room, creating peaceful spaces where your family loves to spend time.',
   },
 ];
 
@@ -138,10 +138,7 @@ const Why: React.FC = () => {
                 </div>
 
                 <p className="text-[#555] text-base leading-relaxed max-w-lg">
-                  Anvitam is a Architecture Firm practicing 
-                  <strong className="text-[#111]"> environmentally responsive, biophilic architecture</strong>. 
-                  From food forests and private villas to community spaces and eco-resorts, our projects are shaped by site, climate, and long-term use. 
-                  We work across <strong className="text-[#111]">India, the USA, Australia, Bali </strong>, and worldwide.
+                  Anvitam is an architecture firm that designs <strong className="text-[#111]">homes, farmhouses, and resorts that stay cool naturally and feel connected to nature</strong>. From organic food forests and farm retreats to community centers and eco-resorts, our designs fit your land, local weather, and budget. We work across <strong className="text-[#111]">India, the USA, Australia, Bali</strong>, and worldwide.
                 </p>
 
                 <a href={TOPMATE} target="_blank" rel="noreferrer" className={neonBtn}>
@@ -180,15 +177,13 @@ const Why: React.FC = () => {
           {/* Left — sticky heading block */}
           <FadeUp className="lg:sticky lg:top-28">
             <div className="inline-flex items-center gap-2 border border-[#111]/20 rounded-full px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-[#111]/60 mb-8">
-              <span>↓</span> Our Philosophy
+              <span>↓</span> Our Approach
             </div>
             <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight mb-6">
-              Artisanal. Experimental.<br />Collaborative.
+              Simple. Natural.<br />Built to Last.
             </h2>
             <p className="text-[#555] text-base leading-relaxed mb-8">
-              We care equally for fine details and the broader vision, thoughtfully crafting spaces that are both
-              responsive and rooted. Sustainability is not merely a goal — it's the mindset that shapes every
-              decision.
+              We design spaces that save electricity, capture rainwater, and use local stone, clay, and wood. You get a comfortable home or farm that stays cool in summer and cozy in winter without heavy AC bills.
             </p>
             <Link to="/contact" className={neonBtn}>
               Work With Us <ArrowRight size={16} />

@@ -212,25 +212,25 @@ export const PROCESS_STEPS: ProcessStep[] = [
   {
     id: 'understand',
     number: '1',
-    title: 'Understand',
-    items: ['client vision', 'site study', 'climate analysis'],
-    description: 'Every project begins with understanding—listening to visions, sensing the site, and learning from climate. We delve deep into the context to build a foundation of empathy and knowledge.',
+    title: 'Listen & Read the Land',
+    items: ['Your dream & vision', 'Land walk & soil check', 'Sun & breeze study'],
+    description: 'We start by listening to what you want to build and studying your land. We check where the sun rises, how wind flows, and where water goes so your property stays cool and dry naturally.',
     image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=1200&auto=format&fit=crop'
   },
   {
     id: 'design',
     number: '2',
-    title: 'Design',
-    items: ['conceptual design', 'final design', 'cost estimate'],
-    description: 'Ideas take shape, evolving into designs that respond with care. We iterate through concepts, balancing aesthetics with function, and ensuring the budget aligns with the vision.',
+    title: 'Draw & Plan the Budget',
+    items: ['Floor plans & maps', '3D designs', 'Clear cost estimate'],
+    description: 'We turn your ideas into easy-to-understand maps, room layouts, and garden designs. We balance comfort, beauty, and cost so you know exactly what everything costs before building starts.',
     image: 'https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=1200&auto=format&fit=crop'
   },
   {
     id: 'deliver',
     number: '3',
-    title: 'Deliver',
-    items: ['contractor selection', 'working drawings', 'supervision'],
-    description: 'Finally, we guide the making, ensuring each space is built true to its intent. Precision in documentation and on-site supervision ensures the dream becomes a tangible reality.',
+    title: 'Guide the Builders',
+    items: ['Hire skilled workers', 'Detailed construction maps', 'Site visits & supervision'],
+    description: 'We guide your local builders step by step. We make regular site visits to ensure every wall, roof, rainwater pipe, and garden path is built durable and true to design.',
     image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1200&auto=format&fit=crop'
   }
 ];
