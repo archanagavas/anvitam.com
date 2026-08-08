@@ -1837,9 +1837,28 @@ const Admin: React.FC = () => {
         </nav>
         <div className="p-3 border-t border-gray-100 space-y-1">
           {/* DB status badge */}
-          <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold ${isDbConnected ? 'text-green-600 bg-green-50' : 'text-amber-600 bg-amber-50'}`}>
-            {isDbConnected ? <Wifi size={12} /> : <WifiOff size={12} />}
-            {isDbConnected ? 'Neon DB Connected' : 'Local Storage Mode'}
+          <div
+            className={`flex flex-col gap-1 px-3 py-2 rounded-lg text-xs font-semibold ${
+              isDbConnected ? 'text-green-600 bg-green-50' : 'text-amber-600 bg-amber-50'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              {isDbConnected ? <Wifi size={12} /> : <WifiOff size={12} />}
+              {isDbConnected ? 'Supabase Connected' : 'DB Offline'}
+            </div>
+            {!isDbConnected && (
+              <>
+                <p className="text-[10px] text-amber-500 leading-tight">
+                  Leads not saved. Update DATABASE_URL in Vercel.
+                </p>
+                <button
+                  onClick={() => refreshFromDb()}
+                  className="mt-1 text-[10px] underline text-amber-600 hover:text-amber-800 text-left cursor-pointer"
+                >
+                  ↻ Retry connection
+                </button>
+              </>
+            )}
           </div>
           {/* Logout: clears JWT token + PII from storage */}
           <button
@@ -2173,11 +2192,34 @@ const Admin: React.FC = () => {
                   {messages.filter(m => m.message !== 'Newsletter subscription request').length} inquiries · {messages.filter(m => m.message === 'Newsletter subscription request').length} newsletter subscribers
                 </p>
               </div>
-              <span className={`text-xs border rounded-full px-3 py-1 font-semibold flex items-center gap-1 ${isDbConnected ? 'text-green-600 bg-green-50 border-green-200' : 'text-amber-600 bg-amber-50 border-amber-200'}`}>
-                <Database size={11} /> {isDbConnected ? 'Synced to Neon DB' : 'Local Storage Mode'}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className={`text-xs border rounded-full px-3 py-1 font-semibold flex items-center gap-1 ${
+                  isDbConnected ? 'text-green-600 bg-green-50 border-green-200' : 'text-amber-600 bg-amber-50 border-amber-200'
+                }`}>
+                  <Database size={11} /> {isDbConnected ? 'Synced to Supabase' : 'DB Offline — leads may be missing'}
+                </span>
+                {!isDbConnected && (
+                  <button
+                    onClick={() => refreshFromDb()}
+                    title="Retry database connection"
+                    className="text-xs text-amber-600 hover:text-amber-800 underline cursor-pointer"
+                  >
+                    Retry
+                  </button>
+                )}
+              </div>
             </div>
             <div className="space-y-3">
+              {!isDbConnected && (
+                <div role="alert" className="p-4 bg-amber-50 border border-amber-300 rounded-xl text-amber-800 text-sm">
+                  <strong>⚠️ Database Offline — Leads Are Not Being Saved</strong>
+                  <p className="mt-1 text-xs text-amber-700">
+                    Contact, Newsletter, Estimator &amp; Workshop form submissions are <strong>not persisted</strong> while the database is offline.
+                    Email notifications are still sent, but no data appears here.
+                    <br /><strong>Fix:</strong> Update <code className="font-mono bg-amber-100 px-1 rounded">DATABASE_URL</code> in Vercel to the Transaction Pooler URL (port 6543), then redeploy.
+                  </p>
+                </div>
+              )}
               {messages.length === 0 ? (
                 <div className="text-center py-20 bg-white rounded-xl border border-gray-100 text-gray-400">No messages yet.</div>
               ) : messages.map(msg => {
@@ -2255,7 +2297,22 @@ const Admin: React.FC = () => {
                   <h2 className="text-2xl font-bold">Estimate Leads ({leads.length})</h2>
                   <p className="text-sm text-gray-400 mt-0.5">Visitors who used the cost estimator tool</p>
                 </div>
-                <span className={`text-xs border rounded-full px-3 py-1 font-semibold flex items-center gap-1 ${isDbConnected ? 'text-green-600 bg-green-50 border-green-200' : 'text-amber-600 bg-amber-50 border-amber-200'}`}><Database size={11} /> {isDbConnected ? 'Synced to Neon DB' : 'Local Storage Mode'}</span>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs border rounded-full px-3 py-1 font-semibold flex items-center gap-1 ${
+                    isDbConnected ? 'text-green-600 bg-green-50 border-green-200' : 'text-amber-600 bg-amber-50 border-amber-200'
+                  }`}>
+                    <Database size={11} /> {isDbConnected ? 'Synced to Supabase' : 'DB Offline'}
+                  </span>
+                  {!isDbConnected && (
+                    <button
+                      onClick={() => refreshFromDb()}
+                      title="Retry database connection"
+                      className="text-xs text-amber-600 hover:text-amber-800 underline cursor-pointer"
+                    >
+                      Retry
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="space-y-3">
                 {leads.length === 0 ? (
