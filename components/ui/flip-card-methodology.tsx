@@ -155,9 +155,6 @@ function StackingFlipCardItem({
                   Step {step.n} of {totalCards}
                 </span>
               </div>
-              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-[#162a23]/10 text-[#162a23] border border-[#162a23]/20">
-                {step.tags[0]}
-              </span>
             </div>
 
             {/* Vibrant Background Photo with Soft Lighting Gradient */}
