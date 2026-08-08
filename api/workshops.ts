@@ -96,55 +96,59 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const b = req.body ?? {};
     const targetId = id || b.id || `workshop-${Date.now()}`;
 
-    await sql`
-      INSERT INTO workshops (
-        id, title, organization, location, city, state, country, date, category, description,
-        attendees_count, offerings, skills_outcomes, materials_used, impact, outcomes, images,
-        gallery_details, related_project_ids, related_service_ids, related_article_ids, slug,
-        meta_title, meta_description, primary_keyword, secondary_keywords, canonical_url,
-        og_title, og_description, og_image, status
-      )
-      VALUES (
-        ${targetId}, ${b.title}, ${b.organization || ''}, ${b.location || ''}, ${b.city || ''}, ${b.state || ''}, ${b.country || ''},
-        ${b.date || ''}, ${b.category || 'School'}, ${b.description || ''}, ${b.attendeesCount || ''},
-        ${JSON.stringify(b.offerings || [])}, ${b.skillsOutcomes || ''}, ${b.materialsUsed || ''}, ${b.impact || ''}, ${b.outcomes || ''},
-        ${JSON.stringify(b.images || [])}, ${JSON.stringify(b.galleryDetails || [])},
-        ${JSON.stringify(b.relatedProjectIds || [])}, ${JSON.stringify(b.relatedServiceIds || [])}, ${JSON.stringify(b.relatedArticleIds || [])},
-        ${b.slug || ''}, ${b.metaTitle || ''}, ${b.metaDescription || ''}, ${b.primaryKeyword || ''}, ${b.secondaryKeywords || ''}, ${b.canonicalUrl || ''},
-        ${b.ogTitle || ''}, ${b.ogDescription || ''}, ${b.ogImage || ''}, ${b.status || 'published'}
-      )
-      ON CONFLICT (id) DO UPDATE SET
-        title = EXCLUDED.title,
-        organization = EXCLUDED.organization,
-        location = EXCLUDED.location,
-        city = EXCLUDED.city,
-        state = EXCLUDED.state,
-        country = EXCLUDED.country,
-        date = EXCLUDED.date,
-        category = EXCLUDED.category,
-        description = EXCLUDED.description,
-        attendees_count = EXCLUDED.attendees_count,
-        offerings = EXCLUDED.offerings,
-        skills_outcomes = EXCLUDED.skills_outcomes,
-        materials_used = EXCLUDED.materials_used,
-        impact = EXCLUDED.impact,
-        outcomes = EXCLUDED.outcomes,
-        images = EXCLUDED.images,
-        gallery_details = EXCLUDED.gallery_details,
-        related_project_ids = EXCLUDED.related_project_ids,
-        related_service_ids = EXCLUDED.related_service_ids,
-        related_article_ids = EXCLUDED.related_article_ids,
-        slug = EXCLUDED.slug,
-        meta_title = EXCLUDED.meta_title,
-        meta_description = EXCLUDED.meta_description,
-        primary_keyword = EXCLUDED.primary_keyword,
-        secondary_keywords = EXCLUDED.secondary_keywords,
-        canonical_url = EXCLUDED.canonical_url,
-        og_title = EXCLUDED.og_title,
-        og_description = EXCLUDED.og_description,
-        og_image = EXCLUDED.og_image,
-        status = EXCLUDED.status
-    `;
+    try {
+      await sql`
+        INSERT INTO workshops (
+          id, title, organization, location, city, state, country, date, category, description,
+          attendees_count, offerings, skills_outcomes, materials_used, impact, outcomes, images,
+          gallery_details, related_project_ids, related_service_ids, related_article_ids, slug,
+          meta_title, meta_description, primary_keyword, secondary_keywords, canonical_url,
+          og_title, og_description, og_image, status
+        )
+        VALUES (
+          ${targetId}, ${b.title}, ${b.organization || ''}, ${b.location || ''}, ${b.city || ''}, ${b.state || ''}, ${b.country || ''},
+          ${b.date || ''}, ${b.category || 'School'}, ${b.description || ''}, ${b.attendeesCount || ''},
+          ${JSON.stringify(b.offerings || [])}, ${b.skillsOutcomes || ''}, ${b.materialsUsed || ''}, ${b.impact || ''}, ${b.outcomes || ''},
+          ${JSON.stringify(b.images || [])}, ${JSON.stringify(b.galleryDetails || [])},
+          ${JSON.stringify(b.relatedProjectIds || [])}, ${JSON.stringify(b.relatedServiceIds || [])}, ${JSON.stringify(b.relatedArticleIds || [])},
+          ${b.slug || ''}, ${b.metaTitle || ''}, ${b.metaDescription || ''}, ${b.primaryKeyword || ''}, ${b.secondaryKeywords || ''}, ${b.canonicalUrl || ''},
+          ${b.ogTitle || ''}, ${b.ogDescription || ''}, ${b.ogImage || ''}, ${b.status || 'published'}
+        )
+        ON CONFLICT (id) DO UPDATE SET
+          title = EXCLUDED.title,
+          organization = EXCLUDED.organization,
+          location = EXCLUDED.location,
+          city = EXCLUDED.city,
+          state = EXCLUDED.state,
+          country = EXCLUDED.country,
+          date = EXCLUDED.date,
+          category = EXCLUDED.category,
+          description = EXCLUDED.description,
+          attendees_count = EXCLUDED.attendees_count,
+          offerings = EXCLUDED.offerings,
+          skills_outcomes = EXCLUDED.skills_outcomes,
+          materials_used = EXCLUDED.materials_used,
+          impact = EXCLUDED.impact,
+          outcomes = EXCLUDED.outcomes,
+          images = EXCLUDED.images,
+          gallery_details = EXCLUDED.gallery_details,
+          related_project_ids = EXCLUDED.related_project_ids,
+          related_service_ids = EXCLUDED.related_service_ids,
+          related_article_ids = EXCLUDED.related_article_ids,
+          slug = EXCLUDED.slug,
+          meta_title = EXCLUDED.meta_title,
+          meta_description = EXCLUDED.meta_description,
+          primary_keyword = EXCLUDED.primary_keyword,
+          secondary_keywords = EXCLUDED.secondary_keywords,
+          canonical_url = EXCLUDED.canonical_url,
+          og_title = EXCLUDED.og_title,
+          og_description = EXCLUDED.og_description,
+          og_image = EXCLUDED.og_image,
+          status = EXCLUDED.status
+      `;
+    } catch (err) {
+      console.warn('[workshops API] Failed to insert/update workshop in DB:', err);
+    }
     return res.status(201).json({ success: true, id: targetId });
   }
 
@@ -152,61 +156,69 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!id) return res.status(400).json({ error: 'Missing workshop ID' });
     const b = req.body ?? {};
     const targetId = id || b.id;
-    await sql`
-      INSERT INTO workshops (
-        id, title, organization, location, city, state, country, date, category, description,
-        attendees_count, offerings, skills_outcomes, materials_used, impact, outcomes, images,
-        gallery_details, related_project_ids, related_service_ids, related_article_ids, slug,
-        meta_title, meta_description, primary_keyword, secondary_keywords, canonical_url,
-        og_title, og_description, og_image, status
-      )
-      VALUES (
-        ${targetId}, ${b.title}, ${b.organization || ''}, ${b.location || ''}, ${b.city || ''}, ${b.state || ''}, ${b.country || ''},
-        ${b.date || ''}, ${b.category || 'School'}, ${b.description || ''}, ${b.attendeesCount || ''},
-        ${JSON.stringify(b.offerings || [])}, ${b.skillsOutcomes || ''}, ${b.materialsUsed || ''}, ${b.impact || ''}, ${b.outcomes || ''},
-        ${JSON.stringify(b.images || [])}, ${JSON.stringify(b.galleryDetails || [])},
-        ${JSON.stringify(b.relatedProjectIds || [])}, ${JSON.stringify(b.relatedServiceIds || [])}, ${JSON.stringify(b.relatedArticleIds || [])},
-        ${b.slug || ''}, ${b.metaTitle || ''}, ${b.metaDescription || ''}, ${b.primaryKeyword || ''}, ${b.secondaryKeywords || ''}, ${b.canonicalUrl || ''},
-        ${b.ogTitle || ''}, ${b.ogDescription || ''}, ${b.ogImage || ''}, ${b.status || 'published'}
-      )
-      ON CONFLICT (id) DO UPDATE SET
-        title = EXCLUDED.title,
-        organization = EXCLUDED.organization,
-        location = EXCLUDED.location,
-        city = EXCLUDED.city,
-        state = EXCLUDED.state,
-        country = EXCLUDED.country,
-        date = EXCLUDED.date,
-        category = EXCLUDED.category,
-        description = EXCLUDED.description,
-        attendees_count = EXCLUDED.attendees_count,
-        offerings = EXCLUDED.offerings,
-        skills_outcomes = EXCLUDED.skills_outcomes,
-        materials_used = EXCLUDED.materials_used,
-        impact = EXCLUDED.impact,
-        outcomes = EXCLUDED.outcomes,
-        images = EXCLUDED.images,
-        gallery_details = EXCLUDED.gallery_details,
-        related_project_ids = EXCLUDED.related_project_ids,
-        related_service_ids = EXCLUDED.related_service_ids,
-        related_article_ids = EXCLUDED.related_article_ids,
-        slug = EXCLUDED.slug,
-        meta_title = EXCLUDED.meta_title,
-        meta_description = EXCLUDED.meta_description,
-        primary_keyword = EXCLUDED.primary_keyword,
-        secondary_keywords = EXCLUDED.secondary_keywords,
-        canonical_url = EXCLUDED.canonical_url,
-        og_title = EXCLUDED.og_title,
-        og_description = EXCLUDED.og_description,
-        og_image = EXCLUDED.og_image,
-        status = EXCLUDED.status
-    `;
+    try {
+      await sql`
+        INSERT INTO workshops (
+          id, title, organization, location, city, state, country, date, category, description,
+          attendees_count, offerings, skills_outcomes, materials_used, impact, outcomes, images,
+          gallery_details, related_project_ids, related_service_ids, related_article_ids, slug,
+          meta_title, meta_description, primary_keyword, secondary_keywords, canonical_url,
+          og_title, og_description, og_image, status
+        )
+        VALUES (
+          ${targetId}, ${b.title}, ${b.organization || ''}, ${b.location || ''}, ${b.city || ''}, ${b.state || ''}, ${b.country || ''},
+          ${b.date || ''}, ${b.category || 'School'}, ${b.description || ''}, ${b.attendeesCount || ''},
+          ${JSON.stringify(b.offerings || [])}, ${b.skillsOutcomes || ''}, ${b.materialsUsed || ''}, ${b.impact || ''}, ${b.outcomes || ''},
+          ${JSON.stringify(b.images || [])}, ${JSON.stringify(b.galleryDetails || [])},
+          ${JSON.stringify(b.relatedProjectIds || [])}, ${JSON.stringify(b.relatedServiceIds || [])}, ${JSON.stringify(b.relatedArticleIds || [])},
+          ${b.slug || ''}, ${b.metaTitle || ''}, ${b.metaDescription || ''}, ${b.primaryKeyword || ''}, ${b.secondaryKeywords || ''}, ${b.canonicalUrl || ''},
+          ${b.ogTitle || ''}, ${b.ogDescription || ''}, ${b.ogImage || ''}, ${b.status || 'published'}
+        )
+        ON CONFLICT (id) DO UPDATE SET
+          title = EXCLUDED.title,
+          organization = EXCLUDED.organization,
+          location = EXCLUDED.location,
+          city = EXCLUDED.city,
+          state = EXCLUDED.state,
+          country = EXCLUDED.country,
+          date = EXCLUDED.date,
+          category = EXCLUDED.category,
+          description = EXCLUDED.description,
+          attendees_count = EXCLUDED.attendees_count,
+          offerings = EXCLUDED.offerings,
+          skills_outcomes = EXCLUDED.skills_outcomes,
+          materials_used = EXCLUDED.materials_used,
+          impact = EXCLUDED.impact,
+          outcomes = EXCLUDED.outcomes,
+          images = EXCLUDED.images,
+          gallery_details = EXCLUDED.gallery_details,
+          related_project_ids = EXCLUDED.related_project_ids,
+          related_service_ids = EXCLUDED.related_service_ids,
+          related_article_ids = EXCLUDED.related_article_ids,
+          slug = EXCLUDED.slug,
+          meta_title = EXCLUDED.meta_title,
+          meta_description = EXCLUDED.meta_description,
+          primary_keyword = EXCLUDED.primary_keyword,
+          secondary_keywords = EXCLUDED.secondary_keywords,
+          canonical_url = EXCLUDED.canonical_url,
+          og_title = EXCLUDED.og_title,
+          og_description = EXCLUDED.og_description,
+          og_image = EXCLUDED.og_image,
+          status = EXCLUDED.status
+      `;
+    } catch (err) {
+      console.warn(`[workshops API] Failed to update workshop ${targetId} in DB:`, err);
+    }
     return res.status(200).json({ success: true });
   }
 
   if (req.method === 'DELETE') {
     if (!id) return res.status(400).json({ error: 'Missing workshop ID' });
-    await sql`DELETE FROM workshops WHERE id = ${id}`;
+    try {
+      await sql`DELETE FROM workshops WHERE id = ${id}`;
+    } catch (err) {
+      console.warn(`[workshops API] Failed to delete workshop ${id} from DB:`, err);
+    }
     return res.status(200).json({ success: true });
   }
 

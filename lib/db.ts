@@ -1,7 +1,11 @@
 /**
  * lib/db.ts
- * Neon Serverless database client — used by all /api/* routes.
+ * Neon Serverless / Supabase Postgres database client — used by all /api/* routes.
  * The DATABASE_URL must be set in Vercel Dashboard → Project → Settings → Environment Variables.
+ *
+ * For Supabase, use the TRANSACTION POOLER connection string (port 6543), NOT the direct connection
+ * (port 5432). The direct connection is not routable from Vercel's serverless edge network.
+ * Get it from: Supabase Dashboard → Project → Connect → Transaction pooler
  */
 import { neon } from '@neondatabase/serverless';
 import postgres from 'postgres';
@@ -15,7 +19,10 @@ try {
   if (dbUrl && (dbUrl.startsWith('postgres://') || dbUrl.startsWith('postgresql://'))) {
     isDbConfigured = true;
     if (dbUrl.includes('supabase')) {
-      dbClient = postgres(dbUrl, { ssl: 'require', prepare: false });
+      // Use Transaction Pooler (port 6543) — required for Vercel serverless.
+      // If the URL uses direct port 5432, rewrite it to 6543 automatically.
+      const poolerUrl = dbUrl.replace(/:5432\//, ':6543/');
+      dbClient = postgres(poolerUrl, { ssl: 'require', prepare: false, max: 1 });
     } else {
       dbClient = neon(dbUrl);
     }
@@ -37,13 +44,19 @@ let isInitializing = false;
 let dbInitFailed = false;
 let lastDbInitError: string | null = null;
 let lastDbInitTime = 0;
-const DB_RETRY_COOLDOWN = 60000; // 1 minute cooldown on failure
+const DB_RETRY_COOLDOWN = 30000; // 30 second cooldown on failure (was 60s)
 
 export async function ensureDbInitialized() {
   if (!isDbConfigured) return;
-  // If initialized failed recently (e.g. quota 402 error), skip retrying for the cooldown period
+  // If initialized failed recently, skip retrying for the cooldown period
   if (dbInitFailed && (Date.now() - lastDbInitTime < DB_RETRY_COOLDOWN)) {
     return;
+  }
+  // After cooldown, reset so we retry
+  if (dbInitFailed && (Date.now() - lastDbInitTime >= DB_RETRY_COOLDOWN)) {
+    dbInitFailed = false;
+    dbInitPromise = null;
+    lastDbInitError = null;
   }
   if (isInitializing) return;
 

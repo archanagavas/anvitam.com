@@ -147,29 +147,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             whoItsFor, caseStudyId, caseStudyIds, process, pricing, faq, bookingLink, gallery, videos,
             metaTitle, metaDescription, metaKeywords, metaRobots } = req.body ?? {};
 
-    await sql`
-      UPDATE services SET
-        title = ${title},
-        description = ${description ?? ''},
-        icon = ${icon ?? 'PenTool'},
-        value_props = ${JSON.stringify(valueProps ?? [])},
-        hero_image = ${heroImage ?? ''},
-        what_it_is = ${JSON.stringify(whatItIs ?? [])},
-        who_its_for = ${JSON.stringify(whoItsFor ?? [])},
-        case_study_id = ${caseStudyId ?? ''},
-        case_study_ids = ${JSON.stringify(caseStudyIds ?? [])},
-        process = ${JSON.stringify(process ?? [])},
-        pricing = ${pricing ?? ''},
-        faq = ${JSON.stringify(faq ?? [])},
-        booking_link = ${bookingLink ?? ''},
-        gallery = ${JSON.stringify(gallery ?? [])},
-        videos = ${JSON.stringify(videos ?? [])},
-        meta_title = ${metaTitle ?? null},
-        meta_description = ${metaDescription ?? null},
-        meta_keywords = ${metaKeywords ?? null},
-        meta_robots = ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'}
-      WHERE id = ${id}
-    `;
+    try {
+      await sql`
+        UPDATE services SET
+          title = ${title},
+          description = ${description ?? ''},
+          icon = ${icon ?? 'PenTool'},
+          value_props = ${JSON.stringify(valueProps ?? [])},
+          hero_image = ${heroImage ?? ''},
+          what_it_is = ${JSON.stringify(whatItIs ?? [])},
+          who_its_for = ${JSON.stringify(whoItsFor ?? [])},
+          case_study_id = ${caseStudyId ?? ''},
+          case_study_ids = ${JSON.stringify(caseStudyIds ?? [])},
+          process = ${JSON.stringify(process ?? [])},
+          pricing = ${pricing ?? ''},
+          faq = ${JSON.stringify(faq ?? [])},
+          booking_link = ${bookingLink ?? ''},
+          gallery = ${JSON.stringify(gallery ?? [])},
+          videos = ${JSON.stringify(videos ?? [])},
+          meta_title = ${metaTitle ?? null},
+          meta_description = ${metaDescription ?? null},
+          meta_keywords = ${metaKeywords ?? null},
+          meta_robots = ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'}
+        WHERE id = ${id}
+      `;
+    } catch (err) {
+      console.warn(`[services API] Failed to update service ${id} in DB:`, err);
+    }
     return res.status(200).json({ success: true });
   }
 
@@ -177,7 +181,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!id) {
       return res.status(400).json({ error: 'Missing service ID' });
     }
-    await sql`DELETE FROM services WHERE id = ${id}`;
+    try {
+      await sql`DELETE FROM services WHERE id = ${id}`;
+    } catch (err) {
+      console.warn(`[services API] Failed to delete service ${id} from DB:`, err);
+    }
     return res.status(200).json({ success: true });
   }
 

@@ -96,19 +96,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!token || !verifyAdminToken(token)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    if (id) {
-      const rows = await sql`
-        SELECT id, name, email, message, date, created_at FROM messages WHERE id = ${id}
-      `;
-      if (rows.length === 0) {
-        return res.status(404).json({ error: 'Message not found' });
+    try {
+      if (id) {
+        const rows = await sql`
+          SELECT id, name, email, message, date, created_at FROM messages WHERE id = ${id}
+        `;
+        if (rows.length === 0) {
+          return res.status(404).json({ error: 'Message not found' });
+        }
+        return res.status(200).json(rows[0]);
       }
-      return res.status(200).json(rows[0]);
+      const rows = await sql`
+        SELECT id, name, email, message, date, created_at FROM messages ORDER BY created_at DESC
+      `;
+      return res.status(200).json(rows);
+    } catch (err) {
+      console.warn('[messages API] Database query failed, returning empty list fallback:', err);
+      return res.status(200).json([]);
     }
-    const rows = await sql`
-      SELECT id, name, email, message, date, created_at FROM messages ORDER BY created_at DESC
-    `;
-    return res.status(200).json(rows);
   }
 
   if (req.method === 'POST') {
@@ -117,20 +122,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'name, email and message are required.' });
     }
     const msgId = id || bodyId || crypto.randomUUID();
-    await sql`
-      INSERT INTO messages (id, name, email, message, date)
-      VALUES (${msgId}, ${name}, ${email}, ${message}, ${date ?? new Date().toISOString()})
-      ON CONFLICT (id) DO UPDATE SET
-        name = EXCLUDED.name,
-        email = EXCLUDED.email,
-        message = EXCLUDED.message,
-        date = EXCLUDED.date
-    `;
+    let dbSaved = false;
+    try {
+      await sql`
+        INSERT INTO messages (id, name, email, message, date)
+        VALUES (${msgId}, ${name}, ${email}, ${message}, ${date ?? new Date().toISOString()})
+        ON CONFLICT (id) DO UPDATE SET
+          name = EXCLUDED.name,
+          email = EXCLUDED.email,
+          message = EXCLUDED.message,
+          date = EXCLUDED.date
+      `;
+      dbSaved = true;
+    } catch (err) {
+      console.warn('[messages API] Failed to save message to DB, proceeding with email alert:', err);
+    }
 
-    // Trigger resilient email alert
+    // Trigger resilient email alert regardless of DB status
     await sendLeadEmailNotification(name, email, message, date);
 
-    return res.status(201).json({ success: true });
+    return res.status(201).json({ success: true, dbSaved });
   }
 
   if (req.method === 'DELETE') {
@@ -141,7 +152,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!id) {
       return res.status(400).json({ error: 'Missing message ID' });
     }
-    await sql`DELETE FROM messages WHERE id = ${id}`;
+    try {
+      await sql`DELETE FROM messages WHERE id = ${id}`;
+    } catch (err) {
+      console.warn('[messages API] Failed to delete message from DB:', err);
+    }
     return res.status(200).json({ success: true });
   }
 

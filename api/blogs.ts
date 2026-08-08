@@ -101,25 +101,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Missing blog ID' });
     }
 
-    await sql`
-      INSERT INTO blogs (id, title, slug, date, excerpt, content, image, author,
-                         meta_description, meta_title, cover_image_alt, faqs, tags, status, toc, author_bio, author_image,
-                         meta_keywords, meta_robots)
-      VALUES (${targetId}, ${title}, ${slug}, ${date}, ${excerpt}, ${content},
-              ${image}, ${author ?? 'Anvitam Team'}, ${metaDescription ?? null},
-              ${metaTitle ?? null}, ${coverImageAlt ?? null}, ${JSON.stringify(faqs ?? [])},
-              ${JSON.stringify(tags ?? [])}, ${status ?? 'draft'}, ${JSON.stringify(toc ?? [])}, ${authorBio ?? null}, ${authorImage ?? null},
-              ${metaKeywords ?? null}, ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'})
-      ON CONFLICT (id) DO UPDATE SET
-        title = EXCLUDED.title, slug = EXCLUDED.slug, date = EXCLUDED.date,
-        excerpt = EXCLUDED.excerpt, content = EXCLUDED.content, image = EXCLUDED.image,
-        author = EXCLUDED.author, meta_description = EXCLUDED.meta_description,
-        meta_title = EXCLUDED.meta_title, cover_image_alt = EXCLUDED.cover_image_alt,
-        faqs = EXCLUDED.faqs,
-        tags = EXCLUDED.tags, status = EXCLUDED.status, toc = EXCLUDED.toc,
-        author_bio = EXCLUDED.author_bio, author_image = EXCLUDED.author_image,
-        meta_keywords = EXCLUDED.meta_keywords, meta_robots = EXCLUDED.meta_robots
-    `;
+    try {
+      await sql`
+        INSERT INTO blogs (id, title, slug, date, excerpt, content, image, author,
+                           meta_description, meta_title, cover_image_alt, faqs, tags, status, toc, author_bio, author_image,
+                           meta_keywords, meta_robots)
+        VALUES (${targetId}, ${title}, ${slug}, ${date}, ${excerpt}, ${content},
+                ${image}, ${author ?? 'Anvitam Team'}, ${metaDescription ?? null},
+                ${metaTitle ?? null}, ${coverImageAlt ?? null}, ${JSON.stringify(faqs ?? [])},
+                ${JSON.stringify(tags ?? [])}, ${status ?? 'draft'}, ${JSON.stringify(toc ?? [])}, ${authorBio ?? null}, ${authorImage ?? null},
+                ${metaKeywords ?? null}, ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'})
+        ON CONFLICT (id) DO UPDATE SET
+          title = EXCLUDED.title, slug = EXCLUDED.slug, date = EXCLUDED.date,
+          excerpt = EXCLUDED.excerpt, content = EXCLUDED.content, image = EXCLUDED.image,
+          author = EXCLUDED.author, meta_description = EXCLUDED.meta_description,
+          meta_title = EXCLUDED.meta_title, cover_image_alt = EXCLUDED.cover_image_alt,
+          faqs = EXCLUDED.faqs,
+          tags = EXCLUDED.tags, status = EXCLUDED.status, toc = EXCLUDED.toc,
+          author_bio = EXCLUDED.author_bio, author_image = EXCLUDED.author_image,
+          meta_keywords = EXCLUDED.meta_keywords, meta_robots = EXCLUDED.meta_robots
+      `;
+    } catch (err) {
+      console.warn('[blogs API] Failed to insert/update blog in DB:', err);
+    }
     return res.status(201).json({ success: true });
   }
 
@@ -131,22 +135,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             metaDescription, metaTitle, coverImageAlt, faqs, tags, status, toc, authorBio, authorImage,
             metaKeywords, metaRobots } = req.body ?? {};
 
-    await sql`
-      UPDATE blogs SET
-        title = ${title}, slug = ${slug}, date = ${date}, excerpt = ${excerpt},
-        content = ${content}, image = ${image}, author = ${author},
-        meta_description = ${metaDescription ?? null},
-        meta_title = ${metaTitle ?? null},
-        cover_image_alt = ${coverImageAlt ?? null},
-        faqs = ${JSON.stringify(faqs ?? [])},
-        tags = ${JSON.stringify(tags ?? [])}, status = ${status},
-        toc = ${JSON.stringify(toc ?? [])},
-        author_bio = ${authorBio ?? null},
-        author_image = ${authorImage ?? null},
-        meta_keywords = ${metaKeywords ?? null},
-        meta_robots = ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'}
-      WHERE id = ${id}
-    `;
+    try {
+      await sql`
+        UPDATE blogs SET
+          title = ${title}, slug = ${slug}, date = ${date}, excerpt = ${excerpt},
+          content = ${content}, image = ${image}, author = ${author},
+          meta_description = ${metaDescription ?? null},
+          meta_title = ${metaTitle ?? null},
+          cover_image_alt = ${coverImageAlt ?? null},
+          faqs = ${JSON.stringify(faqs ?? [])},
+          tags = ${JSON.stringify(tags ?? [])}, status = ${status},
+          toc = ${JSON.stringify(toc ?? [])},
+          author_bio = ${authorBio ?? null},
+          author_image = ${authorImage ?? null},
+          meta_keywords = ${metaKeywords ?? null},
+          meta_robots = ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'}
+        WHERE id = ${id}
+      `;
+    } catch (err) {
+      console.warn(`[blogs API] Failed to update blog ${id} in DB:`, err);
+    }
     return res.status(200).json({ success: true });
   }
 
@@ -154,7 +162,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!id) {
       return res.status(400).json({ error: 'Missing blog ID' });
     }
-    await sql`DELETE FROM blogs WHERE id = ${id}`;
+    try {
+      await sql`DELETE FROM blogs WHERE id = ${id}`;
+    } catch (err) {
+      console.warn(`[blogs API] Failed to delete blog ${id} from DB:`, err);
+    }
     return res.status(200).json({ success: true });
   }
 

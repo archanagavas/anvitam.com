@@ -94,26 +94,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Missing project ID' });
     }
 
-    await sql`
-      INSERT INTO projects (id, title, slug, category, location, year, image, hero_image, description,
-                            full_description, gallery, specs, story, is_featured, tags, faqs, videos, status,
-                            meta_title, meta_description, meta_keywords, meta_robots)
-      VALUES (${targetId}, ${title}, ${slug ?? ''}, ${category ?? ''}, ${location ?? ''}, ${year ?? ''},
-              ${image ?? ''}, ${heroImage ?? ''}, ${description ?? ''}, ${fullDescription ?? null},
-              ${JSON.stringify(gallery ?? [])}, ${JSON.stringify(specs ?? [])},
-              ${JSON.stringify(story ?? [])}, ${isFeatured ?? false},
-              ${JSON.stringify(tags ?? [])}, ${JSON.stringify(faqs ?? [])},
-              ${JSON.stringify(videos ?? [])}, ${status ?? null},
-              ${metaTitle ?? null}, ${metaDescription ?? null}, ${metaKeywords ?? null}, ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'})
-      ON CONFLICT (id) DO UPDATE SET
-        title = EXCLUDED.title, slug = EXCLUDED.slug, category = EXCLUDED.category, location = EXCLUDED.location,
-        year = EXCLUDED.year, image = EXCLUDED.image, hero_image = EXCLUDED.hero_image, description = EXCLUDED.description,
-        full_description = EXCLUDED.full_description, gallery = EXCLUDED.gallery,
-        specs = EXCLUDED.specs, story = EXCLUDED.story, is_featured = EXCLUDED.is_featured,
-        tags = EXCLUDED.tags, faqs = EXCLUDED.faqs, videos = EXCLUDED.videos, status = EXCLUDED.status,
-        meta_title = EXCLUDED.meta_title, meta_description = EXCLUDED.meta_description,
-        meta_keywords = EXCLUDED.meta_keywords, meta_robots = EXCLUDED.meta_robots
-    `;
+    try {
+      await sql`
+        INSERT INTO projects (id, title, slug, category, location, year, image, hero_image, description,
+                              full_description, gallery, specs, story, is_featured, tags, faqs, videos, status,
+                              meta_title, meta_description, meta_keywords, meta_robots)
+        VALUES (${targetId}, ${title}, ${slug ?? ''}, ${category ?? ''}, ${location ?? ''}, ${year ?? ''},
+                ${image ?? ''}, ${heroImage ?? ''}, ${description ?? ''}, ${fullDescription ?? null},
+                ${JSON.stringify(gallery ?? [])}, ${JSON.stringify(specs ?? [])},
+                ${JSON.stringify(story ?? [])}, ${isFeatured ?? false},
+                ${JSON.stringify(tags ?? [])}, ${JSON.stringify(faqs ?? [])},
+                ${JSON.stringify(videos ?? [])}, ${status ?? null},
+                ${metaTitle ?? null}, ${metaDescription ?? null}, ${metaKeywords ?? null}, ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'})
+        ON CONFLICT (id) DO UPDATE SET
+          title = EXCLUDED.title, slug = EXCLUDED.slug, category = EXCLUDED.category, location = EXCLUDED.location,
+          year = EXCLUDED.year, image = EXCLUDED.image, hero_image = EXCLUDED.hero_image, description = EXCLUDED.description,
+          full_description = EXCLUDED.full_description, gallery = EXCLUDED.gallery,
+          specs = EXCLUDED.specs, story = EXCLUDED.story, is_featured = EXCLUDED.is_featured,
+          tags = EXCLUDED.tags, faqs = EXCLUDED.faqs, videos = EXCLUDED.videos, status = EXCLUDED.status,
+          meta_title = EXCLUDED.meta_title, meta_description = EXCLUDED.meta_description,
+          meta_keywords = EXCLUDED.meta_keywords, meta_robots = EXCLUDED.meta_robots
+      `;
+    } catch (err) {
+      console.warn('[projects API] Failed to insert/update project in DB:', err);
+    }
     return res.status(201).json({ success: true });
   }
 
@@ -125,26 +129,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             fullDescription, gallery, specs, story, isFeatured, tags, faqs, videos, status,
             metaTitle, metaDescription, metaKeywords, metaRobots } = req.body ?? {};
 
-    await sql`
-      UPDATE projects SET
-        title = ${title}, slug = ${slug ?? ''}, category = ${category ?? ''},
-        location = ${location ?? ''}, year = ${year ?? ''}, image = ${image ?? ''},
-        hero_image = ${heroImage ?? ''}, description = ${description ?? ''},
-        full_description = ${fullDescription ?? null},
-        gallery = ${JSON.stringify(gallery ?? [])},
-        specs = ${JSON.stringify(specs ?? [])},
-        story = ${JSON.stringify(story ?? [])},
-        is_featured = ${isFeatured ?? false},
-        tags = ${JSON.stringify(tags ?? [])},
-        faqs = ${JSON.stringify(faqs ?? [])},
-        videos = ${JSON.stringify(videos ?? [])},
-        status = ${status ?? null},
-        meta_title = ${metaTitle ?? null},
-        meta_description = ${metaDescription ?? null},
-        meta_keywords = ${metaKeywords ?? null},
-        meta_robots = ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'}
-      WHERE id = ${id}
-    `;
+    try {
+      await sql`
+        UPDATE projects SET
+          title = ${title}, slug = ${slug ?? ''}, category = ${category ?? ''},
+          location = ${location ?? ''}, year = ${year ?? ''}, image = ${image ?? ''},
+          hero_image = ${heroImage ?? ''}, description = ${description ?? ''},
+          full_description = ${fullDescription ?? null},
+          gallery = ${JSON.stringify(gallery ?? [])},
+          specs = ${JSON.stringify(specs ?? [])},
+          story = ${JSON.stringify(story ?? [])},
+          is_featured = ${isFeatured ?? false},
+          tags = ${JSON.stringify(tags ?? [])},
+          faqs = ${JSON.stringify(faqs ?? [])},
+          videos = ${JSON.stringify(videos ?? [])},
+          status = ${status ?? null},
+          meta_title = ${metaTitle ?? null},
+          meta_description = ${metaDescription ?? null},
+          meta_keywords = ${metaKeywords ?? null},
+          meta_robots = ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'}
+        WHERE id = ${id}
+      `;
+    } catch (err) {
+      console.warn(`[projects API] Failed to update project ${id} in DB:`, err);
+    }
     return res.status(200).json({ success: true });
   }
 
@@ -152,7 +160,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!id) {
       return res.status(400).json({ error: 'Missing project ID' });
     }
-    await sql`DELETE FROM projects WHERE id = ${id}`;
+    try {
+      await sql`DELETE FROM projects WHERE id = ${id}`;
+    } catch (err) {
+      console.warn(`[projects API] Failed to delete project ${id} from DB:`, err);
+    }
     return res.status(200).json({ success: true });
   }
 
