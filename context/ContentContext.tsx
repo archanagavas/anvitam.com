@@ -103,19 +103,72 @@ function saveToStorage<T>(key: string, data: T[]): void {
   }
 }
 
+function mergeWorkshopsWithDefaults(items: Workshop[]): Workshop[] {
+  if (!Array.isArray(items) || items.length === 0) return INITIAL_WORKSHOPS;
+  return items.map(w => {
+    const def = INITIAL_WORKSHOPS.find(iw => iw.id === w.id || iw.slug === w.slug);
+    if (!def) return w;
+    return {
+      ...def,
+      ...w,
+      images: (w.images && w.images.length > 0) ? w.images : def.images,
+    };
+  });
+}
+
+function mergeServicesWithDefaults(items: Service[]): Service[] {
+  if (!Array.isArray(items) || items.length === 0) return SERVICES;
+  return items.map(s => {
+    const def = SERVICES.find(is => is.id === s.id);
+    if (!def) return s;
+    return {
+      ...def,
+      ...s,
+      heroImage: s.heroImage || def.heroImage,
+    };
+  });
+}
+
+function mergeProductsWithDefaults(items: DigitalProduct[]): DigitalProduct[] {
+  if (!Array.isArray(items) || items.length === 0) return DIGITAL_PRODUCTS;
+  return items.map(p => {
+    const def = DIGITAL_PRODUCTS.find(ip => ip.id === p.id);
+    if (!def) return p;
+    return {
+      ...def,
+      ...p,
+      image: p.image || def.image,
+    };
+  });
+}
+
+function mergeProjectsWithDefaults(items: Project[]): Project[] {
+  if (!Array.isArray(items) || items.length === 0) return INITIAL_PROJECTS;
+  return items.map(p => {
+    const def = INITIAL_PROJECTS.find(ip => ip.id === p.id || ip.slug === p.slug);
+    if (!def) return p;
+    return {
+      ...def,
+      ...p,
+      image: p.image || def.image,
+      heroImage: p.heroImage || def.heroImage,
+      gallery: (p.gallery && p.gallery.length > 0) ? p.gallery : def.gallery,
+    };
+  });
+}
+
 export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [projects, setProjects] = useState<Project[]>(() =>
-    loadFromStorage<Project>('anvitam_projects_v2', INITIAL_PROJECTS)
+    mergeProjectsWithDefaults(loadFromStorage<Project>('anvitam_projects_v2', INITIAL_PROJECTS))
   );
   const [blogs, setBlogs] = useState<BlogPost[]>(() =>
-    // v2 key: forces fresh DB sync, ignores stale 2-blog cache
-    loadFromStorage<BlogPost>('anvitam_blogs_v2', [])
+    loadFromStorage<BlogPost>('anvitam_blogs_v2', INITIAL_BLOGS)
   );
   const [services, setServices] = useState<Service[]>(() =>
-    loadFromStorage<Service>('anvitam_services_v5', SERVICES)
+    mergeServicesWithDefaults(loadFromStorage<Service>('anvitam_services_v5', SERVICES))
   );
   const [digitalProducts, setDigitalProducts] = useState<DigitalProduct[]>(() =>
-    loadFromStorage<DigitalProduct>('anvitam_products', DIGITAL_PRODUCTS)
+    mergeProductsWithDefaults(loadFromStorage<DigitalProduct>('anvitam_products', DIGITAL_PRODUCTS))
   );
   const [messages, setMessages] = useState<ContactMessage[]>(() =>
     loadFromStorage<ContactMessage>('anvitam_messages', [])
@@ -137,7 +190,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
   });
   const [workshops, setWorkshops] = useState<Workshop[]>(() =>
-    loadFromStorage<Workshop>('anvitam_workshops_v2', INITIAL_WORKSHOPS)
+    mergeWorkshopsWithDefaults(loadFromStorage<Workshop>('anvitam_workshops_v2', INITIAL_WORKSHOPS))
   );
   const [isDbConnected, setIsDbConnected] = useState(false);
   const [isInitialSyncDone, setIsInitialSyncDone] = useState(false);
@@ -166,107 +219,72 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
 
       if (workshopsRes.ok) {
         const isFallback = workshopsRes.headers.get('x-db-fallback') === 'true';
-        const dbWorkshops: Workshop[] = await workshopsRes.json();
-        if (!isFallback) {
-          if (dbWorkshops.length > 0) {
-            setWorkshops(dbWorkshops);
-            saveToStorage('anvitam_workshops_v2', dbWorkshops);
-          }
-        } else {
-          console.info('[ContentContext] workshops API returned fallback mock data; preserving local cache.');
-          setWorkshops(prev => prev.length === 0 ? dbWorkshops : prev);
+        const rawWorkshops: Workshop[] = await workshopsRes.json();
+        const merged = mergeWorkshopsWithDefaults(rawWorkshops);
+        if (merged.length > 0) {
+          setWorkshops(merged);
+          saveToStorage('anvitam_workshops_v2', merged);
         }
       }
 
       if (blogsRes.ok) {
         const isFallback = blogsRes.headers.get('x-db-fallback') === 'true';
         const dbBlogs: BlogPost[] = await blogsRes.json();
-        if (!isFallback) {
-          if (dbBlogs.length > 0) {
-            setBlogs(dbBlogs);
-            saveToStorage('anvitam_blogs_v2', dbBlogs);
-          }
-        } else {
-          console.info('[ContentContext] blogs API returned fallback mock data; preserving local cache.');
-          setBlogs(prev => prev.length === 0 ? dbBlogs : prev);
-        }
+        const mergedBlogs = dbBlogs.length > 0 ? dbBlogs : INITIAL_BLOGS;
+        setBlogs(mergedBlogs);
+        saveToStorage('anvitam_blogs_v2', mergedBlogs);
       }
 
       if (projectsRes.ok) {
         const isFallback = projectsRes.headers.get('x-db-fallback') === 'true';
-        const dbProjects: Project[] = await projectsRes.json();
-        if (!isFallback) {
-          if (dbProjects.length > 0) {
-            setProjects(dbProjects);
-            saveToStorage('anvitam_projects_v2', dbProjects);
-          }
-        } else {
-          console.info('[ContentContext] projects API returned fallback mock data; preserving local cache.');
-          setProjects(prev => prev.length === 0 ? dbProjects : prev);
+        const rawProjects: Project[] = await projectsRes.json();
+        const mergedProjects = mergeProjectsWithDefaults(rawProjects);
+        if (mergedProjects.length > 0) {
+          setProjects(mergedProjects);
+          saveToStorage('anvitam_projects_v2', mergedProjects);
         }
       }
 
       if (servicesRes.ok) {
         const isFallback = servicesRes.headers.get('x-db-fallback') === 'true';
-        const dbServices: Service[] = await servicesRes.json();
-        if (!isFallback) {
-          if (dbServices.length > 0) {
-            setServices(dbServices);
-            saveToStorage('anvitam_services_v5', dbServices);
-          }
-        } else {
-          console.info('[ContentContext] services API returned fallback mock data; preserving local cache.');
-          setServices(prev => prev.length === 0 ? dbServices : prev);
+        const rawServices: Service[] = await servicesRes.json();
+        const mergedServices = mergeServicesWithDefaults(rawServices);
+        if (mergedServices.length > 0) {
+          setServices(mergedServices);
+          saveToStorage('anvitam_services_v5', mergedServices);
         }
       }
 
       if (productsRes.ok) {
         const isFallback = productsRes.headers.get('x-db-fallback') === 'true';
-        const dbProducts: DigitalProduct[] = await productsRes.json();
-        if (!isFallback) {
-          if (dbProducts.length > 0) {
-            setDigitalProducts(dbProducts);
-            saveToStorage('anvitam_products', dbProducts);
-          }
-        } else {
-          console.info('[ContentContext] products API returned fallback mock data; preserving local cache.');
-          setDigitalProducts(prev => prev.length === 0 ? dbProducts : prev);
+        const rawProducts: DigitalProduct[] = await productsRes.json();
+        const mergedProducts = mergeProductsWithDefaults(rawProducts);
+        if (mergedProducts.length > 0) {
+          setDigitalProducts(mergedProducts);
+          saveToStorage('anvitam_products', mergedProducts);
         }
       }
 
       if (testimonialsRes.ok) {
         const isFallback = testimonialsRes.headers.get('x-db-fallback') === 'true';
         const dbTestimonials: Testimonial[] = await testimonialsRes.json();
-        if (!isFallback) {
-          if (dbTestimonials.length > 0) {
-            setTestimonials(dbTestimonials);
-            saveToStorage('anvitam_testimonials', dbTestimonials);
-          }
-        } else {
-          console.info('[ContentContext] testimonials API returned fallback mock data; preserving local cache.');
-          setTestimonials(prev => prev.length === 0 ? dbTestimonials : prev);
-        }
+        const mergedTestimonials = dbTestimonials.length > 0 ? dbTestimonials : INITIAL_TESTIMONIALS;
+        setTestimonials(mergedTestimonials);
+        saveToStorage('anvitam_testimonials', mergedTestimonials);
       }
 
       if (partnersRes.ok) {
         const isFallback = partnersRes.headers.get('x-db-fallback') === 'true';
         const dbPartners: PartnerBrand[] = await partnersRes.json();
-        const mergedDbPartners = dbPartners.map(p => {
+        const mergedDbPartners = (dbPartners.length > 0 ? dbPartners : INITIAL_PARTNERS).map(p => {
           if (!p.logo) {
             const initP = INITIAL_PARTNERS.find(ip => ip.id === p.id || ip.name.toLowerCase() === p.name.toLowerCase());
             if (initP?.logo) return { ...p, logo: initP.logo };
           }
           return p;
         });
-        if (!isFallback) {
-          if (mergedDbPartners.length > 0) {
-            setPartners(mergedDbPartners);
-            saveToStorage('anvitam_partners_v3', mergedDbPartners);
-          }
-        } else {
-          console.info('[ContentContext] partners API returned fallback mock data; preserving local cache.');
-          setPartners(prev => prev.length === 0 ? mergedDbPartners : prev);
-        }
+        setPartners(mergedDbPartners);
+        saveToStorage('anvitam_partners_v3', mergedDbPartners);
       }
 
       // Fetch messages if admin token exists
