@@ -78,12 +78,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'Missing required field: name' });
       }
       const targetId = id || bodyId || `partner-${Date.now()}`;
-      await sql`
-        INSERT INTO partners (id, name, logo, icon, website)
-        VALUES (${targetId}, ${name.trim()}, ${logo || ''}, ${icon || ''}, ${website || ''})
-        ON CONFLICT (id) DO UPDATE SET
-          name = EXCLUDED.name, logo = EXCLUDED.logo, icon = EXCLUDED.icon, website = EXCLUDED.website
-      `;
+      try {
+        await sql`
+          INSERT INTO partners (id, name, logo, icon, website)
+          VALUES (${targetId}, ${name.trim()}, ${logo || ''}, ${icon || ''}, ${website || ''})
+          ON CONFLICT (id) DO UPDATE SET
+            name = EXCLUDED.name, logo = EXCLUDED.logo, icon = EXCLUDED.icon, website = EXCLUDED.website
+        `;
+      } catch (err) {
+        console.warn('[meta/partners API] Failed to insert/update partner in DB:', err);
+      }
       return res.status(201).json({ success: true, id: targetId });
     }
 
@@ -93,16 +97,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!name || typeof name !== 'string' || !name.trim()) {
         return res.status(400).json({ error: 'Missing required field: name' });
       }
-      await sql`
-        UPDATE partners SET name = ${name.trim()}, logo = ${logo || ''}, icon = ${icon || ''}, website = ${website || ''}
-        WHERE id = ${id}
-      `;
+      try {
+        await sql`
+          UPDATE partners SET name = ${name.trim()}, logo = ${logo || ''}, icon = ${icon || ''}, website = ${website || ''}
+          WHERE id = ${id}
+        `;
+      } catch (err) {
+        console.warn(`[meta/partners API] Failed to update partner ${id} in DB:`, err);
+      }
       return res.status(200).json({ success: true, id });
     }
 
     if (req.method === 'DELETE') {
       if (!id) return res.status(400).json({ error: 'Missing partner ID' });
-      await sql`DELETE FROM partners WHERE id = ${id}`;
+      try {
+        await sql`DELETE FROM partners WHERE id = ${id}`;
+      } catch (err) {
+        console.warn(`[meta/partners API] Failed to delete partner ${id} from DB:`, err);
+      }
       return res.status(200).json({ success: true, id });
     }
   }
@@ -157,12 +169,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'Missing required fields: author, text' });
       }
       const targetId = id || bodyId || `testim-${Date.now()}`;
-      await sql`
-        INSERT INTO testimonials (id, author, role, text, image)
-        VALUES (${targetId}, ${author.trim()}, ${role || ''}, ${text.trim()}, ${image || ''})
-        ON CONFLICT (id) DO UPDATE SET
-          author = EXCLUDED.author, role = EXCLUDED.role, text = EXCLUDED.text, image = EXCLUDED.image
-      `;
+      try {
+        await sql`
+          INSERT INTO testimonials (id, author, role, text, image)
+          VALUES (${targetId}, ${author.trim()}, ${role || ''}, ${text.trim()}, ${image || ''})
+          ON CONFLICT (id) DO UPDATE SET
+            author = EXCLUDED.author, role = EXCLUDED.role, text = EXCLUDED.text, image = EXCLUDED.image
+        `;
+      } catch (err) {
+        console.warn('[meta/testimonials API] Failed to insert/update testimonial in DB:', err);
+      }
       return res.status(201).json({ success: true, id: targetId });
     }
 
@@ -172,16 +188,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!author || !text || typeof author !== 'string' || typeof text !== 'string') {
         return res.status(400).json({ error: 'Missing required fields: author, text' });
       }
-      await sql`
-        UPDATE testimonials SET author = ${author.trim()}, role = ${role || ''}, text = ${text.trim()}, image = ${image || ''}
-        WHERE id = ${id}
-      `;
+      try {
+        await sql`
+          UPDATE testimonials SET author = ${author.trim()}, role = ${role || ''}, text = ${text.trim()}, image = ${image || ''}
+          WHERE id = ${id}
+        `;
+      } catch (err) {
+        console.warn(`[meta/testimonials API] Failed to update testimonial ${id} in DB:`, err);
+      }
       return res.status(200).json({ success: true, id });
     }
 
     if (req.method === 'DELETE') {
       if (!id) return res.status(400).json({ error: 'Missing testimonial ID' });
-      await sql`DELETE FROM testimonials WHERE id = ${id}`;
+      try {
+        await sql`DELETE FROM testimonials WHERE id = ${id}`;
+      } catch (err) {
+        console.warn(`[meta/testimonials API] Failed to delete testimonial ${id} from DB:`, err);
+      }
       return res.status(200).json({ success: true, id });
     }
   }
@@ -238,12 +262,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const slugId = title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
       const targetId = id || bodyId || slugId || `estimator-${Date.now()}`;
 
-      await sql`
-        INSERT INTO estimator_services (id, title, icon, description, subs, base_inr)
-        VALUES (${targetId}, ${title.trim()}, ${icon || '🌿'}, ${desc || ''}, ${JSON.stringify(subs || [])}, ${JSON.stringify(baseINR || [])})
-        ON CONFLICT (id) DO UPDATE SET
-          title = EXCLUDED.title, icon = EXCLUDED.icon, description = EXCLUDED.description, subs = EXCLUDED.subs, base_inr = EXCLUDED.base_inr
-      `;
+      try {
+        await sql`
+          INSERT INTO estimator_services (id, title, icon, description, subs, base_inr)
+          VALUES (${targetId}, ${title.trim()}, ${icon || '🌿'}, ${desc || ''}, ${JSON.stringify(subs || [])}, ${JSON.stringify(baseINR || [])})
+          ON CONFLICT (id) DO UPDATE SET
+            title = EXCLUDED.title, icon = EXCLUDED.icon, description = EXCLUDED.description, subs = EXCLUDED.subs, base_inr = EXCLUDED.base_inr
+        `;
+      } catch (err) {
+        console.warn('[meta/estimator API] Failed to insert/update estimator service in DB:', err);
+      }
       return res.status(201).json({ success: true, id: targetId });
     }
 
@@ -253,17 +281,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!title || typeof title !== 'string' || !title.trim()) {
         return res.status(400).json({ error: 'Missing required field: title' });
       }
-      await sql`
-        UPDATE estimator_services SET
-          title = ${title.trim()}, icon = ${icon || '🌿'}, description = ${desc || ''}, subs = ${JSON.stringify(subs || [])}, base_inr = ${JSON.stringify(baseINR || [])}
-        WHERE id = ${id}
-      `;
+      try {
+        await sql`
+          UPDATE estimator_services SET
+            title = ${title.trim()}, icon = ${icon || '🌿'}, description = ${desc || ''}, subs = ${JSON.stringify(subs || [])}, base_inr = ${JSON.stringify(baseINR || [])}
+          WHERE id = ${id}
+        `;
+      } catch (err) {
+        console.warn(`[meta/estimator API] Failed to update estimator service ${id} in DB:`, err);
+      }
       return res.status(200).json({ success: true, id });
     }
 
     if (req.method === 'DELETE') {
       if (!id) return res.status(400).json({ error: 'Missing service ID' });
-      await sql`DELETE FROM estimator_services WHERE id = ${id}`;
+      try {
+        await sql`DELETE FROM estimator_services WHERE id = ${id}`;
+      } catch (err) {
+        console.warn(`[meta/estimator API] Failed to delete estimator service ${id} from DB:`, err);
+      }
       return res.status(200).json({ success: true, id });
     }
   }

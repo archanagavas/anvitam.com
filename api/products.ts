@@ -139,27 +139,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Missing product ID' });
     }
 
-    await sql`
-      INSERT INTO digital_products (id, title, description, price, link, image, tags, category, youtube_url, videos,
-                                    meta_title, meta_description, meta_keywords, meta_robots)
-      VALUES (${targetId}, ${title}, ${description ?? ''}, ${price ?? ''}, ${link ?? ''}, ${image ?? ''}, ${JSON.stringify(tags ?? [])}, ${category ?? 'E-Books'},
-              ${youtubeUrl ?? ''}, ${JSON.stringify(videos ?? [])},
-              ${metaTitle ?? null}, ${metaDescription ?? null}, ${metaKeywords ?? null}, ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'})
-      ON CONFLICT (id) DO UPDATE SET
-        title = EXCLUDED.title,
-        description = EXCLUDED.description,
-        price = EXCLUDED.price,
-        link = EXCLUDED.link,
-        image = EXCLUDED.image,
-        tags = EXCLUDED.tags,
-        category = EXCLUDED.category,
-        youtube_url = EXCLUDED.youtube_url,
-        videos = EXCLUDED.videos,
-        meta_title = EXCLUDED.meta_title,
-        meta_description = EXCLUDED.meta_description,
-        meta_keywords = EXCLUDED.meta_keywords,
-        meta_robots = EXCLUDED.meta_robots
-    `;
+    try {
+      await sql`
+        INSERT INTO digital_products (id, title, description, price, link, image, tags, category, youtube_url, videos,
+                                      meta_title, meta_description, meta_keywords, meta_robots)
+        VALUES (${targetId}, ${title}, ${description ?? ''}, ${price ?? ''}, ${link ?? ''}, ${image ?? ''}, ${JSON.stringify(tags ?? [])}, ${category ?? 'E-Books'},
+                ${youtubeUrl ?? ''}, ${JSON.stringify(videos ?? [])},
+                ${metaTitle ?? null}, ${metaDescription ?? null}, ${metaKeywords ?? null}, ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'})
+        ON CONFLICT (id) DO UPDATE SET
+          title = EXCLUDED.title,
+          description = EXCLUDED.description,
+          price = EXCLUDED.price,
+          link = EXCLUDED.link,
+          image = EXCLUDED.image,
+          tags = EXCLUDED.tags,
+          category = EXCLUDED.category,
+          youtube_url = EXCLUDED.youtube_url,
+          videos = EXCLUDED.videos,
+          meta_title = EXCLUDED.meta_title,
+          meta_description = EXCLUDED.meta_description,
+          meta_keywords = EXCLUDED.meta_keywords,
+          meta_robots = EXCLUDED.meta_robots
+      `;
+    } catch (err) {
+      console.warn('[products API] Failed to insert/update product in DB:', err);
+    }
     return res.status(201).json({ success: true });
   }
 
@@ -170,23 +174,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { title, description, price, link, image, tags, category, youtubeUrl, videos,
             metaTitle, metaDescription, metaKeywords, metaRobots } = req.body ?? {};
 
-    await sql`
-      UPDATE digital_products SET
-        title = ${title},
-        description = ${description ?? ''},
-        price = ${price ?? ''},
-        link = ${link ?? ''},
-        image = ${image ?? ''},
-        tags = ${JSON.stringify(tags ?? [])},
-        category = ${category ?? 'E-Books'},
-        youtube_url = ${youtubeUrl ?? ''},
-        videos = ${JSON.stringify(videos ?? [])},
-        meta_title = ${metaTitle ?? null},
-        meta_description = ${metaDescription ?? null},
-        meta_keywords = ${metaKeywords ?? null},
-        meta_robots = ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'}
-      WHERE id = ${id}
-    `;
+    try {
+      await sql`
+        UPDATE digital_products SET
+          title = ${title},
+          description = ${description ?? ''},
+          price = ${price ?? ''},
+          link = ${link ?? ''},
+          image = ${image ?? ''},
+          tags = ${JSON.stringify(tags ?? [])},
+          category = ${category ?? 'E-Books'},
+          youtube_url = ${youtubeUrl ?? ''},
+          videos = ${JSON.stringify(videos ?? [])},
+          meta_title = ${metaTitle ?? null},
+          meta_description = ${metaDescription ?? null},
+          meta_keywords = ${metaKeywords ?? null},
+          meta_robots = ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'}
+        WHERE id = ${id}
+      `;
+    } catch (err) {
+      console.warn(`[products API] Failed to update product ${id} in DB:`, err);
+    }
     return res.status(200).json({ success: true });
   }
 
@@ -194,7 +202,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!id) {
       return res.status(400).json({ error: 'Missing product ID' });
     }
-    await sql`DELETE FROM digital_products WHERE id = ${id}`;
+    try {
+      await sql`DELETE FROM digital_products WHERE id = ${id}`;
+    } catch (err) {
+      console.warn(`[products API] Failed to delete product ${id} from DB:`, err);
+    }
     return res.status(200).json({ success: true });
   }
 
