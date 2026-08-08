@@ -7,6 +7,7 @@
 import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'fs';
 import { join, resolve } from 'path';
 import { neon } from '@neondatabase/serverless';
+import postgres from 'postgres';
 
 const SITE_URL = 'https://www.anvitam.com';
 const TODAY = new Date().toISOString().split('T')[0];
@@ -35,6 +36,20 @@ function loadEnv() {
   }
 }
 loadEnv();
+
+// Helper to execute SQL query across Neon or Supabase
+async function queryDb(queryStr: string): Promise<any[]> {
+  const url = process.env.DATABASE_URL;
+  if (!url) return [];
+  if (url.includes('supabase')) {
+    const sql = postgres(url, { ssl: 'require', prepare: false });
+    const res = await sql.unsafe(queryStr);
+    return res;
+  } else {
+    const sql = neon(url);
+    return await sql(queryStr as any);
+  }
+}
 
 // ── Static routes ──────────────────────────────────────────────────────
 const STATIC_ROUTES = [
@@ -80,12 +95,10 @@ interface ProjectSeoItem {
 
 async function fetchBlogsFromDB(): Promise<BlogSeoItem[]> {
   if (!process.env.DATABASE_URL) {
-    console.warn('⚠️ [generate-seo] DATABASE_URL is not set. Sitemap won\'t include dynamic blogs.');
     return [];
   }
   try {
-    const sql = neon(process.env.DATABASE_URL);
-    const rows = await sql`SELECT slug, date, updated_at, created_at FROM blogs WHERE status = 'published'`;
+    const rows = await queryDb("SELECT slug, date, updated_at, created_at FROM blogs WHERE status = 'published'");
     return rows.map((r: any) => {
       let lastmod = TODAY;
       if (r.updated_at) {
@@ -98,19 +111,16 @@ async function fetchBlogsFromDB(): Promise<BlogSeoItem[]> {
       return { slug: r.slug, lastmod };
     }).filter(b => Boolean(b.slug));
   } catch (error) {
-    console.error('❌ [generate-seo] Failed to fetch blog slugs from database:', error);
     return [];
   }
 }
 
 async function fetchProjectsFromDB(): Promise<ProjectSeoItem[]> {
   if (!process.env.DATABASE_URL) {
-    console.warn('⚠️ [generate-seo] DATABASE_URL is not set. Sitemap won\'t include dynamic projects.');
     return PROJECT_IDS.map(id => ({ path: id, lastmod: TODAY }));
   }
   try {
-    const sql = neon(process.env.DATABASE_URL);
-    const rows = await sql`SELECT id, slug, updated_at, created_at FROM projects`;
+    const rows = await queryDb("SELECT id, slug, updated_at, created_at FROM projects");
     if (rows.length === 0) return PROJECT_IDS.map(id => ({ path: id, lastmod: TODAY }));
     return rows.map((r: any) => {
       let lastmod = TODAY;
@@ -122,7 +132,6 @@ async function fetchProjectsFromDB(): Promise<ProjectSeoItem[]> {
       return { path: r.slug || r.id, lastmod };
     }).filter(p => Boolean(p.path));
   } catch (error) {
-    console.error('❌ [generate-seo] Failed to fetch project paths from database:', error);
     return PROJECT_IDS.map(id => ({ path: id, lastmod: TODAY }));
   }
 }

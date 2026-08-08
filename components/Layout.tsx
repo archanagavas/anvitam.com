@@ -3,7 +3,6 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Mail, ArrowRight, CheckCircle, Calculator, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Helmet } from 'react-helmet-async';
-import MapleLeafCursor from './MapleLeafCursor';
 import EstimatorModal from './EstimatorModal';
 import MorphicNavbar from './MorphicNavbar';
 
@@ -153,9 +152,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <Helmet>
         <link rel="canonical" href={canonicalUrl} />
       </Helmet>
-
-      {/* Custom maple leaf cursor across all pages */}
-      <MapleLeafCursor />
 
       {/* ── FLOATING MINIMAL NAVBAR ── */}
       <header className="fixed top-4 inset-x-0 z-50 max-w-6xl mx-3 sm:mx-4 md:mx-auto transition-all duration-300">
