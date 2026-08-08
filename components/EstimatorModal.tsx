@@ -265,7 +265,11 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
               <p className="text-[11px] text-[#aaa] mt-3">No spam. Strictly for sending your tailored proposal.</p>
 
               {submitError && (
-                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-medium">
+                <div
+                  role="alert"
+                  aria-live="assertive"
+                  className="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-medium"
+                >
                   {submitError}
                 </div>
               )}

@@ -523,9 +523,11 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
       const updated = [msgObj, ...filtered];
       const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
       const retained = updated.filter(m => {
-        if (!m.date) return true;
+        // Reject entries with missing or unparseable dates (unknown dates are not retained)
+        if (!m.date) return false;
         const time = new Date(m.date).getTime();
-        return isNaN(time) || time >= thirtyDaysAgo;
+        if (isNaN(time)) return false;
+        return time >= thirtyDaysAgo;
       }).slice(0, 50);
       saveToStorage('anvitam_messages', retained);
       return retained;
@@ -554,75 +556,97 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const deleteProject = async (id: string) => {
-    addDeletedId(id);
+    // Optimistic removal from local state first
     setProjects(prev => {
       const updated = prev.filter(p => p.id !== id);
       saveToStorage('anvitam_projects_v2', updated);
       return updated;
     });
     const token = getAuthToken();
+    let remoteOk = false;
     if (token) {
       try {
-        await fetch(`/api/projects/${id}`, { method: 'DELETE', headers: authHeaders() });
+        const res = await fetch(`/api/projects/${id}`, { method: 'DELETE', headers: authHeaders() });
+        remoteOk = res.ok;
       } catch (err) {
         console.error('[ContentContext] Failed to delete project from DB:', err);
       }
+    } else {
+      // No token means local-only mode — treat as confirmed
+      remoteOk = true;
     }
+    // Only persist tombstone after confirmed remote delete
+    if (remoteOk) addDeletedId(id);
   };
 
   const deleteBlog = async (id: string) => {
-    addDeletedId(id);
     setBlogs(prev => {
       const updated = prev.filter(b => b.id !== id);
       saveToStorage('anvitam_blogs_v2', updated);
       return updated;
     });
     const token = getAuthToken();
+    let remoteOk = false;
     if (token) {
       try {
-        await fetch(`/api/blogs/${id}`, { method: 'DELETE', headers: authHeaders() });
+        const res = await fetch(`/api/blogs/${id}`, { method: 'DELETE', headers: authHeaders() });
+        remoteOk = res.ok;
       } catch (err) {
         console.error('[ContentContext] Failed to delete blog from DB:', err);
       }
+    } else {
+      remoteOk = true;
     }
+    if (remoteOk) addDeletedId(id);
   };
 
   const deleteService = async (id: string) => {
-    addDeletedId(id);
     setServices(prev => {
       const updated = prev.filter(s => s.id !== id);
       saveToStorage('anvitam_services_v5', updated);
       return updated;
     });
     const token = getAuthToken();
+    let remoteOk = false;
     if (token) {
       try {
-        await fetch(`/api/services/${id}`, { method: 'DELETE', headers: authHeaders() });
+        const res = await fetch(`/api/services/${id}`, { method: 'DELETE', headers: authHeaders() });
+        remoteOk = res.ok;
       } catch (err) {
         console.error('[ContentContext] Failed to delete service from DB:', err);
       }
+    } else {
+      remoteOk = true;
     }
+    if (remoteOk) addDeletedId(id);
   };
 
   const deleteDigitalProduct = async (id: string) => {
-    addDeletedId(id);
     setDigitalProducts(prev => {
       const updated = prev.filter(p => p.id !== id);
       saveToStorage('anvitam_products', updated);
       return updated;
     });
     const token = getAuthToken();
+    let remoteOk = false;
     if (token) {
       try {
-        await fetch(`/api/products/${id}`, { method: 'DELETE', headers: authHeaders() });
+        const res = await fetch(`/api/products/${id}`, { method: 'DELETE', headers: authHeaders() });
+        remoteOk = res.ok;
       } catch (err) {
         console.error('[ContentContext] Failed to delete product from DB:', err);
       }
+    } else {
+      remoteOk = true;
     }
+    if (remoteOk) addDeletedId(id);
   };
 
   const deleteMessage = async (id: string) => {
+    // Capture evicted item before removal so we can restore on failure
+    let evicted: ContactMessage | undefined;
     setMessages(prev => {
+      evicted = prev.find(m => m.id === id);
       const updated = prev.filter(m => m.id !== id);
       saveToStorage('anvitam_messages', updated);
       return updated;
@@ -630,9 +654,19 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
     const token = getAuthToken();
     if (token) {
       try {
-        await fetch(`/api/messages?id=${id}`, { method: 'DELETE', headers: authHeaders() });
+        const res = await fetch(`/api/messages?id=${id}`, { method: 'DELETE', headers: authHeaders() });
+        if (!res.ok) throw new Error(`DELETE /api/messages returned ${res.status}`);
       } catch (err) {
-        console.error('[ContentContext] Failed to delete message from DB:', err);
+        console.error('[ContentContext] Failed to delete message from DB — restoring:', err);
+        // Restore the evicted message so it isn't silently lost
+        if (evicted) {
+          setMessages(prev => {
+            if (prev.some(m => m.id === id)) return prev; // already restored
+            const restored = [evicted!, ...prev];
+            saveToStorage('anvitam_messages', restored);
+            return restored;
+          });
+        }
       }
     }
   };
@@ -662,20 +696,24 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const deleteTestimonial = async (id: string) => {
-    addDeletedId(id);
     setTestimonials(prev => {
       const updated = prev.filter(t => t.id !== id);
       saveToStorage('anvitam_testimonials', updated);
       return updated;
     });
     const token = getAuthToken();
+    let remoteOk = false;
     if (token) {
       try {
-        await fetch(`/api/testimonials/${id}`, { method: 'DELETE', headers: authHeaders() });
+        const res = await fetch(`/api/testimonials/${id}`, { method: 'DELETE', headers: authHeaders() });
+        remoteOk = res.ok;
       } catch (err) {
         console.error('Failed to delete testimonial:', err);
       }
+    } else {
+      remoteOk = true;
     }
+    if (remoteOk) addDeletedId(id);
   };
 
   const addEstimatorService = async (s: EstimatorService) => {
@@ -703,20 +741,24 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const deleteEstimatorService = async (id: string) => {
-    addDeletedId(id);
     setEstimatorServices(prev => {
       const updated = prev.filter(item => item.id !== id);
       saveToStorage('anvitam_estimator_services_v1', updated);
       return updated;
     });
     const token = getAuthToken();
+    let remoteOk = false;
     if (token) {
       try {
-        await fetch(`/api/estimator-services/${id}`, { method: 'DELETE', headers: authHeaders() });
+        const res = await fetch(`/api/estimator-services/${id}`, { method: 'DELETE', headers: authHeaders() });
+        remoteOk = res.ok;
       } catch (err) {
         console.error('Failed to delete estimator service from DB:', err);
       }
+    } else {
+      remoteOk = true;
     }
+    if (remoteOk) addDeletedId(id);
   };
 
   const addPartner = async (p: PartnerBrand) => {
