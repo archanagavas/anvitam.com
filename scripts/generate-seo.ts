@@ -68,45 +68,73 @@ const PROJECT_IDS = [
   'carpa-lupa', 'vanvagado-farm', 'batukaru-yurt', 'shalimar', 'unique-school', 'yourweb3guy',
 ];
 
-async function fetchSlugsFromDB(): Promise<string[]> {
+interface BlogSeoItem {
+  slug: string;
+  lastmod: string;
+}
+
+interface ProjectSeoItem {
+  path: string;
+  lastmod: string;
+}
+
+async function fetchBlogsFromDB(): Promise<BlogSeoItem[]> {
   if (!process.env.DATABASE_URL) {
     console.warn('⚠️ [generate-seo] DATABASE_URL is not set. Sitemap won\'t include dynamic blogs.');
     return [];
   }
   try {
     const sql = neon(process.env.DATABASE_URL);
-    const rows = await sql`SELECT slug FROM blogs WHERE status = 'published'`;
-    return rows.map((r: any) => r.slug).filter(Boolean);
+    const rows = await sql`SELECT slug, date, updated_at, created_at FROM blogs WHERE status = 'published'`;
+    return rows.map((r: any) => {
+      let lastmod = TODAY;
+      if (r.updated_at) {
+        try { lastmod = new Date(r.updated_at).toISOString().split('T')[0]; } catch (e) {}
+      } else if (r.created_at) {
+        try { lastmod = new Date(r.created_at).toISOString().split('T')[0]; } catch (e) {}
+      } else if (r.date && /^\d{4}-\d{2}-\d{2}$/.test(r.date)) {
+        lastmod = r.date;
+      }
+      return { slug: r.slug, lastmod };
+    }).filter(b => Boolean(b.slug));
   } catch (error) {
     console.error('❌ [generate-seo] Failed to fetch blog slugs from database:', error);
     return [];
   }
 }
 
-async function fetchProjectPathsFromDB(): Promise<string[]> {
+async function fetchProjectsFromDB(): Promise<ProjectSeoItem[]> {
   if (!process.env.DATABASE_URL) {
     console.warn('⚠️ [generate-seo] DATABASE_URL is not set. Sitemap won\'t include dynamic projects.');
-    return PROJECT_IDS;
+    return PROJECT_IDS.map(id => ({ path: id, lastmod: TODAY }));
   }
   try {
     const sql = neon(process.env.DATABASE_URL);
-    const rows = await sql`SELECT id, slug FROM projects`;
-    if (rows.length === 0) return PROJECT_IDS;
-    return rows.map((r: any) => r.slug || r.id).filter(Boolean);
+    const rows = await sql`SELECT id, slug, updated_at, created_at FROM projects`;
+    if (rows.length === 0) return PROJECT_IDS.map(id => ({ path: id, lastmod: TODAY }));
+    return rows.map((r: any) => {
+      let lastmod = TODAY;
+      if (r.updated_at) {
+        try { lastmod = new Date(r.updated_at).toISOString().split('T')[0]; } catch (e) {}
+      } else if (r.created_at) {
+        try { lastmod = new Date(r.created_at).toISOString().split('T')[0]; } catch (e) {}
+      }
+      return { path: r.slug || r.id, lastmod };
+    }).filter(p => Boolean(p.path));
   } catch (error) {
     console.error('❌ [generate-seo] Failed to fetch project paths from database:', error);
-    return PROJECT_IDS;
+    return PROJECT_IDS.map(id => ({ path: id, lastmod: TODAY }));
   }
 }
 
 // ── Generate sitemap.xml ──────────────────────────────────────────────
-function makeSitemap(blogSlugs: string[], projectPaths: string[]): string {
+function makeSitemap(blogs: BlogSeoItem[], projects: ProjectSeoItem[]): string {
   const entries: string[] = [];
 
-  const add = (path: string, priority: string, changefreq: string) => {
+  const add = (path: string, priority: string, changefreq: string, customLastMod?: string) => {
     entries.push(`  <url>
     <loc>${SITE_URL}${path}</loc>
-    <lastmod>${TODAY}</lastmod>
+    <lastmod>${customLastMod || TODAY}</lastmod>
     <changefreq>${changefreq}</changefreq>
     <priority>${priority}</priority>
   </url>`);
@@ -114,8 +142,8 @@ function makeSitemap(blogSlugs: string[], projectPaths: string[]): string {
 
   STATIC_ROUTES.forEach(r => add(r.path, r.priority, r.changefreq));
   SERVICE_IDS.forEach(id => add(`/services/${id}`, '0.8', 'monthly'));
-  projectPaths.forEach(path => add(`/projects/${path}`, '0.7', 'monthly'));
-  blogSlugs.forEach(slug => add(`/blog/${slug}`, '0.8', 'weekly'));
+  projects.forEach(p => add(`/projects/${p.path}`, '0.7', 'monthly', p.lastmod));
+  blogs.forEach(b => add(`/blog/${b.slug}`, '0.8', 'weekly', b.lastmod));
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
@@ -196,9 +224,11 @@ This file follows the llms.txt standard (https://llmstxt.org). Last updated: ${T
 
 // ── Main Execution ────────────────────────────────────────────────────
 async function main() {
-  const blogSlugs = await fetchSlugsFromDB();
-  const projectPaths = await fetchProjectPathsFromDB();
-  const sitemap = makeSitemap(blogSlugs, projectPaths);
+  const blogs = await fetchBlogsFromDB();
+  const projects = await fetchProjectsFromDB();
+  const blogSlugs = blogs.map(b => b.slug);
+  const projectPaths = projects.map(p => p.path);
+  const sitemap = makeSitemap(blogs, projects);
   const llms = makeLlms(blogSlugs, projectPaths);
 
   writeFileSync(join(PUBLIC_DIR, 'sitemap.xml'), sitemap, 'utf8');

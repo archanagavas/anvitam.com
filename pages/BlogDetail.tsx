@@ -24,8 +24,8 @@ const BLOG_PURIFY_CONFIG: Parameters<typeof DOMPurify.sanitize>[1] = {
     'href', 'src', 'class', 'target', 'rel',
     'width', 'height', 'alt',
   ],
-  // Permit safe URL schemes — http, https, base64 images, blob URLs, and relative paths (/, ./, ../)
-  ALLOWED_URI_REGEXP: /^(?:https?:|data:image\/[a-z0-9\+\-\.]+;(?:base64,|[a-z0-9\=]+)|blob:|\/|\.\/|\.\.\/)/i,
+  // Permit safe URL schemes — http, https, base64 images, and relative paths (/, ./, ../). Disallows ephemeral blob: URLs.
+  ALLOWED_URI_REGEXP: /^(?:https?:|data:image\/[a-z0-9\+\-\.]+;(?:base64,|[a-z0-9\=]+)|\/|\.\/|\.\.\/)/i,
   ALLOW_DATA_ATTR: false,
 };
 

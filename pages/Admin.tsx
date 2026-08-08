@@ -43,8 +43,8 @@ const RICH_TEXT_CONFIG = {
     'href', 'src', 'class', 'target', 'rel', 'allowfullscreen',
     'width', 'height', 'data-value', 'alt',
   ],
-  // Permit safe URL schemes — http, https, base64 images, blob URLs, and relative paths (/, ./, ../)
-  ALLOWED_URI_REGEXP: /^(?:https?:|data:image\/[a-z0-9\+\-\.]+;(?:base64,|[a-z0-9\=]+)|blob:|\/|\.\/|\.\.\/)/i,
+  // Permit safe URL schemes — http, https, base64 images, and relative paths (/, ./, ../). Disallows ephemeral blob: URLs.
+  ALLOWED_URI_REGEXP: /^(?:https?:|data:image\/[a-z0-9\+\-\.]+;(?:base64,|[a-z0-9\=]+)|\/|\.\/|\.\.\/)/i,
   ALLOW_DATA_ATTR: false,
   FORCE_BODY: false,
 };
@@ -116,12 +116,24 @@ const isValidHttpUrl = (val: string): boolean => {
 };
 
 // Helper function for compressing images client-side (keeps database clean and page loads fast)
+// Limits file size to 10MB and checks image pixel resolution before canvas decoding.
+const MAX_IMAGE_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+const MAX_IMAGE_PIXELS = 25_000_000; // 25 Megapixels
+
 const compressImage = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
+    if (file.size > MAX_IMAGE_FILE_SIZE_BYTES) {
+      reject(new Error('Image file is too large. Maximum allowed file size is 10MB.'));
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (ev) => {
       const img = new Image();
       img.onload = () => {
+        if (img.width * img.height > MAX_IMAGE_PIXELS) {
+          reject(new Error('Image resolution is too high (max 25 Megapixels allowed).'));
+          return;
+        }
         const canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
@@ -359,10 +371,14 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initial, onSave, onCancel }) =>
 
   const handleInsertBodyImage = () => {
     if (!bodyImageUrl || !quillRef.current) return;
+    if (bodyImageUrl.trim().toLowerCase().startsWith('blob:')) {
+      setEditorError('Temporary blob: URLs cannot be saved. Please upload the image file or use a permanent URL.');
+      return;
+    }
     const range = quillRef.current.getSelection(true) || { index: quillRef.current.getLength() };
     const altText = bodyImageAlt.trim();
     const altAttr = altText ? ` alt="${altText.replace(/"/g, '&quot;')}"` : '';
-    const imgHtml = `<p><img src="${bodyImageUrl}"${altAttr} class="rounded-lg my-4 max-w-full h-auto" /></p>`;
+    const imgHtml = `<p><img src="${bodyImageUrl.trim()}"${altAttr} class="rounded-lg my-4 max-w-full h-auto" /></p>`;
     
     const sanitized = DOMPurify.sanitize(imgHtml, RICH_TEXT_CONFIG) as string;
     quillRef.current.clipboard.dangerouslyPasteHTML(range.index, sanitized);

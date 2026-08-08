@@ -1298,6 +1298,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.warn(`[ssr-seo] Blog not found in DB for id/slug: ${idOrSlug} — serving generic metadata`);
       title = `Blog | Anvitam Sustainable Architecture`;
       desc = 'Read articles and insights on sustainable architecture, permaculture, eco-design, and biophilic living by Anvitam.';
+      canonicalUrl = 'https://www.anvitam.com/blog';
     }
   } else if (section === 'projects' && idOrSlug) {
     if (isDbConfigured) {
@@ -1340,6 +1341,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.warn(`[ssr-seo] Project not found in DB for id/slug: ${idOrSlug} — serving generic metadata`);
       title = `Project | Anvitam Sustainable Architecture`;
       desc = 'Explore sustainable architecture projects by Anvitam — farm retreats, eco-resorts, permaculture landscapes, and biophilic homes.';
+      canonicalUrl = 'https://www.anvitam.com/projects';
     }
   } else if (section === 'services' && idOrSlug) {
     if (isDbConfigured) {
@@ -1403,6 +1405,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.warn(`[ssr-seo] Service not found in DB for id/slug: ${idOrSlug} — serving generic metadata`);
       title = `Service | Anvitam Sustainable Architecture`;
       desc = 'Explore sustainable design services by Anvitam — permaculture, farm retreats, eco-resorts, biophilic architecture, and more.';
+      canonicalUrl = 'https://www.anvitam.com/services';
     }
   } else if (section === 'workshops') {
     if (idOrSlug) {
@@ -1443,6 +1446,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.warn(`[ssr-seo] Workshop not found in DB for id/slug: ${idOrSlug} — serving generic metadata`);
         title = `Workshop | Anvitam Sustainable Architecture`;
         desc = 'Hands-on architectural, ecological, and sustainable craft workshops by Anvitam.';
+        canonicalUrl = 'https://www.anvitam.com/workshops';
       }
     } else {
       title = 'Ecological & Architectural Workshops | Anvitam';
