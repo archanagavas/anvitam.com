@@ -79,6 +79,9 @@ const server = createServer(async (req, res) => {
     const servicesIdMatch = pathname.match(/^\/api\/services\/([^/]+)$/);
     const productsIdMatch = pathname.match(/^\/api\/products\/([^/]+)$/);
     const workshopsIdMatch = pathname.match(/^\/api\/workshops\/([^/]+)$/);
+    const testimonialsIdMatch = pathname.match(/^\/api\/testimonials\/([^/]+)$/);
+    const partnersIdMatch = pathname.match(/^\/api\/partners\/([^/]+)$/);
+    const estimatorIdMatch = pathname.match(/^\/api\/estimator-services\/([^/]+)$/);
 
     if (pathname.startsWith('/api/admin') || pathname === '/api/db-init') {
       await adminHandler(vercelReq, vercelRes);
@@ -114,6 +117,27 @@ const server = createServer(async (req, res) => {
     } else if (workshopsIdMatch) {
       vercelReq.query.id = workshopsIdMatch[1];
       await workshopsHandler(vercelReq, vercelRes);
+    } else if (pathname === '/api/testimonials' || pathname === '/api/testimonials/') {
+      vercelReq.query.resource = 'testimonials';
+      await metaHandler(vercelReq, vercelRes);
+    } else if (testimonialsIdMatch) {
+      vercelReq.query.resource = 'testimonials';
+      vercelReq.query.id = testimonialsIdMatch[1];
+      await metaHandler(vercelReq, vercelRes);
+    } else if (pathname === '/api/partners' || pathname === '/api/partners/') {
+      vercelReq.query.resource = 'partners';
+      await metaHandler(vercelReq, vercelRes);
+    } else if (partnersIdMatch) {
+      vercelReq.query.resource = 'partners';
+      vercelReq.query.id = partnersIdMatch[1];
+      await metaHandler(vercelReq, vercelRes);
+    } else if (pathname === '/api/estimator-services' || pathname === '/api/estimator-services/') {
+      vercelReq.query.resource = 'estimator-services';
+      await metaHandler(vercelReq, vercelRes);
+    } else if (estimatorIdMatch) {
+      vercelReq.query.resource = 'estimator-services';
+      vercelReq.query.id = estimatorIdMatch[1];
+      await metaHandler(vercelReq, vercelRes);
     } else if (pathname.startsWith('/api/meta')) {
       await metaHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/sitemap' || pathname === '/api/sitemap/' || pathname === '/api/sitemap.xml') {
