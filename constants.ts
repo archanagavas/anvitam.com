@@ -238,223 +238,230 @@ export const PROCESS_STEPS: ProcessStep[] = [
 export const SERVICES: Service[] = [
   {
     id: 'permaculture-design',
-    title: 'Permaculture & Land Design',
-    description: 'We help you design your land so it captures rainwater, builds healthy soil, and grows trees and food naturally with less work.',
+    title: 'Permaculture & Land Masterplanning',
+    category: 'Land & Gardens',
+    description: 'We plan your entire property so water flows safely, soil gets richer, and fruit trees and buildings fit naturally together.',
     valueProps: [
-      'Healthy Soil - We rebuild your land\'s soil naturally', 
-      'Rainwater Saving - Catch and store rainwater on site', 
-      'Lush Plants - Grow trees, flowers, and food together', 
-      'Cool Buildings - Align homes with sun and breeze'
+      'Healthy Soil - Rebuild land soil naturally without chemical fertilizers', 
+      'Rainwater Saving - Catch and store rainwater on site for year-round greening', 
+      'Lush Plants & Food - Plant fruit trees, shade trees, and herbs together', 
+      'Cool Buildings - Position homes to catch cool breeze and block summer sun'
     ],
     icon: 'Sprout',
     heroImage: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=80&w=1200&auto=format&fit=crop',
     whatItIs: [
-      'Permaculture helps us understand how water flows and how soil stays rich. We make sure your home or farm makes the land better instead of damaging it.',
-      'We design food forests and garden layouts that catch water automatically. This reduces watering costs and gives you fresh growth year after year.'
+      'Permaculture is a practical way of designing land so nature does most of the heavy lifting. We study how sun, wind, and rain move across your property before drawing a single wall.',
+      'We design food forests, water ponds, and building zones that catch rainwater automatically. This reduces maintenance costs and makes your land fertile and self-sustaining.'
     ],
-    whoItsFor: ['Farm owners & retreats', 'Schools & community spaces', 'Anyone with empty land or gardens'],
+    whoItsFor: ['Farm owners & estate developers', 'Homesteaders & retreat centers', 'Anyone with empty land or large plots'],
     caseStudyId: 'vanvagado-farm',
     process: [
-      { title: 'Site Reading', description: 'Checking sun, wind, water, and soil on your land.' },
-      { title: 'Land Zoning', description: 'Planning where houses, paths, and gardens go.' },
-      { title: 'Water & Plant Plan', description: 'Connecting rainwater channels with fruit trees.' },
-      { title: 'Step-by-Step Guide', description: 'A simple roadmap to build over time.' }
+      { title: 'Site Reading', description: 'Checking sun angles, wind paths, water flow, and soil quality on your land.' },
+      { title: 'Land Zoning', description: 'Deciding where houses, access roads, ponds, and fruit orchards go.' },
+      { title: 'Water & Plant Map', description: 'Connecting rainwater channels directly with fruit trees and gardens.' },
+      { title: 'Step-by-Step Guide', description: 'A clear roadmap to build your property over time.' }
     ],
     pricing: 'Consult for Pricing',
     faq: [
-      { question: 'What is permaculture design?', answer: 'It is a smart way to plan land so nature does most of the heavy lifting for water and soil.' },
-      { question: 'What determines the design cost?', answer: 'The size of your land and what you want to build on it.' },
-      { question: 'What do I get in the final plan?', answer: 'Full map drawings, plant lists, water channel diagrams, and building locations.' }
+      { question: 'What is permaculture land design?', answer: 'It is a smart way to layout land so water, soil, and plants work together automatically with less manual labor.' },
+      { question: 'What determines the design cost?', answer: 'The size of your land plot and what you want to build on it.' },
+      { question: 'What do I receive in the final plan?', answer: 'Masterplan maps, building footprint zones, water channel diagrams, plant lists, and execution guides.' }
     ],
     bookingLink: 'https://topmate.io/archanagavas'
   },
   {
     id: "farm-retreat",
     title: "Farm Retreats & Farmhouses",
-    description: "Build a cozy farmhouse or weekend retreat that fits your land, stays cool naturally, and feels connected to nature.",
+    category: "Homes & Retreats",
+    description: "Build a cozy farmhouse or weekend retreat that fits your land, stays cool naturally, and feels peaceful.",
     valueProps: [
-      "Smart Land Layout - Easy flow for living and farming",
-      "Naturally Cool Homes - Uses breeze and shade to cut AC bills",
-      "Relaxing Spaces - Built for peace, family time, and fresh air",
-      "Low Upkeep - Simple, long-lasting natural materials"
+      "Smart Land Layout - Easy flow for everyday living, gardening, and relaxing",
+      "Naturally Cool Rooms - Uses shade and breezes to lower electric & AC bills",
+      "Relaxing Verandas - Built for family gatherings, open views, and fresh air",
+      "Low Upkeep - Built with strong, long-lasting local stone and lime"
     ],
     icon: "Home",
     heroImage: "https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=1200&auto=format&fit=crop",
     whatItIs: [
-      "We design farmhouses that give you modern comfort while honoring the land around you. Your retreat becomes a place to relax, grow organic food, and enjoy fresh air.",
-      "Whether it is a family farmhouse or a rental stay, we design buildings using local stone, brick, and natural shading so rooms stay comfortable in summer and winter."
+      "We design farmhouses that give you modern comfort while respecting the surrounding landscape. Your retreat becomes a place to relax, grow organic food, and enjoy nature with family.",
+      "We build with regional stone, brick, and shaded roof verandas so rooms stay comfortable in summer and winter without burning energy."
     ],
     whoItsFor: [
       "Families building weekend farmhouses",
       "Landowners starting a farm stay",
-      "Investors creating eco-resorts"
+      "Investors creating nature getaways"
     ],
     caseStudyId: "carpa-lupa",
     process: [
-      { title: "Land Visit", description: "Finding the best spot on your land for light and views." },
-      { title: "Home Design", description: "Drawing room layouts, verandas, and garden paths." },
-      { title: "Water & Power", description: "Planning solar power and rainwater collection." },
-      { title: "Construction Guide", description: "Helping your builders construct it correctly." }
+      { title: "Land Visit", description: "Finding the best spot on your land for light, shade, and scenic views." },
+      { title: "Home Design", description: "Drawing room layouts, shaded verandas, and garden paths." },
+      { title: "Water & Power", description: "Planning solar power and rainwater collection systems." },
+      { title: "Construction Guide", description: "Helping your local builders construct everything accurately." }
     ],
     pricing: "Consult for Pricing",
     faq: [
-      { question: "Can a farmhouse be self-sustaining?", answer: "Yes! We can design it to catch rainwater and generate solar electricity." },
-      { question: "Is natural building durable?", answer: "Extremely. Natural stone, lime, and wood withstand weather for decades." }
+      { question: "Can a farmhouse be self-sustaining?", answer: "Yes! We can design it to harvest rainwater and generate solar power." },
+      { question: "Are natural materials durable?", answer: "Extremely. Stone, lime, and timber withstand weather for decades with simple care." }
     ],
     bookingLink: "https://topmate.io/archanagavas"
   },
   {
     id: "airbnb",
     title: "Airbnb & Rental Stays",
+    category: "Hospitality & Resorts",
     description: "Stand out on rental platforms. We design beautiful, easy-to-clean rental cottages that guests love to book and review.",
     valueProps: [
-      "Eye-Catching Photos - Unique look that gets clicks and bookings",
-      "Easy Cleaning - Durable layouts that cut cleaning time in half",
-      "Guest Comfort - Cozy bedrooms, open views, and relaxing spots",
+      "Eye-Catching Photos - Distinctive design that gets clicks and bookings",
+      "Easy Cleaning - Stain-resistant layouts that cut cleaning time in half",
+      "Guest Comfort - Cozy bedrooms, open decks, and scenic photo spots",
       "Great Reviews - Designed for 5-star guest experiences"
     ],
     icon: "Home",
     heroImage: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=1200&auto=format&fit=crop",
     whatItIs: [
-      "A great rental property needs to look amazing online and work smoothly offline. We design spaces that feel like an instant vacation destination.",
-      "We pick stain-resistant, durable materials so your property stays fresh and requires less repair between host check-ins."
+      "A successful rental stay must look attractive online and run smoothly offline. We design cottages and stays that feel like an instant holiday.",
+      "We select durable, easy-to-clean materials so your rental stays looking brand new between host check-ins."
     ],
     whoItsFor: [
-      "Property owners starting an Airbnb",
-      "Hosts wanting to upgrade their rental",
-      "Vacation home investors"
+      "Property owners starting an Airbnb or rental stay",
+      "Hosts looking to upgrade existing cottages",
+      "Vacation property investors"
     ],
     caseStudyId: "carpa-lupa",
     process: [
-      { title: "Market Review", description: "Checking what nearby rentals miss so your property stands out." },
+      { title: "Market Review", description: "Checking nearby rentals so your property offers something unique." },
       { title: "Space Layout", description: "Designing cozy rooms, outdoor decks, and photo spots." },
-      { title: "Material Pick", description: "Selecting strong, easy-clean flooring and finishes." },
-      { title: "Final Look", description: "Creating a 5-star experience for guests." }
+      { title: "Material Pick", description: "Selecting strong, stain-resistant flooring and finishes." },
+      { title: "Final Details", description: "Creating a 5-star stay experience for guests." }
     ],
     pricing: "Consult for Pricing",
     faq: [
-      { question: "Why hire an architect for an Airbnb?", answer: "A well-designed property gets higher nightly rates and constant bookings." },
-      { question: "How does design reduce cleaning work?", answer: "We avoid dust-trapping corners and use easy-to-wipe, tough surfaces." }
+      { question: "Why hire an architect for an Airbnb?", answer: "Well-designed properties earn higher nightly rates and stay booked year-round." },
+      { question: "How does design reduce cleaning work?", answer: "We avoid dust traps and use tough, easy-to-wipe surfaces." }
     ],
     bookingLink: "https://topmate.io/archanagavas"
   },
   {
     id: "homestay",
     title: "Homestays & Guest Houses",
+    category: "Homes & Retreats",
     description: "Turn your property into a warm, welcoming homestay where guests enjoy local culture and feel right at home.",
     valueProps: [
-      "Local Character - Uses local stone, clay, and wood styles",
-      "Host Privacy - Clear areas for guests and host family privacy",
-      "Naturally Cool - Cool breezes and shade keep rooms airy",
-      "Welcoming Vibes - Cozy gathering spots for food and conversations"
+      "Local Character - Built using regional stone, clay, and timber styles",
+      "Host Privacy - Clear separation between guest spaces and family rooms",
+      "Naturally Cool - Cool breezes and shade keep rooms fresh and airy",
+      "Welcoming Vibes - Cozy gathering spots for dining and conversations"
     ],
     icon: "Home",
     heroImage: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1200&auto=format&fit=crop",
     whatItIs: [
-      "A homestay should feel warm, personal, and authentic. We design guest rooms and dining areas that highlight local traditions and scenic views.",
-      "We make sure your family has private living areas while guests enjoy a quiet, memorable stay without feeling intrusive."
+      "A homestay should feel warm, personal, and authentic. We design guest rooms and dining areas that highlight regional charm and scenic views.",
+      "We make sure host families have private living areas while guests enjoy a quiet, memorable stay."
     ],
     whoItsFor: [
       "Families opening a homestay",
-      "Rural landowners",
-      "Heritage house owners"
+      "Rural estate owners",
+      "Heritage property owners"
     ],
     caseStudyId: "yourweb3guy",
     process: [
-      { title: "Site Study", description: "Understanding your local building style and landscape." },
-      { title: "Privacy Zoning", description: "Separating guest spaces from host family rooms." },
-      { title: "Material Selection", description: "Using local earth, wood, and stone." },
-      { title: "Building Plans", description: "Detailed drawings for local workers." }
+      { title: "Site Study", description: "Understanding local building traditions and landscape views." },
+      { title: "Privacy Zoning", description: "Separating guest areas cleanly from family living quarters." },
+      { title: "Material Selection", description: "Using regional stone, earth, and wood." },
+      { title: "Building Plans", description: "Detailed drawings for local builders." }
     ],
     pricing: "Consult for Pricing",
     faq: [
-      { question: "What makes a homestay successful?", answer: "Warm atmosphere, guest privacy, and authentic local design." }
+      { question: "What makes a homestay successful?", answer: "Authentic local charm, guest privacy, and warm, comfortable gathering spaces." }
     ],
     bookingLink: "https://topmate.io/archanagavas"
   },
   {
     id: "community-center",
     title: "Community & Activity Centers",
-    description: "Build friendly, open spaces for learning, gathering, and health using strong natural materials and bright daylight.",
+    category: "Hospitality & Resorts",
+    description: "Build open, friendly spaces for workshops, learning, and health using natural light and durable local materials.",
     valueProps: [
-      "Open Gathering - Spacious areas for workshops and events",
-      "Bright & Airy - Big windows for natural light and fresh air",
-      "Eco-Friendly - Rainwater tanks and green roofs",
-      "Built to Last - Strong, low-maintenance materials"
+      "Open Gathering - Large, flexible halls for workshops and events",
+      "Bright & Airy - Generous windows for natural light and fresh ventilation",
+      "Eco-Friendly - Rainwater collection tanks and green roofs",
+      "Built to Last - Tough, low-maintenance materials for public use"
     ],
     icon: "Building",
     heroImage: "https://images.unsplash.com/photo-1542401886-65d6c61db217?q=80&w=1200&auto=format&fit=crop",
     whatItIs: [
-      "Community spaces bring people together. We design bright halls, activity rooms, and outdoor courtyards where people can learn and celebrate.",
-      "Our designs use natural ventilation and rainwater harvesting so operating expenses stay low for schools, clubs, and organizations."
+      "Community spaces bring people together. We design bright halls, activity rooms, and outdoor courtyards where people learn, work, and celebrate.",
+      "Our designs use natural ventilation and rainwater harvesting so running expenses stay low for schools, clubs, and organizations."
     ],
     whoItsFor: [
-      "Schools & educational clubs",
-      "NGOs & non-profits",
+      "Schools & educational institutions",
+      "NGOs & non-profit organizations",
       "Community leaders"
     ],
     caseStudyId: "unique-school",
     process: [
-      { title: "Community Input", description: "Asking what activities the center will host." },
-      { title: "Building Layout", description: "Designing flexible halls, classrooms, and gardens." },
-      { title: "Green Features", description: "Adding rainwater collection and solar lighting." },
-      { title: "Safe Delivery", description: "Creating durable, safe spaces for all ages." }
+      { title: "Community Input", description: "Understanding the activities and workshops the center will host." },
+      { title: "Building Layout", description: "Designing flexible halls, classrooms, and courtyard gardens." },
+      { title: "Green Features", description: "Adding rainwater storage and solar lighting." },
+      { title: "Safe Delivery", description: "Creating durable, safe spaces for all age groups." }
     ],
     pricing: "Consult for Pricing",
     faq: [
-      { question: "Can these spaces handle daily public use?", answer: "Yes! We use tough, natural materials that stand up to heavy daily traffic." }
+      { question: "Can these spaces handle daily public use?", answer: "Yes! We use tough, natural materials that withstand daily heavy use." }
     ],
     bookingLink: "https://topmate.io/archanagavas"
   },
   {
     id: "weekend-villa",
     title: "Weekend Villas & Getaways",
+    category: "Homes & Retreats",
     description: "Design your personal getaway to relax, recharge, and enjoy the outdoors with family and friends.",
     valueProps: [
-      "Peaceful Retreat - Open verandas, quiet courtyards, and garden views",
-      "Cool & Shaded - Smart roof design that blocks harsh heat",
-      "Low Upkeep - Materials that stay good without constant painting",
-      "Great Value - Option to rent out when you are away"
+      "Peaceful Retreat - Open verandas, private courtyards, and garden views",
+      "Cool & Shaded - Smart roof overhangs that block harsh summer heat",
+      "Low Upkeep - Materials that look great without constant painting",
+      "Great Value - Option to rent out to guests when you are away"
     ],
     icon: "Home",
     heroImage: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1200&auto=format&fit=crop",
     whatItIs: [
-      "A weekend villa should feel like an immediate break from city noise. We design homes with big windows, open living rooms, and shaded verandas.",
-      "Using passive cooling methods, your villa stays comfortable without burning electricity on heavy AC."
+      "A weekend villa should feel like an immediate escape from city noise. We design homes with big windows, open living rooms, and shaded verandas.",
+      "Using natural ventilation, your villa stays comfortable without relying heavily on air conditioning."
     ],
     whoItsFor: [
-      "Families building a getaway home",
+      "Families building a weekend getaway home",
       "Landowners wanting a private sanctuary",
-      "Investors building vacation homes"
+      "Vacation home investors"
     ],
     caseStudyId: "yourweb3guy",
     process: [
-      { title: "View & Sun Study", description: "Positioning the villa for maximum shade and views." },
-      { title: "Floor Plan", description: "Designing spacious bedrooms, living areas, and decks." },
-      { title: "Material Pick", description: "Choosing natural stone and wood that need minimal care." },
-      { title: "Execution", description: "Guiding construction to match the exact design." }
+      { title: "View & Sun Study", description: "Positioning the villa for maximum shade and natural breeze." },
+      { title: "Floor Plan", description: "Designing spacious bedrooms, outdoor decks, and living rooms." },
+      { title: "Material Pick", description: "Choosing natural stone and timber that require minimal care." },
+      { title: "Execution Support", description: "Guiding construction to match the exact design." }
     ],
     pricing: "Consult for Pricing",
     faq: [
-      { question: "Can I build my villa off-grid?", answer: "Yes, we can include solar panels, rainwater tanks, and natural cooling." }
+      { question: "Can I build my villa off-grid?", answer: "Yes, we can incorporate solar panels, rainwater storage, and natural cooling." }
     ],
     bookingLink: "https://topmate.io/archanagavas"
   },
   {
     id: "eco-resort",
     title: "Eco Resorts & Glamping",
+    category: "Hospitality & Resorts",
     description: "Create eco-friendly resorts that give guests luxury stays while protecting trees, soil, and wildlife.",
     valueProps: [
       "Nature First - Cottages placed carefully between existing trees",
-      "Zero Waste - On-site water filtering and organic composting",
-      "Unique Stays - Canvas tents, bamboo huts, or timber cabins",
-      "High Guest Appeal - Memorable, sustainable hospitality"
+      "Zero Waste - On-site water recycling and organic composting",
+      "Unique Stays - Timber cabins, bamboo huts, or luxury tents",
+      "High Guest Appeal - Distinctive, eco-friendly guest hospitality"
     ],
     icon: "Map",
     heroImage: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop",
     whatItIs: [
-      "Modern travelers love stays that respect nature. We design eco-resorts with wooden cottages, stone walkways, and natural swimming pools.",
-      "We design behind-the-scenes systems like water recycling and solar power so your resort stays green and profitable."
+      "Modern travelers look for stays that respect nature. We design eco-resorts with wooden cottages, stone walkways, and natural swimming pools.",
+      "We design efficient background systems for water recycling and solar power so your resort stays green and profitable."
     ],
     whoItsFor: [
       "Resort owners & developers",
@@ -463,44 +470,45 @@ export const SERVICES: Service[] = [
     ],
     caseStudyId: "carpa-lupa",
     process: [
-      { title: "Site Survey", description: "Mapping trees, slopes, and water streams to protect them." },
+      { title: "Site Survey", description: "Mapping trees, slopes, and water channels to protect them." },
       { title: "Masterplan", description: "Layout for cottages, dining areas, pool, and walkways." },
-      { title: "Eco Systems", description: "Designing water recycling and clean power." },
-      { title: "Build Guidance", description: "Making sure construction doesn't harm the land." }
+      { title: "Eco Systems", description: "Designing water recycling and clean power systems." },
+      { title: "Build Guidance", description: "Ensuring construction work respects the land." }
     ],
     pricing: "Consult for Pricing",
     faq: [
-      { question: "Is an eco resort profitable?", answer: "Very! Travelers actively look for eco-friendly places to stay." }
+      { question: "Is an eco resort profitable?", answer: "Very! Travelers actively seek out nature-focused, eco-friendly stays." }
     ],
     bookingLink: "https://topmate.io/archanagavas"
   },
   {
     id: "wellness-retreat",
     title: "Wellness & Yoga Retreats",
-    description: "Build quiet, peaceful spaces for yoga, meditation, and healthy living made with clean, non-toxic materials.",
+    category: "Hospitality & Resorts",
+    description: "Build quiet, peaceful spaces for yoga, meditation, and healthy living using clean, non-toxic materials.",
     valueProps: [
-      "Quiet & Peaceful - Noise-reducing natural walls for quiet sleep",
-      "Non-Toxic - Lime plaster, untreated timber, and zero-VOC paints",
-      "Yoga Halls - Open, airy shalas with timber flooring",
-      "Pure Environment - Fresh air flow and clean natural light"
+      "Quiet & Peaceful - Sound-softening natural walls for quiet rest",
+      "Non-Toxic - Natural lime plaster, untreated timber, and clean paints",
+      "Yoga Halls - Open, airy shalas with comfortable timber flooring",
+      "Pure Environment - Fresh airflow and soothing natural sunlight"
     ],
     icon: "Heart",
     heroImage: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1200&auto=format&fit=crop",
     whatItIs: [
-      "A wellness center needs to help people feel calm the moment they arrive. We use natural materials like clay, lime, and timber that naturally balance room humidity and air quality.",
-      "From meditation rooms to outdoor herbal gardens, we create soothing spaces that support healing and relaxation."
+      "A wellness retreat should help guests feel calm the moment they arrive. We use natural materials like clay, lime, and timber that naturally balance indoor humidity and air quality.",
+      "From meditation rooms to outdoor herbal gardens, we create peaceful spaces that support rest and healing."
     ],
     whoItsFor: [
       "Yoga teachers & wellness founders",
       "Health retreat developers",
-      "Spa & wellness center owners"
+      "Spa & retreat center owners"
     ],
     caseStudyId: "batukaru-yurt",
     process: [
-      { title: "Vision Session", description: "Understanding your healing programs and guest needs." },
-      { title: "Quiet Layout", description: "Separating quiet shalas from kitchen & arrival areas." },
-      { title: "Pure Materials", description: "Picking natural lime, timber, and non-toxic paints." },
-      { title: "Build Supervision", description: "Ensuring every detail stays true to your vision." }
+      { title: "Vision Session", description: "Understanding your retreat programs and guest requirements." },
+      { title: "Quiet Layout", description: "Separating quiet shalas cleanly from kitchens and arrival areas." },
+      { title: "Pure Materials", description: "Selecting natural lime, timber, and zero-chemical finishes." },
+      { title: "Build Supervision", description: "Ensuring every space reflects your vision." }
     ],
     pricing: "Consult for Pricing",
     faq: [
@@ -511,52 +519,54 @@ export const SERVICES: Service[] = [
   {
     id: "food-forest",
     title: "Food Forests & Organic Orchards",
+    category: "Land & Gardens",
     description: "Plant self-growing fruit trees, vegetables, and herbs layered like a natural forest for fresh organic food year-round.",
     valueProps: [
-      "Fresh Organic Food - Harvest fruits, nuts, berries, and herbs",
-      "Self-Fertilizing - Trees and plants help each other grow",
-      "Saves Water - Thick mulch and shade keep soil moist",
-      "Low Maintenance - Requires less weeding once established"
+      "Fresh Organic Food - Harvest fresh fruits, nuts, berries, and herbs",
+      "Self-Fertilizing - Trees and plants work together to feed soil",
+      "Saves Water - Thick leaf mulch and shade retain soil moisture",
+      "Low Maintenance - Requires far less weeding once established"
     ],
     icon: "TreePine",
     heroImage: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=80&w=1200&auto=format&fit=crop",
     whatItIs: [
-      "A food forest mimics a natural jungle. Instead of planting rows of a single crop that need chemical spray, we mix fruit trees, berry bushes, groundcover herbs, and climbing vines together.",
-      "The plants feed each other, trap moisture, and protect soil, giving you a self-sustaining garden of fresh food."
+      "A food forest mimics a natural jungle. Instead of planting rows of single crops that require chemical spray, we mix fruit trees, berry bushes, herbs, and climbing vines together.",
+      "The plants nourish each other, trap moisture, and build rich soil, giving you an abundant garden of fresh food."
     ],
     whoItsFor: [
-      "Farm owners wanting organic food",
+      "Farm owners wanting organic harvests",
       "Resorts serving farm-to-table meals",
-      "Homeowners with garden space"
+      "Homeowners with land or gardens"
     ],
     caseStudyId: "vanvagado-farm",
     process: [
-      { title: "Soil Test", description: "Checking soil texture and nutrient levels." },
-      { title: "Water Trenches", description: "Digging swales to trap rainwater in the soil." },
-      { title: "Tree Selection", description: "Choosing fruit and shade trees suited to your area." },
+      { title: "Soil Test", description: "Checking soil texture and natural nutrient levels." },
+      { title: "Water Trenches", description: "Digging swales to trap rainwater directly into the soil." },
+      { title: "Tree Selection", description: "Selecting fruit and shade trees suited to your region." },
       { title: "Layered Planting", description: "Planting tall trees, shrubs, and herbs together." }
     ],
     pricing: "Consult for Pricing",
     faq: [
-      { question: "How soon do I get food?", answer: "Herbs and veggies yield in month 1; fruit trees start producing in 1 to 3 years." }
+      { question: "How soon do I get fresh food?", answer: "Herbs and veggies produce within weeks; fruit trees begin producing in 1 to 3 years." }
     ],
     bookingLink: "https://topmate.io/archanagavas"
   },
   {
     id: "agrotourism",
     title: "Agrotourism & Farm Visits",
-    description: "Turn your farm into an exciting place where visitors can tour, learn, pick fresh produce, and stay.",
+    category: "Hospitality & Resorts",
+    description: "Turn your farm into an inviting destination where visitors tour, pick fresh produce, learn, and stay overnight.",
     valueProps: [
-      "Safe Farm Layout - Separate farm machines from visitor paths",
-      "Fun Experiences - Fruit picking, farm tours, and farm dining",
-      "Extra Income - Generate revenue from farm stays and tours",
-      "Authentic Feel - Show real farm life without disrupting work"
+      "Safe Farm Layout - Separate tractor routes safely from guest walkways",
+      "Fun Farm Activities - Fruit picking, farm walks, and outdoor dining",
+      "Extra Farm Revenue - Generate income from tours, farm stays, and produce sales",
+      "Authentic Experience - Showcase real farm living while daily work continues"
     ],
     icon: "Map",
     heroImage: "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?q=80&w=1200&auto=format&fit=crop",
     whatItIs: [
-      "Agrotourism lets farm owners earn extra income by hosting guests. We design safe walking paths, tasting pavilions, and cozy stay cottages on your working farm.",
-      "We make sure guest areas are separate from tractor routes and heavy farm work so operations run smoothly."
+      "Agrotourism allows farm owners to earn extra income hosting visitors. We design safe walking paths, tasting pavilions, and cozy stay cottages on your working farm.",
+      "We ensure guest areas are separated from tractor routes and heavy farm work so operations run smoothly."
     ],
     whoItsFor: [
       "Farmers wanting to invite visitors",
@@ -578,18 +588,19 @@ export const SERVICES: Service[] = [
   {
     id: "landscape-design",
     title: "Landscape & Yard Planning",
+    category: "Land & Gardens",
     description: "Transform empty yards or fields into green outdoor spaces with shade trees, walking paths, and native flowers.",
     valueProps: [
-      "Native Flowers & Trees - Easy to grow and need less water",
-      "Rainwater Capture - Swales and ponds keep gardens green",
-      "Walking Paths - Beautiful stone paths, benches, and lighting",
-      "Low Upkeep - Uses local plants that thrive naturally"
+      "Native Flowers & Trees - Easy to grow and require minimal watering",
+      "Rainwater Capture - Ponds and swales keep gardens green naturally",
+      "Walking Paths - Beautiful stone paths, benches, and outdoor lighting",
+      "Low Upkeep - Uses regional plants that thrive without chemical spray"
     ],
     icon: "TreePine",
     heroImage: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=1200&auto=format&fit=crop",
     whatItIs: [
       "Good landscape design turns empty land into a relaxing outdoor space. We design rainwater channels, shade trees, flower beds, and seating areas.",
-      "We choose plants that grow natively in your area so you do not waste water or money on expensive artificial fertilizers."
+      "We choose plants native to your region so you don't waste water or money on artificial fertilizers."
     ],
     whoItsFor: [
       "Homeowners wanting a pretty yard",
@@ -598,30 +609,31 @@ export const SERVICES: Service[] = [
     ],
     caseStudyId: "shalimar",
     process: [
-      { title: "Land Slope Map", description: "Seeing how water moves across your yard." },
-      { title: "Garden Layout", description: "Placing lawns, trees, flower beds, and paths." },
-      { title: "Plant Selection", description: "Picking hardy, beautiful native plants." }
+      { title: "Land Slope Map", description: "Seeing how rainwater moves across your property." },
+      { title: "Garden Layout", description: "Placing lawns, shade trees, flower beds, and stone paths." },
+      { title: "Plant Selection", description: "Selecting hardy, regional plants." }
     ],
     pricing: "Consult for Pricing",
     faq: [
-      { question: "Do these gardens require a lot of watering?", answer: "No, we use native plants and rainwater collection to save water." }
+      { question: "Do these gardens require heavy watering?", answer: "No, we use native plants and rainwater channels to conserve water." }
     ],
     bookingLink: "https://topmate.io/archanagavas"
   },
   {
     id: "terrace-garden",
     title: "Terrace & Balcony Gardens",
+    category: "Land & Gardens",
     description: "Turn your rooftop or balcony into a lush garden with fresh vegetables, flowers, and comfy seating.",
     valueProps: [
-      "Cool Roof - Plants block direct sun and keep rooms underneath cool",
-      "Leak-Proof - Safe waterproofing and light soil mixes",
+      "Cool Roof - Plants block direct sun and keep rooms below cool",
+      "Leak-Proof - Safe waterproofing and lightweight soil mixes",
       "Fresh Veggies - Grow herbs, tomatoes, and greens on your roof",
       "Shade Pergolas - Sit outside comfortably day and evening"
     ],
     icon: "Sprout",
     heroImage: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=80&w=1200&auto=format&fit=crop",
     whatItIs: [
-      "A terrace garden turns hot concrete roofs into private green spots. We design lightweight soil planters, shade canopies, and seating.",
+      "A terrace garden turns hot concrete roofs into private green sanctuaries. We design lightweight soil planters, shade canopies, and seating.",
       "We ensure proper roof waterproofing and weight distribution so your building stays 100% safe and leak-free."
     ],
     whoItsFor: [
@@ -631,22 +643,23 @@ export const SERVICES: Service[] = [
     ],
     caseStudyId: "shalimar",
     process: [
-      { title: "Roof Safety Check", description: "Checking roof weight capacity and waterproofing." },
+      { title: "Roof Safety Check", description: "Checking roof load capacity and waterproofing." },
       { title: "Layout Plan", description: "Designing planter boxes, shade pergolas, and seating." },
       { title: "Light Soil & Planting", description: "Using lightweight coco-peat and hardy plants." }
     ],
     pricing: "Consult for Pricing",
     faq: [
-      { question: "Is a terrace garden safe for roof weight?", answer: "Yes! We use specialized lightweight planter mixes designed for rooftops." }
+      { question: "Is a terrace garden safe for roof weight?", answer: "Yes! We use specialized lightweight planter mixes engineered for rooftops." }
     ],
     bookingLink: "https://topmate.io/archanagavas"
   },
   {
     id: "backyard-design",
     title: "Backyard & Courtyard Gardens",
+    category: "Land & Gardens",
     description: "Turn unused backyards into private outdoor living rooms with stone patios, shade plants, and sitting spots.",
     valueProps: [
-      "Cozy Outdoor Sitting - Fire pits, benches, and dining spots",
+      "Cozy Outdoor Sitting - Fire pits, benches, and outdoor dining spots",
       "Chemical-Free Ponds - Natural pools filtered by water plants",
       "Private & Green - Tall hedges and bamboo block outside eyes",
       "Fits Any Size - Great ideas for small or large yards"
@@ -666,7 +679,7 @@ export const SERVICES: Service[] = [
     process: [
       { title: "Yard Visit", description: "Measuring your yard and asking how you want to use it." },
       { title: "Design Layout", description: "Placing patios, paths, plants, and lighting." },
-      { title: "Plant & Stone Pick", description: "Selecting durable local stones and healthy plants." }
+      { title: "Plant & Stone Pick", description: "Selecting durable local stone and healthy plants." }
     ],
     pricing: "Consult for Pricing",
     faq: [
@@ -701,18 +714,19 @@ export const DIGITAL_PRODUCTS: DigitalProduct[] = [
 export const INITIAL_PROJECTS: Project[] = [
   {
     id: 'yourweb3guy',
-    title: 'yourweb3guy',
+    title: 'Bihar Natural Eco-Home (yourweb3guy)',
     category: 'Residential',
-    location: 'Bihar',
+    location: 'Bihar, India',
     year: '2023',
     image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1200&auto=format&fit=crop',
-    description: 'A house built with natural material techniques and passive design strategies for the Bihar climate.',
-    fullDescription: 'Designed and executed a house with natural material techniques like kavi flooring, surkhi plaster, and indoor windows with louvers. We integrated passive design strategies tailored specifically according to the Bihar climate to ensure comfort and sustainability.',
+    description: 'A custom home built with local clay, natural stone, and cool breezes to stay comfortable without heavy air conditioning.',
+    fullDescription: 'Designed and built a natural home in Bihar using regional lime plaster, red clay tiles, and custom louvered windows. The home stays naturally cool during hot summers and saves energy year-round.',
     isFeatured: true,
     specs: [
-      { label: 'Location', value: 'Bihar' },
-      { label: 'Techniques', value: 'Kavi flooring, Surkhi plaster' },
-      { label: 'Strategy', value: 'Passive Design' }
+      { label: 'Client', value: 'yourweb3guy (Akash Jha)' },
+      { label: 'Location', value: 'Bihar, India' },
+      { label: 'Techniques', value: 'Lime plaster, natural stone & louver windows' },
+      { label: 'Strategy', value: 'Natural cooling & sun control' }
     ]
   },
   {
@@ -917,7 +931,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     role: 'Principal Architect, Founder',
     // Updated image link
     image: '/archana.png',
-    bio: 'Rooted in Vadodara, Designing for the world.',
+    bio: 'Architect & Permaculture Designer helping landowners turn empty land into beautiful farmhouses, eco-resorts, and food forests.',
     linkedin: 'https://www.linkedin.com/in/archana-gavas/'
   },
 ];
@@ -958,58 +972,50 @@ export const TESTIMONIALS: Testimonial[] = [
 export const INITIAL_ESTIMATOR_SERVICES: EstimatorService[] = [
   {
     id: 'permaculture-design',
-    title: 'Permaculture Design',
-    icon: '🌿',
-    desc: 'Site analysis, food forest & land masterplan',
-    subs: ['Site Reading & Analysis','Zonation Plan','Master Plan / Layout','Food Forest Design','Water Harvesting System','Soil Improvement Plan','Plant Guild & Species List','Implementation Roadmap'],
+    title: 'Food Forest & Land Masterplan',
+    icon: '🌾',
+    desc: 'Water harvesting, soil health & food forest layout',
+    subs: ['Site & Climate Check', 'Land Zone Layout', 'Master Plan Map', 'Food Forest Design', 'Rainwater Harvesting Plan', 'Soil Health Plan', 'Native Tree & Plant List', 'Step-by-Step Planting Plan'],
     baseINR: [15000,12000,25000,18000,14000,10000,8000,12000],
   },
   {
     id: 'farm-retreat',
-    title: 'Farm Retreat Design',
+    title: 'Farmhouse & Farm Stay',
     icon: '🏡',
-    desc: 'Complete architecture for farm stays',
-    subs: ['Conceptual Mood Board','Layout Plan','Design Presentation','Exterior 3D Views','Building Measurement','Site Drainage Scheme','Landscape Integration','Bill of Quantity','Development Estimate'],
+    desc: 'Complete natural architecture for your farm home',
+    subs: ['Design Ideas & Mood Board', 'Floor Plan & Room Layout', '3D Building Views', 'Building Measurements', 'Rainwater & Drainage Scheme', 'Garden Integration Plan', 'Detailed Material Cost List', 'Project Budget Estimate'],
     baseINR: [10000,20000,15000,25000,8000,12000,18000,20000,15000],
   },
   {
     id: 'airbnb',
-    title: 'Airbnb Design',
+    title: 'Airbnb & Rental Cottage',
     icon: '🏠',
-    desc: 'Revenue-optimised short-stay design',
-    subs: ['Market Analysis','Spatial Strategy','Interior Concept','3D Renders','Material Selection','Guest Experience Curation','Listing Photo Guide','Pricing Strategy Report'],
+    desc: 'High-yield short-stay design for guest rentals',
+    subs: ['Guest Market Study', 'Room Layout & Flow Plan', 'Interior Design Concept', '3D Renders', 'Natural Material List', 'Guest Experience Guide', 'Photo Guide for Listing', 'Pricing & Earnings Estimate'],
     baseINR: [12000,15000,20000,22000,10000,12000,8000,10000],
   },
   {
     id: 'homestay',
-    title: 'Homestay Design',
+    title: 'Homestay & Eco Villa',
     icon: '🏘️',
-    desc: 'Vernacular & biophilic homestay architecture',
-    subs: ['Vernacular Study','Site Integration Plan','Host–Guest Zoning','Natural Materials Plan','Layout Plan','3D Views','Cultural Expression Guide','Bill of Quantity'],
+    desc: 'Vernacular & natural homestay architecture',
+    subs: ['Local Building Style Study', 'Land & Site Layout', 'Host & Guest Zone Plan', 'Natural Materials Plan', 'Floor Plans', '3D Building Views', 'Cultural Design Features', 'Material Cost Estimate'],
     baseINR: [12000,15000,10000,12000,18000,22000,8000,15000],
   },
   {
     id: 'weekend-villa',
-    title: 'Weekend Villa',
+    title: 'Weekend Villa & Retreat',
     icon: '🌄',
-    desc: 'Biophilic luxury villa architecture',
-    subs: ['Conceptual Design','Biophilic Design Plan','Exterior 3D Views','Interior 3D Views','Landscape Design','Rental Optimisation','Working Drawings','Bill of Quantity'],
+    desc: 'Comfortable luxury villa with natural cooling',
+    subs: ['Initial Design Concept', 'Natural Cooling & Light Plan', 'Exterior 3D Renders', 'Interior 3D Renders', 'Garden & Courtyard Layout', 'Rental Potential Guide', 'Complete Builder Drawings', 'Material Cost List'],
     baseINR: [15000,20000,25000,25000,18000,12000,30000,20000],
   },
   {
     id: 'eco-resort',
-    title: 'Eco Resort',
+    title: 'Eco Resort & Wellness Center',
     icon: '🌺',
-    desc: 'Full masterplan for eco-resorts & retreats',
-    subs: ['Ecological Baseline Study','Regenerative Masterplan','Cabin / Unit Design','Amenity Block Design','Wastewater System Design','Solar & Wind Plan','Resort Landscape','Bill of Quantity'],
+    desc: 'Masterplan for eco resort cabins, amenities & land',
+    subs: ['Land & Climate Survey', 'Complete Sustainable Masterplan', 'Guest Cabin & Cottage Design', 'Dining & Activity Hub Design', 'Eco Wastewater System', 'Solar Energy Plan', 'Resort Landscape Design', 'Detailed Construction Estimate'],
     baseINR: [20000,45000,30000,25000,18000,15000,30000,35000],
-  },
-  {
-    id: 'community-center',
-    title: 'Community Center',
-    icon: '🏛️',
-    desc: 'Inclusive sustainable civic spaces',
-    subs: ['Civic Needs Study','Programmatic Synergy Plan','Conceptual Design','Accessibility Design','Ecological Integration','Working Drawings','Bill of Quantity','Grant Readiness Report'],
-    baseINR: [12000,15000,20000,12000,15000,35000,22000,18000],
   },
 ];

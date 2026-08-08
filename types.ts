@@ -119,6 +119,7 @@ export interface Service {
   valueProps: string[]; // Deliverables
   icon: string; 
   // New fields for detailed page
+  category?: 'Homes & Retreats' | 'Hospitality & Resorts' | 'Land & Gardens' | string;
   heroImage?: string;
   whatItIs?: string[]; // Paragraphs
   whoItsFor?: string[]; // Bullet points

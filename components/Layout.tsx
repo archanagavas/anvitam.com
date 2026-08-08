@@ -348,11 +348,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
             {/* Social / Contact */}
             <div>
-              <h4 className="text-white/40 text-xs font-bold uppercase tracking-widest mb-5">Contact Us</h4>
+              <h4 className="text-white/40 text-xs font-bold uppercase tracking-widest mb-5">Contact & Location</h4>
               <ul className="space-y-3">
                 <li><a href="mailto:ar.archanagavas@gmail.com" className="text-sm text-white/70 hover:text-[#CCFF00] transition-colors">ar.archanagavas@gmail.com</a></li>
                 <li><a href="tel:+917990657190" className="text-sm text-white/70 hover:text-[#CCFF00] transition-colors">+91 7990657190</a></li>
-                <li><span className="text-xs text-white/50 leading-relaxed block">2ND Floor, alisha chambers, Santram Mandir Rd, Nadiad, Gujarat 387001</span></li>
+                <li><span className="text-xs text-white/80 font-medium leading-relaxed block">Studio: Nadiad | Active in Vadodara, Gujarat & Worldwide</span></li>
+                <li><span className="text-xs text-white/40 leading-relaxed block">2ND Floor, alisha chambers, Santram Mandir Rd, Nadiad 387001</span></li>
                 <li><Link to="/contact" className="text-sm text-[#CCFF00] hover:text-white transition-colors font-semibold">Send us a message →</Link></li>
               </ul>
             </div>

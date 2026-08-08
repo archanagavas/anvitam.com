@@ -291,18 +291,17 @@ ${formData.message}`;
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-[#111] ml-1">Primary Service Requested *</label>
+                    <label className="text-xs font-semibold text-[#111] ml-1">What are you planning to build? *</label>
                     <select
                       value={formData.serviceType}
                       onChange={e => setFormData({...formData, serviceType: e.target.value})}
                       className="w-full bg-white border border-gray-200 rounded-full px-5 py-3 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-all font-medium text-sm text-[#111] cursor-pointer"
                     >
-                      <option value="Farm Retreat Architecture">Farm Retreat Architecture</option>
-                      <option value="Permaculture & Food Forest Design">Permaculture & Food Forest Design</option>
-                      <option value="Luxury Eco Villa & Residence">Luxury Eco Villa & Residence</option>
-                      <option value="Eco Resort & Hospitality Planning">Eco Resort & Hospitality Planning</option>
-                      <option value="Landscape & Site Planning">Landscape & Site Planning</option>
-                      <option value="General Architecture Inquiry">General Architecture Inquiry</option>
+                      <option value="Farmhouse or Weekend Home">Farmhouse or Weekend Home</option>
+                      <option value="Farmstay, Airbnb or Eco Resort">Farmstay, Airbnb or Eco Resort</option>
+                      <option value="Food Forest & Permaculture Garden">Food Forest & Permaculture Garden</option>
+                      <option value="Landscape & Rainwater Planning">Landscape & Rainwater Planning</option>
+                      <option value="General Land Consultation">General Land Consultation</option>
                     </select>
                   </div>
 

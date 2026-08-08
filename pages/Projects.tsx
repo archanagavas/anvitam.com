@@ -9,9 +9,21 @@ import FlowButton from '../components/ui/flow-button';
 const Projects: React.FC = () => {
   const { projects } = useContent();
   const navigate = useNavigate();
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
   
-  const featuredProjects = projects.slice(0, 3);
-  const archivedProjects = projects.slice(3);
+  const categories = [
+    { label: 'All Projects', value: 'All' },
+    { label: '🏡 Homes & Retreats', value: 'Residential' },
+    { label: '🏨 Hospitality & Resorts', value: 'Hospitality' },
+    { label: '🌾 Land & Gardens', value: 'Permaculture' }
+  ];
+
+  const filteredProjects = selectedCategory === 'All'
+    ? projects
+    : projects.filter(p => p.category?.toLowerCase().includes(selectedCategory.toLowerCase()) || (selectedCategory === 'Residential' && (p.category === 'Residential' || p.title.toLowerCase().includes('home') || p.title.toLowerCase().includes('house') || p.title.toLowerCase().includes('villa'))) || (selectedCategory === 'Hospitality' && (p.category === 'Hospitality' || p.title.toLowerCase().includes('resort') || p.title.toLowerCase().includes('stay') || p.title.toLowerCase().includes('yurt'))) || (selectedCategory === 'Permaculture' && (p.category === 'Permaculture' || p.title.toLowerCase().includes('farm') || p.title.toLowerCase().includes('garden'))));
+
+  const featuredProjects = filteredProjects.slice(0, 4);
+  const archivedProjects = filteredProjects.slice(4);
 
   const getSpecIcon = (label: string) => {
     const l = label.toLowerCase();
@@ -25,8 +37,8 @@ const Projects: React.FC = () => {
   return (
     <div className="bg-[#ffffff] text-[#0a0a0a] min-h-screen font-sans selection:bg-[#CCFF00] selection:text-[#111]">
       <Helmet>
-        <title>Projects | Sustainable Resort Architect & Eco Retreat Designer</title>
-        <meta name="description" content="Explore our portfolio of sustainable architecture, permaculture design, farm retreats, wellness spaces, and weekend villa design." />
+        <title>Projects | Sustainable Farmhouse, Eco Resort & Permaculture Portfolio</title>
+        <meta name="description" content="Explore our portfolio of sustainable architecture, permaculture design, farm retreats, food forests, and eco resorts by Anvitam." />
         <meta name="keywords" content="sustainable architecture projects, eco resort design, permaculture farm retreats, green building design, architectural portfolio, vadodara architecture" />
         <meta name="robots" content="index, follow" />
         <meta name="X-Robots-Tag" content="index, follow" />
@@ -36,7 +48,7 @@ const Projects: React.FC = () => {
       </Helmet>
 
       {/* Hero Section */}
-      <div className="relative pt-40 pb-32 flex flex-col justify-end text-left overflow-hidden min-h-[50vh] md:min-h-[60vh]">
+      <div className="relative pt-40 pb-28 flex flex-col justify-end text-left overflow-hidden min-h-[45vh]">
         <div className="absolute inset-0 z-0">
           <img 
              src="https://images.unsplash.com/photo-1540544660406-6a69dacb2804?q=80&w=2000&auto=format&fit=crop" 
@@ -50,26 +62,37 @@ const Projects: React.FC = () => {
            <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-4xl md:text-6xl lg:text-7xl font-sans font-medium text-white mb-4 leading-tight"
+              className="text-4xl md:text-6xl font-sans font-bold text-white mb-4 leading-tight"
            >
-              Projects
+              Our Realized Projects
            </motion.h1>
            <motion.p 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-sm md:text-base text-white/90 font-light mb-8 max-w-lg leading-relaxed"
+              className="text-sm md:text-base text-white/90 font-light mb-6 max-w-xl leading-relaxed"
            >
-              Here are some of the best sustainable architecture projects we are designing across the region.
+              Real farmhouses, eco-resorts, food forests, and landscapes designed to work with nature.
            </motion.p>
-           <motion.button 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-white text-[#0a0a0a] px-5 py-2.5 rounded-full text-xs font-bold hover:bg-[#ccff00] flex items-center gap-2 w-max transition-colors"
-           >
-              View guide <ArrowRight size={14}/>
-           </motion.button>
+        </div>
+      </div>
+
+      {/* Category Selection Tabs */}
+      <div className="max-w-screen-xl mx-auto px-6 md:px-12 pt-8 pb-2">
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          {categories.map((cat) => (
+            <button
+              key={cat.value}
+              onClick={() => setSelectedCategory(cat.value)}
+              className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                selectedCategory === cat.value
+                  ? 'bg-gray-900 text-[#CCFF00] shadow-md scale-105'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
         </div>
       </div>
 

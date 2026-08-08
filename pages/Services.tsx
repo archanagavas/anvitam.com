@@ -12,21 +12,32 @@ const Services: React.FC = () => {
   const { services, testimonials } = useContent();
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+
+  const categories = [
+    { label: 'All Services', value: 'All' },
+    { label: '🏡 Homes & Retreats', value: 'Homes & Retreats' },
+    { label: '🏨 Hospitality & Resorts', value: 'Hospitality & Resorts' },
+    { label: '🌾 Land & Gardens', value: 'Land & Gardens' }
+  ];
+
+  const filteredServices = selectedCategory === 'All' 
+    ? services 
+    : services.filter(s => s.category === selectedCategory || (selectedCategory === 'Homes & Retreats' && (s.id.includes('home') || s.id.includes('villa') || s.id.includes('retreat'))) || (selectedCategory === 'Land & Gardens' && (s.id.includes('permaculture') || s.id.includes('forest') || s.id.includes('garden') || s.id.includes('landscape'))));
 
   const faqs = [
-    { question: 'What is your architectural design process?', answer: 'We follow a comprehensive process starting from site analysis and client vision, moving through conceptual design, detailed engineering, and finally construction supervision.' },
-    { question: 'Do you work on projects outside Gujarat?', answer: 'Yes, we take on select projects across India and internationally, especially in the eco-resort and farm retreat space.' },
-    { question: 'How do you integrate sustainability?', answer: 'We incorporate passive solar design, natural ventilation, local materials, rainwater harvesting, and renewable energy systems into all our designs.' },
-    { question: 'What is the typical timeline for a project?', answer: 'Timelines vary greatly based on scale. A farm retreat might take 12-18 months from concept to completion, while smaller residential projects may take 8-12 months.' },
-    { question: 'Do you offer interior design services?', answer: 'Yes, our interior design focuses on biophilic principles, ensuring a seamless connection between the architecture, landscape, and interior spaces.' },
+    { question: 'What is your architectural design process?', answer: 'We follow a simple 4-step process: Site reading & land analysis, masterplan & 3D designs, detailed drawings, and site visits to guide your local builders.' },
+    { question: 'Do you work on projects outside Gujarat?', answer: 'Yes, we design farmhouses, eco resorts, and land masterplans across India and internationally.' },
+    { question: 'How do you keep rooms cool naturally?', answer: 'We align windows and roof overhangs with local winds and sun angles, and use natural materials like lime plaster, clay tiles, and stone that absorb heat.' },
+    { question: 'What is the typical timeline for a project?', answer: 'Early design masterplans take 4 to 6 weeks. Full architectural drawing packages range between 2 to 4 months depending on project scale.' },
   ];
 
   return (
     <div className="bg-[#ffffff] text-[#0a0a0a] min-h-screen font-sans selection:bg-[#CCFF00] selection:text-[#111]">
       <Helmet>
-        <title>Services | Sustainable Resort Architect & Eco Retreat Designer</title>
-        <meta name="description" content="Explore our sustainable architecture and permaculture design services, including farm retreats, wellness spaces, food forests, and weekend villa design." />
-        <meta name="keywords" content="sustainable design services, eco-friendly architecture, permaculture master planning, farm retreat design, terrace garden design, biodiverse landscaping" />
+        <title>Services | Farm Retreat, Eco Resort & Permaculture Architect</title>
+        <meta name="description" content="Explore simple, outcome-focused architecture and land design services by Anvitam. Farmhouses, eco resorts, food forests, and garden masterplanning." />
+        <meta name="keywords" content="farmhouse architect, eco resort design, permaculture masterplan, food forest design, natural home design" />
         <meta name="robots" content="index, follow" />
         <meta name="X-Robots-Tag" content="index, follow" />
         <meta name="publisher" content="Anvitam" />
@@ -35,57 +46,59 @@ const Services: React.FC = () => {
       </Helmet>
 
       {/* Hero Section */}
-      <div className="relative pt-40 pb-32 flex flex-col items-center justify-center text-center overflow-hidden min-h-[60vh] md:min-h-[70vh]">
+      <div className="relative pt-40 pb-28 flex flex-col items-center justify-center text-center overflow-hidden min-h-[50vh]">
         <div className="absolute inset-0 z-0 bg-[#0a0a0a]">
           <img 
             src="https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=2000&auto=format&fit=crop" 
             alt="Hero Background" 
-            className="w-full h-full object-cover opacity-60"
+            className="w-full h-full object-cover opacity-50"
           />
           <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#ffffff] via-[#ffffff]/80 to-transparent"></div>
         </div>
         
-        <div className="relative z-10 max-w-4xl px-4 mt-8 md:mt-16">
+        <div className="relative z-10 max-w-4xl px-4 mt-8 md:mt-12">
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-4xl md:text-6xl lg:text-7xl font-sans font-medium text-white mb-6 leading-[1.1]"
+            className="text-4xl md:text-6xl font-sans font-bold text-white mb-4 leading-[1.1]"
           >
-            Sustainable Architecture <br />Expertly Delivered
+            What Are You Planning to Build?
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
-            className="text-base md:text-lg text-white/80 font-light mb-10 max-w-2xl mx-auto"
+            className="text-base md:text-lg text-white/90 font-light mb-8 max-w-2xl mx-auto"
           >
-            From eco-resorts to urban sanctuaries, we build environments that harmonise with nature.
+            Clear design services for farmhouses, eco-resorts, food forests, and land masterplans.
           </motion.p>
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            <a 
-              href="https://topmate.io/archanagavas/1799075?utm_source=public_profile&utm_campaign=archanagavas" 
-              target="_blank" 
-              rel="noreferrer"
+        </div>
+      </div>
+
+      {/* Category Filter Tabs */}
+      <div className="max-w-screen-xl mx-auto px-6 md:px-12 pt-8 pb-4">
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          {categories.map((cat) => (
+            <button
+              key={cat.value}
+              onClick={() => setSelectedCategory(cat.value)}
+              className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                selectedCategory === cat.value
+                  ? 'bg-gray-900 text-[#CCFF00] shadow-md scale-105'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
             >
-              <FlowButton text="Free Design Consultation" variant="dark" />
-            </a>
-          </motion.div>
+              {cat.label}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Services List Section */}
-      <div className="max-w-screen-xl mx-auto px-6 md:px-12 py-16 md:py-24">
-        <div className="text-center mb-16 md:mb-24">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl text-[#0a0a0a]">Eco-Friendly Solutions We Provide</h2>
-        </div>
-
-        <div className="space-y-24 md:space-y-32">
-          {services.map((service, index) => (
+      <div className="max-w-screen-xl mx-auto px-6 md:px-12 py-12 md:py-16">
+        <div className="space-y-20 md:space-y-24">
+          {filteredServices.map((service, index) => (
             <motion.div 
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}

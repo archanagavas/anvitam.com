@@ -8,9 +8,11 @@ import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
 import SlidingTestimonials from '../components/SlidingTestimonials';
 import InfiniteMarquee from '../components/InfiniteMarquee';
 import VerticalTimeline from '../components/VerticalTimeline';
+import { ScrollFlipMethodologySection } from '../components/ui/flip-card-methodology';
 import { FlowButton } from '../components/ui/flow-button';
 import { TypingAnimation } from '../components/TypingAnimation';
 import { NumberCounter } from '../components/NumberCounter';
+import { CoverflowCarousel, CoverflowSlide } from '../components/ui/coverflow-carousel';
 
 const FLIP_WORDS = [
   "Farms",
@@ -119,14 +121,42 @@ const Home: React.FC = () => {
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '25%']);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
-  const showcaseProjects = projects?.slice(0, 2) || [];
+  const showcaseProjects = projects?.slice(0, 6) || [];
   const recentBlogs = blogs?.filter(b => b.status === 'published').slice(0, 2) || [];
 
-  const neonBtn = 'inline-flex items-center gap-2 bg-[#CCFF00] text-[#050505] px-6 py-3 rounded-full text-sm font-semibold hover:scale-105 transition-transform duration-300 cursor-pointer';
+  const serviceSlides: CoverflowSlide[] = services.map((s, idx) => ({
+    id: s.id,
+    src: s.heroImage || [SERVICE_1, SERVICE_2, SERVICE_3][idx % 3],
+    alt: s.title,
+    title: s.title,
+    subtitle: s.description,
+    meta: [
+      { label: 'Type', value: s.category || 'Regenerative Architecture' },
+      { label: 'Scope', value: '3D Render, Masterplan & Solar Loops' },
+      { label: 'Availability', value: 'Pan-India & Global' },
+    ],
+    onClick: () => navigate(`/services/${s.id}`),
+  }));
+
+  const projectSlides: CoverflowSlide[] = (projects && projects.length > 0 ? projects : showcaseProjects).map((p) => ({
+    id: p.id,
+    src: p.image,
+    alt: p.title,
+    title: p.title,
+    subtitle: p.description,
+    meta: [
+      { label: 'Location', value: p.location || 'India' },
+      { label: 'Type', value: p.category || 'Living Farm Masterplan' },
+      { label: 'Status', value: p.status === 'ongoing' ? 'Active Site' : 'Completed & Delivered' },
+    ],
+    onClick: () => navigate(`/projects/${p.slug || p.id}`),
+  }));
+
+  const neonBtn = 'inline-flex items-center gap-[#CCFF00]';
   const outlineBtn = 'inline-flex items-center gap-2 border border-[#111] text-[#111] bg-transparent px-6 py-3 rounded-full text-sm font-semibold hover:bg-[#111] hover:text-white transition-all duration-300 cursor-pointer';
 
   return (
-    <div className="w-full bg-white text-[#111] font-sans overflow-hidden">
+    <div className="w-full bg-white text-[#111] font-sans">
 
       <Helmet>
         <title>Anvitam | Regenerative Architecture for Farms, Retreats & Resorts</title>
@@ -157,13 +187,13 @@ const Home: React.FC = () => {
         </motion.div>
 
         {/* Centered hero text */}
-        <motion.div style={{ opacity: heroOpacity }} className="relative z-10 text-center px-6 max-w-4xl mx-auto pt-16">
+        <motion.div style={{ opacity: heroOpacity }} className="relative z-10 text-center px-4 sm:px-6 max-w-4xl mx-auto pt-14 pb-8">
           {/* Trust Pill Badge */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/90 backdrop-blur-md border border-white/40 shadow-lg text-gray-900 text-xs font-semibold mb-8 hover:scale-[1.02] transition-transform cursor-pointer"
+            className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/95 backdrop-blur-md border border-white/50 shadow-lg text-gray-900 text-xs font-semibold mb-6 hover:scale-[1.02] transition-transform cursor-pointer"
           >
             <div className="flex -space-x-2.5 overflow-hidden">
               <img className="inline-block h-7 w-7 rounded-full ring-2 ring-white object-cover" src="/avatars/client1.jpg" alt="Mahandra sinh Solanki" />
@@ -173,7 +203,7 @@ const Home: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <span className="flex text-amber-500 text-xs tracking-tighter">★ ★ ★ ★ ★</span>
-              <span className="text-gray-900 font-bold text-xs tracking-tight">Trusted by 20+ owners</span>
+              <span className="text-gray-900 font-bold text-xs tracking-tight">Trusted by 20+ Landowners</span>
             </div>
           </motion.div>
 
@@ -181,45 +211,64 @@ const Home: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-4xl sm:text-6xl md:text-7xl text-white font-bold leading-[1.15] tracking-tight mb-8"
+            className="text-4xl sm:text-6xl md:text-7xl text-white font-extrabold leading-[1.12] tracking-tight mb-4 drop-shadow-md"
           >
-            Regenerative Architecture for{' '}
-            <TypewriterHeadingWords words={FLIP_WORDS} />
+            From Empty Space to a{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#CCFF00] via-[#E2FF66] to-[#A3E635] drop-shadow-lg">
+              Living Place.
+            </span>
           </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="text-base sm:text-xl text-gray-200 font-medium max-w-2xl mx-auto mb-8 leading-relaxed drop-shadow-sm"
+          >
+            We design farmhouses, eco-resorts, food forests, and landscapes that work with nature.
+          </motion.p>
 
           {/* 2 Prominent Hero Action Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="flex flex-wrap items-center justify-center gap-4 mb-10"
+            className="flex flex-wrap items-center justify-center gap-4 mb-8"
           >
-            <Link to="/projects">
-              <FlowButton text="Explore Our Projects" variant="dark" className="shadow-lg" />
+            <Link to="/contact">
+              <FlowButton text="Discuss Your Project" variant="lime" className="shadow-[0_0_25px_rgba(204,255,0,0.35)] hover:shadow-[0_0_35px_rgba(204,255,0,0.55)] transition-shadow" />
             </Link>
-            <FlowButton
-              text="Get Estimate"
-              variant="lime"
-              onClick={() => window.dispatchEvent(new CustomEvent('open-estimator'))}
-            />
+            <Link to="/projects">
+              <FlowButton text="Explore Projects" variant="dark" className="shadow-lg border border-white/20" />
+            </Link>
           </motion.div>
 
-          {/* Services Checklist Bar */}
+          {/* What Space Are You Looking To Create? Question Header + Badges */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="flex flex-wrap items-center justify-center gap-2 max-w-4xl mx-auto text-xs"
+            className="pt-2"
           >
-            {SERVICES_CHECKLIST.map((item) => (
-              <span
-                key={item}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white font-medium shadow-xs hover:border-[#CCFF00]/60 transition-colors"
-              >
-                <span className="text-[#CCFF00] font-bold text-xs">✓</span>
-                <span className="text-white/95">{item}</span>
-              </span>
-            ))}
+            <p className="text-xs uppercase tracking-widest text-[#CCFF00] font-bold mb-3 drop-shadow-sm">
+              What space are you looking to create?
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-2.5 text-xs sm:text-sm">
+              {[
+                { label: '🏡 Designing a Private Home or Villa?', path: '/services?category=Homes+%26+Retreats' },
+                { label: '🏨 Building a Farmstay, Airbnb or Eco Resort?', path: '/services?category=Hospitality+%26+Resorts' },
+                { label: '🌾 Developing Land, Food Forest or Garden?', path: '/services?category=Land+%26+Gardens' }
+              ].map((cat) => (
+                <Link
+                  key={cat.label}
+                  to={cat.path}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 hover:bg-[#CCFF00] hover:text-black backdrop-blur-md border border-white/25 text-white font-semibold transition-all duration-300 hover:scale-105 shadow-md group/pill"
+                >
+                  <span>{cat.label}</span>
+                  <ArrowRight size={14} className="text-[#CCFF00] group-hover/pill:text-black transition-colors" />
+                </Link>
+              ))}
+            </div>
           </motion.div>
         </motion.div>
 
@@ -386,49 +435,33 @@ const Home: React.FC = () => {
       </section>
 
       {/* ══════════════════════════════════════════
-          SERVICES — card carousel / centered heading + 3 portrait cards
+          SERVICES — 3D Coverflow Carousel
       ══════════════════════════════════════════ */}
-      <section className="bg-white py-24 px-6 md:px-16 lg:px-24 border-t border-gray-100">
+      <section className="bg-white py-24 px-6 md:px-16 lg:px-24 border-t border-gray-100 overflow-hidden">
         <div className="max-w-screen-xl mx-auto">
           {/* Section label */}
           <FadeUp>
-            <div className="text-center mb-16">
-              <div className="inline-flex items-center gap-2 border border-[#111]/20 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#111] mb-6">
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center gap-2 border border-[#111]/20 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#111] mb-4">
                 <span>↓</span> What We Offer
               </div>
-              <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-[#111] mb-4">
+              <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-[#111] mb-3">
                 What can we help you create?
               </h2>
               <p className="text-[#555] max-w-2xl mx-auto text-base">
-                Four core disciplines, integrated into a single design approach.
+                Four core disciplines integrated into a single design approach. Drag or tap any card to explore.
               </p>
             </div>
           </FadeUp>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {services.slice(0, 3).map((s, i) => (
-              <FadeUp key={s.id} delay={i * 0.1}>
-                <div className="bg-white rounded-2xl overflow-hidden flex flex-col h-full group cursor-pointer border border-gray-200 hover:shadow-xl transition-shadow duration-300" onClick={() => navigate(`/services/${s.id}`)}>
-                  <div className="relative h-72 overflow-hidden">
-                    <div className="absolute top-4 left-4 z-10 w-12 h-12 bg-[#CCFF00] rounded-full flex items-center justify-center text-2xl shadow-md">
-                      {['🌿', '🌱', '🏡'][i] || '🏗️'}
-                    </div>
-                    <img src={s.heroImage || [SERVICE_1, SERVICE_2, SERVICE_3][i]} alt={s.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                    <div className="absolute bottom-0 left-0 p-6">
-                      <h3 className="text-white text-2xl font-bold leading-tight mb-2">{s.title}</h3>
-                      <p className="text-white/75 text-sm leading-relaxed">{s.description}</p>
-                    </div>
-                  </div>
-                  <div className="p-6 mt-auto">
-                    <Link to={`/services/${s.id}`}>
-                      <FlowButton text="Explore Service" />
-                    </Link>
-                  </div>
-                </div>
-              </FadeUp>
-            ))}
-          </div>
+          <CoverflowCarousel
+            slides={serviceSlides}
+            showNavigation
+            showPagination
+            showCaption
+            cardWidth="clamp(220px, 28vw, 340px)"
+            className="my-2"
+          />
 
           <div className="text-center mt-10">
             <Link to="/services">
@@ -439,120 +472,37 @@ const Home: React.FC = () => {
       </section>
 
       {/* ══════════════════════════════════════════
-          PROCESS — 2-Column Methodology Section
+          PROCESS — Scroll Flip Cards Methodology Section
       ══════════════════════════════════════════ */}
-      <section className="bg-white py-24 px-6 md:px-16 lg:px-24 border-t border-gray-100">
-        <div className="max-w-screen-xl mx-auto" id="method">
-          <VerticalTimeline />
-        </div>
-      </section>
+      <ScrollFlipMethodologySection />
 
       {/* ══════════════════════════════════════════
-          PROJECTS — left image, right details
+          PROJECTS — 3D Coverflow Showcase
       ══════════════════════════════════════════ */}
-      <section className="bg-white py-24 px-6 md:px-16 lg:px-24 border-t border-gray-100">
+      <section className="bg-white py-24 px-6 md:px-16 lg:px-24 border-t border-gray-100 overflow-hidden">
         <div className="max-w-screen-xl mx-auto">
           <FadeUp>
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-6 text-center md:text-left">
               <div>
-                <div className="inline-flex items-center gap-2 border border-[#111]/20 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#111] mb-6">
+                <div className="inline-flex items-center gap-2 border border-[#111]/20 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#111] mb-4">
                   <span>↓</span> See Our Projects
                 </div>
                 <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-[#111]">Ideas are easy. We care about what works on site.</h2>
               </div>
-              <Link to="/projects">
+              <Link to="/projects" className="shrink-0 mx-auto md:mx-0">
                 <FlowButton text="View All Projects" />
               </Link>
             </div>
           </FadeUp>
 
-          <div className="space-y-8">
-            {showcaseProjects.length > 0 ? showcaseProjects.map((project, i) => (
-              <FadeUp key={project.id} delay={i * 0.1}>
-                <div className="bg-white rounded-2xl overflow-hidden flex flex-col md:flex-row border border-gray-200 hover:shadow-xl transition-shadow group">
-                  <div className="relative md:w-1/2 h-64 md:h-auto overflow-hidden">
-                    <img src={project.image} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                  </div>
-                  <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[#CCFF00] bg-[#111] text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full">{project.category}</span>
-                        {project.status && (
-                          <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
-                            project.status === 'ongoing' 
-                              ? 'bg-amber-100 text-amber-800 border border-amber-200' 
-                              : 'bg-green-100 text-green-800 border border-green-200'
-                          }`}>
-                            {project.status === 'ongoing' ? 'Ongoing' : 'Delivered'}
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="text-2xl md:text-3xl font-bold mt-5 mb-4">{project.title}</h3>
-                      <p className="text-[#555] text-sm leading-relaxed mb-6">{project.description}</p>
-                    </div>
-                    <div className="space-y-3 mb-8">
-                      {[
-                        { icon: '📍', label: 'Location', val: project.location },
-                        { icon: '🏁', label: 'Type', val: project.category },
-                        ...(project.status ? [{ icon: '⏳', label: 'Status', val: project.status === 'ongoing' ? 'Ongoing' : 'Delivered' }] : []),
-                        ...(project.specs?.slice(0, 2).map((s, idx) => ({ 
-                           icon: idx === 0 ? '♻️' : '✨', 
-                           label: s.label, 
-                           val: s.value 
-                        })) || [])
-                      ].slice(0, 4).map(r => (
-                        <div key={r.label} className="flex justify-between items-center text-sm border-b border-[#111]/5 pb-2">
-                          <span className="text-[#888] flex items-center gap-2">{r.icon} {r.label}</span>
-                          <span className="font-medium text-[#111] text-right max-w-[60%]">{r.val}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <Link to={`/projects/${project.slug || project.id}`}>
-                      <FlowButton text="View Details" />
-                    </Link>
-                  </div>
-                </div>
-              </FadeUp>
-            )) : (
-              /* Placeholder cards when no data */
-              [0, 1].map(i => (
-                <FadeUp key={i} delay={i * 0.1}>
-                  <div className="bg-white rounded-2xl overflow-hidden flex flex-col md:flex-row border border-gray-200 hover:shadow-xl transition-shadow group">
-                    <div className="relative md:w-1/2 h-64 md:h-80 overflow-hidden bg-[#ddd]">
-                      <img src={i === 0 ? SERVICE_1 : SERVICE_2} alt="Project" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                    </div>
-                    <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-between">
-                      <div>
-                        <span className="text-[#CCFF00] bg-[#111] text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full">{i === 0 ? 'Farm Retreat Architecture' : 'Airbnb Homestay Design'}</span>
-                        <h3 className="text-2xl md:text-3xl font-bold mt-5 mb-4">{i === 0 ? 'Eco Farm Stay – California' : 'Boutique Villa – Sydney'}</h3>
-                        <p className="text-[#555] text-sm leading-relaxed mb-6">
-                          {i === 0
-                            ? 'A complete farmstay architecture services project combining passive solar design and permaculture landscape design on a 40-acre rural property.'
-                            : 'Airbnb landscape design in Sydney blending terrace garden design with boutique villa landscape design for maximum guest appeal.'}
-                        </p>
-                      </div>
-                      <div className="space-y-3 mb-8">
-                        {[
-                          { icon: '📍', label: 'Location', val: i === 0 ? 'California, USA' : 'Sydney, Australia' },
-                          { icon: '♻️', label: 'Approach', val: i === 0 ? 'Permaculture site planning' : 'Urban gardening design' },
-                          { icon: '🏁', label: 'Status', val: 'Completed' },
-                          { icon: '💰', label: 'ROI', val: 'Estimated 14 months' },
-                        ].map(r => (
-                          <div key={r.label} className="flex justify-between items-center text-sm border-b border-[#111]/5 pb-2">
-                            <span className="text-[#888] flex items-center gap-2">{r.icon} {r.label}</span>
-                            <span className="font-medium text-[#111]">{r.val}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <Link to="/projects">
-                        <FlowButton text="View Details" />
-                      </Link>
-                    </div>
-                  </div>
-                </FadeUp>
-              ))
-            )}
-          </div>
+          <CoverflowCarousel
+            slides={projectSlides}
+            showNavigation
+            showPagination
+            showCaption
+            cardWidth="clamp(240px, 32vw, 380px)"
+            className="my-2"
+          />
         </div>
       </section>
 
@@ -756,15 +706,23 @@ const Home: React.FC = () => {
       </section>
 
       {/* ══ IS ANVITAM RIGHT FOR YOU ══ */}
-      <section className="bg-slate-50 py-24 px-6 md:px-16 lg:px-24 border-t border-b border-gray-200/80">
+      <section className="bg-[#FAF8F5] py-24 px-6 md:px-16 lg:px-24 border-t border-b border-stone-200/80">
         <div className="max-w-screen-xl mx-auto">
           <FadeUp>
-            <div className="text-center mb-14">
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Is Anvitam the right fit<br/>for your project?</h2>
-              <p className="text-gray-600 max-w-xl mx-auto">Anvitam may be a good fit if you:</p>
+            <div className="text-center mb-16">
+              <div className="inline-flex items-center gap-2 border border-[#111]/20 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#111] mb-6">
+                <span>✓</span> Right Fit Assessment
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold leading-[1.12] tracking-tight text-[#111] mb-4">
+                Is Anvitam the right fit<br className="hidden sm:inline" /> for your project?
+              </h2>
+              <p className="text-[#555] max-w-xl mx-auto text-base sm:text-lg">
+                We work best with landowners who value ecological design, natural materials, and long-term site resilience.
+              </p>
             </div>
           </FadeUp>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-14">
             {[
               'Own or are planning to acquire land',
               'Want architecture connected to landscape and ecology',
@@ -774,17 +732,22 @@ const Home: React.FC = () => {
               'Are looking for a long-term design approach rather than a generic plan',
             ].map((item, i) => (
               <FadeUp key={i} delay={i * 0.06}>
-                <div className="flex items-start gap-3 bg-white border border-gray-200/90 shadow-sm rounded-xl p-5">
-                  <span className="text-emerald-600 font-bold text-lg shrink-0">✓</span>
-                  <span className="text-gray-800 text-sm leading-relaxed">{item}</span>
+                <div className="group bg-white border border-stone-200/90 hover:border-[#111] rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 flex items-start gap-4 h-full cursor-pointer hover:-translate-y-1">
+                  <div className="w-7 h-7 rounded-full bg-[#162a23] text-[#CCFF00] font-bold flex items-center justify-center shrink-0 text-xs shadow-sm group-hover:scale-110 transition-transform">
+                    ✓
+                  </div>
+                  <span className="text-[#111] font-semibold text-base leading-snug group-hover:text-black transition-colors">
+                    {item}
+                  </span>
                 </div>
               </FadeUp>
             ))}
           </div>
+
           <FadeUp>
             <div className="text-center">
               <Link to="/contact">
-                <FlowButton text="Tell Us About Your Project" />
+                <FlowButton text="Tell Us About Your Project" variant="lime" className="shadow-[0_0_25px_rgba(204,255,0,0.35)] hover:shadow-[0_0_35px_rgba(204,255,0,0.55)] transition-shadow" />
               </Link>
             </div>
           </FadeUp>
@@ -793,19 +756,6 @@ const Home: React.FC = () => {
 
       {/* ══ FAQ ══ */}
       <FaqSection />
-
-      {/* ══ FINAL CTA ══ */}
-      <section className="bg-white py-24 px-6 md:px-16 lg:px-24 border-t border-gray-200">
-        <div className="max-w-screen-xl mx-auto text-center">
-          <FadeUp>
-            <h2 className="text-4xl md:text-6xl font-bold leading-[1.1] text-gray-900 mb-4">Have land and a vision?</h2>
-            <p className="text-gray-600 text-lg md:text-xl mb-8 max-w-xl mx-auto">Let's design what it could become. Tell us about your site, what you want to create, and where you are in the process.</p>
-            <Link to="/contact">
-              <FlowButton text="Discuss Your Project" className="px-10 py-4 text-base" />
-            </Link>
-          </FadeUp>
-        </div>
-      </section>
 
     </div>
   );

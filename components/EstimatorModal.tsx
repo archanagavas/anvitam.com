@@ -89,10 +89,10 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
                 <span className="text-[10px] font-black uppercase tracking-widest text-[#777]">Cost Estimator</span>
               </div>
               <h2 className="text-lg sm:text-xl font-bold text-[#111]">
-                {step === 'service' && 'What can we design for you?'}
-                {step === 'sub' && svc?.title}
-                {step === 'contact' && 'Tell us about yourself'}
-                {step === 'result' && "Your Estimate Summary 🎉"}
+                {step === 'service' && 'What would you like us to plan or design?'}
+                {step === 'sub' && `Customise: ${svc?.title}`}
+                {step === 'contact' && 'Where should we send your estimate?'}
+                {step === 'result' && "Your Custom Estimate is Ready 🎉"}
               </h2>
               {step !== 'result' && <p className="text-xs text-[#888] mt-0.5">Step {stepNum} of 3</p>}
             </div>
@@ -112,28 +112,31 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
 
           {/* STEP 1: Service */}
           {step === 'service' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {servicesList.map(s => (
-                <button
-                  key={s.id}
-                  onClick={() => { setSvc(s); setSelected([]); setStep('sub'); }}
-                  className="text-left bg-white border border-black/8 rounded-2xl p-4 sm:p-5 hover:border-[#111] hover:shadow-lg transition-all group cursor-pointer active:scale-[0.98]"
-                >
-                  <div className="text-2xl sm:text-3xl mb-2">{s.icon}</div>
-                  <p className="font-bold text-[#111] text-sm mb-1">{s.title}</p>
-                  <p className="text-xs text-[#777] leading-relaxed">{s.desc}</p>
-                  <div className="flex items-center gap-1 mt-3 text-xs font-semibold text-[#888] group-hover:text-[#111] transition-colors">
-                    Select <ChevronRight size={12} />
-                  </div>
-                </button>
-              ))}
+            <div>
+              <p className="text-xs sm:text-sm text-[#555] mb-4">Select a project type to calculate an instant cost estimate.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {servicesList.map(s => (
+                  <button
+                    key={s.id}
+                    onClick={() => { setSvc(s); setSelected([]); setStep('sub'); }}
+                    className="text-left bg-white border border-black/8 rounded-2xl p-4 sm:p-5 hover:border-[#111] hover:shadow-lg transition-all group cursor-pointer active:scale-[0.98]"
+                  >
+                    <div className="text-2xl sm:text-3xl mb-2">{s.icon}</div>
+                    <p className="font-bold text-[#111] text-sm mb-1">{s.title}</p>
+                    <p className="text-xs text-[#777] leading-relaxed">{s.desc}</p>
+                    <div className="flex items-center gap-1 mt-3 text-xs font-semibold text-[#888] group-hover:text-[#111] transition-colors">
+                      Select Project <ChevronRight size={12} />
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
           {/* STEP 2: Sub-services */}
           {step === 'sub' && svc && (
             <div>
-              <p className="text-xs sm:text-sm text-[#555] mb-4 sm:mb-5">Select the deliverables you need. Choose as many as applicable.</p>
+              <p className="text-xs sm:text-sm text-[#555] mb-4 sm:mb-5">Tap the design items you need for your project. Choose as many as you like.</p>
               <div className="space-y-2 mb-6">
                 {svc.subs.map((sub, i) => {
                   const active = selected.includes(i);
