@@ -29,20 +29,37 @@ try {
 
 let dbInitPromise: Promise<any> | null = null;
 let isInitializing = false;
+let dbInitFailed = false;
+let lastDbInitError: string | null = null;
+let lastDbInitTime = 0;
+const DB_RETRY_COOLDOWN = 60000; // 1 minute cooldown on failure
 
 export async function ensureDbInitialized() {
   if (!isDbConfigured) return;
+  // If initialized failed recently (e.g. quota 402 error), skip retrying for the cooldown period
+  if (dbInitFailed && (Date.now() - lastDbInitTime < DB_RETRY_COOLDOWN)) {
+    return;
+  }
   if (isInitializing) return;
+
   if (!dbInitPromise) {
     isInitializing = true;
     dbInitPromise = (async () => {
       try {
-        console.log('[db] Lazy database initialization / schema update started...');
+        console.log('[db] Lazy database initialization started...');
         await initDatabaseInternal();
+        dbInitFailed = false;
+        lastDbInitError = null;
         console.log('[db] Lazy database initialization completed successfully.');
-      } catch (err) {
-        console.error('[db] Lazy database initialization failed:', err);
-        dbInitPromise = null; // Reset to allow retry on next query
+      } catch (err: any) {
+        dbInitFailed = true;
+        lastDbInitTime = Date.now();
+        lastDbInitError = err?.message || String(err);
+        if (lastDbInitError.includes('402') || lastDbInitError.includes('quota')) {
+          console.warn('[db] Neon database quota exceeded (HTTP 402). Serving static fallback data.');
+        } else {
+          console.warn('[db] Lazy database initialization failed:', lastDbInitError);
+        }
       } finally {
         isInitializing = false;
       }
@@ -54,6 +71,9 @@ export async function ensureDbInitialized() {
 const sql = async (strings: TemplateStringsArray, ...values: any[]) => {
   if (!isInitializing) {
     await ensureDbInitialized();
+  }
+  if (dbInitFailed) {
+    throw new Error(lastDbInitError || 'Database unavailable. Using static fallback data.');
   }
   return neonClient(strings, ...values);
 };
