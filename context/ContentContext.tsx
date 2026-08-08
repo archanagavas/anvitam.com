@@ -103,73 +103,95 @@ function saveToStorage<T>(key: string, data: T[]): void {
   }
 }
 
-function mergeWorkshopsWithDefaults(items: Workshop[]): Workshop[] {
-  if (!Array.isArray(items) || items.length === 0) return INITIAL_WORKSHOPS;
-  return items.map(w => {
-    const def = INITIAL_WORKSHOPS.find(iw => iw.id === w.id || iw.slug === w.slug);
-    if (!def) return w;
-    return {
-      ...def,
-      ...w,
-      images: (w.images && w.images.length > 0) ? w.images : def.images,
-    };
-  });
+function mergePreservingLocal<T extends { id: string }>(
+  localItems: T[],
+  incomingItems: T[],
+  defaultItems: T[],
+  repairFn: (item: T, def?: T) => T
+): T[] {
+  const base = incomingItems && incomingItems.length > 0 ? incomingItems : defaultItems;
+  const itemMap = new Map<string, T>();
+
+  // 1. Populate default items
+  for (const def of defaultItems) {
+    if (def?.id) itemMap.set(def.id, repairFn(def, def));
+  }
+
+  // 2. Overlay incoming items from server API or fallback
+  for (const item of base) {
+    if (!item?.id) continue;
+    const def = defaultItems.find(d => d.id === item.id);
+    itemMap.set(item.id, repairFn(item, def));
+  }
+
+  // 3. Preserve local custom items or edits from browser localStorage
+  if (Array.isArray(localItems)) {
+    for (const loc of localItems) {
+      if (!loc || !loc.id) continue;
+      const existing = itemMap.get(loc.id);
+      if (!existing) {
+        // Custom item created in admin panel!
+        itemMap.set(loc.id, loc);
+      } else {
+        // Preserving local edits over defaults, repairing images
+        const def = defaultItems.find(d => d.id === loc.id);
+        itemMap.set(loc.id, repairFn({ ...existing, ...loc }, def));
+      }
+    }
+  }
+
+  return Array.from(itemMap.values());
 }
 
-function mergeServicesWithDefaults(items: Service[]): Service[] {
-  if (!Array.isArray(items) || items.length === 0) return SERVICES;
-  return items.map(s => {
-    const def = SERVICES.find(is => is.id === s.id);
-    if (!def) return s;
-    return {
-      ...def,
-      ...s,
-      heroImage: s.heroImage || def.heroImage,
-    };
-  });
-}
+const repairWorkshop = (w: Workshop, def?: Workshop): Workshop => ({
+  ...def,
+  ...w,
+  images: (w.images && w.images.length > 0) ? w.images : (def?.images || [])
+});
 
-function mergeProductsWithDefaults(items: DigitalProduct[]): DigitalProduct[] {
-  if (!Array.isArray(items) || items.length === 0) return DIGITAL_PRODUCTS;
-  return items.map(p => {
-    const def = DIGITAL_PRODUCTS.find(ip => ip.id === p.id);
-    if (!def) return p;
-    return {
-      ...def,
-      ...p,
-      image: p.image || def.image,
-    };
-  });
-}
+const repairService = (s: Service, def?: Service): Service => ({
+  ...def,
+  ...s,
+  heroImage: s.heroImage || def?.heroImage || ''
+});
 
-function mergeProjectsWithDefaults(items: Project[]): Project[] {
-  if (!Array.isArray(items) || items.length === 0) return INITIAL_PROJECTS;
-  return items.map(p => {
-    const def = INITIAL_PROJECTS.find(ip => ip.id === p.id || ip.slug === p.slug);
-    if (!def) return p;
-    return {
-      ...def,
-      ...p,
-      image: p.image || def.image,
-      heroImage: p.heroImage || def.heroImage,
-      gallery: (p.gallery && p.gallery.length > 0) ? p.gallery : def.gallery,
-    };
-  });
-}
+const repairProduct = (p: DigitalProduct, def?: DigitalProduct): DigitalProduct => ({
+  ...def,
+  ...p,
+  image: p.image || def?.image || ''
+});
+
+const repairProject = (p: Project, def?: Project): Project => ({
+  ...def,
+  ...p,
+  image: p.image || def?.image || '',
+  heroImage: p.heroImage || def?.heroImage || '',
+  gallery: (p.gallery && p.gallery.length > 0) ? p.gallery : (def?.gallery || [])
+});
+
+const repairBlog = (b: BlogPost, def?: BlogPost): BlogPost => ({
+  ...def,
+  ...b,
+  image: b.image || def?.image || ''
+});
 
 export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [projects, setProjects] = useState<Project[]>(() =>
-    mergeProjectsWithDefaults(loadFromStorage<Project>('anvitam_projects_v2', INITIAL_PROJECTS))
-  );
-  const [blogs, setBlogs] = useState<BlogPost[]>(() =>
-    loadFromStorage<BlogPost>('anvitam_blogs_v2', INITIAL_BLOGS)
-  );
-  const [services, setServices] = useState<Service[]>(() =>
-    mergeServicesWithDefaults(loadFromStorage<Service>('anvitam_services_v5', SERVICES))
-  );
-  const [digitalProducts, setDigitalProducts] = useState<DigitalProduct[]>(() =>
-    mergeProductsWithDefaults(loadFromStorage<DigitalProduct>('anvitam_products', DIGITAL_PRODUCTS))
-  );
+  const [projects, setProjects] = useState<Project[]>(() => {
+    const stored = loadFromStorage<Project>('anvitam_projects_v2', INITIAL_PROJECTS);
+    return mergePreservingLocal(stored, stored, INITIAL_PROJECTS, repairProject);
+  });
+  const [blogs, setBlogs] = useState<BlogPost[]>(() => {
+    const stored = loadFromStorage<BlogPost>('anvitam_blogs_v2', INITIAL_BLOGS);
+    return mergePreservingLocal(stored, stored, INITIAL_BLOGS, repairBlog);
+  });
+  const [services, setServices] = useState<Service[]>(() => {
+    const stored = loadFromStorage<Service>('anvitam_services_v5', SERVICES);
+    return mergePreservingLocal(stored, stored, SERVICES, repairService);
+  });
+  const [digitalProducts, setDigitalProducts] = useState<DigitalProduct[]>(() => {
+    const stored = loadFromStorage<DigitalProduct>('anvitam_products', DIGITAL_PRODUCTS);
+    return mergePreservingLocal(stored, stored, DIGITAL_PRODUCTS, repairProduct);
+  });
   const [messages, setMessages] = useState<ContactMessage[]>(() =>
     loadFromStorage<ContactMessage>('anvitam_messages', [])
   );
@@ -189,9 +211,10 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
       return p;
     });
   });
-  const [workshops, setWorkshops] = useState<Workshop[]>(() =>
-    mergeWorkshopsWithDefaults(loadFromStorage<Workshop>('anvitam_workshops_v2', INITIAL_WORKSHOPS))
-  );
+  const [workshops, setWorkshops] = useState<Workshop[]>(() => {
+    const stored = loadFromStorage<Workshop>('anvitam_workshops_v2', INITIAL_WORKSHOPS);
+    return mergePreservingLocal(stored, stored, INITIAL_WORKSHOPS, repairWorkshop);
+  });
   const [isDbConnected, setIsDbConnected] = useState(false);
   const [isInitialSyncDone, setIsInitialSyncDone] = useState(false);
 
@@ -218,73 +241,70 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
         workshopsRes.headers.get('x-db-fallback') === 'true';
 
       if (workshopsRes.ok) {
-        const isFallback = workshopsRes.headers.get('x-db-fallback') === 'true';
         const rawWorkshops: Workshop[] = await workshopsRes.json();
-        const merged = mergeWorkshopsWithDefaults(rawWorkshops);
-        if (merged.length > 0) {
-          setWorkshops(merged);
+        setWorkshops(prev => {
+          const merged = mergePreservingLocal(prev, rawWorkshops, INITIAL_WORKSHOPS, repairWorkshop);
           saveToStorage('anvitam_workshops_v2', merged);
-        }
+          return merged;
+        });
       }
 
       if (blogsRes.ok) {
-        const isFallback = blogsRes.headers.get('x-db-fallback') === 'true';
         const dbBlogs: BlogPost[] = await blogsRes.json();
-        const mergedBlogs = dbBlogs.length > 0 ? dbBlogs : INITIAL_BLOGS;
-        setBlogs(mergedBlogs);
-        saveToStorage('anvitam_blogs_v2', mergedBlogs);
+        setBlogs(prev => {
+          const merged = mergePreservingLocal(prev, dbBlogs, INITIAL_BLOGS, repairBlog);
+          saveToStorage('anvitam_blogs_v2', merged);
+          return merged;
+        });
       }
 
       if (projectsRes.ok) {
-        const isFallback = projectsRes.headers.get('x-db-fallback') === 'true';
         const rawProjects: Project[] = await projectsRes.json();
-        const mergedProjects = mergeProjectsWithDefaults(rawProjects);
-        if (mergedProjects.length > 0) {
-          setProjects(mergedProjects);
-          saveToStorage('anvitam_projects_v2', mergedProjects);
-        }
+        setProjects(prev => {
+          const merged = mergePreservingLocal(prev, rawProjects, INITIAL_PROJECTS, repairProject);
+          saveToStorage('anvitam_projects_v2', merged);
+          return merged;
+        });
       }
 
       if (servicesRes.ok) {
-        const isFallback = servicesRes.headers.get('x-db-fallback') === 'true';
         const rawServices: Service[] = await servicesRes.json();
-        const mergedServices = mergeServicesWithDefaults(rawServices);
-        if (mergedServices.length > 0) {
-          setServices(mergedServices);
-          saveToStorage('anvitam_services_v5', mergedServices);
-        }
+        setServices(prev => {
+          const merged = mergePreservingLocal(prev, rawServices, SERVICES, repairService);
+          saveToStorage('anvitam_services_v5', merged);
+          return merged;
+        });
       }
 
       if (productsRes.ok) {
-        const isFallback = productsRes.headers.get('x-db-fallback') === 'true';
         const rawProducts: DigitalProduct[] = await productsRes.json();
-        const mergedProducts = mergeProductsWithDefaults(rawProducts);
-        if (mergedProducts.length > 0) {
-          setDigitalProducts(mergedProducts);
-          saveToStorage('anvitam_products', mergedProducts);
-        }
+        setDigitalProducts(prev => {
+          const merged = mergePreservingLocal(prev, rawProducts, DIGITAL_PRODUCTS, repairProduct);
+          saveToStorage('anvitam_products', merged);
+          return merged;
+        });
       }
 
       if (testimonialsRes.ok) {
-        const isFallback = testimonialsRes.headers.get('x-db-fallback') === 'true';
         const dbTestimonials: Testimonial[] = await testimonialsRes.json();
-        const mergedTestimonials = dbTestimonials.length > 0 ? dbTestimonials : INITIAL_TESTIMONIALS;
-        setTestimonials(mergedTestimonials);
-        saveToStorage('anvitam_testimonials', mergedTestimonials);
+        setTestimonials(prev => {
+          const merged = mergePreservingLocal(prev, dbTestimonials, INITIAL_TESTIMONIALS, (t, def) => ({
+            ...def, ...t, image: t.image || def?.image || ''
+          }));
+          saveToStorage('anvitam_testimonials', merged);
+          return merged;
+        });
       }
 
       if (partnersRes.ok) {
-        const isFallback = partnersRes.headers.get('x-db-fallback') === 'true';
         const dbPartners: PartnerBrand[] = await partnersRes.json();
-        const mergedDbPartners = (dbPartners.length > 0 ? dbPartners : INITIAL_PARTNERS).map(p => {
-          if (!p.logo) {
-            const initP = INITIAL_PARTNERS.find(ip => ip.id === p.id || ip.name.toLowerCase() === p.name.toLowerCase());
-            if (initP?.logo) return { ...p, logo: initP.logo };
-          }
-          return p;
+        setPartners(prev => {
+          const merged = mergePreservingLocal(prev, dbPartners, INITIAL_PARTNERS, (p, def) => ({
+            ...def, ...p, logo: p.logo || def?.logo || ''
+          }));
+          saveToStorage('anvitam_partners_v3', merged);
+          return merged;
         });
-        setPartners(mergedDbPartners);
-        saveToStorage('anvitam_partners_v3', mergedDbPartners);
       }
 
       // Fetch messages if admin token exists
