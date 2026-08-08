@@ -76,6 +76,25 @@ interface ContentContextType {
 
 const ContentContext = createContext<ContentContextType | undefined>(undefined);
 
+function getDeletedIds(): Set<string> {
+  try {
+    const raw = localStorage.getItem('anvitam_deleted_ids');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return new Set(parsed);
+    }
+  } catch (e) {}
+  return new Set();
+}
+
+function addDeletedId(id: string) {
+  try {
+    const current = getDeletedIds();
+    current.add(id);
+    localStorage.setItem('anvitam_deleted_ids', JSON.stringify(Array.from(current)));
+  } catch (e) {}
+}
+
 function loadFromStorage<T>(key: string, initialData: T[]): T[] {
   try {
     const saved = localStorage.getItem(key);
@@ -109,17 +128,20 @@ function mergePreservingLocal<T extends { id: string }>(
   defaultItems: T[],
   repairFn: (item: T, def?: T) => T
 ): T[] {
+  const deletedIds = getDeletedIds();
   const base = incomingItems && incomingItems.length > 0 ? incomingItems : defaultItems;
   const itemMap = new Map<string, T>();
 
-  // 1. Populate default items
+  // 1. Populate default items (skipping deleted ones)
   for (const def of defaultItems) {
-    if (def?.id) itemMap.set(def.id, repairFn(def, def));
+    if (def?.id && !deletedIds.has(def.id)) {
+      itemMap.set(def.id, repairFn(def, def));
+    }
   }
 
-  // 2. Overlay incoming items from server API or fallback
+  // 2. Overlay incoming items from server API or fallback (skipping deleted ones)
   for (const item of base) {
-    if (!item?.id) continue;
+    if (!item?.id || deletedIds.has(item.id)) continue;
     const def = defaultItems.find(d => d.id === item.id);
     itemMap.set(item.id, repairFn(item, def));
   }
@@ -127,7 +149,7 @@ function mergePreservingLocal<T extends { id: string }>(
   // 3. Preserve local custom items or edits from browser localStorage
   if (Array.isArray(localItems)) {
     for (const loc of localItems) {
-      if (!loc || !loc.id) continue;
+      if (!loc || !loc.id || deletedIds.has(loc.id)) continue;
       const existing = itemMap.get(loc.id);
       if (!existing) {
         // Custom item created in admin panel!
@@ -165,7 +187,7 @@ const repairProject = (p: Project, def?: Project): Project => ({
   ...def,
   ...p,
   image: p.image || def?.image || '',
-  heroImage: p.heroImage || def?.heroImage || '',
+  heroImage: p.heroImage || p.image || def?.heroImage || '',
   gallery: (p.gallery && p.gallery.length > 0) ? p.gallery : (def?.gallery || [])
 });
 
@@ -495,25 +517,49 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
       id: message.id || crypto.randomUUID(),
       date: message.date || new Date().toISOString(),
     };
+    // Optimistic update with PII retention policy (max 50 items, max 30 days)
     setMessages(prev => {
       const filtered = prev.filter(m => m.id !== msgObj.id);
       const updated = [msgObj, ...filtered];
-      saveToStorage('anvitam_messages', updated);
-      return updated;
+      const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+      const retained = updated.filter(m => {
+        if (!m.date) return true;
+        const time = new Date(m.date).getTime();
+        return isNaN(time) || time >= thirtyDaysAgo;
+      }).slice(0, 50);
+      saveToStorage('anvitam_messages', retained);
+      return retained;
     });
+
     try {
-      await fetch('/api/messages', {
+      const res = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(msgObj),
       });
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || `Server returned HTTP ${res.status}`);
+      }
     } catch (err) {
-      console.warn('[ContentContext] Failed to save message to DB:', err);
+      console.error('[ContentContext] Failed to send message to DB:', err);
+      // Revert optimistic addition on API failure
+      setMessages(prev => {
+        const reverted = prev.filter(m => m.id !== msgObj.id);
+        saveToStorage('anvitam_messages', reverted);
+        return reverted;
+      });
+      throw err;
     }
   };
 
   const deleteProject = async (id: string) => {
-    setProjects(prev => prev.filter(p => p.id !== id));
+    addDeletedId(id);
+    setProjects(prev => {
+      const updated = prev.filter(p => p.id !== id);
+      saveToStorage('anvitam_projects_v2', updated);
+      return updated;
+    });
     const token = getAuthToken();
     if (token) {
       try {
@@ -525,7 +571,12 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const deleteBlog = async (id: string) => {
-    setBlogs(prev => prev.filter(b => b.id !== id));
+    addDeletedId(id);
+    setBlogs(prev => {
+      const updated = prev.filter(b => b.id !== id);
+      saveToStorage('anvitam_blogs_v2', updated);
+      return updated;
+    });
     const token = getAuthToken();
     if (token) {
       try {
@@ -537,7 +588,12 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const deleteService = async (id: string) => {
-    setServices(prev => prev.filter(s => s.id !== id));
+    addDeletedId(id);
+    setServices(prev => {
+      const updated = prev.filter(s => s.id !== id);
+      saveToStorage('anvitam_services_v5', updated);
+      return updated;
+    });
     const token = getAuthToken();
     if (token) {
       try {
@@ -549,7 +605,12 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const deleteDigitalProduct = async (id: string) => {
-    setDigitalProducts(prev => prev.filter(p => p.id !== id));
+    addDeletedId(id);
+    setDigitalProducts(prev => {
+      const updated = prev.filter(p => p.id !== id);
+      saveToStorage('anvitam_products', updated);
+      return updated;
+    });
     const token = getAuthToken();
     if (token) {
       try {
@@ -601,7 +662,12 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const deleteTestimonial = async (id: string) => {
-    setTestimonials(prev => prev.filter(t => t.id !== id));
+    addDeletedId(id);
+    setTestimonials(prev => {
+      const updated = prev.filter(t => t.id !== id);
+      saveToStorage('anvitam_testimonials', updated);
+      return updated;
+    });
     const token = getAuthToken();
     if (token) {
       try {
@@ -637,7 +703,12 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const deleteEstimatorService = async (id: string) => {
-    setEstimatorServices(prev => prev.filter(item => item.id !== id));
+    addDeletedId(id);
+    setEstimatorServices(prev => {
+      const updated = prev.filter(item => item.id !== id);
+      saveToStorage('anvitam_estimator_services_v1', updated);
+      return updated;
+    });
     const token = getAuthToken();
     if (token) {
       try {
@@ -673,7 +744,12 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const deletePartner = async (id: string) => {
-    setPartners(prev => prev.filter(item => item.id !== id));
+    addDeletedId(id);
+    setPartners(prev => {
+      const updated = prev.filter(item => item.id !== id);
+      saveToStorage('anvitam_partners_v3', updated);
+      return updated;
+    });
     const token = getAuthToken();
     if (token) {
       try {
@@ -709,7 +785,12 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const deleteWorkshop = async (id: string) => {
-    setWorkshops(prev => prev.filter(item => item.id !== id));
+    addDeletedId(id);
+    setWorkshops(prev => {
+      const updated = prev.filter(item => item.id !== id);
+      saveToStorage('anvitam_workshops_v2', updated);
+      return updated;
+    });
     const token = getAuthToken();
     if (token) {
       try {

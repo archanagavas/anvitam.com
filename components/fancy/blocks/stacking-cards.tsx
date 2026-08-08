@@ -43,6 +43,7 @@ export function StackingCards({
 }
 
 export interface StackingCardItemProps {
+  key?: React.Key;
   children: React.ReactNode;
   index: number;
   className?: string;

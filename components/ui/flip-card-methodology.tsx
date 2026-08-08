@@ -84,6 +84,7 @@ export const STEPS: MethodologyStep[] = [
 ];
 
 interface StackingFlipCardItemProps {
+  key?: React.Key;
   step: MethodologyStep;
   index: number;
   totalCards: number;

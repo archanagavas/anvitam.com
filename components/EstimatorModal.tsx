@@ -35,6 +35,7 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
   const [selected, setSelected] = useState<number[]>([]);
   const [form, setForm] = useState({ name: '', email: '', phone: '', country: 'IN', area: '', areaUnit: 'sqft' as AreaUnit });
   const [busy, setBusy] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const country = getCountryByCode(form.country);
   const areaNum = Number(form.area) || 0;
@@ -49,6 +50,7 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
+    setSubmitError(null);
     const areaUnitLabel = AREA_UNITS.find(u => u.code === form.areaUnit)?.label || 'Sq. Ft.';
     const areaDisplay = form.area ? `${form.area} ${areaUnitLabel}` : 'Standard';
     const subList = selected.map(i => `${svc?.subs[i]} (${getFormattedPrice(svc?.baseINR[i] || 0)})`).filter(Boolean).join(' · ');
@@ -63,16 +65,21 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
           date: new Date().toISOString(),
         });
       } else {
-        await fetch('/api/messages', {
+        const res = await fetch('/api/messages', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: form.name, email: form.email, message: msg, date: new Date().toISOString() }),
         });
+        if (!res.ok) {
+          throw new Error(`Server returned HTTP ${res.status}`);
+        }
       }
-    } catch (err) {
+      setBusy(false);
+      setStep('result');
+    } catch (err: any) {
       console.warn('[Estimator] Failed to submit lead:', err);
+      setSubmitError(err?.message || 'Failed to submit estimate. Please check your connection and try again.');
+      setBusy(false);
     }
-    setBusy(false);
-    setStep('result');
   };
 
   const stepNum = { service: 1, sub: 2, contact: 3, result: 3 }[step];
@@ -256,6 +263,13 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
                 </div>
               </div>
               <p className="text-[11px] text-[#aaa] mt-3">No spam. Strictly for sending your tailored proposal.</p>
+
+              {submitError && (
+                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-medium">
+                  {submitError}
+                </div>
+              )}
+
               <div className="flex gap-3 mt-5">
                 <button
                   type="button"
