@@ -1,14 +1,17 @@
 /**
  * lib/db.ts
- * Neon Serverless / Supabase Postgres database client — used by all /api/* routes.
- * The DATABASE_URL must be set in Vercel Dashboard → Project → Settings → Environment Variables.
+ * Database client for all /api/* routes.
  *
- * For Supabase, use the TRANSACTION POOLER connection string (port 6543), NOT the direct connection
- * (port 5432). The direct connection is not routable from Vercel's serverless edge network.
- * Get it from: Supabase Dashboard → Project → Connect → Transaction pooler
+ * Uses the @neondatabase/serverless HTTP driver for ALL postgres connections
+ * (both Neon and Supabase). This is critical for Vercel serverless functions
+ * because Vercel's network cannot reach Supabase's direct TCP host (ENOTFOUND).
+ * The neon HTTP driver routes queries over HTTPS, bypassing this entirely.
+ *
+ * DATABASE_URL must be set in Vercel → Project → Settings → Environment Variables.
+ * For Supabase: use the DIRECT connection string (db.xxx.supabase.co:5432) — the
+ * neon driver will handle it correctly over HTTP regardless.
  */
 import { neon } from '@neondatabase/serverless';
-import postgres from 'postgres';
 import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES, INITIAL_TESTIMONIALS, INITIAL_PARTNERS } from '../constants.js';
 
 let dbClient: any;
@@ -18,26 +21,23 @@ try {
   const dbUrl = process.env.DATABASE_URL;
   if (dbUrl && (dbUrl.startsWith('postgres://') || dbUrl.startsWith('postgresql://'))) {
     isDbConfigured = true;
-    if (dbUrl.includes('supabase')) {
-      // Use Transaction Pooler (port 6543) — required for Vercel serverless.
-      // If the URL uses direct port 5432, rewrite it to 6543 automatically.
-      const poolerUrl = dbUrl.replace(/:5432\//, ':6543/');
-      dbClient = postgres(poolerUrl, { ssl: 'require', prepare: false, max: 1 });
-    } else {
-      dbClient = neon(dbUrl);
-    }
+    // Use neon HTTP driver for ALL connections — works on Vercel regardless of DB provider.
+    // The neon driver wraps any postgres-compatible URL and sends queries over HTTPS.
+    dbClient = neon(dbUrl);
+    console.log('[db] Using neon HTTP driver for:', dbUrl.replace(/:[^:@]+@/, ':***@').substring(0, 60) + '...');
   } else {
-    console.warn('[db] DATABASE_URL is not set or is invalid. Falling back to static mock data.');
+    console.warn('[db] DATABASE_URL is not set or invalid. Falling back to static data.');
     dbClient = async () => {
-      throw new Error('Database connection is not configured or uses an invalid protocol.');
+      throw new Error('Database connection is not configured.');
     };
   }
 } catch (err) {
-  console.error('[db] Fail-safe error initializing database client:', err);
+  console.error('[db] Failed to initialize database client:', err);
   dbClient = async () => {
     throw new Error('Database client initialization failed.');
   };
 }
+
 
 let dbInitPromise: Promise<any> | null = null;
 let isInitializing = false;
