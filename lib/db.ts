@@ -4,25 +4,30 @@
  * The DATABASE_URL must be set in Vercel Dashboard → Project → Settings → Environment Variables.
  */
 import { neon } from '@neondatabase/serverless';
+import postgres from 'postgres';
 import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES, INITIAL_TESTIMONIALS, INITIAL_PARTNERS } from '../constants.js';
 
-let neonClient: any;
+let dbClient: any;
 let isDbConfigured = false;
 
 try {
   const dbUrl = process.env.DATABASE_URL;
   if (dbUrl && (dbUrl.startsWith('postgres://') || dbUrl.startsWith('postgresql://'))) {
-    neonClient = neon(dbUrl);
     isDbConfigured = true;
+    if (dbUrl.includes('supabase')) {
+      dbClient = postgres(dbUrl, { ssl: 'require', prepare: false });
+    } else {
+      dbClient = neon(dbUrl);
+    }
   } else {
     console.warn('[db] DATABASE_URL is not set or is invalid. Falling back to static mock data.');
-    neonClient = async () => {
+    dbClient = async () => {
       throw new Error('Database connection is not configured or uses an invalid protocol.');
     };
   }
 } catch (err) {
-  console.error('[db] Fail-safe error initializing neon client:', err);
-  neonClient = async () => {
+  console.error('[db] Fail-safe error initializing database client:', err);
+  dbClient = async () => {
     throw new Error('Database client initialization failed.');
   };
 }
@@ -75,7 +80,7 @@ const sql = async (strings: TemplateStringsArray, ...values: any[]) => {
   if (dbInitFailed) {
     throw new Error(lastDbInitError || 'Database unavailable. Using static fallback data.');
   }
-  return neonClient(strings, ...values);
+  return dbClient(strings, ...values);
 };
 
 export { sql, isDbConfigured };
@@ -89,7 +94,7 @@ export async function initDatabase() {
 }
 
 async function initDatabaseInternal() {
-  await neonClient`
+  await dbClient`
     CREATE TABLE IF NOT EXISTS projects (
       id          TEXT PRIMARY KEY,
       title       TEXT NOT NULL,
@@ -108,7 +113,7 @@ async function initDatabaseInternal() {
     );
   `;
 
-  await neonClient`
+  await dbClient`
     CREATE TABLE IF NOT EXISTS blogs (
       id               TEXT PRIMARY KEY,
       title            TEXT NOT NULL,
@@ -131,7 +136,7 @@ async function initDatabaseInternal() {
     );
   `;
 
-  await neonClient`
+  await dbClient`
     CREATE TABLE IF NOT EXISTS services (
       id            TEXT PRIMARY KEY,
       title         TEXT NOT NULL,
@@ -153,7 +158,7 @@ async function initDatabaseInternal() {
     );
   `;
 
-  await neonClient`
+  await dbClient`
     CREATE TABLE IF NOT EXISTS messages (
       id         TEXT PRIMARY KEY,
       name       TEXT NOT NULL,
@@ -164,7 +169,7 @@ async function initDatabaseInternal() {
     );
   `;
 
-  await neonClient`
+  await dbClient`
     CREATE TABLE IF NOT EXISTS digital_products (
       id          TEXT PRIMARY KEY,
       title       TEXT NOT NULL,
@@ -180,7 +185,7 @@ async function initDatabaseInternal() {
     );
   `;
 
-  await neonClient`
+  await dbClient`
     CREATE TABLE IF NOT EXISTS testimonials (
       id          TEXT PRIMARY KEY,
       author      TEXT NOT NULL,
@@ -191,7 +196,7 @@ async function initDatabaseInternal() {
     );
   `;
 
-  await neonClient`
+  await dbClient`
     CREATE TABLE IF NOT EXISTS partners (
       id          TEXT PRIMARY KEY,
       name        TEXT NOT NULL,
@@ -202,7 +207,7 @@ async function initDatabaseInternal() {
     );
   `;
 
-  await neonClient`
+  await dbClient`
     CREATE TABLE IF NOT EXISTS workshops (
       id              TEXT PRIMARY KEY,
       title           TEXT NOT NULL,
@@ -223,7 +228,7 @@ async function initDatabaseInternal() {
   const existingPartners = await neonClient`SELECT id FROM partners LIMIT 1`;
   if (existingPartners.length === 0) {
     for (const p of INITIAL_PARTNERS) {
-      await neonClient`
+      await dbClient`
         INSERT INTO partners (id, name, logo, icon, website)
         VALUES (${p.id}, ${p.name}, ${p.logo ?? ''}, ${p.icon ?? ''}, ${p.website ?? ''})
         ON CONFLICT (id) DO NOTHING
@@ -231,7 +236,7 @@ async function initDatabaseInternal() {
     }
   } else {
     for (const p of INITIAL_PARTNERS) {
-      await neonClient`
+      await dbClient`
         UPDATE partners SET logo = ${p.logo ?? ''}
         WHERE id = ${p.id} AND (logo IS NULL OR logo = '');
       `;
@@ -239,63 +244,63 @@ async function initDatabaseInternal() {
   }
 
   // Migrations for existing databases
-  await neonClient`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS meta_title TEXT;`;
-  await neonClient`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS cover_image_alt TEXT;`;
-  await neonClient`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS faqs JSONB DEFAULT '[]';`;
-  await neonClient`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS author_bio TEXT;`;
-  await neonClient`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS author_image TEXT;`;
-  await neonClient`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS meta_keywords TEXT;`;
-  await neonClient`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS meta_robots TEXT;`;
+  await dbClient`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS meta_title TEXT;`;
+  await dbClient`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS cover_image_alt TEXT;`;
+  await dbClient`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS faqs JSONB DEFAULT '[]';`;
+  await dbClient`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS author_bio TEXT;`;
+  await dbClient`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS author_image TEXT;`;
+  await dbClient`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS meta_keywords TEXT;`;
+  await dbClient`ALTER TABLE blogs ADD COLUMN IF NOT EXISTS meta_robots TEXT;`;
 
-  await neonClient`ALTER TABLE projects ADD COLUMN IF NOT EXISTS slug TEXT;`;
-  await neonClient`ALTER TABLE projects ADD COLUMN IF NOT EXISTS hero_image TEXT;`;
-  await neonClient`ALTER TABLE projects ADD COLUMN IF NOT EXISTS tags JSONB DEFAULT '[]';`;
-  await neonClient`ALTER TABLE projects ADD COLUMN IF NOT EXISTS faqs JSONB DEFAULT '[]';`;
-  await neonClient`ALTER TABLE projects ADD COLUMN IF NOT EXISTS videos JSONB DEFAULT '[]';`;
-  await neonClient`ALTER TABLE projects ADD COLUMN IF NOT EXISTS status TEXT;`;
-  await neonClient`ALTER TABLE projects ADD COLUMN IF NOT EXISTS meta_title TEXT;`;
-  await neonClient`ALTER TABLE projects ADD COLUMN IF NOT EXISTS meta_description TEXT;`;
-  await neonClient`ALTER TABLE projects ADD COLUMN IF NOT EXISTS meta_keywords TEXT;`;
-  await neonClient`ALTER TABLE projects ADD COLUMN IF NOT EXISTS meta_robots TEXT;`;
+  await dbClient`ALTER TABLE projects ADD COLUMN IF NOT EXISTS slug TEXT;`;
+  await dbClient`ALTER TABLE projects ADD COLUMN IF NOT EXISTS hero_image TEXT;`;
+  await dbClient`ALTER TABLE projects ADD COLUMN IF NOT EXISTS tags JSONB DEFAULT '[]';`;
+  await dbClient`ALTER TABLE projects ADD COLUMN IF NOT EXISTS faqs JSONB DEFAULT '[]';`;
+  await dbClient`ALTER TABLE projects ADD COLUMN IF NOT EXISTS videos JSONB DEFAULT '[]';`;
+  await dbClient`ALTER TABLE projects ADD COLUMN IF NOT EXISTS status TEXT;`;
+  await dbClient`ALTER TABLE projects ADD COLUMN IF NOT EXISTS meta_title TEXT;`;
+  await dbClient`ALTER TABLE projects ADD COLUMN IF NOT EXISTS meta_description TEXT;`;
+  await dbClient`ALTER TABLE projects ADD COLUMN IF NOT EXISTS meta_keywords TEXT;`;
+  await dbClient`ALTER TABLE projects ADD COLUMN IF NOT EXISTS meta_robots TEXT;`;
 
-  await neonClient`ALTER TABLE services ADD COLUMN IF NOT EXISTS gallery JSONB DEFAULT '[]';`;
-  await neonClient`ALTER TABLE services ADD COLUMN IF NOT EXISTS case_study_ids JSONB DEFAULT '[]';`;
-  await neonClient`ALTER TABLE services ADD COLUMN IF NOT EXISTS videos JSONB DEFAULT '[]';`;
-  await neonClient`ALTER TABLE services ADD COLUMN IF NOT EXISTS meta_title TEXT;`;
-  await neonClient`ALTER TABLE services ADD COLUMN IF NOT EXISTS meta_description TEXT;`;
-  await neonClient`ALTER TABLE services ADD COLUMN IF NOT EXISTS meta_keywords TEXT;`;
-  await neonClient`ALTER TABLE services ADD COLUMN IF NOT EXISTS meta_robots TEXT;`;
+  await dbClient`ALTER TABLE services ADD COLUMN IF NOT EXISTS gallery JSONB DEFAULT '[]';`;
+  await dbClient`ALTER TABLE services ADD COLUMN IF NOT EXISTS case_study_ids JSONB DEFAULT '[]';`;
+  await dbClient`ALTER TABLE services ADD COLUMN IF NOT EXISTS videos JSONB DEFAULT '[]';`;
+  await dbClient`ALTER TABLE services ADD COLUMN IF NOT EXISTS meta_title TEXT;`;
+  await dbClient`ALTER TABLE services ADD COLUMN IF NOT EXISTS meta_description TEXT;`;
+  await dbClient`ALTER TABLE services ADD COLUMN IF NOT EXISTS meta_keywords TEXT;`;
+  await dbClient`ALTER TABLE services ADD COLUMN IF NOT EXISTS meta_robots TEXT;`;
 
-  await neonClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS meta_title TEXT;`;
-  await neonClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS meta_description TEXT;`;
-  await neonClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS meta_keywords TEXT;`;
-  await neonClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS meta_robots TEXT;`;
+  await dbClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS meta_title TEXT;`;
+  await dbClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS meta_description TEXT;`;
+  await dbClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS meta_keywords TEXT;`;
+  await dbClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS meta_robots TEXT;`;
 
-  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS city TEXT DEFAULT '';`;
-  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS state TEXT DEFAULT '';`;
-  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS country TEXT DEFAULT '';`;
-  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS skills_outcomes TEXT DEFAULT '';`;
-  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS materials_used TEXT DEFAULT '';`;
-  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS impact TEXT DEFAULT '';`;
-  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS outcomes TEXT DEFAULT '';`;
-  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS gallery_details JSONB DEFAULT '[]';`;
-  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS related_project_ids JSONB DEFAULT '[]';`;
-  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS related_service_ids JSONB DEFAULT '[]';`;
-  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS related_article_ids JSONB DEFAULT '[]';`;
-  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS slug TEXT;`;
-  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS meta_title TEXT;`;
-  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS meta_description TEXT;`;
-  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS primary_keyword TEXT;`;
-  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS secondary_keywords TEXT;`;
-  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS canonical_url TEXT;`;
-  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS og_title TEXT;`;
-  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS og_description TEXT;`;
-  await neonClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS og_image TEXT;`;
-  await neonClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS youtube_url TEXT;`;
-  await neonClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS videos JSONB DEFAULT '[]';`;
+  await dbClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS city TEXT DEFAULT '';`;
+  await dbClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS state TEXT DEFAULT '';`;
+  await dbClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS country TEXT DEFAULT '';`;
+  await dbClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS skills_outcomes TEXT DEFAULT '';`;
+  await dbClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS materials_used TEXT DEFAULT '';`;
+  await dbClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS impact TEXT DEFAULT '';`;
+  await dbClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS outcomes TEXT DEFAULT '';`;
+  await dbClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS gallery_details JSONB DEFAULT '[]';`;
+  await dbClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS related_project_ids JSONB DEFAULT '[]';`;
+  await dbClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS related_service_ids JSONB DEFAULT '[]';`;
+  await dbClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS related_article_ids JSONB DEFAULT '[]';`;
+  await dbClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS slug TEXT;`;
+  await dbClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS meta_title TEXT;`;
+  await dbClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS meta_description TEXT;`;
+  await dbClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS primary_keyword TEXT;`;
+  await dbClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS secondary_keywords TEXT;`;
+  await dbClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS canonical_url TEXT;`;
+  await dbClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS og_title TEXT;`;
+  await dbClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS og_description TEXT;`;
+  await dbClient`ALTER TABLE workshops ADD COLUMN IF NOT EXISTS og_image TEXT;`;
+  await dbClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS youtube_url TEXT;`;
+  await dbClient`ALTER TABLE digital_products ADD COLUMN IF NOT EXISTS videos JSONB DEFAULT '[]';`;
 
   // Seed initial online courses if none exist
-  const existingCourses = await neonClient`SELECT id FROM digital_products WHERE category = 'Online Courses' LIMIT 1`;
+  const existingCourses = await dbClient`SELECT id FROM digital_products WHERE category = 'Online Courses' LIMIT 1`;
   if (existingCourses.length === 0) {
     const defaultCourses = [
       {
@@ -330,7 +335,7 @@ async function initDatabaseInternal() {
       }
     ];
     for (const c of defaultCourses) {
-      await neonClient`
+      await dbClient`
         INSERT INTO digital_products (id, title, description, price, link, image, tags, category)
         VALUES (${c.id}, ${c.title}, ${c.description}, ${c.price}, ${c.link}, ${c.image}, ${JSON.stringify(c.tags)}, ${c.category})
         ON CONFLICT (id) DO NOTHING
@@ -339,10 +344,10 @@ async function initDatabaseInternal() {
   }
 
   // Seed initial projects if none exist
-  const existingProjects = await neonClient`SELECT id FROM projects LIMIT 1`;
+  const existingProjects = await dbClient`SELECT id FROM projects LIMIT 1`;
   if (existingProjects.length === 0) {
     for (const p of INITIAL_PROJECTS) {
-      await neonClient`
+      await dbClient`
         INSERT INTO projects (id, title, category, location, year, image, description, full_description, is_featured, specs)
         VALUES (${p.id}, ${p.title}, ${p.category}, ${p.location}, ${p.year}, ${p.image}, ${p.description}, ${p.fullDescription}, ${p.isFeatured ?? false}, ${JSON.stringify(p.specs ?? [])})
         ON CONFLICT (id) DO NOTHING
@@ -351,10 +356,10 @@ async function initDatabaseInternal() {
   }
 
   // Seed initial blogs if none exist
-  const existingBlogs = await neonClient`SELECT id FROM blogs LIMIT 1`;
+  const existingBlogs = await dbClient`SELECT id FROM blogs LIMIT 1`;
   if (existingBlogs.length === 0) {
     for (const b of INITIAL_BLOGS) {
-      await neonClient`
+      await dbClient`
         INSERT INTO blogs (id, slug, title, date, author, status, meta_description, tags, excerpt, image, toc, author_image, author_bio, content)
         VALUES (${b.id}, ${b.slug}, ${b.title}, ${b.date}, ${b.author}, ${b.status}, ${b.metaDescription ?? null}, ${JSON.stringify(b.tags ?? [])}, ${b.excerpt}, ${b.image}, ${JSON.stringify(b.toc ?? [])}, ${b.authorImage ?? null}, ${b.authorBio ?? null}, ${b.content})
         ON CONFLICT (id) DO NOTHING
@@ -363,10 +368,10 @@ async function initDatabaseInternal() {
   }
 
   // Seed initial services if none exist
-  const existingServices = await neonClient`SELECT id FROM services LIMIT 1`;
+  const existingServices = await dbClient`SELECT id FROM services LIMIT 1`;
   if (existingServices.length === 0) {
     for (const s of SERVICES) {
-      await neonClient`
+      await dbClient`
         INSERT INTO services (id, title, description, icon, value_props, hero_image, what_it_is, who_its_for, case_study_id, process, pricing, faq, booking_link, gallery, case_study_ids, videos)
         VALUES (${s.id}, ${s.title}, ${s.description}, ${s.icon}, ${JSON.stringify(s.valueProps ?? [])}, ${s.heroImage ?? null}, ${JSON.stringify(s.whatItIs ?? [])}, ${JSON.stringify(s.whoItsFor ?? [])}, ${s.caseStudyId ?? null}, ${JSON.stringify(s.process ?? [])}, ${s.pricing ?? null}, ${JSON.stringify(s.faq ?? [])}, ${s.bookingLink ?? null}, '[]', '[]', '[]')
         ON CONFLICT (id) DO NOTHING
@@ -375,10 +380,10 @@ async function initDatabaseInternal() {
   }
 
   // Seed initial testimonials if none exist
-  const existingTestimonials = await neonClient`SELECT id FROM testimonials LIMIT 1`;
+  const existingTestimonials = await dbClient`SELECT id FROM testimonials LIMIT 1`;
   if (existingTestimonials.length === 0) {
     for (const t of INITIAL_TESTIMONIALS) {
-      await neonClient`
+      await dbClient`
         INSERT INTO testimonials (id, author, role, text, image)
         VALUES (${t.id}, ${t.author}, ${t.role}, ${t.text}, ${t.image})
         ON CONFLICT (id) DO NOTHING
