@@ -142,16 +142,10 @@ function StackingFlipCardItem({
             {/* Header Tab */}
             <div className="flex items-center justify-between z-10">
               <div className="flex items-center gap-3">
-                <span
-                  className={cn(
-                    "w-9 h-9 rounded-full font-black text-xs flex items-center justify-center shadow-md",
-                    step.badgeBg,
-                    step.badgeText
-                  )}
-                >
+                <span className="w-9 h-9 rounded-full bg-[#CCFF00] text-black font-black text-xs flex items-center justify-center shadow-lg border border-black/20">
                   {step.n}
                 </span>
-                <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-stone-900">
+                <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white bg-black/60 backdrop-blur-md px-3.5 py-1 rounded-full border border-white/20 shadow-md">
                   Step {step.n} of {totalCards}
                 </span>
               </div>

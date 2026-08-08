@@ -127,9 +127,9 @@ export function DeckCardsMethodologySection() {
         <div className="sticky top-24 flex flex-col items-center justify-center pt-4">
           
           {/* Deck Status Bar */}
-          <div className="flex items-center justify-between w-full max-w-[340px] mb-3 px-2 text-xs font-bold text-gray-700">
-            <span className="flex items-center gap-1.5 uppercase tracking-wider text-[11px] text-gray-500">
-              <span className="w-2 h-2 rounded-full bg-[#CCFF00] animate-ping" />
+          <div className="flex items-center justify-between w-full max-w-[340px] mb-3 px-2 text-xs font-bold text-stone-900">
+            <span className="flex items-center gap-1.5 uppercase tracking-wider text-[11px] text-stone-900 font-bold">
+              <span className="w-2 h-2 rounded-full bg-[#8bc34a] animate-ping" />
               Card {activeIndex + 1} of {STEPS.length}
             </span>
             <div className="flex items-center gap-1">
