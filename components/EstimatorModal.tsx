@@ -54,11 +54,23 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
     const subList = selected.map(i => `${svc?.subs[i]} (${getFormattedPrice(svc?.baseINR[i] || 0)})`).filter(Boolean).join(' · ');
     const msg = `[ESTIMATE REQUEST]\nService: ${svc?.title}\nProject Area: ${areaDisplay}\nDeliverables: ${subList}\nTotal Estimate: ${formattedTotal}\nCountry: ${country.flag} ${country.name} (${form.country})\nPhone: ${form.phone}`;
     try {
-      await fetch('/api/messages', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: form.name, email: form.email, message: msg, date: new Date().toISOString() }),
-      });
-    } catch {}
+      if (contentCtx?.addMessage) {
+        await contentCtx.addMessage({
+          id: crypto.randomUUID(),
+          name: form.name,
+          email: form.email,
+          message: msg,
+          date: new Date().toISOString(),
+        });
+      } else {
+        await fetch('/api/messages', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: form.name, email: form.email, message: msg, date: new Date().toISOString() }),
+        });
+      }
+    } catch (err) {
+      console.warn('[Estimator] Failed to submit lead:', err);
+    }
     setBusy(false);
     setStep('result');
   };

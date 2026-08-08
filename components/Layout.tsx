@@ -5,28 +5,39 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Helmet } from 'react-helmet-async';
 import EstimatorModal from './EstimatorModal';
 import MorphicNavbar from './MorphicNavbar';
+import { useContent } from '../context/ContentContext';
 
 // ── Newsletter Section Component ───────────────────────────────────────
 const NewsletterSection: React.FC = () => {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const contentCtx = useContent();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
     setStatus('submitting');
     try {
-      // Save to Neon database as a message
-      await fetch('/api/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      if (contentCtx?.addMessage) {
+        await contentCtx.addMessage({
+          id: crypto.randomUUID(),
           name: 'Newsletter Subscriber',
           email: email.trim(),
           message: 'Newsletter subscription request',
           date: new Date().toISOString(),
-        }),
-      });
+        });
+      } else {
+        await fetch('/api/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: 'Newsletter Subscriber',
+            email: email.trim(),
+            message: 'Newsletter subscription request',
+            date: new Date().toISOString(),
+          }),
+        });
+      }
       setStatus('success');
       setEmail('');
       setTimeout(() => setStatus('idle'), 4000);

@@ -490,12 +490,22 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const addMessage = async (message: ContactMessage) => {
-    setMessages(prev => [message, ...prev]);
+    const msgObj: ContactMessage = {
+      ...message,
+      id: message.id || crypto.randomUUID(),
+      date: message.date || new Date().toISOString(),
+    };
+    setMessages(prev => {
+      const filtered = prev.filter(m => m.id !== msgObj.id);
+      const updated = [msgObj, ...filtered];
+      saveToStorage('anvitam_messages', updated);
+      return updated;
+    });
     try {
       await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(message),
+        body: JSON.stringify(msgObj),
       });
     } catch (err) {
       console.warn('[ContentContext] Failed to save message to DB:', err);
@@ -551,11 +561,15 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const deleteMessage = async (id: string) => {
-    setMessages(prev => prev.filter(m => m.id !== id));
+    setMessages(prev => {
+      const updated = prev.filter(m => m.id !== id);
+      saveToStorage('anvitam_messages', updated);
+      return updated;
+    });
     const token = getAuthToken();
     if (token) {
       try {
-        await fetch(`/api/messages/${id}`, { method: 'DELETE', headers: authHeaders() });
+        await fetch(`/api/messages?id=${id}`, { method: 'DELETE', headers: authHeaders() });
       } catch (err) {
         console.error('[ContentContext] Failed to delete message from DB:', err);
       }

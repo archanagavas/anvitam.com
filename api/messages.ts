@@ -10,8 +10,8 @@ async function sendLeadEmailNotification(name: string, email: string, message: s
     return;
   }
 
-  // Primary lead intake inbox requested by user
-  const targetEmail = 'anvitamarchitects@gmail.com';
+  // Primary lead intake inboxes requested by user
+  const targetEmails = ['ar.archanagavas@gmail.com', 'anvitamarchitects@gmail.com'];
 
   const htmlBody = `
     <div style="font-family: Arial, sans-serif; padding: 24px; color: #111; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 16px; background-color: #ffffff;">
@@ -40,14 +40,14 @@ async function sendLeadEmailNotification(name: string, email: string, message: s
         },
         body: JSON.stringify({
           from: sender,
-          to: [targetEmail],
+          to: targetEmails,
           subject: `🔔 New Anvitam Lead: ${name} (${email})`,
           html: htmlBody
         })
       });
       const data = await resp.json();
       if (resp.ok) {
-        console.log(`[Resend Success] Email delivered to ${targetEmail} via ${sender}:`, data.id);
+        console.log(`[Resend Success] Email delivered to ${targetEmails.join(', ')} via ${sender}:`, data.id);
         break; // Successfully delivered!
       } else {
         console.warn(`[Resend Sender Warning] ${sender} failed (Status ${resp.status}):`, data.message || data);
@@ -116,9 +116,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!name || !email || !message) {
       return res.status(400).json({ error: 'name, email and message are required.' });
     }
+    const msgId = id || bodyId || crypto.randomUUID();
     await sql`
       INSERT INTO messages (id, name, email, message, date)
-      VALUES (${id || bodyId || crypto.randomUUID()}, ${name}, ${email}, ${message}, ${date ?? new Date().toISOString()})
+      VALUES (${msgId}, ${name}, ${email}, ${message}, ${date ?? new Date().toISOString()})
+      ON CONFLICT (id) DO UPDATE SET
+        name = EXCLUDED.name,
+        email = EXCLUDED.email,
+        message = EXCLUDED.message,
+        date = EXCLUDED.date
     `;
 
     // Trigger resilient email alert
