@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { sql, isDbConfigured } from '../lib/db.js';
+import { sql, isDbConfigured, safeParseJSON } from '../lib/db.js';
 import { verifyAdminToken, extractToken } from '../lib/auth.js';
 import { INITIAL_WORKSHOPS } from '../constants.js';
 
@@ -16,17 +16,17 @@ function formatWorkshopRow(row: any) {
     category: row.category || 'School',
     description: row.description || '',
     attendeesCount: row.attendees_count || '',
-    offerings: typeof row.offerings === 'string' ? JSON.parse(row.offerings) : row.offerings || [],
+    offerings: safeParseJSON(row.offerings),
     skillsOutcomes: row.skills_outcomes || '',
     materialsUsed: row.materials_used || '',
     impact: row.impact || '',
     outcomes: row.outcomes || '',
-    faqs: typeof row.faqs === 'string' ? JSON.parse(row.faqs) : row.faqs || [],
-    images: typeof row.images === 'string' ? JSON.parse(row.images) : row.images || [],
-    galleryDetails: typeof row.gallery_details === 'string' ? JSON.parse(row.gallery_details) : row.gallery_details || [],
-    relatedProjectIds: typeof row.related_project_ids === 'string' ? JSON.parse(row.related_project_ids) : row.related_project_ids || [],
-    relatedServiceIds: typeof row.related_service_ids === 'string' ? JSON.parse(row.related_service_ids) : row.related_service_ids || [],
-    relatedArticleIds: typeof row.related_article_ids === 'string' ? JSON.parse(row.related_article_ids) : row.related_article_ids || [],
+    faqs: safeParseJSON(row.faqs),
+    images: safeParseJSON(row.images),
+    galleryDetails: safeParseJSON(row.gallery_details),
+    relatedProjectIds: safeParseJSON(row.related_project_ids),
+    relatedServiceIds: safeParseJSON(row.related_service_ids),
+    relatedArticleIds: safeParseJSON(row.related_article_ids),
     slug: row.slug || '',
     metaTitle: row.meta_title || '',
     metaDescription: row.meta_description || '',

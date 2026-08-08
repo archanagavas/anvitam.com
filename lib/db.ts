@@ -12,6 +12,17 @@ import { neon } from '@neondatabase/serverless';
 import postgres from 'postgres';
 import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES, INITIAL_TESTIMONIALS, INITIAL_PARTNERS } from '../constants.js';
 
+export function safeParseJSON(val: any, fallback: any = []) {
+  if (typeof val === 'string') {
+    try {
+      return JSON.parse(val);
+    } catch (e) {
+      return fallback;
+    }
+  }
+  return val ?? fallback;
+}
+
 let dbClient: any;
 let isDbConfigured = false;
 

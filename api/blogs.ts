@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { sql, isDbConfigured } from '../lib/db.js';
+import { sql, isDbConfigured, safeParseJSON } from '../lib/db.js';
 import { verifyAdminToken, extractToken } from '../lib/auth.js';
 import { INITIAL_BLOGS } from '../constants.js';
 
@@ -45,10 +45,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           excerpt: r.excerpt, content: r.content, image: r.image,
           author: r.author, metaDescription: r.meta_description,
           metaTitle: r.meta_title, coverImageAlt: r.cover_image_alt,
-          faqs: typeof r.faqs === 'string' ? JSON.parse(r.faqs) : r.faqs ?? [],
-          tags: typeof r.tags === 'string' ? JSON.parse(r.tags) : r.tags ?? [], 
+          faqs: safeParseJSON(r.faqs),
+          tags: safeParseJSON(r.tags), 
           status: r.status, 
-          toc: typeof r.toc === 'string' ? JSON.parse(r.toc) : r.toc ?? [],
+          toc: safeParseJSON(r.toc),
           authorBio: r.author_bio || '',
           authorImage: r.author_image || '',
           metaKeywords: r.meta_keywords || '',
@@ -67,10 +67,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         excerpt: r.excerpt, content: r.content, image: r.image,
         author: r.author, metaDescription: r.meta_description,
         metaTitle: r.meta_title, coverImageAlt: r.cover_image_alt,
-        faqs: typeof r.faqs === 'string' ? JSON.parse(r.faqs) : r.faqs ?? [],
-        tags: typeof r.tags === 'string' ? JSON.parse(r.tags) : r.tags ?? [], 
+        faqs: safeParseJSON(r.faqs),
+        tags: safeParseJSON(r.tags), 
         status: r.status, 
-        toc: typeof r.toc === 'string' ? JSON.parse(r.toc) : r.toc ?? [],
+        toc: safeParseJSON(r.toc),
         authorBio: r.author_bio || '',
         authorImage: r.author_image || '',
         metaKeywords: r.meta_keywords || '',

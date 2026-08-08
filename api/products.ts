@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { sql, isDbConfigured } from '../lib/db.js';
+import { sql, isDbConfigured, safeParseJSON } from '../lib/db.js';
 import { verifyAdminToken, extractToken } from '../lib/auth.js';
 import { DIGITAL_PRODUCTS } from '../constants.js';
 
@@ -80,10 +80,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           price: r.price || '',
           link: r.link || '',
           image: r.image || '',
-          tags: typeof r.tags === 'string' ? JSON.parse(r.tags) : r.tags ?? [],
+          tags: safeParseJSON(r.tags),
           category: r.category || 'E-Books',
           youtubeUrl: r.youtube_url || '',
-          videos: typeof r.videos === 'string' ? JSON.parse(r.videos) : r.videos ?? [],
+          videos: safeParseJSON(r.videos),
           metaTitle: r.meta_title || '',
           metaDescription: r.meta_description || '',
           metaKeywords: r.meta_keywords || '',
@@ -103,10 +103,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         price: r.price || '',
         link: r.link || '',
         image: r.image || '',
-        tags: typeof r.tags === 'string' ? JSON.parse(r.tags) : r.tags ?? [],
+        tags: safeParseJSON(r.tags),
         category: r.category || 'E-Books',
         youtubeUrl: r.youtube_url || '',
-        videos: typeof r.videos === 'string' ? JSON.parse(r.videos) : r.videos ?? [],
+        videos: safeParseJSON(r.videos),
         metaTitle: r.meta_title || '',
         metaDescription: r.meta_description || '',
         metaKeywords: r.meta_keywords || '',

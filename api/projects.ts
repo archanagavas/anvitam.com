@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { sql, isDbConfigured } from '../lib/db.js';
+import { sql, isDbConfigured, safeParseJSON } from '../lib/db.js';
 import { verifyAdminToken, extractToken } from '../lib/auth.js';
 import { INITIAL_PROJECTS } from '../constants.js';
 
@@ -44,13 +44,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           id: r.id, title: r.title, slug: r.slug || r.id, category: r.category, location: r.location,
           year: r.year, image: r.image, heroImage: r.hero_image || '', description: r.description,
           fullDescription: r.full_description || '', 
-          gallery: typeof r.gallery === 'string' ? JSON.parse(r.gallery) : r.gallery ?? [],
-          specs: typeof r.specs === 'string' ? JSON.parse(r.specs) : r.specs ?? [], 
-          story: typeof r.story === 'string' ? JSON.parse(r.story) : r.story ?? [], 
+          gallery: safeParseJSON(r.gallery),
+          specs: safeParseJSON(r.specs), 
+          story: safeParseJSON(r.story), 
           isFeatured: r.is_featured,
-          tags: typeof r.tags === 'string' ? JSON.parse(r.tags) : r.tags ?? [], 
-          faqs: typeof r.faqs === 'string' ? JSON.parse(r.faqs) : r.faqs ?? [], 
-          videos: typeof r.videos === 'string' ? JSON.parse(r.videos) : r.videos ?? [], 
+          tags: safeParseJSON(r.tags), 
+          faqs: safeParseJSON(r.faqs), 
+          videos: safeParseJSON(r.videos), 
           status: r.status || '',
           metaTitle: r.meta_title || '', metaDescription: r.meta_description || '',
           metaKeywords: r.meta_keywords || '', metaRobots: r.meta_robots || ''
@@ -67,13 +67,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         id: r.id, title: r.title, slug: r.slug || r.id, category: r.category, location: r.location,
         year: r.year, image: r.image, heroImage: r.hero_image || '', description: r.description,
         fullDescription: r.full_description || '', 
-        gallery: typeof r.gallery === 'string' ? JSON.parse(r.gallery) : r.gallery ?? [],
-        specs: typeof r.specs === 'string' ? JSON.parse(r.specs) : r.specs ?? [], 
-        story: typeof r.story === 'string' ? JSON.parse(r.story) : r.story ?? [], 
+        gallery: safeParseJSON(r.gallery),
+        specs: safeParseJSON(r.specs), 
+        story: safeParseJSON(r.story), 
         isFeatured: r.is_featured,
-        tags: typeof r.tags === 'string' ? JSON.parse(r.tags) : r.tags ?? [], 
-        faqs: typeof r.faqs === 'string' ? JSON.parse(r.faqs) : r.faqs ?? [], 
-        videos: typeof r.videos === 'string' ? JSON.parse(r.videos) : r.videos ?? [], 
+        tags: safeParseJSON(r.tags), 
+        faqs: safeParseJSON(r.faqs), 
+        videos: safeParseJSON(r.videos), 
         status: r.status || '',
         metaTitle: r.meta_title || '', metaDescription: r.meta_description || '',
         metaKeywords: r.meta_keywords || '', metaRobots: r.meta_robots || ''
