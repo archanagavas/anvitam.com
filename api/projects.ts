@@ -43,9 +43,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(200).json({
           id: r.id, title: r.title, slug: r.slug || r.id, category: r.category, location: r.location,
           year: r.year, image: r.image, heroImage: r.hero_image || '', description: r.description,
-          fullDescription: r.full_description || '', gallery: r.gallery ?? [],
-          specs: r.specs ?? [], story: r.story ?? [], isFeatured: r.is_featured,
-          tags: r.tags ?? [], faqs: r.faqs ?? [], videos: r.videos ?? [], status: r.status || '',
+          fullDescription: r.full_description || '', 
+          gallery: typeof r.gallery === 'string' ? JSON.parse(r.gallery) : r.gallery ?? [],
+          specs: typeof r.specs === 'string' ? JSON.parse(r.specs) : r.specs ?? [], 
+          story: typeof r.story === 'string' ? JSON.parse(r.story) : r.story ?? [], 
+          isFeatured: r.is_featured,
+          tags: typeof r.tags === 'string' ? JSON.parse(r.tags) : r.tags ?? [], 
+          faqs: typeof r.faqs === 'string' ? JSON.parse(r.faqs) : r.faqs ?? [], 
+          videos: typeof r.videos === 'string' ? JSON.parse(r.videos) : r.videos ?? [], 
+          status: r.status || '',
           metaTitle: r.meta_title || '', metaDescription: r.meta_description || '',
           metaKeywords: r.meta_keywords || '', metaRobots: r.meta_robots || ''
         });
@@ -60,9 +66,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const projects = rows.map(r => ({
         id: r.id, title: r.title, slug: r.slug || r.id, category: r.category, location: r.location,
         year: r.year, image: r.image, heroImage: r.hero_image || '', description: r.description,
-        fullDescription: r.full_description || '', gallery: r.gallery ?? [],
-        specs: r.specs ?? [], story: r.story ?? [], isFeatured: r.is_featured,
-        tags: r.tags ?? [], faqs: r.faqs ?? [], videos: r.videos ?? [], status: r.status || '',
+        fullDescription: r.full_description || '', 
+        gallery: typeof r.gallery === 'string' ? JSON.parse(r.gallery) : r.gallery ?? [],
+        specs: typeof r.specs === 'string' ? JSON.parse(r.specs) : r.specs ?? [], 
+        story: typeof r.story === 'string' ? JSON.parse(r.story) : r.story ?? [], 
+        isFeatured: r.is_featured,
+        tags: typeof r.tags === 'string' ? JSON.parse(r.tags) : r.tags ?? [], 
+        faqs: typeof r.faqs === 'string' ? JSON.parse(r.faqs) : r.faqs ?? [], 
+        videos: typeof r.videos === 'string' ? JSON.parse(r.videos) : r.videos ?? [], 
+        status: r.status || '',
         metaTitle: r.meta_title || '', metaDescription: r.meta_description || '',
         metaKeywords: r.meta_keywords || '', metaRobots: r.meta_robots || ''
       }));
