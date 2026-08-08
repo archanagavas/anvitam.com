@@ -247,6 +247,8 @@ async function main() {
   console.log('   public/sitemap.xml');
   console.log('   public/llms.txt');
   console.log(`   Last updated: ${TODAY}`);
+  
+  process.exit(0);
 }
 
 main().catch(err => {
