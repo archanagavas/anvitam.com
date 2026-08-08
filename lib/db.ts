@@ -2,16 +2,14 @@
  * lib/db.ts
  * Database client for all /api/* routes.
  *
- * Uses the @neondatabase/serverless HTTP driver for ALL postgres connections
- * (both Neon and Supabase). This is critical for Vercel serverless functions
- * because Vercel's network cannot reach Supabase's direct TCP host (ENOTFOUND).
- * The neon HTTP driver routes queries over HTTPS, bypassing this entirely.
+ * For Supabase: use the TRANSACTION POOLER URL (port 6543, region ap-northeast-2).
+ * This is required for Vercel serverless — direct connections (port 5432) cause ENOTFOUND.
+ * Pooler URL format: postgresql://postgres.PROJECT_REF:PASSWORD@aws-0-ap-northeast-2.pooler.supabase.com:6543/postgres
  *
  * DATABASE_URL must be set in Vercel → Project → Settings → Environment Variables.
- * For Supabase: use the DIRECT connection string (db.xxx.supabase.co:5432) — the
- * neon driver will handle it correctly over HTTP regardless.
  */
 import { neon } from '@neondatabase/serverless';
+import postgres from 'postgres';
 import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES, INITIAL_TESTIMONIALS, INITIAL_PARTNERS } from '../constants.js';
 
 let dbClient: any;
@@ -21,10 +19,33 @@ try {
   const dbUrl = process.env.DATABASE_URL;
   if (dbUrl && (dbUrl.startsWith('postgres://') || dbUrl.startsWith('postgresql://'))) {
     isDbConfigured = true;
-    // Use neon HTTP driver for ALL connections — works on Vercel regardless of DB provider.
-    // The neon driver wraps any postgres-compatible URL and sends queries over HTTPS.
-    dbClient = neon(dbUrl);
-    console.log('[db] Using neon HTTP driver for:', dbUrl.replace(/:[^:@]+@/, ':***@').substring(0, 60) + '...');
+    if (dbUrl.includes('supabase')) {
+      // Supabase: MUST use Transaction Pooler URL (port 6543) with postgres TCP driver.
+      // If someone accidentally sets the direct URL (port 5432), auto-rewrite to pooler.
+      // Pooler host: aws-0-ap-northeast-2.pooler.supabase.com:6543
+      // Username format for pooler: postgres.PROJECT_REF (not just postgres)
+      let poolerUrl = dbUrl;
+      // Rewrite direct host to pooler host if needed
+      if (dbUrl.includes('db.') && dbUrl.includes('.supabase.co')) {
+        // Extract project ref from db.PROJECT_REF.supabase.co
+        const match = dbUrl.match(/db\.([a-z0-9]+)\.supabase\.co/);
+        if (match) {
+          const ref = match[1];
+          // Rewrite: replace username 'postgres' with 'postgres.REF', replace host/port
+          poolerUrl = dbUrl
+            .replace(/\/\/postgres:/, `//postgres.${ref}:`)
+            .replace(`db.${ref}.supabase.co:5432`, `aws-0-ap-northeast-2.pooler.supabase.com:6543`)
+            .replace(`db.${ref}.supabase.co`, `aws-0-ap-northeast-2.pooler.supabase.com:6543`);
+          console.log('[db] Auto-rewrote direct URL to pooler URL for Supabase.');
+        }
+      }
+      dbClient = postgres(poolerUrl, { ssl: 'require', prepare: false, max: 1 });
+      console.log('[db] Using postgres driver with Supabase Transaction Pooler (ap-northeast-2)');
+    } else {
+      // Neon or other postgres-compatible DB: use neon HTTP driver
+      dbClient = neon(dbUrl);
+      console.log('[db] Using neon HTTP driver');
+    }
   } else {
     console.warn('[db] DATABASE_URL is not set or invalid. Falling back to static data.');
     dbClient = async () => {
@@ -37,7 +58,6 @@ try {
     throw new Error('Database client initialization failed.');
   };
 }
-
 
 let dbInitPromise: Promise<any> | null = null;
 let isInitializing = false;
