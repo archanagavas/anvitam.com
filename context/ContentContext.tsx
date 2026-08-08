@@ -354,8 +354,18 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   // Fetch on mount — always sync from DB (DB is the source of truth)
   useEffect(() => {
     refreshFromDb();
-    // Note: self-healing resets removed — DB data always wins on sync
   }, []);
+
+  // Auto-reconnect if DB is offline
+  useEffect(() => {
+    let interval: any;
+    if (!isDbConnected && isInitialSyncDone) {
+      interval = setInterval(() => {
+        refreshFromDb();
+      }, 15000); // Auto-retry every 15 seconds if disconnected
+    }
+    return () => clearInterval(interval);
+  }, [isDbConnected, isInitialSyncDone]);
 
   // Persist items to localStorage
   useEffect(() => { saveToStorage('anvitam_services_v5', services); }, [services]);
