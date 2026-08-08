@@ -225,7 +225,7 @@ async function initDatabaseInternal() {
   `;
 
   // Seed initial partners if none exist, or update logos if missing
-  const existingPartners = await neonClient`SELECT id FROM partners LIMIT 1`;
+  const existingPartners = await dbClient`SELECT id FROM partners LIMIT 1`;
   if (existingPartners.length === 0) {
     for (const p of INITIAL_PARTNERS) {
       await dbClient`
