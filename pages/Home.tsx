@@ -187,13 +187,13 @@ const Home: React.FC = () => {
         </motion.div>
 
         {/* Centered hero text */}
-        <motion.div style={{ opacity: heroOpacity }} className="relative z-10 text-center px-4 sm:px-6 max-w-4xl mx-auto pt-14 pb-8">
+        <motion.div style={{ opacity: heroOpacity }} className="relative z-10 text-center px-4 sm:px-6 max-w-5xl md:max-w-6xl mx-auto pt-10 pb-6">
           {/* Trust Pill Badge */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/95 backdrop-blur-md border border-white/50 shadow-lg text-gray-900 text-xs font-semibold mb-6 hover:scale-[1.02] transition-transform cursor-pointer"
+            className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/95 backdrop-blur-md border border-white/50 shadow-lg text-gray-900 text-xs font-semibold mb-4 hover:scale-[1.02] transition-transform cursor-pointer"
           >
             <div className="flex -space-x-2.5 overflow-hidden">
               <img className="inline-block h-7 w-7 rounded-full ring-2 ring-white object-cover" src="/avatars/client1.jpg" alt="Mahandra sinh Solanki" />
@@ -211,7 +211,7 @@ const Home: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-4xl sm:text-6xl md:text-7xl text-white font-extrabold leading-[1.12] tracking-tight mb-4 drop-shadow-md"
+            className="text-4xl sm:text-6xl md:text-7xl text-white font-extrabold leading-[1.12] tracking-tight mb-3 drop-shadow-md"
           >
             From Empty Space to a{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#CCFF00] via-[#E2FF66] to-[#A3E635] drop-shadow-lg">
@@ -223,7 +223,7 @@ const Home: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-base sm:text-xl text-gray-200 font-medium max-w-2xl mx-auto mb-8 leading-relaxed drop-shadow-sm"
+            className="text-base sm:text-xl text-gray-200 font-medium max-w-2xl mx-auto mb-6 leading-relaxed drop-shadow-sm"
           >
             We design farmhouses, eco-resorts, food forests, and landscapes that work with nature.
           </motion.p>
@@ -233,7 +233,7 @@ const Home: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="flex flex-wrap items-center justify-center gap-4 mb-8"
+            className="flex flex-wrap items-center justify-center gap-4 mb-6"
           >
             <Link to="/contact">
               <FlowButton text="Discuss Your Project" variant="lime" className="shadow-[0_0_25px_rgba(204,255,0,0.35)] hover:shadow-[0_0_35px_rgba(204,255,0,0.55)] transition-shadow" />
@@ -248,24 +248,24 @@ const Home: React.FC = () => {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="pt-2"
+            className="pt-1"
           >
-            <p className="text-xs uppercase tracking-widest text-[#CCFF00] font-bold mb-3 drop-shadow-sm">
+            <p className="text-xs uppercase tracking-widest text-[#CCFF00] font-bold mb-2.5 drop-shadow-sm">
               What space are you looking to create?
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-2.5 text-xs sm:text-sm">
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-xs">
               {[
-                { label: '🏡 Designing a Private Home or Villa?', path: '/services?category=Homes+%26+Retreats' },
-                { label: '🏨 Building a Farmstay, Airbnb or Eco Resort?', path: '/services?category=Hospitality+%26+Resorts' },
-                { label: '🌾 Developing Land, Food Forest or Garden?', path: '/services?category=Land+%26+Gardens' }
+                { label: '🏡 Private Home or Villa?', path: '/services?category=Homes+%26+Retreats' },
+                { label: '🏨 Farmstay, Airbnb or Eco Resort?', path: '/services?category=Hospitality+%26+Resorts' },
+                { label: '🌾 Land, Food Forest or Garden?', path: '/services?category=Land+%26+Gardens' }
               ].map((cat) => (
                 <Link
                   key={cat.label}
                   to={cat.path}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 hover:bg-[#CCFF00] hover:text-black backdrop-blur-md border border-white/25 text-white font-semibold transition-all duration-300 hover:scale-105 shadow-md group/pill"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/10 hover:bg-[#CCFF00] hover:text-black backdrop-blur-md border border-white/25 text-white font-semibold transition-all duration-300 hover:scale-105 shadow-md group/pill whitespace-nowrap text-xs sm:text-xs"
                 >
                   <span>{cat.label}</span>
-                  <ArrowRight size={14} className="text-[#CCFF00] group-hover/pill:text-black transition-colors" />
+                  <ArrowRight size={13} className="text-[#CCFF00] group-hover/pill:text-black transition-colors shrink-0" />
                 </Link>
               ))}
             </div>
