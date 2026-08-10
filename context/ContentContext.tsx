@@ -129,7 +129,7 @@ function mergePreservingLocal<T extends { id: string }>(
   repairFn: (item: T, def?: T) => T
 ): T[] {
   const deletedIds = getDeletedIds();
-  const base = incomingItems && incomingItems.length > 0 ? incomingItems : defaultItems;
+  const hasIncoming = Array.isArray(incomingItems) && incomingItems.length > 0;
   const itemMap = new Map<string, T>();
 
   // 1. Populate default items (skipping deleted ones)
@@ -139,25 +139,29 @@ function mergePreservingLocal<T extends { id: string }>(
     }
   }
 
-  // 2. Overlay incoming items from server API or fallback (skipping deleted ones)
-  for (const item of base) {
-    if (!item?.id || deletedIds.has(item.id)) continue;
-    const def = defaultItems.find(d => d.id === item.id);
-    itemMap.set(item.id, repairFn(item, def));
+  // 2. Overlay incoming items from server API (skipping deleted ones) - SERVER IS SOURCE OF TRUTH
+  if (hasIncoming) {
+    for (const item of incomingItems) {
+      if (!item?.id || deletedIds.has(item.id)) continue;
+      const def = defaultItems.find(d => d.id === item.id);
+      itemMap.set(item.id, repairFn(item, def));
+    }
   }
 
-  // 3. Preserve local custom items or edits from browser localStorage
+  // 3. Keep local custom items OR local edits only if server data is unavailable
   if (Array.isArray(localItems)) {
     for (const loc of localItems) {
       if (!loc || !loc.id || deletedIds.has(loc.id)) continue;
-      const existing = itemMap.get(loc.id);
-      if (!existing) {
-        // Custom item created in admin panel!
-        itemMap.set(loc.id, loc);
-      } else {
-        // Preserving local edits over defaults, repairing images
+      if (!hasIncoming) {
+        // Initial load before server fetch: use local storage edits
         const def = defaultItems.find(d => d.id === loc.id);
-        itemMap.set(loc.id, repairFn({ ...existing, ...loc }, def));
+        const existing = itemMap.get(loc.id);
+        itemMap.set(loc.id, repairFn({ ...(existing || {}), ...loc }, def));
+      } else {
+        // Server returned data: keep ONLY unsynced local custom items that don't exist on server yet
+        if (!itemMap.has(loc.id)) {
+          itemMap.set(loc.id, loc);
+        }
       }
     }
   }
@@ -174,7 +178,7 @@ const repairWorkshop = (w: Workshop, def?: Workshop): Workshop => ({
 const repairService = (s: Service, def?: Service): Service => ({
   ...def,
   ...s,
-  heroImage: s.heroImage || def?.heroImage || ''
+  heroImage: s.heroImage || s.image || def?.heroImage || ''
 });
 
 const repairProduct = (p: DigitalProduct, def?: DigitalProduct): DigitalProduct => ({
@@ -183,13 +187,17 @@ const repairProduct = (p: DigitalProduct, def?: DigitalProduct): DigitalProduct 
   image: p.image || def?.image || ''
 });
 
-const repairProject = (p: Project, def?: Project): Project => ({
-  ...def,
-  ...p,
-  image: p.image || def?.image || '',
-  heroImage: p.heroImage || p.image || def?.heroImage || '',
-  gallery: (p.gallery && p.gallery.length > 0) ? p.gallery : (def?.gallery || [])
-});
+const repairProject = (p: Project, def?: Project): Project => {
+  const image = p.image || p.heroImage || def?.image || '';
+  const heroImage = p.heroImage || p.image || def?.heroImage || image;
+  return {
+    ...def,
+    ...p,
+    image,
+    heroImage,
+    gallery: (p.gallery && p.gallery.length > 0) ? p.gallery : (def?.gallery || [])
+  };
+};
 
 const repairBlog = (b: BlogPost, def?: BlogPost): BlogPost => ({
   ...def,
@@ -200,19 +208,19 @@ const repairBlog = (b: BlogPost, def?: BlogPost): BlogPost => ({
 export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [projects, setProjects] = useState<Project[]>(() => {
     const stored = loadFromStorage<Project>('anvitam_projects_v2', INITIAL_PROJECTS);
-    return mergePreservingLocal(stored, stored, INITIAL_PROJECTS, repairProject);
+    return mergePreservingLocal(stored, [], INITIAL_PROJECTS, repairProject);
   });
   const [blogs, setBlogs] = useState<BlogPost[]>(() => {
     const stored = loadFromStorage<BlogPost>('anvitam_blogs_v2', INITIAL_BLOGS);
-    return mergePreservingLocal(stored, stored, INITIAL_BLOGS, repairBlog);
+    return mergePreservingLocal(stored, [], INITIAL_BLOGS, repairBlog);
   });
   const [services, setServices] = useState<Service[]>(() => {
     const stored = loadFromStorage<Service>('anvitam_services_v5', SERVICES);
-    return mergePreservingLocal(stored, stored, SERVICES, repairService);
+    return mergePreservingLocal(stored, [], SERVICES, repairService);
   });
   const [digitalProducts, setDigitalProducts] = useState<DigitalProduct[]>(() => {
     const stored = loadFromStorage<DigitalProduct>('anvitam_products', DIGITAL_PRODUCTS);
-    return mergePreservingLocal(stored, stored, DIGITAL_PRODUCTS, repairProduct);
+    return mergePreservingLocal(stored, [], DIGITAL_PRODUCTS, repairProduct);
   });
   const [messages, setMessages] = useState<ContactMessage[]>(() =>
     loadFromStorage<ContactMessage>('anvitam_messages', [])
@@ -235,7 +243,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   });
   const [workshops, setWorkshops] = useState<Workshop[]>(() => {
     const stored = loadFromStorage<Workshop>('anvitam_workshops_v2', INITIAL_WORKSHOPS);
-    return mergePreservingLocal(stored, stored, INITIAL_WORKSHOPS, repairWorkshop);
+    return mergePreservingLocal(stored, [], INITIAL_WORKSHOPS, repairWorkshop);
   });
   const [isDbConnected, setIsDbConnected] = useState(false);
   const [isInitialSyncDone, setIsInitialSyncDone] = useState(false);

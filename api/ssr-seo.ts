@@ -494,7 +494,7 @@ function generateSchemas(section: string, idOrSlug: string, data: { blog?: any, 
   return schemas;
 }
 
-function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, project?: any, service?: any, workshop?: any }): string {
+function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, project?: any, service?: any, workshop?: any, allProjects?: any[], allServices?: any[] }): string {
   const headerHtml = `
     <header style="padding: 20px; background-color: #03160E; color: #FAFAFA; display: flex; justify-content: space-between; align-items: center; font-family: 'Playfair Display', serif;">
       <div style="font-size: 24px; font-weight: bold;"><a href="/" style="color: #CCFF00; text-decoration: none;">Anvitam</a></div>
@@ -1131,9 +1131,9 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
         <section style="margin-bottom: 60px;">
           <h2 style="font-family: 'Playfair Display', serif; font-size: 32px; color: #03160E; border-bottom: 2px solid #CCFF00; padding-bottom: 10px;">Our Ecological Services</h2>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px;">
-            ${SERVICES.map((s, idx) => `
+            ${(data.allServices && data.allServices.length > 0 ? data.allServices : SERVICES).map((s: any) => `
               <div style="border: 1px solid #E5E7EB; border-radius: 8px; padding: 20px; background: #FFF;">
-                <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?q=75&w=400&auto=format&fit=crop" alt="${s.title}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px; margin-bottom: 15px;" />
+                <img src="${s.heroImage || s.image || 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=75&w=400&auto=format&fit=crop'}" alt="${s.title}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px; margin-bottom: 15px;" />
                 <h3 style="font-family: 'Playfair Display', serif; margin-top: 0; color: #03160E;">${s.title}</h3>
                 <p style="color: #666; font-size: 14px; line-height: 1.6;">${s.description}</p>
                 <a href="/services/${s.id}" style="color: #03160E; font-weight: bold; text-decoration: underline;">Learn More</a>
@@ -1145,9 +1145,9 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
         <section style="margin-bottom: 60px;">
           <h2 style="font-family: 'Playfair Display', serif; font-size: 32px; color: #03160E; border-bottom: 2px solid #CCFF00; padding-bottom: 10px;">Selected Projects</h2>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px;">
-            ${INITIAL_PROJECTS.map(p => `
+            ${(data.allProjects && data.allProjects.length > 0 ? data.allProjects : INITIAL_PROJECTS).map((p: any) => `
               <div style="border: 1px solid #E5E7EB; border-radius: 8px; padding: 20px; background: #FFF;">
-                <img src="${p.image || 'https://www.anvitam.com/favicon.png'}" alt="${p.title}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 4px; margin-bottom: 15px;" />
+                <img src="${p.heroImage || p.image || 'https://www.anvitam.com/favicon.png'}" alt="${p.title}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 4px; margin-bottom: 15px;" />
                 <h3 style="font-family: 'Playfair Display', serif; margin-top: 0; color: #03160E;">${p.title}</h3>
                 <p style="font-size: 12px; color: #888;">${p.category} | ${p.location}</p>
                 <p style="color: #666; font-size: 14px; line-height: 1.6;">${p.description}</p>
@@ -1256,6 +1256,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let project: any = null;
   let service: any = null;
   let workshop: any = null;
+  let allProjects: any[] | undefined;
+  let allServices: any[] | undefined;
+
+  if (isDbConfigured && (!section || section === 'projects' || section === 'services')) {
+    try {
+      allProjects = await getCollection('projects', 'desc');
+      allServices = await getCollection('services', 'asc');
+    } catch (e) {}
+  }
 
   // Fetch data depending on the section
   if (section === 'blog' && idOrSlug) {
@@ -1623,7 +1632,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // --- Inject Semantic Pre-Rendered HTML inside <div id="root"> ---
-  const ssrHtml = generateSsrHtml(section, idOrSlug, { blog, project, service, workshop });
+  const ssrHtml = generateSsrHtml(section, idOrSlug, { blog, project, service, workshop, allProjects, allServices });
   template = template.replace(
     /<div id="root">(?:[\s\S]*?<\/noscript>\s*)?<\/div>/i,
     `<div id="root">${ssrHtml}</div>`
