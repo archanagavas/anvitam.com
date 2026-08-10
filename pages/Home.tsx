@@ -381,58 +381,59 @@ const Home: React.FC = () => {
                   )}
                 >
                   {c.hasWind && (
-                    <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
+                    <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl z-10">
+                      {/* Wind Arrow Stream 1 */}
                       <motion.div
-                        className="absolute w-[220px] h-[100px] -left-12 top-1"
+                        className="absolute w-[160px] h-[75px] top-3"
                         animate={{
-                          x: ['-20%', '130%'],
-                          opacity: [0, 0.9, 0.9, 0]
+                          x: ['-60px', '230px'],
+                          opacity: [0.3, 1, 1, 0.3]
                         }}
                         transition={{
                           repeat: Infinity,
-                          duration: 4,
+                          duration: 3.2,
                           ease: "easeInOut"
                         }}
                       >
-                        <svg className="w-full h-full" viewBox="0 0 200 100" fill="none">
+                        <svg className="w-full h-full filter drop-shadow-md" viewBox="0 0 160 80" fill="none">
                           <defs>
-                            <linearGradient id="breezeGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
-                              <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.15" />
-                              <stop offset="70%" stopColor="#0284c7" stopOpacity="0.85" />
+                            <linearGradient id="windG1" x1="0%" y1="0%" x2="100%" y2="0%">
+                              <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.4" />
+                              <stop offset="70%" stopColor="#0284c7" stopOpacity="0.95" />
                               <stop offset="100%" stopColor="#0369a1" stopOpacity="1" />
                             </linearGradient>
-                            <linearGradient id="breezeGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
-                              <stop offset="0%" stopColor="#7dd3fc" stopOpacity="0.15" />
-                              <stop offset="70%" stopColor="#0284c7" stopOpacity="0.85" />
+                            <linearGradient id="windG2" x1="0%" y1="0%" x2="100%" y2="0%">
+                              <stop offset="0%" stopColor="#7dd3fc" stopOpacity="0.4" />
+                              <stop offset="70%" stopColor="#0284c7" stopOpacity="0.95" />
                               <stop offset="100%" stopColor="#0284c7" stopOpacity="1" />
                             </linearGradient>
                           </defs>
+                          <path d="M 10 32 C 35 12, 70 50, 130 22" stroke="url(#windG1)" strokeWidth="4.5" strokeLinecap="round" />
+                          <path d="M 117 14 L 138 20 L 129 35 Z" fill="url(#windG1)" />
+                          <path d="M 25 55 C 50 35, 85 73, 145 45" stroke="url(#windG2)" strokeWidth="4.5" strokeLinecap="round" />
+                          <path d="M 132 37 L 153 43 L 144 58 Z" fill="url(#windG2)" />
+                        </svg>
+                      </motion.div>
 
-                          {/* Top Wave Arrow */}
-                          <path
-                            d="M 10 35 C 35 15, 70 55, 130 25"
-                            stroke="url(#breezeGradient1)"
-                            strokeWidth="4"
-                            strokeLinecap="round"
-                          />
-                          {/* Top Arrowhead */}
-                          <path
-                            d="M 116 18 L 138 23 L 129 38 Z"
-                            fill="url(#breezeGradient1)"
-                          />
-
-                          {/* Bottom Wave Arrow */}
-                          <path
-                            d="M 25 60 C 50 40, 85 80, 145 50"
-                            stroke="url(#breezeGradient2)"
-                            strokeWidth="4"
-                            strokeLinecap="round"
-                          />
-                          {/* Bottom Arrowhead */}
-                          <path
-                            d="M 131 43 L 153 48 L 144 63 Z"
-                            fill="url(#breezeGradient2)"
-                          />
+                      {/* Wind Arrow Stream 2 (Staggered so arrows are ALWAYS visible) */}
+                      <motion.div
+                        className="absolute w-[160px] h-[75px] top-3"
+                        animate={{
+                          x: ['-60px', '230px'],
+                          opacity: [0.3, 1, 1, 0.3]
+                        }}
+                        transition={{
+                          repeat: Infinity,
+                          duration: 3.2,
+                          delay: 1.6,
+                          ease: "easeInOut"
+                        }}
+                      >
+                        <svg className="w-full h-full filter drop-shadow-md" viewBox="0 0 160 80" fill="none">
+                          <path d="M 10 32 C 35 12, 70 50, 130 22" stroke="url(#windG1)" strokeWidth="4.5" strokeLinecap="round" />
+                          <path d="M 117 14 L 138 20 L 129 35 Z" fill="url(#windG1)" />
+                          <path d="M 25 55 C 50 35, 85 73, 145 45" stroke="url(#windG2)" strokeWidth="4.5" strokeLinecap="round" />
+                          <path d="M 132 37 L 153 43 L 144 58 Z" fill="url(#windG2)" />
                         </svg>
                       </motion.div>
                     </div>
@@ -488,56 +489,56 @@ const Home: React.FC = () => {
                   }}
                 >
                   {c.hasWind && (
-                    <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
+                    <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl z-10">
                       <motion.div
-                        className="absolute w-[180px] h-[80px] -left-10 top-1"
+                        className="absolute w-[140px] h-[65px] top-2"
                         animate={{
-                          x: ['-20%', '130%'],
-                          opacity: [0, 0.9, 0.9, 0]
+                          x: ['-50px', '210px'],
+                          opacity: [0.3, 1, 1, 0.3]
                         }}
                         transition={{
                           repeat: Infinity,
-                          duration: 4,
+                          duration: 3.2,
                           ease: "easeInOut"
                         }}
                       >
-                        <svg className="w-full h-full" viewBox="0 0 200 100" fill="none">
+                        <svg className="w-full h-full filter drop-shadow-md" viewBox="0 0 160 80" fill="none">
                           <defs>
-                            <linearGradient id="breezeGradMob1" x1="0%" y1="0%" x2="100%" y2="0%">
-                              <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.15" />
-                              <stop offset="70%" stopColor="#0284c7" stopOpacity="0.85" />
+                            <linearGradient id="windGMob1" x1="0%" y1="0%" x2="100%" y2="0%">
+                              <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.4" />
+                              <stop offset="70%" stopColor="#0284c7" stopOpacity="0.95" />
                               <stop offset="100%" stopColor="#0369a1" stopOpacity="1" />
                             </linearGradient>
-                            <linearGradient id="breezeGradMob2" x1="0%" y1="0%" x2="100%" y2="0%">
-                              <stop offset="0%" stopColor="#7dd3fc" stopOpacity="0.15" />
-                              <stop offset="70%" stopColor="#0284c7" stopOpacity="0.85" />
+                            <linearGradient id="windGMob2" x1="0%" y1="0%" x2="100%" y2="0%">
+                              <stop offset="0%" stopColor="#7dd3fc" stopOpacity="0.4" />
+                              <stop offset="70%" stopColor="#0284c7" stopOpacity="0.95" />
                               <stop offset="100%" stopColor="#0284c7" stopOpacity="1" />
                             </linearGradient>
                           </defs>
-
-                          {/* Top Wave Arrow */}
-                          <path
-                            d="M 10 35 C 35 15, 70 55, 130 25"
-                            stroke="url(#breezeGradMob1)"
-                            strokeWidth="4"
-                            strokeLinecap="round"
-                          />
-                          <path
-                            d="M 116 18 L 138 23 L 129 38 Z"
-                            fill="url(#breezeGradMob1)"
-                          />
-
-                          {/* Bottom Wave Arrow */}
-                          <path
-                            d="M 25 60 C 50 40, 85 80, 145 50"
-                            stroke="url(#breezeGradMob2)"
-                            strokeWidth="4"
-                            strokeLinecap="round"
-                          />
-                          <path
-                            d="M 131 43 L 153 48 L 144 63 Z"
-                            fill="url(#breezeGradMob2)"
-                          />
+                          <path d="M 10 32 C 35 12, 70 50, 130 22" stroke="url(#windGMob1)" strokeWidth="4.5" strokeLinecap="round" />
+                          <path d="M 117 14 L 138 20 L 129 35 Z" fill="url(#windGMob1)" />
+                          <path d="M 25 55 C 50 35, 85 73, 145 45" stroke="url(#windGMob2)" strokeWidth="4.5" strokeLinecap="round" />
+                          <path d="M 132 37 L 153 43 L 144 58 Z" fill="url(#windGMob2)" />
+                        </svg>
+                      </motion.div>
+                      <motion.div
+                        className="absolute w-[140px] h-[65px] top-2"
+                        animate={{
+                          x: ['-50px', '210px'],
+                          opacity: [0.3, 1, 1, 0.3]
+                        }}
+                        transition={{
+                          repeat: Infinity,
+                          duration: 3.2,
+                          delay: 1.6,
+                          ease: "easeInOut"
+                        }}
+                      >
+                        <svg className="w-full h-full filter drop-shadow-md" viewBox="0 0 160 80" fill="none">
+                          <path d="M 10 32 C 35 12, 70 50, 130 22" stroke="url(#windGMob1)" strokeWidth="4.5" strokeLinecap="round" />
+                          <path d="M 117 14 L 138 20 L 129 35 Z" fill="url(#windGMob1)" />
+                          <path d="M 25 55 C 50 35, 85 73, 145 45" stroke="url(#windGMob2)" strokeWidth="4.5" strokeLinecap="round" />
+                          <path d="M 132 37 L 153 43 L 144 58 Z" fill="url(#windGMob2)" />
                         </svg>
                       </motion.div>
                     </div>
