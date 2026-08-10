@@ -1774,18 +1774,25 @@ const Admin: React.FC = () => {
     );
   }
 
-  const NavButton = ({ id, icon: Icon, label }: { id: typeof activeTab, icon: any, label: string }) => (
-    <button
-      onClick={() => { setActiveTab(id); resetForm(); setBlogView('list'); setEditingBlog(null); setIsSidebarOpen(false); }}
-      className={`w-full text-left p-3 flex items-center space-x-3 rounded-lg transition-colors text-sm ${activeTab === id ? 'bg-black text-white' : 'hover:bg-gray-100 text-gray-600'}`}
-    >
-      <Icon size={16} />
-      <span>{label}</span>
-    </button>
-  );
+  const NavButton = ({ id, icon: Icon, label }: { id: typeof activeTab, icon: any, label: string }) => {
+    const isActive = activeTab === id;
+    return (
+      <button
+        onClick={() => { setActiveTab(id); resetForm(); setBlogView('list'); setEditingBlog(null); setIsSidebarOpen(false); }}
+        className={`w-full text-left px-3.5 py-2.5 flex items-center space-x-3 rounded-xl transition-all duration-200 text-xs font-semibold ${
+          isActive 
+            ? 'bg-slate-900 text-white shadow-sm ring-1 ring-slate-900/10' 
+            : 'text-gray-600 hover:bg-gray-100/80 hover:text-gray-900'
+        }`}
+      >
+        <Icon size={16} className={isActive ? 'text-[#CCFF00]' : 'text-gray-400'} />
+        <span className="flex-1 truncate">{label}</span>
+      </button>
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row relative text-gray-800" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="min-h-screen bg-slate-50/60 flex flex-col md:flex-row relative text-gray-800 font-sans">
       
       {/* Mobile Topbar */}
       <div className="md:hidden bg-white border-b border-gray-100 p-4 flex items-center justify-between sticky top-0 z-20">
@@ -1809,19 +1816,19 @@ const Admin: React.FC = () => {
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed md:sticky top-0 left-0 h-screen overflow-y-auto w-64 bg-white border-r border-gray-100 flex flex-col flex-shrink-0 z-40 transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+      <aside className={`fixed md:sticky top-0 left-0 h-screen w-64 bg-white border-r border-gray-200/70 flex flex-col flex-shrink-0 z-40 transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className="p-5 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shadow-sm">
               <span className="text-[#CCFF00] text-sm font-black">A</span>
             </div>
-            <span className="font-bold text-sm text-gray-800">Anvitam Admin</span>
+            <span className="font-bold text-sm text-gray-900 tracking-tight">Anvitam Admin</span>
           </div>
           <button onClick={() => setIsSidebarOpen(false)} className="md:hidden p-1 text-gray-400 hover:text-gray-800 rounded-lg">
             <X size={20} />
           </button>
         </div>
-        <nav className="p-3 space-y-1 flex-1">
+        <nav className="p-3 space-y-1 flex-1 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <NavButton id="analytics" icon={ChartIcon} label="Dashboard" />
           <NavButton id="messages" icon={MessageSquare} label="Inquiries" />
           <NavButton id="estimator" icon={Calculator} label="Estimate Leads" />
@@ -2645,56 +2652,94 @@ const Admin: React.FC = () => {
           <div className="space-y-6 animate-fade-in">
             {testimonialView === 'list' ? (
               <div>
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <div>
-                    <h2 className="text-2xl font-bold">Client Testimonials</h2>
-                    <p className="text-sm text-gray-400 mt-0.5">{testimonials.length} total testimonials</p>
+                    <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Client Testimonials</h2>
+                    <p className="text-xs text-slate-500 mt-1 font-medium flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                      {testimonials.length} active testimonials published on homepage & landing pages
+                    </p>
                   </div>
                   <button
                     onClick={() => { setEditingTestimonial(null); setTestimonialView('editor'); }}
-                    className="flex items-center gap-2 bg-black text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-800 transition"
+                    className="flex items-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-800 shadow-sm transition active:scale-95 shrink-0"
                   >
-                    <Plus size={15} /> New Testimonial
+                    <Plus size={15} /> Add New Testimonial
                   </button>
                 </div>
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                  {testimonials.length === 0 ? (
-                    <div className="text-center py-20 text-gray-400">
-                      <MessageCircle size={32} className="mx-auto mb-3 opacity-30" />
-                      <p className="text-sm">No testimonials yet. Click "New Testimonial" to get started.</p>
-                    </div>
-                  ) : (
-                    <div className="divide-y divide-gray-100">
-                      {testimonials.map(t => (
-                        <div key={t.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition">
+
+                {testimonials.length === 0 ? (
+                  <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-16 text-center text-slate-400">
+                    <MessageCircle size={36} className="mx-auto mb-3 text-slate-300" />
+                    <p className="text-sm font-semibold text-slate-700">No client testimonials added yet</p>
+                    <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Click "Add New Testimonial" to feature feedback from clients and partner institutions.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {testimonials.map((t, idx) => {
+                      const avatarColors = [
+                        'bg-emerald-100 text-emerald-800 border-emerald-200',
+                        'bg-sky-100 text-sky-800 border-sky-200',
+                        'bg-amber-100 text-amber-800 border-amber-200',
+                        'bg-purple-100 text-purple-800 border-purple-200',
+                        'bg-rose-100 text-rose-800 border-rose-200',
+                      ];
+                      const colorClass = avatarColors[idx % avatarColors.length];
+                      const initial = t.author ? t.author.trim().charAt(0).toUpperCase() : '?';
+
+                      return (
+                        <div key={t.id} className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between group">
                           <div>
-                            <h4 className="font-bold text-sm text-gray-850 flex items-center gap-2">
-                              {t.author}
-                            </h4>
-                            <p className="text-xs text-gray-400 mt-0.5">{t.role}</p>
-                            <p className="text-xs text-gray-500 mt-1 line-clamp-1">{t.text}</p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => { setEditingTestimonial(t); setTestimonialView('editor'); }}
-                              className="flex items-center gap-1 text-xs border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition font-medium text-gray-650 bg-white"
-                            >
-                              <Edit2 size={11} /> Edit
-                            </button>
-                            <button onClick={() => {
-                              if (confirm(`Are you sure you want to delete testimonial by "${t.author}"?`)) {
-                                deleteTestimonial(t.id);
-                                showToast('Testimonial deleted successfully!');
-                              }
-                            }} className="text-red-400 hover:text-red-650 p-1.5 hover:bg-red-50 rounded-lg transition">
-                              <Trash2 size={15} />
-                            </button>
+                            <div className="flex items-start justify-between gap-3 mb-3">
+                              <div className="flex items-center gap-3">
+                                {t.image ? (
+                                  <img src={t.image} alt={t.author} className="w-10 h-10 rounded-full object-cover border border-slate-200 shrink-0" />
+                                ) : (
+                                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border shrink-0 ${colorClass}`}>
+                                    {initial}
+                                  </div>
+                                )}
+                                <div>
+                                  <h4 className="font-bold text-sm text-slate-900 leading-snug">{t.author}</h4>
+                                  <span className="inline-block text-[11px] font-semibold text-slate-500 mt-0.5">
+                                    {t.role || 'Client / Partner'}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1.5 opacity-90">
+                                <button
+                                  onClick={() => { setEditingTestimonial(t); setTestimonialView('editor'); }}
+                                  className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition"
+                                  title="Edit Testimonial"
+                                >
+                                  <Edit2 size={14} />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    if (confirm(`Are you sure you want to delete testimonial by "${t.author}"?`)) {
+                                      deleteTestimonial(t.id);
+                                      showToast('Testimonial deleted successfully!');
+                                    }
+                                  }}
+                                  className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                                  title="Delete Testimonial"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="relative bg-slate-50/80 rounded-xl p-3.5 border border-slate-100 mt-2">
+                              <p className="text-xs text-slate-650 leading-relaxed italic">
+                                "{t.text}"
+                              </p>
+                            </div>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             ) : (
               <TestimonialEditorForm
