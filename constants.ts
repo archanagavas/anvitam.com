@@ -820,108 +820,7 @@ export const INITIAL_PROJECTS: Project[] = [
   }
 ];
 
-export const INITIAL_BLOGS: BlogPost[] = [
-  {
-    id: 'biophilic-design',
-    slug: 'biophilic-design-connecting-architecture-with-nature',
-    title: 'Biophilic Design: Connecting Architecture with Nature',
-    date: 'October 25, 2023',
-    author: 'Anvitam Team',
-    status: 'published',
-    metaDescription: 'Explore how biophilic design integrates natural elements into architecture to enhance well-being, productivity, and sustainability.',
-    tags: ['Biophilic Design', 'Sustainability', 'Architecture'],
-    excerpt: 'Rooted in the belief that humans have an innate connection to nature, biophilic design incorporates natural elements to create spaces that promote well-being.',
-    // Updated Image
-    image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=1200&auto=format&fit=crop',
-    toc: [
-      'What is biophilic design',
-      'Principles of Biophilic Design',
-      'Benefits of Biophilic Design',
-      'Implementing Biophilic Design',
-      'Comparison: Conventional vs Biophilic',
-      'Biophilia in Interiors'
-    ],
-    authorImage: '/archana.png',
-    authorBio: 'Architect & Permaculture Designer | Farm Retreats, Eco Homestays, Food Forests, Agroforestry & Agrotourism | Consultation, Site Planning, Designing & Visualization - 4 years experience',
-    content: `
-      <h2>What is biophilic design</h2>
-      <p>Biophilic design is an architectural approach that integrates natural elements—such as light, air, greenery, and organic materials—into built environments to promote well-being, productivity, and a deeper connection to nature.</p>
-      <p>Rooted in the belief that humans have an innate connection to nature, biophilic design incorporates natural elements, materials, and processes to create spaces that promote well-being, enhance productivity, and contribute to environmental sustainability. This approach is not just about aesthetics—it fundamentally improves the quality of life for occupants by fostering a closer connection to the natural world.</p>
-
-      <h2>Principles of Biophilic Design</h2>
-      <p>Stephen Kellert, a pioneer in biophilic design, identified six core elements that guide its application:</p>
-      
-      <h3>1. Environmental Features</h3>
-      <p>This principle emphasizes the direct integration of natural elements into the built environment. Incorporating plants, water features, sunlight, fresh air, and natural materials such as wood and stone creates spaces that resonate with human affinity for nature.</p>
-      
-      <h3>2. Natural Shapes and Forms</h3>
-      <p>Biophilic architecture employs shapes and patterns found in nature—such as curves, arches, and organic forms—to evoke a sense of harmony.</p>
-
-      <h3>3. Natural Patterns and Processes</h3>
-      <p>This element focuses on incorporating natural variability, richness of detail, and sensory experiences. Patterns in materials, changing light conditions, and textured surfaces mimic the dynamic processes found in nature.</p>
-
-      <h2>Benefits of Biophilic Design</h2>
-      <ol>
-        <li><strong>Enhances Mental Health:</strong> Being surrounded by natural elements has been shown to reduce stress, anxiety, and depression.</li>
-        <li><strong>Boosts Productivity:</strong> Natural lighting and greenery stimulate the mind and reduce fatigue.</li>
-        <li><strong>Promotes Physical Health:</strong> Improved air quality and natural ventilation.</li>
-      </ol>
-
-      <h2>Comparison: Conventional Design vs Biophilic Design</h2>
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse my-8">
-          <thead>
-            <tr class="border-b-2 border-anvitam-green">
-              <th class="py-4 font-serif text-lg">Feature</th>
-              <th class="py-4 font-serif text-lg">Conventional Design</th>
-              <th class="py-4 font-serif text-lg">Biophilic Design</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="border-b border-gray-200">
-              <td class="py-3">Connection to Nature</td>
-              <td class="py-3 text-gray-500">Minimal or incidental</td>
-              <td class="py-3 font-medium">100% Integrated</td>
-            </tr>
-            <tr class="border-b border-gray-200">
-              <td class="py-3">Materials Used</td>
-              <td class="py-3 text-gray-500">Often synthetic/industrial</td>
-              <td class="py-3 font-medium">Natural, Local, Earthy</td>
-            </tr>
-            <tr class="border-b border-gray-200">
-              <td class="py-3">User Well-being</td>
-              <td class="py-3 text-gray-500">Not always considered</td>
-              <td class="py-3 font-medium">Central to design</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>Biophilia in Interiors</h2>
-      <p>Biophilia shapes not just our architecture but also our interior design philosophy. Across several homes and retreats near Mumbai, we’ve crafted interiors that invite nature inside — through material, light, form, and sensory experience.</p>
-      <p>We use natural finishes like lime plaster, reclaimed wood, and earth-based flooring to create tactile warmth. Indoor courtyards, skylights, and large openings bring in sunlight, shadows, and breeze, fostering a constant dialogue between inside and out.</p>
-
-      <h2>Conclusion</h2>
-      <p>In an age of rapid urbanisation, biophilic design offers a return to balance. By weaving nature into the fabric of our homes, we create environments that nurture the human spirit. At Anvitam, we see biophilic design not as a style, but as a responsibility.</p>
-    `
-  },
-  {
-    id: 'future-sustainable',
-    slug: 'future-sustainable-architecture-gujarat',
-    title: 'The Future of Sustainable Architecture in Gujarat',
-    date: 'October 15, 2023',
-    author: 'Archana Gavas',
-    status: 'published',
-    metaDescription: 'Exploring how traditional Gujarati building techniques can be adapted for modern sustainability needs.',
-    tags: ['Sustainability', 'Gujarat', 'Insights'],
-    excerpt: 'Exploring how traditional Gujarati building techniques can be adapted for modern sustainability needs.',
-    content: '<p>Full article content regarding sustainable practices in Gujarat...</p>',
-    // Updated Image
-    image: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=1200&auto=format&fit=crop',
-    authorImage: '/archana.png',
-    authorBio: 'Architect & Permaculture Designer | Farm Retreats, Eco Homestays, Food Forests, Agroforestry & Agrotourism | Consultation, Site Planning, Designing & Visualization - 4 years experience',
-  },
-];
+export const INITIAL_BLOGS: BlogPost[] = [];
 
 export const TEAM_MEMBERS: TeamMember[] = [
   {
@@ -937,36 +836,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
 
 export const AWARDS: Award[] = []; 
 
-export const TESTIMONIALS: Testimonial[] = [
-  {
-    id: 'tm1',
-    text: "We’re grateful for how thoughtfully the home was designed and executed. The use of natural materials and climate-responsive strategies made the space comfortable, honest, and deeply connected to its surroundings.",
-    author: 'Akash Jha',
-    role: 'yourweb3guy',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&q=80'
-  },
-  {
-    id: 'tm2',
-    text: "We’re thankful for how the farm has evolved through your design. The natural pond and food forest have added life, balance, and a sense of harmony that guests genuinely feel.",
-    author: 'Mahandra sinh Solanki',
-    role: 'Vanvagado ecofarm',
-    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&q=80'
-  },
-  {
-    id: 'tm3',
-    text: "Thank you for designing such a peaceful and well-considered retreat. Every element, from the yurt to the wellness spaces, feels intentional and deeply calming for our guests",
-    author: 'Dennis',
-    role: 'The Batukaru Yurt',
-    image: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&h=150&fit=crop&q=80'
-  },
-  {
-    id: 'tm4',
-    text: "The terrace garden has become one of our favourite spaces. We really appreciate how reclaimed materials were used so creatively and sustainably.",
-    author: 'Naveen Bhagchandani',
-    role: 'Shalimar',
-    image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&q=80'
-  }
-];
+export const TESTIMONIALS: Testimonial[] = INITIAL_TESTIMONIALS;
 
 export const INITIAL_ESTIMATOR_SERVICES: EstimatorService[] = [
   {

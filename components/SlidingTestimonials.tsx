@@ -1,5 +1,6 @@
 import React from 'react';
 import { useContent } from '../context/ContentContext';
+import { INITIAL_TESTIMONIALS } from '../constants';
 
 const SlidingTestimonials: React.FC = () => {
   const { testimonials } = useContent();
@@ -49,9 +50,9 @@ const SlidingTestimonials: React.FC = () => {
     }
   ];
 
-  const allTestimonials = (Array.isArray(testimonials) && testimonials.length > 0) 
-    ? testimonials 
-    : defaultTestimonials;
+  const rawList = (Array.isArray(testimonials) && testimonials.length > 0) ? testimonials : INITIAL_TESTIMONIALS;
+  const filteredList = rawList.filter(t => t && t.text && t.text.trim().length > 0 && t.author && t.author !== 'Client');
+  const allTestimonials = filteredList.length > 0 ? filteredList : INITIAL_TESTIMONIALS;
 
   // Split testimonials into row 1 and row 2 safely
   const midPoint = Math.max(1, Math.ceil(allTestimonials.length / 2));

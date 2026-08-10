@@ -60,6 +60,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(200).json(row);
       }
       const rows = await getCollection(collectionName, resource === 'testimonials' ? 'desc' : 'asc');
+      if (resource === 'testimonials') {
+        const validRows = rows.filter(r => r && r.text && r.text.trim().length > 0 && r.author && r.author !== 'Client');
+        if (validRows.length === 0) { res.setHeader('x-db-fallback', 'true'); return res.status(200).json(fallbackData); }
+        return res.status(200).json(validRows);
+      }
       if (rows.length === 0) { res.setHeader('x-db-fallback', 'true'); return res.status(200).json(fallbackData); }
       // Merge logos from constants for partners
       if (resource === 'partners') {
