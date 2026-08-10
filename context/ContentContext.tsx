@@ -644,7 +644,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   const deleteService = async (id: string) => {
     setServices(prev => {
       const updated = prev.filter(s => s.id !== id);
-      saveToStorage('anvitam_services_v5', updated);
+      saveToStorage('anvitam_services_v6', updated);
       return updated;
     });
     const token = getAuthToken();

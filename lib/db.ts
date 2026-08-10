@@ -142,9 +142,9 @@ export async function initDatabase(force: boolean = false): Promise<{ success: b
   const db = getDb();
 
   try {
-    // Seed partners
+    // Seed partners (only if empty to prevent overwriting admin-edited partners)
     const partnersSnap = await db.collection('partners').limit(1).get();
-    if (partnersSnap.empty || force) {
+    if (partnersSnap.empty) {
       const batch = db.batch();
       for (const p of INITIAL_PARTNERS) {
         batch.set(db.collection('partners').doc(p.id), {
@@ -190,12 +190,18 @@ export async function initDatabase(force: boolean = false): Promise<{ success: b
     // Seed blogs (Skipped - INITIAL_BLOGS is empty)
     // Blogs collection will remain empty until admin adds new posts.
 
-    // Seed services
+    // Seed services (Preserve existing created_at on merge)
     const servicesSnap = await db.collection('services').limit(1).get();
     if (servicesSnap.empty || force) {
       const batch = db.batch();
+      const now = new Date().toISOString();
       for (const s of SERVICES) {
-        batch.set(db.collection('services').doc(s.id), {
+        const docRef = db.collection('services').doc(s.id);
+        const docSnap = await docRef.get();
+        const existingData = docSnap.exists ? docSnap.data() : null;
+        const createdAt = existingData?.created_at || now;
+
+        batch.set(docRef, {
           id: s.id, title: s.title, description: s.description, icon: s.icon,
           category: s.category || '',
           valueProps: s.valueProps || [], heroImage: s.heroImage || '',
@@ -206,7 +212,8 @@ export async function initDatabase(force: boolean = false): Promise<{ success: b
           gallery: s.gallery || [], videos: s.videos || [],
           metaTitle: s.metaTitle || '', metaDescription: s.metaDescription || '',
           metaKeywords: s.metaKeywords || '', metaRobots: s.metaRobots || 'index, follow',
-          created_at: new Date().toISOString()
+          created_at: createdAt,
+          updated_at: now
         }, { merge: true });
       }
       await batch.commit();

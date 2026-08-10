@@ -12,15 +12,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // 1. Database Initialization
   if (action === 'db-init' || req.url?.includes('db-init')) {
-    if (req.method !== 'GET') {
+    const force = req.query.force === 'true' || req.body?.force === true;
+    if (force && req.method !== 'POST') {
+      res.setHeader('Allow', 'POST');
+      return res.status(405).json({ error: 'Forced reseed requires a POST request to prevent accidental execution.' });
+    }
+    if (req.method !== 'GET' && req.method !== 'POST') {
+      res.setHeader('Allow', 'GET, POST');
       return res.status(405).json({ error: 'Method not allowed' });
     }
-    const secret = req.query.secret as string;
+    const secret = (req.query.secret as string) || req.body?.secret;
     if (!process.env.ADMIN_INIT_SECRET || secret !== process.env.ADMIN_INIT_SECRET) {
-      return res.status(403).json({ error: 'Forbidden. Provide valid ?secret= query param.' });
+      return res.status(403).json({ error: 'Forbidden. Provide valid secret parameter.' });
     }
     try {
-      const force = req.query.force === 'true';
       const result = await initDatabase(force);
       return res.status(200).json(result);
     } catch (err: any) {
