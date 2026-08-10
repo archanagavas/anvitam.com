@@ -187,18 +187,8 @@ export async function initDatabase(): Promise<{ success: boolean; message: strin
       console.log('[db] Seeded projects.');
     }
 
-    // Seed blogs
-    const blogsSnap = await db.collection('blogs').limit(1).get();
-    if (blogsSnap.empty) {
-      const batch = db.batch();
-      for (const b of INITIAL_BLOGS) {
-        batch.set(db.collection('blogs').doc(b.id), {
-          ...b, created_at: new Date().toISOString()
-        });
-      }
-      await batch.commit();
-      console.log('[db] Seeded blogs.');
-    }
+    // Seed blogs (Skipped - INITIAL_BLOGS is empty)
+    // Blogs collection will remain empty until admin adds new posts.
 
     // Seed services
     const servicesSnap = await db.collection('services').limit(1).get();
