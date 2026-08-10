@@ -135,8 +135,8 @@ export async function deleteDoc(collection: string, id: string): Promise<void> {
 // ── Database Initialization (seeds default data if collections empty) ─────────
 let dbInitialized = false;
 
-export async function initDatabase(): Promise<{ success: boolean; message: string }> {
-  if (dbInitialized) return { success: true, message: 'Already initialized.' };
+export async function initDatabase(force: boolean = false): Promise<{ success: boolean; message: string }> {
+  if (dbInitialized && !force) return { success: true, message: 'Already initialized.' };
   if (!isDbConfigured) return { success: false, message: 'Firebase not configured.' };
 
   const db = getDb();
@@ -144,7 +144,7 @@ export async function initDatabase(): Promise<{ success: boolean; message: strin
   try {
     // Seed partners
     const partnersSnap = await db.collection('partners').limit(1).get();
-    if (partnersSnap.empty) {
+    if (partnersSnap.empty || force) {
       const batch = db.batch();
       for (const p of INITIAL_PARTNERS) {
         batch.set(db.collection('partners').doc(p.id), {
@@ -192,21 +192,25 @@ export async function initDatabase(): Promise<{ success: boolean; message: strin
 
     // Seed services
     const servicesSnap = await db.collection('services').limit(1).get();
-    if (servicesSnap.empty) {
+    if (servicesSnap.empty || force) {
       const batch = db.batch();
       for (const s of SERVICES) {
         batch.set(db.collection('services').doc(s.id), {
           id: s.id, title: s.title, description: s.description, icon: s.icon,
+          category: s.category || '',
           valueProps: s.valueProps || [], heroImage: s.heroImage || '',
           whatItIs: s.whatItIs || [], whoItsFor: s.whoItsFor || [],
-          caseStudyId: s.caseStudyId || '', caseStudyIds: [],
+          caseStudyId: s.caseStudyId || '', caseStudyIds: s.caseStudyIds || [],
           process: s.process || [], pricing: s.pricing || '',
           faq: s.faq || [], bookingLink: s.bookingLink || '',
-          gallery: [], videos: [], created_at: new Date().toISOString()
-        });
+          gallery: s.gallery || [], videos: s.videos || [],
+          metaTitle: s.metaTitle || '', metaDescription: s.metaDescription || '',
+          metaKeywords: s.metaKeywords || '', metaRobots: s.metaRobots || 'index, follow',
+          created_at: new Date().toISOString()
+        }, { merge: true });
       }
       await batch.commit();
-      console.log('[db] Seeded services.');
+      console.log('[db] Seeded/Updated services.');
     }
 
     // Seed workshops

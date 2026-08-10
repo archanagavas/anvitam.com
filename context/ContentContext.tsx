@@ -186,13 +186,15 @@ const repairWorkshop = (w: Workshop, def?: Workshop): Workshop => ({
 });
 
 const repairService = (s: Service, def?: Service): Service => {
-  const heroImage = s.heroImage || (s as any).hero_image || s.image || def?.heroImage || def?.image || '';
-  const image = s.image || heroImage || def?.image || def?.heroImage || '';
+  const heroImage = s.heroImage || (s as any).hero_image || (s as any).image || def?.heroImage || (def as any)?.image || '';
   return {
     ...def,
     ...s,
-    heroImage,
-    image
+    metaTitle: s.metaTitle || def?.metaTitle || '',
+    metaDescription: s.metaDescription || def?.metaDescription || '',
+    metaKeywords: s.metaKeywords || def?.metaKeywords || '',
+    metaRobots: s.metaRobots || def?.metaRobots || 'index, follow',
+    heroImage
   };
 };
 
@@ -230,7 +232,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
     return mergePreservingLocal(stored, [], INITIAL_BLOGS, repairBlog);
   });
   const [services, setServices] = useState<Service[]>(() => {
-    const stored = loadFromStorage<Service>('anvitam_services_v5', SERVICES);
+    const stored = loadFromStorage<Service>('anvitam_services_v6', SERVICES);
     return mergePreservingLocal(stored, [], SERVICES, repairService);
   });
   const [digitalProducts, setDigitalProducts] = useState<DigitalProduct[]>(() => {
@@ -316,7 +318,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
         const rawServices: Service[] = await servicesRes.json();
         setServices(prev => {
           const merged = mergePreservingLocal(prev, rawServices, SERVICES, repairService);
-          saveToStorage('anvitam_services_v5', merged);
+          saveToStorage('anvitam_services_v6', merged);
           return merged;
         });
       }
@@ -397,7 +399,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [isDbConnected, isInitialSyncDone]);
 
   // Persist items to localStorage
-  useEffect(() => { saveToStorage('anvitam_services_v5', services); }, [services]);
+  useEffect(() => { saveToStorage('anvitam_services_v6', services); }, [services]);
   useEffect(() => { saveToStorage('anvitam_products', digitalProducts); }, [digitalProducts]);
   useEffect(() => { saveToStorage('anvitam_projects_v2', projects); }, [projects]);
   useEffect(() => { saveToStorage('anvitam_blogs_v2', blogs); }, [blogs]);

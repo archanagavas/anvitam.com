@@ -20,7 +20,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(403).json({ error: 'Forbidden. Provide valid ?secret= query param.' });
     }
     try {
-      const result = await initDatabase();
+      const force = req.query.force === 'true';
+      const result = await initDatabase(force);
       return res.status(200).json(result);
     } catch (err: any) {
       // Log full details server-side only — never expose internal error messages to clients
