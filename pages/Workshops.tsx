@@ -410,71 +410,22 @@ Additional Notes: ${formState.notes || 'None'}`;
       {/* ══════════════════════════════════════════
           2. FEATURED INSTITUTIONAL CASE STUDIES & PAST CAMPUS TRANSFORMATIONS
       ══════════════════════════════════════════ */}
-      <section className="py-12 md:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-10">
-          <span className="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold uppercase tracking-wider">
-            Proven Track Record
-          </span>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-3">
-            Featured Institutional Case Studies &amp; Past Campus Transformations
-          </h2>
-          <p className="text-gray-600 text-sm sm:text-base font-normal">
-            See how we collaborated with schools and design universities to build functional bird habitats and space makeovers.
-          </p>
-        </div>
+      {publishedWorkshops.length > 0 && (
+        <section className="py-12 md:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <span className="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold uppercase tracking-wider">
+              Proven Track Record
+            </span>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-3">
+              Featured Institutional Case Studies &amp; Past Campus Transformations
+            </h2>
+            <p className="text-gray-600 text-sm sm:text-base font-normal">
+              See how we collaborated with schools and design universities to build functional bird habitats and space makeovers.
+            </p>
+          </div>
 
-        {/* Dynamic Admin Group Action Photos Grid */}
-        {(() => {
-          const adminPhotos = publishedWorkshops.flatMap(w => 
-            (w.images || [])
-              .filter(img => Boolean(img && img.trim()))
-              .map((img, i) => ({
-                src: img,
-                title: `${w.title} (${i + 1})`,
-                institution: w.organization || w.location || 'Campus Workshop',
-                caption: w.description || w.title,
-                workshopId: w.id || w.slug
-              }))
-          );
-          const photosToDisplay = adminPhotos.length > 0 ? adminPhotos : GROUP_PHOTOS;
-
-          return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
-              {photosToDisplay.slice(0, 9).map((photo, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, scale: 0.96 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: idx * 0.05 }}
-                  onClick={() => handleOpenLeadModal(`Campus Transformation Photo — Book Similar Workshop`)}
-                  className="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-200 h-64 bg-gray-100"
-                >
-                  <img
-                    src={photo.src}
-                    alt={photo.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/workshops/birds house making.png';
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-85 group-hover:opacity-95 transition-opacity" />
-                  <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
-                    <span className="text-[10px] font-semibold text-[#CCFF00] uppercase tracking-wider block mb-1">
-                      {photo.institution}
-                    </span>
-                    <h3 className="text-base font-bold mb-0.5">{photo.title}</h3>
-                    <p className="text-xs text-gray-300 font-normal line-clamp-1">{photo.caption}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          );
-        })()}
-
-        {/* Dynamic Database Workshops Showcase */}
-        {publishedWorkshops.length > 0 && (
-          <div className="space-y-6 pt-6 border-t border-gray-150">
+          {/* Dynamic Database Workshops Showcase */}
+          <div className="space-y-6">
             <div className="space-y-6">
               {publishedWorkshops.map((w) => (
                 <div 
@@ -552,8 +503,8 @@ Additional Notes: ${formState.notes || 'None'}`;
               ))}
             </div>
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* ══════════════════════════════════════════
           3. SOLUTIONS / 10+ CREATIVE OFFERINGS MATRIX
