@@ -96,12 +96,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (isDbConfigured) {
     try {
       const dbBlogs = await getCollection('blogs', 'desc');
-      blogs = dbBlogs.filter((b: any) => b.status !== 'draft').length > 0
-        ? dbBlogs.filter((b: any) => b.status !== 'draft')
-        : INITIAL_BLOGS;
+      blogs = Array.isArray(dbBlogs) ? dbBlogs.filter((b: any) => b.status !== 'draft') : [];
     } catch (e) {
       console.warn('[seo API] DB error fetching blogs:', e);
-      blogs = INITIAL_BLOGS;
+      blogs = [];
     }
 
     try {
@@ -127,7 +125,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.warn('[seo API] DB error fetching workshops:', e);
     }
   } else {
-    blogs = INITIAL_BLOGS;
+    blogs = [];
     projects = INITIAL_PROJECTS;
     services = SERVICES;
   }

@@ -146,6 +146,13 @@ function mergePreservingLocal<T extends { id: string }>(
     if (Array.isArray(localItems)) {
       for (const loc of localItems) {
         if (!loc || !loc.id || deletedIds.has(loc.id)) continue;
+        const hasContent = Boolean(
+          (loc as any).title?.trim() ||
+          (loc as any).author?.trim() ||
+          (loc as any).name?.trim() ||
+          (loc as any).text?.trim()
+        );
+        if (!hasContent) continue;
         const isDefaultItem = defaultItems.some(d => d.id === loc.id);
         if (!isDefaultItem && !itemMap.has(loc.id)) {
           itemMap.set(loc.id, repairFn(loc));
@@ -325,10 +332,16 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
 
       if (testimonialsRes.ok) {
         const dbTestimonials: Testimonial[] = await testimonialsRes.json();
+        const isFallback = testimonialsRes.headers.get('x-db-fallback') === 'true';
         setTestimonials(prev => {
-          const merged = mergePreservingLocal(prev, dbTestimonials, INITIAL_TESTIMONIALS, (t, def) => ({
-            ...def, ...t, image: t.image || def?.image || ''
-          }));
+          let merged: Testimonial[];
+          if (!isFallback && Array.isArray(dbTestimonials)) {
+            merged = dbTestimonials.filter(t => t && t.author?.trim() && t.text?.trim());
+          } else {
+            merged = mergePreservingLocal(prev, dbTestimonials, INITIAL_TESTIMONIALS, (t, def) => ({
+              ...def, ...t, image: t.image || def?.image || ''
+            })).filter(t => t && t.author?.trim() && t.text?.trim());
+          }
           saveToStorage('anvitam_testimonials', merged);
           return merged;
         });
