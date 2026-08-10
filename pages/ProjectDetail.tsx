@@ -53,7 +53,6 @@ const ProjectDetail: React.FC = () => {
             {ssrMeta.canonical && <link rel="canonical" href={ssrMeta.canonical} />}
             {ssrMeta.keywords && <meta name="keywords" content={ssrMeta.keywords} />}
             {ssrMeta.robots && <meta name="robots" content={ssrMeta.robots} />}
-            {ssrMeta.robots && <meta name="X-Robots-Tag" content={ssrMeta.robots} />}
             {ssrMeta.ogTitle && <meta property="og:title" content={ssrMeta.ogTitle} />}
             {ssrMeta.ogDescription && <meta property="og:description" content={ssrMeta.ogDescription} />}
             {ssrMeta.ogImage && <meta property="og:image" content={ssrMeta.ogImage} />}
@@ -124,14 +123,11 @@ const ProjectDetail: React.FC = () => {
   return (
     <div className="bg-white text-[#111] min-h-screen font-sans selection:bg-[#CCFF00]">
       <Helmet>
-        <title>{project.metaTitle || project.title} | Anvitam Sustainable Architecture</title>
+        <title>{project.metaTitle || (project.title.includes('|') ? project.title : `${project.title} | Projects | Anvitam`)}</title>
         <meta name="description" content={project.metaDescription || project.description} />
         <link rel="canonical" href={`https://www.anvitam.com/projects/${project.slug || project.id || id}`} />
         <meta name="keywords" content={project.metaKeywords || (project.tags && project.tags.length > 0 ? project.tags.join(', ') : 'architecture projects, sustainable design, permaculture design')} />
         <meta name="robots" content={project.metaRobots && project.metaRobots.trim() !== '' && !project.metaRobots.includes('noindex') ? project.metaRobots : 'index, follow'} />
-        <meta name="X-Robots-Tag" content={project.metaRobots && project.metaRobots.trim() !== '' && !project.metaRobots.includes('noindex') ? project.metaRobots : 'index, follow'} />
-        <meta name="publisher" content="Anvitam" />
-        <link rel="publisher" href="https://www.anvitam.com/" />
         {faqSchema && (
           <script type="application/ld+json">
             {JSON.stringify(faqSchema)}

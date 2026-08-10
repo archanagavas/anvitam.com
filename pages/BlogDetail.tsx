@@ -79,7 +79,6 @@ const BlogDetail: React.FC = () => {
             {ssrMeta.canonical && <link rel="canonical" href={ssrMeta.canonical} />}
             {ssrMeta.keywords && <meta name="keywords" content={ssrMeta.keywords} />}
             {ssrMeta.robots && <meta name="robots" content={ssrMeta.robots} />}
-            {ssrMeta.robots && <meta name="X-Robots-Tag" content={ssrMeta.robots} />}
             {ssrMeta.ogTitle && <meta property="og:title" content={ssrMeta.ogTitle} />}
             {ssrMeta.ogDescription && <meta property="og:description" content={ssrMeta.ogDescription} />}
             {ssrMeta.ogImage && <meta property="og:image" content={ssrMeta.ogImage} />}
@@ -146,16 +145,13 @@ const BlogDetail: React.FC = () => {
   return (
     <div className="bg-white text-[#111] min-h-screen font-sans">
       <Helmet>
-        <title>{blog.metaTitle || blog.title} | Anvitam Sustainable Architecture</title>
+        <title>{blog.metaTitle || (blog.title.includes('|') ? blog.title : `${blog.title} | Anvitam Sustainable Architecture`)}</title>
         <meta name="description" content={blog.metaDescription || blog.excerpt} />
         <link rel="canonical" href={`https://www.anvitam.com/blog/${blog.slug || blog.id || id}`} />
         <meta name="keywords" content={blog.metaKeywords || (blog.tags && blog.tags.length > 0 ? blog.tags.join(', ') : 'architecture, sustainable architecture, permaculture design')} />
         <meta name="robots" content={blog.metaRobots && blog.metaRobots.trim() !== '' && !blog.metaRobots.includes('noindex') ? blog.metaRobots : 'index, follow'} />
-        <meta name="X-Robots-Tag" content={blog.metaRobots && blog.metaRobots.trim() !== '' && !blog.metaRobots.includes('noindex') ? blog.metaRobots : 'index, follow'} />
-        <meta name="publisher" content="Anvitam" />
-        <link rel="publisher" href="https://www.anvitam.com/" />
         {/* Open Graph */}
-        <meta property="og:title" content={blog.metaTitle || blog.title} />
+        <meta property="og:title" content={blog.metaTitle || (blog.title.includes('|') ? blog.title : `${blog.title} | Anvitam`)} />
         <meta property="og:description" content={blog.metaDescription || blog.excerpt} />
         <meta property="og:image" content={blog.image} />
         <meta property="og:type" content="article" />

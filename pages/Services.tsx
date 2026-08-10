@@ -39,9 +39,6 @@ const Services: React.FC = () => {
         <meta name="description" content="Explore simple, outcome-focused architecture and land design services by Anvitam. Farmhouses, eco resorts, food forests, and garden masterplanning." />
         <meta name="keywords" content="farmhouse architect, eco resort design, permaculture masterplan, food forest design, natural home design" />
         <meta name="robots" content="index, follow" />
-        <meta name="X-Robots-Tag" content="index, follow" />
-        <meta name="publisher" content="Anvitam" />
-        <link rel="publisher" href="https://www.anvitam.com/" />
         <link rel="canonical" href="https://www.anvitam.com/services" />
       </Helmet>
 

@@ -42,9 +42,6 @@ const Process: React.FC = () => {
         <meta name="description" content={`${currentStep.description} Learn about our sustainable resort architecture, eco retreat design, and green building design process.`} />
         <meta name="keywords" content="architecture process, sustainable design steps, eco resort design phase, permaculture implementation, building concept design" />
         <meta name="robots" content="index, follow" />
-        <meta name="X-Robots-Tag" content="index, follow" />
-        <meta name="publisher" content="Anvitam" />
-        <link rel="publisher" href="https://www.anvitam.com/" />
         <link rel="canonical" href={`https://www.anvitam.com/process/${currentStep.id}`} />
       </Helmet>
       

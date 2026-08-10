@@ -65,7 +65,6 @@ const ServiceDetail: React.FC = () => {
             {ssrMeta.canonical && <link rel="canonical" href={ssrMeta.canonical} />}
             {ssrMeta.keywords && <meta name="keywords" content={ssrMeta.keywords} />}
             {ssrMeta.robots && <meta name="robots" content={ssrMeta.robots} />}
-            {ssrMeta.robots && <meta name="X-Robots-Tag" content={ssrMeta.robots} />}
             {ssrMeta.ogTitle && <meta property="og:title" content={ssrMeta.ogTitle} />}
             {ssrMeta.ogDescription && <meta property="og:description" content={ssrMeta.ogDescription} />}
             {ssrMeta.ogImage && <meta property="og:image" content={ssrMeta.ogImage} />}
@@ -144,15 +143,12 @@ const ServiceDetail: React.FC = () => {
   return (
     <div className="bg-white text-[#111] min-h-screen font-sans selection:bg-[#CCFF00]">
       <Helmet>
-        <title>{service.metaTitle || service.title} | Anvitam Sustainable Architecture Services</title>
+        <title>{service.metaTitle || (service.title.includes('|') ? service.title : `${service.title} | Services | Anvitam`)}</title>
         <meta name="description" content={service.metaDescription || service.description} />
         <link rel="canonical" href={`https://www.anvitam.com/services/${service.id || id}`} />
         <meta name="keywords" content={service.metaKeywords || [service.title, 'sustainable architecture', 'eco design', 'permaculture', ...(service.valueProps || [])].join(', ')} />
         <meta name="robots" content={service.metaRobots && service.metaRobots.trim() !== '' && !service.metaRobots.includes('noindex') ? service.metaRobots : 'index, follow'} />
-        <meta name="X-Robots-Tag" content={service.metaRobots && service.metaRobots.trim() !== '' && !service.metaRobots.includes('noindex') ? service.metaRobots : 'index, follow'} />
-        <meta name="publisher" content="Anvitam" />
-        <link rel="publisher" href="https://www.anvitam.com/" />
-        <meta property="og:title" content={service.metaTitle || `${service.title} | Anvitam`} />
+        <meta property="og:title" content={service.metaTitle || (service.title.includes('|') ? service.title : `${service.title} | Anvitam`)} />
         <meta property="og:description" content={service.metaDescription || service.description} />
         <meta property="og:image" content={service.heroImage || 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=1200'} />
         <meta property="og:type" content="website" />

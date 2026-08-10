@@ -1604,7 +1604,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Inject keywords, robots, publisher metas
   template = replaceOrInjectMeta(template, 'name', 'keywords', keywords);
   template = replaceOrInjectMeta(template, 'name', 'robots', robots);
-  template = replaceOrInjectMeta(template, 'name', 'X-Robots-Tag', robots);
+  // X-Robots-Tag is set as an HTTP response header (line below), NOT as a meta tag
+  // Having both creates duplicate/stacked values in SEO tools
+  template = template.replace(/<meta[^>]*name="X-Robots-Tag"[^>]*>/gi, '');
   template = replaceOrInjectMeta(template, 'name', 'publisher', publisher);
 
   // Clean all duplicate/existing canonical and publisher links from template to prevent duplicates

@@ -41,9 +41,6 @@ const Projects: React.FC = () => {
         <meta name="description" content="Explore our portfolio of sustainable architecture, permaculture design, farm retreats, food forests, and eco resorts by Anvitam." />
         <meta name="keywords" content="sustainable architecture projects, eco resort design, permaculture farm retreats, green building design, architectural portfolio, vadodara architecture" />
         <meta name="robots" content="index, follow" />
-        <meta name="X-Robots-Tag" content="index, follow" />
-        <meta name="publisher" content="Anvitam" />
-        <link rel="publisher" href="https://www.anvitam.com/" />
         <link rel="canonical" href="https://www.anvitam.com/projects" />
       </Helmet>
 

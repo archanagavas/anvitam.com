@@ -32,9 +32,6 @@ const Privacy: React.FC = () => {
         <meta name="description" content="Privacy Policy for Anvitam Sustainable Architecture." />
         <meta name="keywords" content="privacy policy, anvitam privacy, data protection, cookies policy" />
         <meta name="robots" content="index, follow" />
-        <meta name="X-Robots-Tag" content="index, follow" />
-        <meta name="publisher" content="Anvitam" />
-        <link rel="publisher" href="https://www.anvitam.com/" />
         <link rel="canonical" href="https://www.anvitam.com/privacy" />
       </Helmet>
 

@@ -164,9 +164,6 @@ const Home: React.FC = () => {
         <meta name="description" content="Anvitam combines architecture, landscape, permaculture and climate-responsive design to create places that work with their land — not against it. Working across India, USA, Australia & globally." />
         <meta name="keywords" content="regenerative architecture, sustainable architecture, farm retreat architect, eco resort architect, permaculture designer, food forest design, natural building" />
         <meta name="robots" content="index, follow" />
-        <meta name="X-Robots-Tag" content="index, follow" />
-        <meta name="publisher" content="Anvitam" />
-        <link rel="publisher" href="https://www.anvitam.com/" />
         <link rel="canonical" href="https://www.anvitam.com/" />
       </Helmet>
 
