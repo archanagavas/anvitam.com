@@ -113,6 +113,182 @@ const TypewriterHeadingWords: React.FC<{ words: string[] }> = ({ words }) => {
   );
 };
 
+/* ── Our Approach Card Animations ── */
+const BreezeAnimation: React.FC<{ isMobile?: boolean }> = ({ isMobile }) => (
+  <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl z-10">
+    <motion.div
+      className={cn("absolute top-3", isMobile ? "w-[130px] h-[60px]" : "w-[150px] h-[70px]")}
+      animate={{
+        x: isMobile ? ['-50px', '210px'] : ['-60px', '230px'],
+        opacity: [0.15, 0.7, 0.7, 0.15]
+      }}
+      transition={{
+        repeat: Infinity,
+        duration: 3.5,
+        ease: "easeInOut"
+      }}
+    >
+      <svg className="w-full h-full filter drop-shadow-xs" viewBox="0 0 160 80" fill="none">
+        <defs>
+          <linearGradient id="windG1" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#bae6fd" stopOpacity="0.2" />
+            <stop offset="70%" stopColor="#38bdf8" stopOpacity="0.75" />
+            <stop offset="100%" stopColor="#0284c7" stopOpacity="0.85" />
+          </linearGradient>
+          <linearGradient id="windG2" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#e0f2fe" stopOpacity="0.2" />
+            <stop offset="70%" stopColor="#7dd3fc" stopOpacity="0.75" />
+            <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.85" />
+          </linearGradient>
+        </defs>
+        <path d="M 10 32 C 35 14, 70 48, 130 22" stroke="url(#windG1)" strokeWidth="3.2" strokeLinecap="round" />
+        <path d="M 119 16 L 136 21 L 128 33 Z" fill="url(#windG1)" />
+        <path d="M 25 55 C 50 37, 85 70, 145 45" stroke="url(#windG2)" strokeWidth="3.2" strokeLinecap="round" />
+        <path d="M 134 39 L 151 44 L 143 56 Z" fill="url(#windG2)" />
+      </svg>
+    </motion.div>
+    <motion.div
+      className={cn("absolute top-3", isMobile ? "w-[130px] h-[60px]" : "w-[150px] h-[70px]")}
+      animate={{
+        x: isMobile ? ['-50px', '210px'] : ['-60px', '230px'],
+        opacity: [0.15, 0.7, 0.7, 0.15]
+      }}
+      transition={{
+        repeat: Infinity,
+        duration: 3.5,
+        delay: 1.75,
+        ease: "easeInOut"
+      }}
+    >
+      <svg className="w-full h-full filter drop-shadow-xs" viewBox="0 0 160 80" fill="none">
+        <path d="M 10 32 C 35 14, 70 48, 130 22" stroke="url(#windG1)" strokeWidth="3.2" strokeLinecap="round" />
+        <path d="M 119 16 L 136 21 L 128 33 Z" fill="url(#windG1)" />
+        <path d="M 25 55 C 50 37, 85 70, 145 45" stroke="url(#windG2)" strokeWidth="3.2" strokeLinecap="round" />
+        <path d="M 134 39 L 151 44 L 143 56 Z" fill="url(#windG2)" />
+      </svg>
+    </motion.div>
+  </div>
+);
+
+const RainAnimation: React.FC<{ isMobile?: boolean }> = ({ isMobile }) => (
+  <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl z-10">
+    <motion.div
+      className={cn("absolute right-3 top-0", isMobile ? "w-[90px] h-[95px]" : "w-[110px] h-[110px]")}
+      animate={{
+        y: ['-35px', '65px'],
+        x: ['10px', '-10px'],
+        opacity: [0.1, 0.7, 0.7, 0.1]
+      }}
+      transition={{
+        repeat: Infinity,
+        duration: 2.2,
+        ease: "linear"
+      }}
+    >
+      <svg className="w-full h-full" viewBox="0 0 100 110" fill="none">
+        <defs>
+          <linearGradient id="rainG" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#7dd3fc" stopOpacity="0.1" />
+            <stop offset="80%" stopColor="#0284c7" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#0369a1" stopOpacity="0.95" />
+          </linearGradient>
+        </defs>
+        <line x1="20" y1="10" x2="12" y2="38" stroke="url(#rainG)" strokeWidth="2.4" strokeLinecap="round" />
+        <circle cx="12" cy="40" r="2.2" fill="#38bdf8" />
+        <line x1="55" y1="5" x2="47" y2="33" stroke="url(#rainG)" strokeWidth="2.2" strokeLinecap="round" />
+        <circle cx="47" cy="35" r="2" fill="#0284c7" />
+        <line x1="85" y1="20" x2="77" y2="48" stroke="url(#rainG)" strokeWidth="2.4" strokeLinecap="round" />
+        <circle cx="77" cy="50" r="2.2" fill="#38bdf8" />
+      </svg>
+    </motion.div>
+    <motion.div
+      className={cn("absolute right-10 top-0", isMobile ? "w-[90px] h-[95px]" : "w-[110px] h-[110px]")}
+      animate={{
+        y: ['-35px', '65px'],
+        x: ['10px', '-10px'],
+        opacity: [0.1, 0.7, 0.7, 0.1]
+      }}
+      transition={{
+        repeat: Infinity,
+        duration: 2.2,
+        delay: 1.1,
+        ease: "linear"
+      }}
+    >
+      <svg className="w-full h-full" viewBox="0 0 100 110" fill="none">
+        <line x1="35" y1="12" x2="27" y2="40" stroke="url(#rainG)" strokeWidth="2.2" strokeLinecap="round" />
+        <circle cx="27" cy="42" r="2" fill="#0284c7" />
+        <line x1="70" y1="2" x2="62" y2="30" stroke="url(#rainG)" strokeWidth="2.4" strokeLinecap="round" />
+        <circle cx="62" cy="32" r="2.2" fill="#38bdf8" />
+      </svg>
+    </motion.div>
+  </div>
+);
+
+const SproutAnimation: React.FC<{ isMobile?: boolean }> = ({ isMobile }) => (
+  <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl z-10">
+    <div className={cn("absolute right-3 bottom-1.5", isMobile ? "w-[70px] h-[60px]" : "w-[85px] h-[70px]")}>
+      <svg className="w-full h-full" viewBox="0 0 90 75" fill="none">
+        <defs>
+          <linearGradient id="sproutG" x1="0%" y1="100%" x2="0%" y2="0%">
+            <stop offset="0%" stopColor="#15803d" stopOpacity="0.85" />
+            <stop offset="60%" stopColor="#22c55e" stopOpacity="0.95" />
+            <stop offset="100%" stopColor="#a3e635" stopOpacity="1" />
+          </linearGradient>
+          <linearGradient id="soilG" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#854d0e" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#713f12" stopOpacity="0.5" />
+          </linearGradient>
+        </defs>
+        {/* Soil Mound */}
+        <path d="M 10 65 Q 45 55 80 65" stroke="url(#soilG)" strokeWidth="3.5" strokeLinecap="round" />
+        {/* Seed */}
+        <ellipse cx="45" cy="62" rx="4.5" ry="3" fill="#713f12" />
+        {/* Stem Growth */}
+        <motion.path
+          d="M 45 62 Q 43 45 45 28"
+          stroke="url(#sproutG)"
+          strokeWidth="2.8"
+          strokeLinecap="round"
+          initial={{ pathLength: 0.2, opacity: 0.3 }}
+          animate={{ pathLength: [0.2, 1, 1, 0.2], opacity: [0.3, 1, 1, 0.3] }}
+          transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut" }}
+        />
+        {/* Left Leaf */}
+        <motion.path
+          d="M 45 32 C 30 25 22 35 32 40 C 40 42 45 34 45 32"
+          fill="url(#sproutG)"
+          initial={{ scale: 0.2, opacity: 0 }}
+          animate={{ scale: [0.2, 1, 1, 0.2], opacity: [0, 0.9, 0.9, 0] }}
+          transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut" }}
+          style={{ transformOrigin: '45px 32px' }}
+        />
+        {/* Right Leaf */}
+        <motion.path
+          d="M 45 28 C 60 21 68 31 58 36 C 50 38 45 30 45 28"
+          fill="url(#sproutG)"
+          initial={{ scale: 0.2, opacity: 0 }}
+          animate={{ scale: [0.2, 1, 1, 0.2], opacity: [0, 0.95, 0.95, 0] }}
+          transition={{ repeat: Infinity, duration: 4.5, delay: 0.2, ease: "easeInOut" }}
+          style={{ transformOrigin: '45px 28px' }}
+        />
+        {/* Life Particle */}
+        <motion.circle
+          cx="45"
+          cy="18"
+          r="2.5"
+          fill="#a3e635"
+          animate={{
+            scale: [1, 1.4, 1],
+            opacity: [0.3, 0.95, 0.3]
+          }}
+          transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+        />
+      </svg>
+    </div>
+  </div>
+);
+
 const Home: React.FC = () => {
   const { projects, blogs, services, partners, openEstimator } = useContent();
   const navigate = useNavigate();
@@ -351,7 +527,7 @@ const Home: React.FC = () => {
                   icon: '☀️', 
                   label: 'Sun & Breeze', 
                   body: 'Placing rooms to capture cool breezes and block summer heat.',
-                  hasWind: true,
+                  animType: 'breeze',
                   bgGradient: 'from-amber-50/80 to-sky-50/80',
                   borderColor: 'border-amber-200/80'
                 },
@@ -359,7 +535,7 @@ const Home: React.FC = () => {
                   icon: '💧', 
                   label: 'Rainwater', 
                   body: 'Saving rainwater on site so your land stays green year-round.',
-                  hasWind: false,
+                  animType: 'rain',
                   bgGradient: 'from-[#f4f8ff] to-[#eaf2ff]',
                   borderColor: 'border-blue-200/80'
                 },
@@ -367,7 +543,7 @@ const Home: React.FC = () => {
                   icon: '🌱', 
                   label: 'Soil & Trees', 
                   body: 'Building healthy soil and planting fruit trees that grow easily.',
-                  hasWind: false,
+                  animType: 'sprout',
                   bgGradient: 'from-[#f2fbf5] to-[#e6f7ec]',
                   borderColor: 'border-emerald-200/80'
                 },
@@ -375,76 +551,22 @@ const Home: React.FC = () => {
                 <div 
                   key={i} 
                   className={cn(
-                    "relative overflow-hidden bg-gradient-to-br rounded-2xl p-6 border hover:shadow-xl transition-all duration-300 flex flex-col group",
+                    "relative overflow-hidden bg-gradient-to-br rounded-2xl p-6 border hover:shadow-xl transition-all duration-300 flex flex-col group min-h-[170px]",
                     c.bgGradient,
                     c.borderColor
                   )}
                 >
-                  {c.hasWind && (
-                    <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl z-10">
-                      {/* Wind Arrow Stream 1 */}
-                      <motion.div
-                        className="absolute w-[160px] h-[75px] top-3"
-                        animate={{
-                          x: ['-60px', '230px'],
-                          opacity: [0.3, 1, 1, 0.3]
-                        }}
-                        transition={{
-                          repeat: Infinity,
-                          duration: 3.2,
-                          ease: "easeInOut"
-                        }}
-                      >
-                        <svg className="w-full h-full filter drop-shadow-md" viewBox="0 0 160 80" fill="none">
-                          <defs>
-                            <linearGradient id="windG1" x1="0%" y1="0%" x2="100%" y2="0%">
-                              <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.4" />
-                              <stop offset="70%" stopColor="#0284c7" stopOpacity="0.95" />
-                              <stop offset="100%" stopColor="#0369a1" stopOpacity="1" />
-                            </linearGradient>
-                            <linearGradient id="windG2" x1="0%" y1="0%" x2="100%" y2="0%">
-                              <stop offset="0%" stopColor="#7dd3fc" stopOpacity="0.4" />
-                              <stop offset="70%" stopColor="#0284c7" stopOpacity="0.95" />
-                              <stop offset="100%" stopColor="#0284c7" stopOpacity="1" />
-                            </linearGradient>
-                          </defs>
-                          <path d="M 10 32 C 35 12, 70 50, 130 22" stroke="url(#windG1)" strokeWidth="4.5" strokeLinecap="round" />
-                          <path d="M 117 14 L 138 20 L 129 35 Z" fill="url(#windG1)" />
-                          <path d="M 25 55 C 50 35, 85 73, 145 45" stroke="url(#windG2)" strokeWidth="4.5" strokeLinecap="round" />
-                          <path d="M 132 37 L 153 43 L 144 58 Z" fill="url(#windG2)" />
-                        </svg>
-                      </motion.div>
+                  {c.animType === 'breeze' && <BreezeAnimation />}
+                  {c.animType === 'rain' && <RainAnimation />}
+                  {c.animType === 'sprout' && <SproutAnimation />}
 
-                      {/* Wind Arrow Stream 2 (Staggered so arrows are ALWAYS visible) */}
-                      <motion.div
-                        className="absolute w-[160px] h-[75px] top-3"
-                        animate={{
-                          x: ['-60px', '230px'],
-                          opacity: [0.3, 1, 1, 0.3]
-                        }}
-                        transition={{
-                          repeat: Infinity,
-                          duration: 3.2,
-                          delay: 1.6,
-                          ease: "easeInOut"
-                        }}
-                      >
-                        <svg className="w-full h-full filter drop-shadow-md" viewBox="0 0 160 80" fill="none">
-                          <path d="M 10 32 C 35 12, 70 50, 130 22" stroke="url(#windG1)" strokeWidth="4.5" strokeLinecap="round" />
-                          <path d="M 117 14 L 138 20 L 129 35 Z" fill="url(#windG1)" />
-                          <path d="M 25 55 C 50 35, 85 73, 145 45" stroke="url(#windG2)" strokeWidth="4.5" strokeLinecap="round" />
-                          <path d="M 132 37 L 153 43 L 144 58 Z" fill="url(#windG2)" />
-                        </svg>
-                      </motion.div>
-                    </div>
-                  )}
                   <div className="flex items-center justify-between mb-4 z-10">
                     <span className="text-3xl flex items-center gap-2">
                       {c.icon}
                     </span>
                   </div>
                   <h3 className="font-bold text-[#111] mb-2 z-10">{c.label}</h3>
-                  <p className="text-[#555] text-sm leading-relaxed z-10">{c.body}</p>
+                  <p className="text-[#555] text-sm leading-relaxed z-10 relative max-w-[85%]">{c.body}</p>
                 </div>
               ))}
             </div>
@@ -456,7 +578,7 @@ const Home: React.FC = () => {
                   icon: '☀️', 
                   label: 'Sun & Breeze', 
                   body: 'Placing rooms to capture cool breezes and block summer heat.',
-                  hasWind: true,
+                  animType: 'breeze',
                   step: '01',
                   cardBg: 'bg-amber-50/95 border-amber-200'
                 },
@@ -464,7 +586,7 @@ const Home: React.FC = () => {
                   icon: '💧', 
                   label: 'Rainwater', 
                   body: 'Saving rainwater on site so your land stays green year-round.',
-                  hasWind: false,
+                  animType: 'rain',
                   step: '02',
                   cardBg: 'bg-blue-50/95 border-blue-200'
                 },
@@ -472,7 +594,7 @@ const Home: React.FC = () => {
                   icon: '🌱', 
                   label: 'Soil & Trees', 
                   body: 'Building healthy soil and planting fruit trees that grow easily.',
-                  hasWind: false,
+                  animType: 'sprout',
                   step: '03',
                   cardBg: 'bg-emerald-50/95 border-emerald-200'
                 },
@@ -480,7 +602,7 @@ const Home: React.FC = () => {
                 <div 
                   key={i} 
                   className={cn(
-                    "sticky rounded-2xl p-5 border shadow-lg transition-all flex flex-col backdrop-blur-md",
+                    "sticky rounded-2xl p-5 border shadow-lg transition-all flex flex-col backdrop-blur-md relative overflow-hidden",
                     c.cardBg
                   )}
                   style={{
@@ -488,61 +610,10 @@ const Home: React.FC = () => {
                     zIndex: (i + 1) * 10
                   }}
                 >
-                  {c.hasWind && (
-                    <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl z-10">
-                      <motion.div
-                        className="absolute w-[140px] h-[65px] top-2"
-                        animate={{
-                          x: ['-50px', '210px'],
-                          opacity: [0.3, 1, 1, 0.3]
-                        }}
-                        transition={{
-                          repeat: Infinity,
-                          duration: 3.2,
-                          ease: "easeInOut"
-                        }}
-                      >
-                        <svg className="w-full h-full filter drop-shadow-md" viewBox="0 0 160 80" fill="none">
-                          <defs>
-                            <linearGradient id="windGMob1" x1="0%" y1="0%" x2="100%" y2="0%">
-                              <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.4" />
-                              <stop offset="70%" stopColor="#0284c7" stopOpacity="0.95" />
-                              <stop offset="100%" stopColor="#0369a1" stopOpacity="1" />
-                            </linearGradient>
-                            <linearGradient id="windGMob2" x1="0%" y1="0%" x2="100%" y2="0%">
-                              <stop offset="0%" stopColor="#7dd3fc" stopOpacity="0.4" />
-                              <stop offset="70%" stopColor="#0284c7" stopOpacity="0.95" />
-                              <stop offset="100%" stopColor="#0284c7" stopOpacity="1" />
-                            </linearGradient>
-                          </defs>
-                          <path d="M 10 32 C 35 12, 70 50, 130 22" stroke="url(#windGMob1)" strokeWidth="4.5" strokeLinecap="round" />
-                          <path d="M 117 14 L 138 20 L 129 35 Z" fill="url(#windGMob1)" />
-                          <path d="M 25 55 C 50 35, 85 73, 145 45" stroke="url(#windGMob2)" strokeWidth="4.5" strokeLinecap="round" />
-                          <path d="M 132 37 L 153 43 L 144 58 Z" fill="url(#windGMob2)" />
-                        </svg>
-                      </motion.div>
-                      <motion.div
-                        className="absolute w-[140px] h-[65px] top-2"
-                        animate={{
-                          x: ['-50px', '210px'],
-                          opacity: [0.3, 1, 1, 0.3]
-                        }}
-                        transition={{
-                          repeat: Infinity,
-                          duration: 3.2,
-                          delay: 1.6,
-                          ease: "easeInOut"
-                        }}
-                      >
-                        <svg className="w-full h-full filter drop-shadow-md" viewBox="0 0 160 80" fill="none">
-                          <path d="M 10 32 C 35 12, 70 50, 130 22" stroke="url(#windGMob1)" strokeWidth="4.5" strokeLinecap="round" />
-                          <path d="M 117 14 L 138 20 L 129 35 Z" fill="url(#windGMob1)" />
-                          <path d="M 25 55 C 50 35, 85 73, 145 45" stroke="url(#windGMob2)" strokeWidth="4.5" strokeLinecap="round" />
-                          <path d="M 132 37 L 153 43 L 144 58 Z" fill="url(#windGMob2)" />
-                        </svg>
-                      </motion.div>
-                    </div>
-                  )}
+                  {c.animType === 'breeze' && <BreezeAnimation isMobile />}
+                  {c.animType === 'rain' && <RainAnimation isMobile />}
+                  {c.animType === 'sprout' && <SproutAnimation isMobile />}
+
                   <div className="flex items-center justify-between mb-2 z-10">
                     <div className="flex items-center gap-2">
                       <span className="text-2xl">{c.icon}</span>
@@ -552,7 +623,7 @@ const Home: React.FC = () => {
                       Phase {c.step}
                     </span>
                   </div>
-                  <p className="text-[#555] text-xs leading-relaxed z-10">{c.body}</p>
+                  <p className="text-[#555] text-xs leading-relaxed z-10 relative max-w-[85%]">{c.body}</p>
                 </div>
               ))}
             </div>
