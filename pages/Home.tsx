@@ -382,49 +382,64 @@ const Home: React.FC = () => {
                 >
                   {c.hasWind && (
                     <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
-                      <svg className="absolute w-full h-full text-sky-400/40 opacity-70" viewBox="0 0 200 100" preserveAspectRatio="none">
-                        <motion.path
-                          d="M -50 25 Q 50 15 150 25 T 250 25"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeDasharray="4 4"
-                          animate={{ x: [0, 100] }}
-                          transition={{ repeat: Infinity, duration: 3.5, ease: "linear" }}
-                        />
-                        <motion.path
-                          d="M -30 55 Q 70 45 170 55 T 270 55"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeDasharray="6 3"
-                          animate={{ x: [0, 80] }}
-                          transition={{ repeat: Infinity, duration: 4.5, ease: "linear", delay: 0.5 }}
-                        />
-                        <motion.path
-                          d="M -40 80 Q 40 70 140 80 T 240 80"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeDasharray="3 3"
-                          animate={{ x: [0, 120] }}
-                          transition={{ repeat: Infinity, duration: 3, ease: "linear", delay: 1 }}
-                        />
-                      </svg>
+                      <motion.div
+                        className="absolute w-[220px] h-[100px] -left-12 top-1"
+                        animate={{
+                          x: ['-20%', '130%'],
+                          opacity: [0, 0.9, 0.9, 0]
+                        }}
+                        transition={{
+                          repeat: Infinity,
+                          duration: 4,
+                          ease: "easeInOut"
+                        }}
+                      >
+                        <svg className="w-full h-full" viewBox="0 0 200 100" fill="none">
+                          <defs>
+                            <linearGradient id="breezeGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+                              <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.15" />
+                              <stop offset="70%" stopColor="#0284c7" stopOpacity="0.85" />
+                              <stop offset="100%" stopColor="#0369a1" stopOpacity="1" />
+                            </linearGradient>
+                            <linearGradient id="breezeGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+                              <stop offset="0%" stopColor="#7dd3fc" stopOpacity="0.15" />
+                              <stop offset="70%" stopColor="#0284c7" stopOpacity="0.85" />
+                              <stop offset="100%" stopColor="#0284c7" stopOpacity="1" />
+                            </linearGradient>
+                          </defs>
+
+                          {/* Top Wave Arrow */}
+                          <path
+                            d="M 10 35 C 35 15, 70 55, 130 25"
+                            stroke="url(#breezeGradient1)"
+                            strokeWidth="4"
+                            strokeLinecap="round"
+                          />
+                          {/* Top Arrowhead */}
+                          <path
+                            d="M 116 18 L 138 23 L 129 38 Z"
+                            fill="url(#breezeGradient1)"
+                          />
+
+                          {/* Bottom Wave Arrow */}
+                          <path
+                            d="M 25 60 C 50 40, 85 80, 145 50"
+                            stroke="url(#breezeGradient2)"
+                            strokeWidth="4"
+                            strokeLinecap="round"
+                          />
+                          {/* Bottom Arrowhead */}
+                          <path
+                            d="M 131 43 L 153 48 L 144 63 Z"
+                            fill="url(#breezeGradient2)"
+                          />
+                        </svg>
+                      </motion.div>
                     </div>
                   )}
                   <div className="flex items-center justify-between mb-4 z-10">
                     <span className="text-3xl flex items-center gap-2">
                       {c.icon}
-                      {c.hasWind && (
-                        <motion.span
-                          animate={{ x: [0, 5, 0], opacity: [0.6, 1, 0.6] }}
-                          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                          className="text-xl inline-block"
-                        >
-                          💨
-                        </motion.span>
-                      )}
                     </span>
                   </div>
                   <h3 className="font-bold text-[#111] mb-2 z-10">{c.label}</h3>
@@ -474,40 +489,62 @@ const Home: React.FC = () => {
                 >
                   {c.hasWind && (
                     <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
-                      <svg className="absolute w-full h-full text-sky-400/40 opacity-70" viewBox="0 0 200 100" preserveAspectRatio="none">
-                        <motion.path
-                          d="M -50 25 Q 50 15 150 25 T 250 25"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeDasharray="4 4"
-                          animate={{ x: [0, 100] }}
-                          transition={{ repeat: Infinity, duration: 3.5, ease: "linear" }}
-                        />
-                        <motion.path
-                          d="M -30 55 Q 70 45 170 55 T 270 55"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeDasharray="6 3"
-                          animate={{ x: [0, 80] }}
-                          transition={{ repeat: Infinity, duration: 4.5, ease: "linear", delay: 0.5 }}
-                        />
-                      </svg>
+                      <motion.div
+                        className="absolute w-[180px] h-[80px] -left-10 top-1"
+                        animate={{
+                          x: ['-20%', '130%'],
+                          opacity: [0, 0.9, 0.9, 0]
+                        }}
+                        transition={{
+                          repeat: Infinity,
+                          duration: 4,
+                          ease: "easeInOut"
+                        }}
+                      >
+                        <svg className="w-full h-full" viewBox="0 0 200 100" fill="none">
+                          <defs>
+                            <linearGradient id="breezeGradMob1" x1="0%" y1="0%" x2="100%" y2="0%">
+                              <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.15" />
+                              <stop offset="70%" stopColor="#0284c7" stopOpacity="0.85" />
+                              <stop offset="100%" stopColor="#0369a1" stopOpacity="1" />
+                            </linearGradient>
+                            <linearGradient id="breezeGradMob2" x1="0%" y1="0%" x2="100%" y2="0%">
+                              <stop offset="0%" stopColor="#7dd3fc" stopOpacity="0.15" />
+                              <stop offset="70%" stopColor="#0284c7" stopOpacity="0.85" />
+                              <stop offset="100%" stopColor="#0284c7" stopOpacity="1" />
+                            </linearGradient>
+                          </defs>
+
+                          {/* Top Wave Arrow */}
+                          <path
+                            d="M 10 35 C 35 15, 70 55, 130 25"
+                            stroke="url(#breezeGradMob1)"
+                            strokeWidth="4"
+                            strokeLinecap="round"
+                          />
+                          <path
+                            d="M 116 18 L 138 23 L 129 38 Z"
+                            fill="url(#breezeGradMob1)"
+                          />
+
+                          {/* Bottom Wave Arrow */}
+                          <path
+                            d="M 25 60 C 50 40, 85 80, 145 50"
+                            stroke="url(#breezeGradMob2)"
+                            strokeWidth="4"
+                            strokeLinecap="round"
+                          />
+                          <path
+                            d="M 131 43 L 153 48 L 144 63 Z"
+                            fill="url(#breezeGradMob2)"
+                          />
+                        </svg>
+                      </motion.div>
                     </div>
                   )}
                   <div className="flex items-center justify-between mb-2 z-10">
                     <div className="flex items-center gap-2">
                       <span className="text-2xl">{c.icon}</span>
-                      {c.hasWind && (
-                        <motion.span
-                          animate={{ x: [0, 4, 0], opacity: [0.6, 1, 0.6] }}
-                          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                          className="text-lg"
-                        >
-                          💨
-                        </motion.span>
-                      )}
                       <h3 className="font-bold text-[#111] text-base">{c.label}</h3>
                     </div>
                     <span className="text-xs font-bold text-gray-500 bg-white/90 px-2.5 py-0.5 rounded-full border border-gray-200">
