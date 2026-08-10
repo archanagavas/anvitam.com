@@ -130,40 +130,41 @@ function mergePreservingLocal<T extends { id: string }>(
 ): T[] {
   const deletedIds = getDeletedIds();
   const isServerResponse = incomingItems !== undefined;
-  const hasIncoming = Array.isArray(incomingItems) && incomingItems.length > 0;
   const itemMap = new Map<string, T>();
 
-  // 1. Populate default items (skipping deleted ones)
-  for (const def of defaultItems) {
-    if (def?.id && !deletedIds.has(def.id)) {
-      itemMap.set(def.id, repairFn(def, def));
+  if (isServerResponse) {
+    // Server is the source of truth when online. Overlay incoming items from server API (skipping deleted ones)
+    if (Array.isArray(incomingItems)) {
+      for (const item of incomingItems) {
+        if (!item?.id || deletedIds.has(item.id)) continue;
+        const def = defaultItems.find(d => d.id === item.id);
+        itemMap.set(item.id, repairFn(item, def));
+      }
     }
-  }
 
-  // 2. Overlay incoming items from server API (skipping deleted ones) - SERVER IS SOURCE OF TRUTH
-  if (hasIncoming) {
-    for (const item of incomingItems!) {
-      if (!item?.id || deletedIds.has(item.id)) continue;
-      const def = defaultItems.find(d => d.id === item.id);
-      itemMap.set(item.id, repairFn(item, def));
+    // Keep unsynced local custom items created offline (only if not a default item and not on server)
+    if (Array.isArray(localItems)) {
+      for (const loc of localItems) {
+        if (!loc || !loc.id || deletedIds.has(loc.id)) continue;
+        const isDefaultItem = defaultItems.some(d => d.id === loc.id);
+        if (!isDefaultItem && !itemMap.has(loc.id)) {
+          itemMap.set(loc.id, repairFn(loc));
+        }
+      }
     }
-  }
-
-  // 3. Keep local custom items OR local edits only if server data is unavailable
-  if (Array.isArray(localItems)) {
-    for (const loc of localItems) {
-      if (!loc || !loc.id || deletedIds.has(loc.id)) continue;
-      if (!isServerResponse) {
-        // Initial load before server fetch: use local storage edits
+  } else {
+    // Initial load before server fetch: populate default items + local storage edits
+    for (const def of defaultItems) {
+      if (def?.id && !deletedIds.has(def.id)) {
+        itemMap.set(def.id, repairFn(def, def));
+      }
+    }
+    if (Array.isArray(localItems)) {
+      for (const loc of localItems) {
+        if (!loc || !loc.id || deletedIds.has(loc.id)) continue;
         const def = defaultItems.find(d => d.id === loc.id);
         const existing = itemMap.get(loc.id);
         itemMap.set(loc.id, repairFn({ ...(existing || {}), ...loc }, def));
-      } else {
-        // Server returned data: keep ONLY unsynced local custom items that don't exist on server yet
-        if (!itemMap.has(loc.id)) {
-          const def = defaultItems.find(d => d.id === loc.id);
-          itemMap.set(loc.id, repairFn(loc, def));
-        }
       }
     }
   }

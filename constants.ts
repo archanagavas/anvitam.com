@@ -49,7 +49,6 @@ Eco-Club established for long-term campus habitat maintenance`,
       '/workshops/workshops group images.png',
       '/workshops/bird house making.png',
       '/workshops/innovation installtion and space makeover 1.png',
-      '/workshops/bird feeder making.png',
       '/workshops/innovation installtion and space makeover 5.png'
     ],
     status: 'published',
