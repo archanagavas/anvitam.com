@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { sql, isDbConfigured } from '../lib/db.js';
+import { isDbConfigured, getCollection } from '../lib/db.js';
 import { verifyAdminToken, extractToken } from '../lib/auth.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -21,20 +21,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (isDbConfigured) {
     try {
-      const blogs = await sql`SELECT count(*) as count FROM blogs`;
-      blogCount = parseInt(blogs[0]?.count ?? '5', 10);
+      const blogs = await getCollection('blogs', 'desc');
+      blogCount = blogs.length || 5;
 
-      const projects = await sql`SELECT count(*) as count FROM projects`;
-      projectCount = parseInt(projects[0]?.count ?? '6', 10);
+      const projects = await getCollection('projects', 'desc');
+      projectCount = projects.length || 6;
 
-      const services = await sql`SELECT count(*) as count FROM services`;
-      serviceCount = parseInt(services[0]?.count ?? '4', 10);
+      const services = await getCollection('services', 'asc');
+      serviceCount = services.length || 4;
 
-      const messages = await sql`SELECT count(*) as count FROM messages`;
-      messageCount = parseInt(messages[0]?.count ?? '12', 10);
+      const messages = await getCollection('messages', 'desc');
+      messageCount = messages.length || 12;
 
-      const testimonials = await sql`SELECT count(*) as count FROM testimonials`;
-      testimonialCount = parseInt(testimonials[0]?.count ?? '3', 10);
+      const testimonials = await getCollection('testimonials', 'desc');
+      testimonialCount = testimonials.length || 3;
     } catch (err) {
       console.error('[analytics API] Error fetching counts:', err);
     }

@@ -1,193 +1,112 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { sql, isDbConfigured, safeParseJSON } from '../lib/db.js';
+import { isDbConfigured, getCollection, getDoc, upsertDoc, deleteDoc } from '../lib/db.js';
 import { verifyAdminToken, extractToken } from '../lib/auth.js';
 import { SERVICES } from '../constants.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const urlParts = (req.url || '').split('?')[0].split('/');
   const lastPart = urlParts[urlParts.length - 1];
-  const id = (req.query.id as string | undefined) || 
-             (lastPart && lastPart !== 'services' && lastPart !== 'services.ts' && lastPart !== 'services.js' ? lastPart : undefined);
+  const id = (req.query.id as string | undefined) ||
+    (lastPart && lastPart !== 'services' && lastPart !== 'services.ts' && lastPart !== 'services.js' ? lastPart : undefined);
 
   if (!isDbConfigured) {
     if (req.method === 'GET') {
       res.setHeader('x-db-fallback', 'true');
       if (id) {
-        const service = SERVICES.find(s => s.id === id);
-        if (!service) return res.status(404).json({ error: 'Service not found' });
-        return res.status(200).json(service);
+        const s = SERVICES.find(s => s.id === id);
+        if (!s) return res.status(404).json({ error: 'Service not found' });
+        return res.status(200).json(s);
       }
       return res.status(200).json(SERVICES);
     }
-    return res.status(503).json({ error: 'Database connection not configured' });
+    return res.status(503).json({ error: 'Database not configured' });
   }
 
   if (req.method === 'GET') {
     try {
       if (id) {
-        const rows = await sql`
-          SELECT id, title, description, icon, value_props, hero_image, what_it_is,
-                 who_its_for, case_study_id, case_study_ids, process, pricing, faq, booking_link, gallery, videos, created_at,
-                 meta_title, meta_description, meta_keywords, meta_robots
-          FROM services WHERE id = ${id}
-        `;
-        if (rows.length === 0) {
-          const mockSvc = SERVICES.find(s => s.id === id);
-          if (mockSvc) {
-            res.setHeader('x-db-fallback', 'true');
-            return res.status(200).json(mockSvc);
-          }
+        const row = await getDoc('services', id);
+        if (!row) {
+          const fallback = SERVICES.find(s => s.id === id);
+          if (fallback) { res.setHeader('x-db-fallback', 'true'); return res.status(200).json(fallback); }
           return res.status(404).json({ error: 'Service not found' });
         }
-        const r = rows[0];
-        return res.status(200).json({
-          id: r.id,
-          title: r.title,
-          description: r.description,
-          icon: r.icon,
-          valueProps: safeParseJSON(r.value_props),
-          heroImage: r.hero_image || '',
-          whatItIs: safeParseJSON(r.what_it_is),
-          whoItsFor: safeParseJSON(r.who_its_for),
-          caseStudyId: r.case_study_id || '',
-          caseStudyIds: safeParseJSON(r.case_study_ids),
-          process: safeParseJSON(r.process),
-          pricing: r.pricing || '',
-          faq: safeParseJSON(r.faq),
-          bookingLink: r.booking_link || '',
-          gallery: safeParseJSON(r.gallery),
-          videos: safeParseJSON(r.videos),
-          metaTitle: r.meta_title || '',
-          metaDescription: r.meta_description || '',
-          metaKeywords: r.meta_keywords || '',
-          metaRobots: r.meta_robots || ''
-        });
+        return res.status(200).json(normalizeService(row));
       }
-
-      const rows = await sql`
-        SELECT id, title, description, icon, value_props, hero_image, what_it_is,
-               who_its_for, case_study_id, case_study_ids, process, pricing, faq, booking_link, gallery, videos, created_at,
-               meta_title, meta_description, meta_keywords, meta_robots
-        FROM services ORDER BY created_at ASC
-      `;
-      const services = rows.map(r => ({
-        id: r.id,
-        title: r.title,
-        description: r.description,
-        icon: r.icon,
-        valueProps: safeParseJSON(r.value_props),
-        heroImage: r.hero_image || '',
-        whatItIs: safeParseJSON(r.what_it_is),
-        whoItsFor: safeParseJSON(r.who_its_for),
-        caseStudyId: r.case_study_id || '',
-        caseStudyIds: safeParseJSON(r.case_study_ids),
-        process: safeParseJSON(r.process),
-        pricing: r.pricing || '',
-        faq: safeParseJSON(r.faq),
-        bookingLink: r.booking_link || '',
-        gallery: safeParseJSON(r.gallery),
-        videos: safeParseJSON(r.videos),
-        metaTitle: r.meta_title || '',
-        metaDescription: r.meta_description || '',
-        metaKeywords: r.meta_keywords || '',
-        metaRobots: r.meta_robots || ''
-      }));
-      return res.status(200).json(services);
-    } catch (dbError) {
-      console.warn('[services API] Database query failed, falling back to static constants:', dbError);
+      const rows = await getCollection('services', 'asc');
+      const result = rows.length > 0 ? rows.map(normalizeService) : SERVICES;
+      if (rows.length === 0) res.setHeader('x-db-fallback', 'true');
+      return res.status(200).json(result);
+    } catch (err) {
+      console.warn('[services API] Firestore error:', err);
       res.setHeader('x-db-fallback', 'true');
       if (id) {
-        const service = SERVICES.find(s => s.id === id);
-        if (!service) return res.status(404).json({ error: 'Service not found' });
-        return res.status(200).json(service);
+        const s = SERVICES.find(s => s.id === id);
+        return s ? res.status(200).json(s) : res.status(404).json({ error: 'Service not found' });
       }
       return res.status(200).json(SERVICES);
     }
   }
 
-  // Admin verification for mutate methods
   const token = extractToken(req.headers.authorization);
-  if (!token || !verifyAdminToken(token)) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
+  if (!token || !verifyAdminToken(token)) return res.status(401).json({ error: 'Unauthorized' });
 
   if (req.method === 'POST') {
-    const { id: bodyId, title, description, icon, valueProps, heroImage, whatItIs,
-            whoItsFor, caseStudyId, caseStudyIds, process, pricing, faq, bookingLink, gallery, videos,
-            metaTitle, metaDescription, metaKeywords, metaRobots } = req.body ?? {};
-    const targetId = id || bodyId;
-    if (!targetId) {
-      return res.status(400).json({ error: 'Missing service ID' });
-    }
-
-    await sql`
-      INSERT INTO services (id, title, description, icon, value_props, hero_image, what_it_is,
-                            who_its_for, case_study_id, case_study_ids, process, pricing, faq, booking_link, gallery, videos,
-                            meta_title, meta_description, meta_keywords, meta_robots)
-      VALUES (${targetId}, ${title}, ${description ?? ''}, ${icon ?? 'PenTool'}, ${JSON.stringify(valueProps ?? [])},
-              ${heroImage ?? ''}, ${JSON.stringify(whatItIs ?? [])}, ${JSON.stringify(whoItsFor ?? [])},
-              ${caseStudyId ?? ''}, ${JSON.stringify(caseStudyIds ?? [])}, ${JSON.stringify(process ?? [])}, ${pricing ?? ''},
-              ${JSON.stringify(faq ?? [])}, ${bookingLink ?? ''}, ${JSON.stringify(gallery ?? [])}, ${JSON.stringify(videos ?? [])},
-              ${metaTitle ?? null}, ${metaDescription ?? null}, ${metaKeywords ?? null}, ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'})
-      ON CONFLICT (id) DO UPDATE SET
-        title = EXCLUDED.title, description = EXCLUDED.description, icon = EXCLUDED.icon,
-        value_props = EXCLUDED.value_props, hero_image = EXCLUDED.hero_image, what_it_is = EXCLUDED.what_it_is,
-        who_its_for = EXCLUDED.who_its_for, case_study_id = EXCLUDED.case_study_id, case_study_ids = EXCLUDED.case_study_ids,
-        process = EXCLUDED.process, pricing = EXCLUDED.pricing, faq = EXCLUDED.faq, booking_link = EXCLUDED.booking_link, gallery = EXCLUDED.gallery, videos = EXCLUDED.videos,
-        meta_title = EXCLUDED.meta_title, meta_description = EXCLUDED.meta_description, meta_keywords = EXCLUDED.meta_keywords, meta_robots = EXCLUDED.meta_robots
-    `;
+    const b = req.body ?? {};
+    const targetId = id || b.id;
+    if (!targetId) return res.status(400).json({ error: 'Missing service ID' });
+    await upsertDoc('services', targetId, buildServiceDoc(b, targetId));
     return res.status(201).json({ success: true });
   }
 
   if (req.method === 'PUT') {
-    if (!id) {
-      return res.status(400).json({ error: 'Missing service ID' });
-    }
-    const { title, description, icon, valueProps, heroImage, whatItIs,
-            whoItsFor, caseStudyId, caseStudyIds, process, pricing, faq, bookingLink, gallery, videos,
-            metaTitle, metaDescription, metaKeywords, metaRobots } = req.body ?? {};
-
+    if (!id) return res.status(400).json({ error: 'Missing service ID' });
     try {
-      await sql`
-        UPDATE services SET
-          title = ${title},
-          description = ${description ?? ''},
-          icon = ${icon ?? 'PenTool'},
-          value_props = ${JSON.stringify(valueProps ?? [])},
-          hero_image = ${heroImage ?? ''},
-          what_it_is = ${JSON.stringify(whatItIs ?? [])},
-          who_its_for = ${JSON.stringify(whoItsFor ?? [])},
-          case_study_id = ${caseStudyId ?? ''},
-          case_study_ids = ${JSON.stringify(caseStudyIds ?? [])},
-          process = ${JSON.stringify(process ?? [])},
-          pricing = ${pricing ?? ''},
-          faq = ${JSON.stringify(faq ?? [])},
-          booking_link = ${bookingLink ?? ''},
-          gallery = ${JSON.stringify(gallery ?? [])},
-          videos = ${JSON.stringify(videos ?? [])},
-          meta_title = ${metaTitle ?? null},
-          meta_description = ${metaDescription ?? null},
-          meta_keywords = ${metaKeywords ?? null},
-          meta_robots = ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'}
-        WHERE id = ${id}
-      `;
-    } catch (err) {
-      console.warn(`[services API] Failed to update service ${id} in DB:`, err);
-    }
+      await upsertDoc('services', id, buildServiceDoc(req.body ?? {}, id));
+    } catch (err) { console.warn('[services API] update failed:', err); }
     return res.status(200).json({ success: true });
   }
 
   if (req.method === 'DELETE') {
-    if (!id) {
-      return res.status(400).json({ error: 'Missing service ID' });
-    }
-    try {
-      await sql`DELETE FROM services WHERE id = ${id}`;
-    } catch (err) {
-      console.warn(`[services API] Failed to delete service ${id} from DB:`, err);
-    }
+    if (!id) return res.status(400).json({ error: 'Missing service ID' });
+    try { await deleteDoc('services', id); } catch (err) { console.warn('[services API] delete failed:', err); }
     return res.status(200).json({ success: true });
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
+}
+
+function buildServiceDoc(b: any, id: string) {
+  return {
+    id, title: b.title || '', description: b.description || '',
+    icon: b.icon || 'PenTool', valueProps: b.valueProps || [],
+    heroImage: b.heroImage || '', whatItIs: b.whatItIs || [],
+    whoItsFor: b.whoItsFor || [], caseStudyId: b.caseStudyId || '',
+    caseStudyIds: b.caseStudyIds || [], process: b.process || [],
+    pricing: b.pricing || '', faq: b.faq || [],
+    bookingLink: b.bookingLink || '', gallery: b.gallery || [],
+    videos: b.videos || [],
+    metaTitle: b.metaTitle || '', metaDescription: b.metaDescription || '',
+    metaKeywords: b.metaKeywords || '',
+    metaRobots: b.metaRobots?.trim() ? b.metaRobots : 'index, follow',
+  };
+}
+
+function normalizeService(r: any) {
+  return {
+    id: r.id, title: r.title, description: r.description, icon: r.icon,
+    valueProps: r.valueProps || r.value_props || [],
+    heroImage: r.heroImage || r.hero_image || '',
+    whatItIs: r.whatItIs || r.what_it_is || [],
+    whoItsFor: r.whoItsFor || r.who_its_for || [],
+    caseStudyId: r.caseStudyId || r.case_study_id || '',
+    caseStudyIds: r.caseStudyIds || r.case_study_ids || [],
+    process: r.process || [], pricing: r.pricing || '',
+    faq: r.faq || [], bookingLink: r.bookingLink || r.booking_link || '',
+    gallery: r.gallery || [], videos: r.videos || [],
+    metaTitle: r.metaTitle || r.meta_title || '',
+    metaDescription: r.metaDescription || r.meta_description || '',
+    metaKeywords: r.metaKeywords || r.meta_keywords || '',
+    metaRobots: r.metaRobots || r.meta_robots || '',
+  };
 }

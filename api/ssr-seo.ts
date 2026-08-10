@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import fs from 'fs';
 import path from 'path';
-import { sql, isDbConfigured } from '../lib/db.js';
+import { isDbConfigured, getCollection, getDoc, findWhere } from '../lib/db.js';
 import { INITIAL_BLOGS, INITIAL_PROJECTS, SERVICES, PROCESS_STEPS, TESTIMONIALS, INITIAL_WORKSHOPS } from '../constants.js';
 
 // --- Helper Functions for HTML and Schema Generation ---
@@ -1261,16 +1261,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (section === 'blog' && idOrSlug) {
     if (isDbConfigured) {
       try {
-        const rows = await sql`
-          SELECT id, title, slug, date, author, excerpt, content, image, author_bio, author_image, meta_title, meta_description, meta_keywords, meta_robots, tags 
-          FROM blogs 
-          WHERE slug = ${idOrSlug} OR id = ${idOrSlug}
-        `;
-        if (rows.length > 0) {
-          blog = rows[0];
+        let row = await getDoc('blogs', idOrSlug);
+        if (!row) {
+          const bySlug = await findWhere('blogs', 'slug', idOrSlug);
+          row = bySlug[0] || null;
         }
+        if (row) blog = row;
       } catch (e) {
-        console.error('Error fetching blog SEO data from DB:', e);
+        console.error('Error fetching blog SEO data from Firestore:', e);
       }
     }
     if (!blog) {
@@ -1303,16 +1301,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } else if (section === 'projects' && idOrSlug) {
     if (isDbConfigured) {
       try {
-        const rows = await sql`
-          SELECT id, title, slug, category, location, year, image, description, full_description, specs, tags, meta_title, meta_description, meta_keywords, meta_robots 
-          FROM projects 
-          WHERE slug = ${idOrSlug} OR id = ${idOrSlug}
-        `;
-        if (rows.length > 0) {
-          project = rows[0];
+        let row = await getDoc('projects', idOrSlug);
+        if (!row) {
+          const bySlug = await findWhere('projects', 'slug', idOrSlug);
+          row = bySlug[0] || null;
         }
+        if (row) project = row;
       } catch (e) {
-        console.error('Error fetching project SEO data from DB:', e);
+        console.error('Error fetching project SEO data from Firestore:', e);
       }
     }
     if (!project) {
@@ -1346,17 +1342,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } else if (section === 'services' && idOrSlug) {
     if (isDbConfigured) {
       try {
-        // Note: services table has no 'slug' column — match by id only
-        const rows = await sql`
-          SELECT id, title, description, icon, hero_image, value_props, what_it_is, who_its_for, process, pricing, faq, booking_link, meta_title, meta_description, meta_keywords, meta_robots 
-          FROM services 
-          WHERE id = ${idOrSlug}
-        `;
-        if (rows.length > 0) {
-          service = rows[0];
-        }
+        const row = await getDoc('services', idOrSlug);
+        if (row) service = row;
       } catch (e) {
-        console.error('Error fetching service SEO data from DB:', e);
+        console.error('Error fetching service SEO data from Firestore:', e);
       }
     }
     if (!service) {
@@ -1411,16 +1400,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (idOrSlug) {
       if (isDbConfigured) {
         try {
-          const rows = await sql`
-            SELECT id, title, slug, organization, location, city, state, country, date, category, description, skills_outcomes, materials_used, impact, outcomes, faqs, images, meta_title, meta_description, primary_keyword, meta_robots 
-            FROM workshops 
-            WHERE slug = ${idOrSlug} OR id = ${idOrSlug}
-          `;
-          if (rows.length > 0) {
-            workshop = rows[0];
+          let row = await getDoc('workshops', idOrSlug);
+          if (!row) {
+            const bySlug = await findWhere('workshops', 'slug', idOrSlug);
+            row = bySlug[0] || null;
           }
+          if (row) workshop = row;
         } catch (e) {
-          console.error('Error fetching workshop SEO data from DB:', e);
+          console.error('Error fetching workshop SEO data from Firestore:', e);
         }
       }
       if (!workshop) {

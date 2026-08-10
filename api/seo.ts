@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { sql, isDbConfigured } from '../lib/db.js';
+import { isDbConfigured, getCollection } from '../lib/db.js';
 import { INITIAL_BLOGS, INITIAL_PROJECTS, SERVICES } from '../constants.js';
 import { extractToken, verifyAdminToken } from '../lib/auth.js';
 
@@ -95,32 +95,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (isDbConfigured) {
     try {
-      const dbBlogs = await sql`SELECT * FROM blogs WHERE status != 'draft' OR status IS NULL ORDER BY created_at DESC`;
-      blogs = dbBlogs.length > 0 ? dbBlogs : INITIAL_BLOGS;
+      const dbBlogs = await getCollection('blogs', 'desc');
+      blogs = dbBlogs.filter((b: any) => b.status !== 'draft').length > 0
+        ? dbBlogs.filter((b: any) => b.status !== 'draft')
+        : INITIAL_BLOGS;
     } catch (e) {
-      console.warn('[seo API] DB error fetching blogs, falling back to constants:', e);
+      console.warn('[seo API] DB error fetching blogs:', e);
       blogs = INITIAL_BLOGS;
     }
 
     try {
-      const dbProjects = await sql`SELECT * FROM projects ORDER BY created_at DESC`;
+      const dbProjects = await getCollection('projects', 'desc');
       projects = dbProjects.length > 0 ? dbProjects : INITIAL_PROJECTS;
     } catch (e) {
-      console.warn('[seo API] DB error fetching projects, falling back to constants:', e);
+      console.warn('[seo API] DB error fetching projects:', e);
       projects = INITIAL_PROJECTS;
     }
 
     try {
-      const dbServices = await sql`SELECT * FROM services ORDER BY created_at ASC`;
+      const dbServices = await getCollection('services', 'asc');
       services = dbServices.length > 0 ? dbServices : SERVICES;
     } catch (e) {
-      console.warn('[seo API] DB error fetching services, falling back to constants:', e);
+      console.warn('[seo API] DB error fetching services:', e);
       services = SERVICES;
     }
 
     try {
-      const dbWorkshops = await sql`SELECT * FROM workshops WHERE status != 'draft' OR status IS NULL ORDER BY created_at DESC`;
-      workshops = dbWorkshops.length > 0 ? dbWorkshops : [];
+      const dbWorkshops = await getCollection('workshops', 'desc');
+      workshops = dbWorkshops.filter((w: any) => w.status !== 'draft');
     } catch (e) {
       console.warn('[seo API] DB error fetching workshops:', e);
     }

@@ -1,214 +1,129 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { sql, isDbConfigured, safeParseJSON } from '../lib/db.js';
+import { isDbConfigured, getCollection, getDoc, upsertDoc, deleteDoc } from '../lib/db.js';
 import { verifyAdminToken, extractToken } from '../lib/auth.js';
 import { DIGITAL_PRODUCTS } from '../constants.js';
 
 const ALL_MOCK_PRODUCTS = [
   ...DIGITAL_PRODUCTS,
   {
-    id: 'c1',
-    title: 'Farm Retreat Design Masterclass',
+    id: 'c1', title: 'Farm Retreat Design Masterclass',
     description: 'A comprehensive online course covering site analysis, bioclimatic design, permaculture zoning, and how to create profitable eco-retreat experiences from scratch.',
-    price: '₹3,999',
-    link: 'https://topmate.io/archanagavas',
+    price: '₹3,999', link: 'https://topmate.io/archanagavas',
     image: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=800&auto=format&fit=crop',
-    tags: ['Architecture', 'Permaculture', 'Business'],
-    category: 'Online Courses'
+    tags: ['Architecture', 'Permaculture', 'Business'], category: 'Online Courses'
   },
   {
-    id: 'c2',
-    title: 'Food Forest Design Blueprint',
-    description: 'Design productive food forests and edible gardens for farm stays, community spaces, and personal properties using proven permaculture techniques.',
-    price: '₹2,499',
-    link: 'https://topmate.io/archanagavas',
+    id: 'c2', title: 'Food Forest Design Blueprint',
+    description: 'Design productive food forests and edible gardens using proven permaculture techniques.',
+    price: '₹2,499', link: 'https://topmate.io/archanagavas',
     image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=80&w=800&auto=format&fit=crop',
-    tags: ['Food Forest', 'Landscape', 'Sustainability'],
-    category: 'Online Courses'
+    tags: ['Food Forest', 'Landscape', 'Sustainability'], category: 'Online Courses'
   },
   {
-    id: 'c3',
-    title: 'Airbnb & Homestay Design for Revenue',
-    description: 'Learn how to design, style, and position your Airbnb or homestay for maximum occupancy, guest satisfaction, and profitable returns.',
-    price: '₹1,999',
-    link: 'https://topmate.io/archanagavas',
+    id: 'c3', title: 'Airbnb & Homestay Design for Revenue',
+    description: 'Learn how to design and position your Airbnb for maximum occupancy.',
+    price: '₹1,999', link: 'https://topmate.io/archanagavas',
     image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=800&auto=format&fit=crop',
-    tags: ['Airbnb', 'Interior', 'Hospitality'],
-    category: 'Online Courses'
-  }
+    tags: ['Airbnb', 'Interior', 'Hospitality'], category: 'Online Courses'
+  },
 ];
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const urlParts = (req.url || '').split('?')[0].split('/');
   const lastPart = urlParts[urlParts.length - 1];
-  const id = (req.query.id as string | undefined) || 
-             (lastPart && lastPart !== 'products' && lastPart !== 'products.ts' && lastPart !== 'products.js' ? lastPart : undefined);
+  const id = (req.query.id as string | undefined) ||
+    (lastPart && lastPart !== 'products' && lastPart !== 'products.ts' && lastPart !== 'products.js' ? lastPart : undefined);
 
   if (!isDbConfigured) {
     if (req.method === 'GET') {
       res.setHeader('x-db-fallback', 'true');
       if (id) {
-        const prod = ALL_MOCK_PRODUCTS.find(p => p.id === id);
-        if (!prod) return res.status(404).json({ error: 'Product not found' });
-        return res.status(200).json(prod);
+        const p = ALL_MOCK_PRODUCTS.find(p => p.id === id);
+        if (!p) return res.status(404).json({ error: 'Product not found' });
+        return res.status(200).json(p);
       }
       return res.status(200).json(ALL_MOCK_PRODUCTS);
     }
-    return res.status(503).json({ error: 'Database connection not configured' });
+    return res.status(503).json({ error: 'Database not configured' });
   }
 
   if (req.method === 'GET') {
     try {
       if (id) {
-        const rows = await sql`
-          SELECT id, title, description, price, link, image, tags, category, created_at,
-                 meta_title, meta_description, meta_keywords, meta_robots, youtube_url, videos
-          FROM digital_products WHERE id = ${id}
-        `;
-        if (rows.length === 0) {
-          const mockProd = ALL_MOCK_PRODUCTS.find(p => p.id === id);
-          if (mockProd) {
-            res.setHeader('x-db-fallback', 'true');
-            return res.status(200).json(mockProd);
-          }
+        const row = await getDoc('digital_products', id);
+        if (!row) {
+          const fallback = ALL_MOCK_PRODUCTS.find(p => p.id === id);
+          if (fallback) { res.setHeader('x-db-fallback', 'true'); return res.status(200).json(fallback); }
           return res.status(404).json({ error: 'Product not found' });
         }
-        const r = rows[0];
-        return res.status(200).json({
-          id: r.id,
-          title: r.title,
-          description: r.description || '',
-          price: r.price || '',
-          link: r.link || '',
-          image: r.image || '',
-          tags: safeParseJSON(r.tags),
-          category: r.category || 'E-Books',
-          youtubeUrl: r.youtube_url || '',
-          videos: safeParseJSON(r.videos),
-          metaTitle: r.meta_title || '',
-          metaDescription: r.meta_description || '',
-          metaKeywords: r.meta_keywords || '',
-          metaRobots: r.meta_robots || ''
-        });
+        return res.status(200).json(normalizeProduct(row));
       }
-
-      const rows = await sql`
-        SELECT id, title, description, price, link, image, tags, category, created_at,
-               meta_title, meta_description, meta_keywords, meta_robots, youtube_url, videos
-        FROM digital_products ORDER BY created_at DESC
-      `;
-      const products = rows.map(r => ({
-        id: r.id,
-        title: r.title,
-        description: r.description || '',
-        price: r.price || '',
-        link: r.link || '',
-        image: r.image || '',
-        tags: safeParseJSON(r.tags),
-        category: r.category || 'E-Books',
-        youtubeUrl: r.youtube_url || '',
-        videos: safeParseJSON(r.videos),
-        metaTitle: r.meta_title || '',
-        metaDescription: r.meta_description || '',
-        metaKeywords: r.meta_keywords || '',
-        metaRobots: r.meta_robots || ''
-      }));
-      return res.status(200).json(products);
-    } catch (dbError) {
-      console.warn('[products API] Database query failed, falling back to static constants:', dbError);
+      const rows = await getCollection('digital_products', 'desc');
+      return res.status(200).json(rows.map(normalizeProduct));
+    } catch (err) {
+      console.warn('[products API] Firestore error:', err);
       res.setHeader('x-db-fallback', 'true');
       if (id) {
-        const prod = ALL_MOCK_PRODUCTS.find(p => p.id === id);
-        if (!prod) return res.status(404).json({ error: 'Product not found' });
-        return res.status(200).json(prod);
+        const p = ALL_MOCK_PRODUCTS.find(p => p.id === id);
+        return p ? res.status(200).json(p) : res.status(404).json({ error: 'Product not found' });
       }
       return res.status(200).json(ALL_MOCK_PRODUCTS);
     }
   }
 
-  // Admin verification for mutate methods
   const token = extractToken(req.headers.authorization);
-  if (!token || !verifyAdminToken(token)) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
+  if (!token || !verifyAdminToken(token)) return res.status(401).json({ error: 'Unauthorized' });
 
   if (req.method === 'POST') {
-    const { id: bodyId, title, description, price, link, image, tags, category, youtubeUrl, videos,
-            metaTitle, metaDescription, metaKeywords, metaRobots } = req.body ?? {};
-    const targetId = id || bodyId;
-    if (!targetId) {
-      return res.status(400).json({ error: 'Missing product ID' });
-    }
-
+    const b = req.body ?? {};
+    const targetId = id || b.id;
+    if (!targetId) return res.status(400).json({ error: 'Missing product ID' });
     try {
-      await sql`
-        INSERT INTO digital_products (id, title, description, price, link, image, tags, category, youtube_url, videos,
-                                      meta_title, meta_description, meta_keywords, meta_robots)
-        VALUES (${targetId}, ${title}, ${description ?? ''}, ${price ?? ''}, ${link ?? ''}, ${image ?? ''}, ${JSON.stringify(tags ?? [])}, ${category ?? 'E-Books'},
-                ${youtubeUrl ?? ''}, ${JSON.stringify(videos ?? [])},
-                ${metaTitle ?? null}, ${metaDescription ?? null}, ${metaKeywords ?? null}, ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'})
-        ON CONFLICT (id) DO UPDATE SET
-          title = EXCLUDED.title,
-          description = EXCLUDED.description,
-          price = EXCLUDED.price,
-          link = EXCLUDED.link,
-          image = EXCLUDED.image,
-          tags = EXCLUDED.tags,
-          category = EXCLUDED.category,
-          youtube_url = EXCLUDED.youtube_url,
-          videos = EXCLUDED.videos,
-          meta_title = EXCLUDED.meta_title,
-          meta_description = EXCLUDED.meta_description,
-          meta_keywords = EXCLUDED.meta_keywords,
-          meta_robots = EXCLUDED.meta_robots
-      `;
-    } catch (err) {
-      console.warn('[products API] Failed to insert/update product in DB:', err);
-    }
+      await upsertDoc('digital_products', targetId, buildProductDoc(b, targetId));
+    } catch (err) { console.warn('[products API] upsert failed:', err); }
     return res.status(201).json({ success: true });
   }
 
   if (req.method === 'PUT') {
-    if (!id) {
-      return res.status(400).json({ error: 'Missing product ID' });
-    }
-    const { title, description, price, link, image, tags, category, youtubeUrl, videos,
-            metaTitle, metaDescription, metaKeywords, metaRobots } = req.body ?? {};
-
+    if (!id) return res.status(400).json({ error: 'Missing product ID' });
     try {
-      await sql`
-        UPDATE digital_products SET
-          title = ${title},
-          description = ${description ?? ''},
-          price = ${price ?? ''},
-          link = ${link ?? ''},
-          image = ${image ?? ''},
-          tags = ${JSON.stringify(tags ?? [])},
-          category = ${category ?? 'E-Books'},
-          youtube_url = ${youtubeUrl ?? ''},
-          videos = ${JSON.stringify(videos ?? [])},
-          meta_title = ${metaTitle ?? null},
-          meta_description = ${metaDescription ?? null},
-          meta_keywords = ${metaKeywords ?? null},
-          meta_robots = ${metaRobots && metaRobots.trim() ? metaRobots : 'index, follow'}
-        WHERE id = ${id}
-      `;
-    } catch (err) {
-      console.warn(`[products API] Failed to update product ${id} in DB:`, err);
-    }
+      await upsertDoc('digital_products', id, buildProductDoc(req.body ?? {}, id));
+    } catch (err) { console.warn('[products API] update failed:', err); }
     return res.status(200).json({ success: true });
   }
 
   if (req.method === 'DELETE') {
-    if (!id) {
-      return res.status(400).json({ error: 'Missing product ID' });
-    }
-    try {
-      await sql`DELETE FROM digital_products WHERE id = ${id}`;
-    } catch (err) {
-      console.warn(`[products API] Failed to delete product ${id} from DB:`, err);
-    }
+    if (!id) return res.status(400).json({ error: 'Missing product ID' });
+    try { await deleteDoc('digital_products', id); } catch (err) { console.warn('[products API] delete failed:', err); }
     return res.status(200).json({ success: true });
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
+}
+
+function buildProductDoc(b: any, id: string) {
+  return {
+    id, title: b.title || '', description: b.description || '',
+    price: b.price || '', link: b.link || '', image: b.image || '',
+    tags: b.tags || [], category: b.category || 'E-Books',
+    youtubeUrl: b.youtubeUrl || b.youtube_url || '',
+    videos: b.videos || [],
+    metaTitle: b.metaTitle || '', metaDescription: b.metaDescription || '',
+    metaKeywords: b.metaKeywords || '',
+    metaRobots: b.metaRobots?.trim() ? b.metaRobots : 'index, follow',
+  };
+}
+
+function normalizeProduct(r: any) {
+  return {
+    id: r.id, title: r.title, description: r.description || '',
+    price: r.price || '', link: r.link || '', image: r.image || '',
+    tags: r.tags || [], category: r.category || 'E-Books',
+    youtubeUrl: r.youtubeUrl || r.youtube_url || '',
+    videos: r.videos || [],
+    metaTitle: r.metaTitle || r.meta_title || '',
+    metaDescription: r.metaDescription || r.meta_description || '',
+    metaKeywords: r.metaKeywords || r.meta_keywords || '',
+    metaRobots: r.metaRobots || r.meta_robots || '',
+  };
 }
