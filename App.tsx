@@ -55,9 +55,6 @@ const DefaultSeo = () => {
       <meta name="description" content="ANVITAM Architects Vadodara, Gujarat blending Sustainability with Nature. Eco retreats, farm stays, permaculture design." />
       <meta name="keywords" content="architecture, sustainable architecture, permaculture design, eco retreats, farm stays, biophilic design, green building, Vadodara, Gujarat" />
       <meta name="robots" content="index, follow" />
-      <meta name="X-Robots-Tag" content="index, follow" />
-      <meta name="publisher" content="Anvitam" />
-      <link rel="publisher" href="https://www.anvitam.com/" />
     </Helmet>
   );
 };
