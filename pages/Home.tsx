@@ -13,6 +13,7 @@ import { FlowButton } from '../components/ui/flow-button';
 import { TypingAnimation } from '../components/TypingAnimation';
 import { NumberCounter } from '../components/NumberCounter';
 import { CoverflowCarousel, CoverflowSlide } from '../components/ui/coverflow-carousel';
+import { cn } from '../lib/utils';
 
 const FLIP_WORDS = [
   "Farms",
@@ -213,8 +214,8 @@ const Home: React.FC = () => {
             transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="text-4xl sm:text-6xl md:text-7xl text-white font-extrabold leading-[1.12] tracking-tight mb-3 drop-shadow-md"
           >
-            From Empty Space to a{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#CCFF00] via-[#E2FF66] to-[#A3E635] drop-shadow-lg">
+            From Empty Space to a <br className="hidden sm:block" />
+            <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-[#CCFF00] via-[#E2FF66] to-[#A3E635] drop-shadow-lg mt-1">
               Living Place.
             </span>
           </motion.h1>
@@ -343,16 +344,177 @@ const Home: React.FC = () => {
             </Link>
           </FadeUp>
           <FadeUp delay={0.15}>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+            {/* Desktop 3-column grid */}
+            <div className="hidden sm:grid sm:grid-cols-3 gap-6">
               {[
-                { icon: '☀️', label: 'Sun & Breeze', body: 'Placing rooms to capture cool breezes and block summer heat.' },
-                { icon: '💧', label: 'Rainwater', body: 'Saving rainwater on site so your land stays green year-round.' },
-                { icon: '🌱', label: 'Soil & Trees', body: 'Building healthy soil and planting fruit trees that grow easily.' },
+                { 
+                  icon: '☀️', 
+                  label: 'Sun & Breeze', 
+                  body: 'Placing rooms to capture cool breezes and block summer heat.',
+                  hasWind: true,
+                  bgGradient: 'from-amber-50/80 to-sky-50/80',
+                  borderColor: 'border-amber-200/80'
+                },
+                { 
+                  icon: '💧', 
+                  label: 'Rainwater', 
+                  body: 'Saving rainwater on site so your land stays green year-round.',
+                  hasWind: false,
+                  bgGradient: 'from-[#f4f8ff] to-[#eaf2ff]',
+                  borderColor: 'border-blue-200/80'
+                },
+                { 
+                  icon: '🌱', 
+                  label: 'Soil & Trees', 
+                  body: 'Building healthy soil and planting fruit trees that grow easily.',
+                  hasWind: false,
+                  bgGradient: 'from-[#f2fbf5] to-[#e6f7ec]',
+                  borderColor: 'border-emerald-200/80'
+                },
               ].map((c, i) => (
-                <div key={i} className="bg-gray-50/70 rounded-2xl p-6 border border-gray-200/80 hover:shadow-lg hover:border-gray-300 transition-all flex flex-col">
-                  <span className="text-3xl mb-4">{c.icon}</span>
-                  <h3 className="font-bold text-[#111] mb-2">{c.label}</h3>
-                  <p className="text-[#555] text-sm leading-relaxed">{c.body}</p>
+                <div 
+                  key={i} 
+                  className={cn(
+                    "relative overflow-hidden bg-gradient-to-br rounded-2xl p-6 border hover:shadow-xl transition-all duration-300 flex flex-col group",
+                    c.bgGradient,
+                    c.borderColor
+                  )}
+                >
+                  {c.hasWind && (
+                    <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
+                      <svg className="absolute w-full h-full text-sky-400/40 opacity-70" viewBox="0 0 200 100" preserveAspectRatio="none">
+                        <motion.path
+                          d="M -50 25 Q 50 15 150 25 T 250 25"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeDasharray="4 4"
+                          animate={{ x: [0, 100] }}
+                          transition={{ repeat: Infinity, duration: 3.5, ease: "linear" }}
+                        />
+                        <motion.path
+                          d="M -30 55 Q 70 45 170 55 T 270 55"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeDasharray="6 3"
+                          animate={{ x: [0, 80] }}
+                          transition={{ repeat: Infinity, duration: 4.5, ease: "linear", delay: 0.5 }}
+                        />
+                        <motion.path
+                          d="M -40 80 Q 40 70 140 80 T 240 80"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeDasharray="3 3"
+                          animate={{ x: [0, 120] }}
+                          transition={{ repeat: Infinity, duration: 3, ease: "linear", delay: 1 }}
+                        />
+                      </svg>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between mb-4 z-10">
+                    <span className="text-3xl flex items-center gap-2">
+                      {c.icon}
+                      {c.hasWind && (
+                        <motion.span
+                          animate={{ x: [0, 5, 0], opacity: [0.6, 1, 0.6] }}
+                          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                          className="text-xl inline-block"
+                        >
+                          💨
+                        </motion.span>
+                      )}
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-[#111] mb-2 z-10">{c.label}</h3>
+                  <p className="text-[#555] text-sm leading-relaxed z-10">{c.body}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Mobile Stacked Sticky Deck Layout */}
+            <div className="sm:hidden relative space-y-3 pt-2">
+              {[
+                { 
+                  icon: '☀️', 
+                  label: 'Sun & Breeze', 
+                  body: 'Placing rooms to capture cool breezes and block summer heat.',
+                  hasWind: true,
+                  step: '01',
+                  cardBg: 'bg-amber-50/95 border-amber-200'
+                },
+                { 
+                  icon: '💧', 
+                  label: 'Rainwater', 
+                  body: 'Saving rainwater on site so your land stays green year-round.',
+                  hasWind: false,
+                  step: '02',
+                  cardBg: 'bg-blue-50/95 border-blue-200'
+                },
+                { 
+                  icon: '🌱', 
+                  label: 'Soil & Trees', 
+                  body: 'Building healthy soil and planting fruit trees that grow easily.',
+                  hasWind: false,
+                  step: '03',
+                  cardBg: 'bg-emerald-50/95 border-emerald-200'
+                },
+              ].map((c, i) => (
+                <div 
+                  key={i} 
+                  className={cn(
+                    "sticky rounded-2xl p-5 border shadow-lg transition-all flex flex-col backdrop-blur-md",
+                    c.cardBg
+                  )}
+                  style={{
+                    top: `${80 + i * 16}px`,
+                    zIndex: (i + 1) * 10
+                  }}
+                >
+                  {c.hasWind && (
+                    <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
+                      <svg className="absolute w-full h-full text-sky-400/40 opacity-70" viewBox="0 0 200 100" preserveAspectRatio="none">
+                        <motion.path
+                          d="M -50 25 Q 50 15 150 25 T 250 25"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeDasharray="4 4"
+                          animate={{ x: [0, 100] }}
+                          transition={{ repeat: Infinity, duration: 3.5, ease: "linear" }}
+                        />
+                        <motion.path
+                          d="M -30 55 Q 70 45 170 55 T 270 55"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeDasharray="6 3"
+                          animate={{ x: [0, 80] }}
+                          transition={{ repeat: Infinity, duration: 4.5, ease: "linear", delay: 0.5 }}
+                        />
+                      </svg>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between mb-2 z-10">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{c.icon}</span>
+                      {c.hasWind && (
+                        <motion.span
+                          animate={{ x: [0, 4, 0], opacity: [0.6, 1, 0.6] }}
+                          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                          className="text-lg"
+                        >
+                          💨
+                        </motion.span>
+                      )}
+                      <h3 className="font-bold text-[#111] text-base">{c.label}</h3>
+                    </div>
+                    <span className="text-xs font-bold text-gray-500 bg-white/90 px-2.5 py-0.5 rounded-full border border-gray-200">
+                      Phase {c.step}
+                    </span>
+                  </div>
+                  <p className="text-[#555] text-xs leading-relaxed z-10">{c.body}</p>
                 </div>
               ))}
             </div>

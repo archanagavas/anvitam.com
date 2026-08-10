@@ -124,11 +124,12 @@ function saveToStorage<T>(key: string, data: T[]): void {
 
 function mergePreservingLocal<T extends { id: string }>(
   localItems: T[],
-  incomingItems: T[],
+  incomingItems: T[] | undefined,
   defaultItems: T[],
   repairFn: (item: T, def?: T) => T
 ): T[] {
   const deletedIds = getDeletedIds();
+  const isServerResponse = incomingItems !== undefined;
   const hasIncoming = Array.isArray(incomingItems) && incomingItems.length > 0;
   const itemMap = new Map<string, T>();
 
@@ -141,7 +142,7 @@ function mergePreservingLocal<T extends { id: string }>(
 
   // 2. Overlay incoming items from server API (skipping deleted ones) - SERVER IS SOURCE OF TRUTH
   if (hasIncoming) {
-    for (const item of incomingItems) {
+    for (const item of incomingItems!) {
       if (!item?.id || deletedIds.has(item.id)) continue;
       const def = defaultItems.find(d => d.id === item.id);
       itemMap.set(item.id, repairFn(item, def));
@@ -152,7 +153,7 @@ function mergePreservingLocal<T extends { id: string }>(
   if (Array.isArray(localItems)) {
     for (const loc of localItems) {
       if (!loc || !loc.id || deletedIds.has(loc.id)) continue;
-      if (!hasIncoming) {
+      if (!isServerResponse) {
         // Initial load before server fetch: use local storage edits
         const def = defaultItems.find(d => d.id === loc.id);
         const existing = itemMap.get(loc.id);
@@ -160,7 +161,8 @@ function mergePreservingLocal<T extends { id: string }>(
       } else {
         // Server returned data: keep ONLY unsynced local custom items that don't exist on server yet
         if (!itemMap.has(loc.id)) {
-          itemMap.set(loc.id, loc);
+          const def = defaultItems.find(d => d.id === loc.id);
+          itemMap.set(loc.id, repairFn(loc, def));
         }
       }
     }
@@ -175,11 +177,16 @@ const repairWorkshop = (w: Workshop, def?: Workshop): Workshop => ({
   images: (w.images && w.images.length > 0) ? w.images : (def?.images || [])
 });
 
-const repairService = (s: Service, def?: Service): Service => ({
-  ...def,
-  ...s,
-  heroImage: s.heroImage || s.image || def?.heroImage || ''
-});
+const repairService = (s: Service, def?: Service): Service => {
+  const heroImage = s.heroImage || (s as any).hero_image || s.image || def?.heroImage || def?.image || '';
+  const image = s.image || heroImage || def?.image || def?.heroImage || '';
+  return {
+    ...def,
+    ...s,
+    heroImage,
+    image
+  };
+};
 
 const repairProduct = (p: DigitalProduct, def?: DigitalProduct): DigitalProduct => ({
   ...def,
@@ -188,8 +195,8 @@ const repairProduct = (p: DigitalProduct, def?: DigitalProduct): DigitalProduct 
 });
 
 const repairProject = (p: Project, def?: Project): Project => {
-  const image = p.image || p.heroImage || def?.image || '';
-  const heroImage = p.heroImage || p.image || def?.heroImage || image;
+  const heroImage = p.heroImage || (p as any).hero_image || p.image || def?.heroImage || def?.image || '';
+  const image = p.image || heroImage || def?.image || def?.heroImage || '';
   return {
     ...def,
     ...p,
