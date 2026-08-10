@@ -173,7 +173,7 @@ const Home: React.FC = () => {
       {/* ══════════════════════════════════════════
           HERO — full-bleed mountain image, centered text
       ══════════════════════════════════════════ */}
-      <section ref={heroRef} className="relative h-screen min-h-[680px] flex flex-col items-center justify-center overflow-hidden">
+      <section ref={heroRef} className="relative min-h-[650px] lg:h-screen lg:min-h-[700px] flex flex-col items-center justify-center overflow-hidden pt-20 sm:pt-24 lg:pt-0 pb-16 sm:pb-20 lg:pb-0">
         {/* BG image with parallax */}
         <motion.div style={{ y: heroY }} className="absolute inset-0 z-0">
           <img 
@@ -324,19 +324,19 @@ const Home: React.FC = () => {
       </div>
 
       {/* ══ DIFFERENTIATOR ══ */}
-      <section className="bg-white py-24 px-6 md:px-16 lg:px-24 border-t border-gray-100">
-        <div className="max-w-screen-xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <section className="bg-white py-16 sm:py-24 px-4 sm:px-8 md:px-16 lg:px-24 border-t border-gray-100">
+        <div className="max-w-screen-xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <FadeUp>
             <div className="inline-flex items-center gap-2 border border-[#111]/20 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#111] mb-8">
               <span>↓</span> Our Approach
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-[#111] mb-6">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-[#111] mb-6">
               Your land already has a natural flow.
             </h2>
-            <p className="text-[#555] text-lg leading-relaxed mb-4">
+            <p className="text-[#555] text-base sm:text-lg leading-relaxed mb-4">
               We help you understand it <strong className="text-[#111]">before you build.</strong>
             </p>
-            <p className="text-[#555] text-base leading-relaxed mb-8">
+            <p className="text-[#555] text-sm sm:text-base leading-relaxed mb-8">
               Most people ask: <em>Where should the house go?</em> We ask: <strong className="text-[#111]">What does your land need first?</strong> We check sunlight, cool wind, rainwater, and soil first. Then we design your home or farm to stay cool, save water, and last for years.
             </p>
             <Link to="/contact">
@@ -345,7 +345,7 @@ const Home: React.FC = () => {
           </FadeUp>
           <FadeUp delay={0.15}>
             {/* Desktop 3-column grid */}
-            <div className="hidden sm:grid sm:grid-cols-3 gap-6">
+            <div className="hidden md:grid md:grid-cols-3 gap-6">
               {[
                 { 
                   icon: '☀️', 
@@ -450,7 +450,7 @@ const Home: React.FC = () => {
             </div>
 
             {/* Mobile Stacked Sticky Deck Layout */}
-            <div className="sm:hidden relative space-y-3 pt-2">
+            <div className="md:hidden relative space-y-3 pt-2">
               {[
                 { 
                   icon: '☀️', 

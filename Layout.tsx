@@ -33,7 +33,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* ── HEADER — Biogax style: white bg, logo left, nav center, neon CTA right ── */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-black/5 transition-all duration-300">
-        <div className="max-w-[95%] xl:max-w-[92%] mx-auto flex items-center justify-between py-3">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-3">
           {/* Logo — Left balanced container */}
           <div className="flex-1 flex items-center justify-start">
             <Link to="/" className="z-50 hover:opacity-80 transition-opacity">
@@ -42,7 +42,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 muted
                 loop
                 playsInline
-                className="h-14 w-auto"
+                className="h-12 sm:h-14 w-auto"
                 src="https://jitter.video/v/1739023402773.mp4"
               >
                 Anvitam
@@ -51,7 +51,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
 
           {/* Desktop Nav — Perfectly Centered */}
-          <nav className="hidden md:flex items-center justify-center space-x-6 lg:space-x-8">
+          <nav className="hidden md:flex items-center justify-center space-x-5 lg:space-x-8">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
@@ -67,7 +67,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="hidden md:flex items-center justify-end flex-1">
             <Link
               to="/contact"
-              className="inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-5 py-2.5 rounded-full text-sm font-semibold hover:scale-105 transition-transform duration-300"
+              className="inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-5 py-2.5 rounded-full text-sm font-semibold hover:scale-105 transition-transform duration-300 shadow-sm"
             >
               Discuss Your Project <span>→</span>
             </Link>
@@ -75,7 +75,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
           {/* Mobile hamburger */}
           <button
-            className="md:hidden z-50 p-2 text-[#111]"
+            className="md:hidden z-50 p-2 text-[#111] hover:bg-black/5 rounded-full"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -84,7 +84,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
           {/* Mobile overlay */}
           <div
-            className={`fixed inset-0 bg-white z-40 flex flex-col items-center justify-center space-y-8 transition-transform duration-500 ease-in-out md:hidden ${
+            className={`fixed inset-0 bg-white z-40 flex flex-col items-center justify-center space-y-6 sm:space-y-8 overflow-y-auto py-12 px-6 transition-transform duration-500 ease-in-out md:hidden ${
               isMenuOpen ? 'translate-x-0' : 'translate-x-full'
             }`}
           >
@@ -92,14 +92,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <Link
                 key={link.name}
                 to={link.path}
-                className="text-3xl font-bold text-[#111] hover:text-[#555] transition-colors"
+                className="text-2xl sm:text-3xl font-bold text-[#111] hover:text-[#555] transition-colors"
               >
                 {link.name}
               </Link>
             ))}
             <Link
               to="/contact"
-              className="mt-4 inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-8 py-4 rounded-full text-base font-semibold"
+              className="mt-4 inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-7 py-3.5 rounded-full text-base font-semibold shadow-md"
             >
               Discuss Your Project →
             </Link>

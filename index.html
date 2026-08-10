@@ -253,10 +253,12 @@
         background-size: 100% 100%;
       }
 
+      html {
+        scroll-behavior: smooth;
+        -webkit-text-size-adjust: 100%;
+      }
+
       @media (min-width: 768px) {
-        html {
-          zoom: 80%;
-        }
         body.hide-default-cursor {
           cursor: none;
         }
