@@ -149,9 +149,9 @@ const BlogDetail: React.FC = () => {
         <meta name="description" content={blog.metaDescription || blog.excerpt} />
         <link rel="canonical" href={`https://www.anvitam.com/blog/${blog.slug || blog.id || id}`} />
         <meta name="keywords" content={blog.metaKeywords || (blog.tags && blog.tags.length > 0 ? blog.tags.join(', ') : 'architecture, sustainable architecture, permaculture design')} />
-        <meta name="robots" content={blog.metaRobots && blog.metaRobots.trim() !== '' && !blog.metaRobots.includes('noindex') ? blog.metaRobots : 'index, follow'} />
+        <meta name="robots" content={blog.metaRobots && blog.metaRobots.trim() !== '' ? blog.metaRobots : 'index, follow'} />
         {/* Open Graph */}
-        <meta property="og:title" content={blog.metaTitle || (blog.title.includes('|') ? blog.title : `${blog.title} | Anvitam`)} />
+        <meta property="og:title" content={blog.metaTitle || (blog.title.includes('|') ? blog.title : `${blog.title} | Anvitam Sustainable Architecture`)} />
         <meta property="og:description" content={blog.metaDescription || blog.excerpt} />
         <meta property="og:image" content={blog.image} />
         <meta property="og:type" content="article" />

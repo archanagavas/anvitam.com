@@ -1250,7 +1250,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let canonicalUrl = `https://www.anvitam.com${canonicalPath}`;
   let keywords = 'architecture, sustainable architecture, permaculture design, eco retreats, farm stays, biophilic design, green building, Vadodara, Gujarat';
   let robots = 'index, follow';
-  let publisher = 'Anvitam';
 
   let blog: any = null;
   let project: any = null;
@@ -1432,7 +1431,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       if (workshop) {
-        title = workshop.meta_title || workshop.metaTitle || `${workshop.title} | Anvitam Workshops`;
+        title = workshop.meta_title || workshop.metaTitle || `${workshop.title} | Nest N Nurture Workshops by Anvitam`;
         desc = workshop.meta_description || workshop.metaDescription || workshop.description || desc;
         imageUrl = (workshop.images && workshop.images[0]) || 'https://www.anvitam.com/workshops/birds%20house%20making.png';
         canonicalUrl = `https://www.anvitam.com/workshops/${workshop.slug || workshop.id}`;
@@ -1550,11 +1549,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
-  // Ensure title and desc lengths are appropriate for SEO
-  // Only pad titles that are very short AND don't already contain a pipe/brand suffix
-  if (title.length < 30 && !title.includes('|')) title = `${title} | Anvitam Sustainable Architecture`;
-  if (desc.length < 80) desc = `${desc} Professional architectural masterplanning grounded in biophilic design, carbon-negative local materials, and water harvesting.`;
-
   // Load the index.html template
   let template = '';
   try {
@@ -1601,13 +1595,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   template = replaceOrInjectMeta(template, 'name', 'twitter:image', imageUrl);
   template = replaceOrInjectMeta(template, 'name', 'twitter:card', 'summary_large_image');
 
-  // Inject keywords, robots, publisher metas
+  // Inject keywords and robots metas
   template = replaceOrInjectMeta(template, 'name', 'keywords', keywords);
   template = replaceOrInjectMeta(template, 'name', 'robots', robots);
   // X-Robots-Tag is set as an HTTP response header (line below), NOT as a meta tag
   // Having both creates duplicate/stacked values in SEO tools
   template = template.replace(/<meta[^>]*name="X-Robots-Tag"[^>]*>/gi, '');
-  template = replaceOrInjectMeta(template, 'name', 'publisher', publisher);
 
   // Clean all duplicate/existing canonical and publisher links from template to prevent duplicates
   template = template.replace(/<link[^>]*rel="canonical"[^>]*>/gi, '');
@@ -1616,10 +1609,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Inject the single canonical link
   const canonicalTag = `<link rel="canonical" href="${canonicalUrl}" />`;
   template = template.replace('</head>', `  ${canonicalTag}\n</head>`);
-
-  // Inject the single publisher link
-  const publisherTag = `<link rel="publisher" href="https://www.anvitam.com/" />`;
-  template = template.replace('</head>', `  ${publisherTag}\n</head>`);
 
   // --- Inject JSON-LD Schema Marks ---
   const schemas = generateSchemas(section, idOrSlug, { blog, project, service, workshop });

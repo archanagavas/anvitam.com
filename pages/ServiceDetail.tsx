@@ -147,8 +147,8 @@ const ServiceDetail: React.FC = () => {
         <meta name="description" content={service.metaDescription || service.description} />
         <link rel="canonical" href={`https://www.anvitam.com/services/${service.id || id}`} />
         <meta name="keywords" content={service.metaKeywords || [service.title, 'sustainable architecture', 'eco design', 'permaculture', ...(service.valueProps || [])].join(', ')} />
-        <meta name="robots" content={service.metaRobots && service.metaRobots.trim() !== '' && !service.metaRobots.includes('noindex') ? service.metaRobots : 'index, follow'} />
-        <meta property="og:title" content={service.metaTitle || (service.title.includes('|') ? service.title : `${service.title} | Anvitam`)} />
+        <meta name="robots" content={service.metaRobots && service.metaRobots.trim() !== '' ? service.metaRobots : 'index, follow'} />
+        <meta property="og:title" content={service.metaTitle || (service.title.includes('|') ? service.title : `${service.title} | Services | Anvitam`)} />
         <meta property="og:description" content={service.metaDescription || service.description} />
         <meta property="og:image" content={service.heroImage || 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=1200'} />
         <meta property="og:type" content="website" />
