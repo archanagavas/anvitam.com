@@ -408,10 +408,7 @@ Additional Notes: ${formState.notes || 'None'}`;
       </section>
 
       {/* ══════════════════════════════════════════
-          2. PROVEN TRACK RECORD & PAST CAMPUS TRANSFORMATIONS
-      ══════════════════════════════════════════ */}
-      {/* ══════════════════════════════════════════
-          2. PROVEN TRACK RECORD & PAST CAMPUS TRANSFORMATIONS
+          2. FEATURED INSTITUTIONAL CASE STUDIES & PAST CAMPUS TRANSFORMATIONS
       ══════════════════════════════════════════ */}
       <section className="py-12 md:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-10">
@@ -419,7 +416,7 @@ Additional Notes: ${formState.notes || 'None'}`;
             Proven Track Record
           </span>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-3">
-            Past Campus Transformations
+            Featured Institutional Case Studies &amp; Past Campus Transformations
           </h2>
           <p className="text-gray-600 text-sm sm:text-base font-normal">
             See how we collaborated with schools and design universities to build functional bird habitats and space makeovers.
@@ -478,7 +475,6 @@ Additional Notes: ${formState.notes || 'None'}`;
         {/* Dynamic Database Workshops Showcase */}
         {publishedWorkshops.length > 0 && (
           <div className="space-y-6 pt-6 border-t border-gray-150">
-            <h3 className="text-xl font-bold text-gray-900 text-center mb-6">Featured Institutional Case Studies</h3>
             <div className="space-y-6">
               {publishedWorkshops.map((w) => (
                 <div 
