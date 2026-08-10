@@ -1844,12 +1844,12 @@ const Admin: React.FC = () => {
           >
             <div className="flex items-center gap-2">
               {isDbConnected ? <Wifi size={12} /> : <WifiOff size={12} />}
-              {isDbConnected ? 'Supabase Connected' : 'DB Offline'}
+              {isDbConnected ? 'Firebase Firestore Connected' : 'DB Offline'}
             </div>
             {!isDbConnected && (
               <>
                 <p className="text-[10px] text-amber-500 leading-tight">
-                  Leads not saved. Update DATABASE_URL in Vercel.
+                  Leads not saved. Configure Firebase variables in Vercel.
                 </p>
                 <button
                   onClick={() => refreshFromDb()}
@@ -1877,307 +1877,217 @@ const Admin: React.FC = () => {
         {/* ── Analytics ── */}
         {activeTab === 'analytics' && (
           <div className="space-y-6 animate-fade-in">
-            <h2 className="text-2xl font-bold">Dashboard Overview</h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Dashboard & Telemetry</h2>
+                <p className="text-xs text-gray-500 mt-0.5 font-medium">Real-time performance, traffic sources, and database persistence status.</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1.5 shrink-0">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                  Telemetry Live
+                </span>
+              </div>
+            </div>
+
+            {/* Quick Stats Banner */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { label: 'Blog Posts', val: blogs.length },
-                { label: 'Projects', val: projects.length },
-                { label: 'Messages', val: messages.length },
-                { label: 'Products', val: digitalProducts.length },
+                { label: 'Blog Posts', val: blogs.length, icon: FileText, color: 'text-emerald-600' },
+                { label: 'Projects', val: projects.length, icon: LayoutIcon, color: 'text-blue-600' },
+                { label: 'Messages / Leads', val: messages.length, icon: MessageSquare, color: 'text-purple-600' },
+                { label: 'Digital Products', val: digitalProducts.length, icon: ShoppingBag, color: 'text-amber-600' },
               ].map(item => (
-                <div key={item.label} className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                  <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">{item.label}</p>
-                  <p className="text-3xl font-bold text-gray-800">{item.val}</p>
+                <div key={item.label} className="bg-white p-5 rounded-2xl shadow-xs border border-gray-100 flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-400 text-[11px] font-bold uppercase tracking-wider mb-1">{item.label}</p>
+                    <p className="text-3xl font-extrabold text-gray-900">{item.val}</p>
+                  </div>
+                  <div className={`p-3 rounded-xl bg-gray-50 ${item.color}`}>
+                    <item.icon size={20} />
+                  </div>
                 </div>
               ))}
             </div>
-            {/* DB status card */}
-            <div className={`flex items-center gap-3 p-4 rounded-xl border text-sm font-medium ${isDbConnected ? 'bg-green-50 border-green-200 text-green-700' : 'bg-amber-50 border-amber-200 text-amber-700'}`}>
-              <Database size={16} />
-              {isDbConnected
-                ? 'Connected to Neon PostgreSQL — all content is persisted to the database.'
-                : 'Running in local mode — configure DATABASE_URL in Vercel to enable persistent storage.'}
-              <button onClick={refreshFromDb} className="ml-auto text-xs underline font-bold flex items-center gap-1 opacity-70 hover:opacity-100">
-                <RefreshCw size={12} /> Sync
+
+            {/* Firestore DB Status Card */}
+            <div className={`flex items-center gap-3 p-4 rounded-2xl border text-sm font-medium transition ${isDbConnected ? 'bg-emerald-50/80 border-emerald-200 text-emerald-800' : 'bg-amber-50/80 border-amber-200 text-amber-800'}`}>
+              <Database size={18} className="shrink-0" />
+              <div className="flex-1 text-xs sm:text-sm">
+                <strong className="font-bold">{isDbConnected ? 'Connected to Firebase Firestore' : 'DB Running in Local Fallback Mode'}</strong>
+                <span className="opacity-90 ml-1.5">
+                  {isDbConnected
+                    ? '— all live content and lead forms persist directly to Google Cloud Firestore.'
+                    : '— configure FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY in Vercel.'}
+                </span>
+              </div>
+              <button onClick={refreshFromDb} className="ml-auto text-xs underline font-bold flex items-center gap-1.5 opacity-80 hover:opacity-100 shrink-0 bg-white/60 px-3 py-1.5 rounded-lg border border-current">
+                <RefreshCw size={12} /> Sync DB
               </button>
             </div>
-            {/* ── Genuine Real-Time Analytics & Telemetry Hub ── */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
-                <div>
-                  <h3 className="text-base font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
-                    <Activity size={18} className="text-emerald-500" />
-                    Genuine Live Analytics & Search Console Telemetry
-                  </h3>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    No simulated metrics. Access 100% legitimate traffic, keyword impressions, and reader data directly.
+
+            {/* ── BENTO GRID ANALYTICS & TELEMETRY HUB ── */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              
+              {/* Bento Card 1: Umami Real-Time Traffic */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs flex flex-col justify-between space-y-4 hover:shadow-md transition">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider flex items-center gap-1.5">
+                      <Activity size={15} className="text-emerald-500" /> Umami Real-Time Traffic
+                    </span>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full border border-emerald-200">100% Real</span>
+                  </div>
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    Privacy-first visitor telemetry, referrer domains, and real reader counts without ad-blocker dropouts.
                   </p>
+                  <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-[11px] space-y-1 font-mono">
+                    <div className="flex justify-between"><span className="text-gray-400">Website ID:</span><span className="text-gray-700 font-bold">14be7ec2...c370</span></div>
+                    <div className="flex justify-between"><span className="text-gray-400">Privacy:</span><span className="text-emerald-700 font-bold">No Cookies</span></div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1.5 shrink-0">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                    Live Scripts Active
-                  </span>
-                </div>
+                <a
+                  href="https://cloud.umami.is/analytics/us/share/Ti4vnaf1fhBkM43g"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition text-center block shadow-xs"
+                >
+                  View Umami Real Traffic &rarr;
+                </a>
               </div>
 
-              {/* Direct Access Cards for Real Data Sources */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Umami */}
-                <div className="bg-emerald-50/60 p-5 rounded-xl border border-emerald-200 space-y-3 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-emerald-950 uppercase tracking-wider">Umami Cloud</span>
-                      <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">Active Script</span>
-                    </div>
-                    <p className="text-xs text-emerald-800 mt-2 leading-relaxed">
-                      Privacy-first real-time visitor counts, referrer sites, and top read blog post URLs.
-                    </p>
+              {/* Bento Card 2: Google Search Console */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs flex flex-col justify-between space-y-4 hover:shadow-md transition">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-extrabold text-blue-950 uppercase tracking-wider flex items-center gap-1.5">
+                      <Globe size={15} className="text-blue-500" /> Google Search Console
+                    </span>
+                    <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded-full border border-blue-200">Site Verified</span>
                   </div>
-                  <a
-                    href="https://cloud.umami.is/analytics/us/share/Ti4vnaf1fhBkM43g"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs py-2.5 px-4 rounded-lg transition text-center block shadow-sm"
-                  >
-                    View Umami Real Traffic &rarr;
-                  </a>
-                </div>
-
-                {/* Google Search Console */}
-                <div className="bg-blue-50/60 p-5 rounded-xl border border-blue-200 space-y-3 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-blue-950 uppercase tracking-wider">Google Search Console</span>
-                      <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded">Site Verified</span>
-                    </div>
-                    <p className="text-xs text-blue-800 mt-2 leading-relaxed">
-                      Exact Google search queries, impressions, click-through rates (CTR), and average keyword rankings.
-                    </p>
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    Legitimate Google search queries, impressions, CTR, index status, and organic keyword rankings.
+                  </p>
+                  <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-[11px] space-y-1 font-mono">
+                    <div className="flex justify-between"><span className="text-gray-400">Property:</span><span className="text-gray-700 font-bold">anvitam.com</span></div>
+                    <div className="flex justify-between"><span className="text-gray-400">Indexing:</span><span className="text-blue-700 font-bold">Auto-Crawled</span></div>
                   </div>
-                  <a
-                    href="https://search.google.com/search-console"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs py-2.5 px-4 rounded-lg transition text-center block shadow-sm"
-                  >
-                    Open Google Search Console &rarr;
-                  </a>
                 </div>
-
-                {/* Google Analytics 4 */}
-                <div className="bg-amber-50/60 p-5 rounded-xl border border-amber-200 space-y-3 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-amber-950 uppercase tracking-wider">Google Analytics (GA4)</span>
-                      <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded">G-Y6HN9JF1CM</span>
-                    </div>
-                    <p className="text-xs text-amber-800 mt-2 leading-relaxed">
-                      User demographics, geographic traffic distribution, session duration, and retention events.
-                    </p>
-                  </div>
-                  <a
-                    href="https://analytics.google.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs py-2.5 px-4 rounded-lg transition text-center block shadow-sm"
-                  >
-                    Open Google Analytics &rarr;
-                  </a>
-                </div>
+                <a
+                  href="https://search.google.com/search-console"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition text-center block shadow-xs"
+                >
+                  Open Search Console &rarr;
+                </a>
               </div>
 
-              {/* API Integration Guide for Direct Backend Extraction */}
-              <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 space-y-3 text-xs">
-                <h4 className="font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
-                  <Database size={14} className="text-gray-600" />
-                  How to fetch raw GA4 & Search Console data directly inside this page
-                </h4>
-                <p className="text-gray-600 leading-relaxed">
-                  Google and Umami require authenticated API Service Account Keys to stream your private traffic & keyword data directly into backend endpoints. To render raw JSON graphs inside this dashboard, add these environment variables to Vercel:
-                </p>
-                <div className="bg-gray-900 text-emerald-400 p-3 rounded-lg font-mono text-[11px] space-y-1 overflow-x-auto">
-                  <p># 1. Umami API Token (Umami Settings &rarr; API Keys)</p>
-                  <p>UMAMI_API_TOKEN=um_live_xxxxxxxxxxxxxxxxxxxx</p>
-                  <p className="pt-1"># 2. Google Search Console Service Account JSON</p>
-                  <p>GOOGLE_SEARCH_CONSOLE_KEY=&#123;&quot;type&quot;:&quot;service_account&quot;,...&#125;</p>
-                  <p className="pt-1"># 3. Google Analytics GA4 Data API Property ID</p>
-                  <p>GA4_PROPERTY_ID=15078622590</p>
+              {/* Bento Card 3: Google Analytics GA4 */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs flex flex-col justify-between space-y-4 hover:shadow-md transition">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-extrabold text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
+                      <Sparkles size={15} className="text-amber-500" /> Google Analytics GA4
+                    </span>
+                    <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full border border-amber-200">Configured</span>
+                  </div>
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    User demographics, geographic traffic distribution, session duration, and retention metrics.
+                  </p>
+                  <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-[11px] space-y-1 font-mono">
+                    <div className="flex justify-between"><span className="text-gray-400">Measurement ID:</span><span className="text-amber-800 font-bold bg-amber-100/60 px-1.5 py-0.5 rounded">G-Y6HN9JF1CM</span></div>
+                    <div className="flex justify-between"><span className="text-gray-400">Stream ID:</span><span className="text-gray-700">15078622590</span></div>
+                  </div>
                 </div>
+                <a
+                  href="https://analytics.google.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition text-center block shadow-xs"
+                >
+                  Open Google Analytics &rarr;
+                </a>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Vercel Speed Insights */}
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
+              {/* Bento Card 4 (Wide - Span 2): Vercel Speed Insights */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs space-y-4 md:col-span-2 hover:shadow-md transition">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                  <h3 className="text-xs font-extrabold text-gray-900 uppercase tracking-wider flex items-center gap-2">
                     <Zap size={16} className="text-amber-500" />
-                    Vercel Speed Insights
+                    Vercel Speed Insights Telemetry
                   </h3>
-                  <span className="text-[10px] font-bold uppercase tracking-widest bg-green-50 text-green-700 border border-green-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                    <CheckCircle size={10} /> Active
+                  <span className="text-[10px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                    <CheckCircle size={10} /> Active SDK
                   </span>
                 </div>
                 
-                <p className="text-xs text-gray-500">
-                  Real-time visitor performance metrics tracked directly via the integrated Vercel Speed Insights SDK.
-                </p>
-
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-gray-50 p-3 rounded-lg text-center space-y-1">
+                  <div className="bg-gray-50 p-3 rounded-xl text-center space-y-1 border border-gray-100">
                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Performance</span>
-                    <span className="text-2xl font-black text-green-600 block">
+                    <span className="text-2xl font-black text-emerald-600 block">
                       {analyticsStats ? `${analyticsStats.performanceScore}%` : '98%'}
                     </span>
-                    <span className="text-[9px] font-semibold text-green-600 bg-green-50 px-1 py-0.5 rounded border border-green-100">Excellent</span>
+                    <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">Excellent</span>
                   </div>
-                  <div className="bg-gray-50 p-3 rounded-lg text-center space-y-1">
+                  <div className="bg-gray-50 p-3 rounded-xl text-center space-y-1 border border-gray-100">
                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">LCP (Load)</span>
-                    <span className="text-2xl font-black text-green-600 block">
+                    <span className="text-2xl font-black text-emerald-600 block">
                       {analyticsStats ? analyticsStats.lcp : '1.2s'}
                     </span>
-                    <span className="text-[9px] font-semibold text-green-600 bg-green-50 px-1 py-0.5 rounded border border-green-100">Good (&lt;2.5s)</span>
+                    <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">Good (&lt;2.5s)</span>
                   </div>
-                  <div className="bg-gray-50 p-3 rounded-lg text-center space-y-1">
+                  <div className="bg-gray-50 p-3 rounded-xl text-center space-y-1 border border-gray-100">
                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">CLS (Shift)</span>
-                    <span className="text-2xl font-black text-green-600 block">
+                    <span className="text-2xl font-black text-emerald-600 block">
                       {analyticsStats ? analyticsStats.cls : '0.02'}
                     </span>
-                    <span className="text-[9px] font-semibold text-green-600 bg-green-50 px-1 py-0.5 rounded border border-green-100">Good (&lt;0.1)</span>
+                    <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">Good (&lt;0.1)</span>
                   </div>
                 </div>
 
-                <div className="space-y-2.5 pt-1">
+                <div className="space-y-2 pt-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-gray-500 font-medium">First Contentful Paint (FCP)</span>
-                    <span className="font-bold text-gray-700">
-                      {analyticsStats ? analyticsStats.fcp : '0.8s'}
-                    </span>
+                    <span className="font-bold text-gray-700">{analyticsStats ? analyticsStats.fcp : '0.8s'}</span>
                   </div>
                   <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                    <div className="bg-green-500 h-full rounded-full" style={{ width: analyticsStats ? `${analyticsStats.performanceScore - 10}%` : '88%' }}></div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-500 font-medium">Interaction to Next Paint (INP)</span>
-                    <span className="font-bold text-gray-700">14ms</span>
-                  </div>
-                  <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                    <div className="bg-green-500 h-full rounded-full" style={{ width: '96%' }}></div>
+                    <div className="bg-emerald-500 h-full rounded-full" style={{ width: analyticsStats ? `${analyticsStats.performanceScore - 10}%` : '88%' }}></div>
                   </div>
                 </div>
 
-                <div className="pt-2 text-right">
+                <div className="pt-1 flex items-center justify-between border-t border-gray-100">
+                  <span className="text-[11px] text-gray-400">Core Web Vitals synced via Vercel Edge</span>
                   <a
                     href="https://vercel.com/dashboard"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs font-semibold text-black hover:underline inline-flex items-center gap-1"
+                    className="text-xs font-bold text-black hover:underline inline-flex items-center gap-1"
                   >
-                    View Vercel Analytics Dashboard &rarr;
+                    View Vercel Dashboard &rarr;
                   </a>
                 </div>
               </div>
 
-              {/* Google Analytics Tag */}
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
-                    <Activity size={16} className="text-[#CCFF00]" />
-                    Google Analytics Integration
-                  </h3>
-                  <span className="text-[10px] font-bold uppercase tracking-widest bg-green-50 text-green-700 border border-green-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                    <CheckCircle size={10} /> Configured
-                  </span>
-                </div>
-
-                <p className="text-xs text-gray-500">
-                  Global Site Tag (gtag.js) successfully embedded in the main HTML layout to monitor custom events and traffic.
-                </p>
-
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-2">
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-gray-400 font-medium">Stream Name</span>
-                    <span className="font-semibold text-gray-700">anvitam</span>
-                  </div>
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-gray-400 font-medium">Stream URL</span>
-                    <span className="font-semibold text-gray-700">https://www.anvitam.com</span>
-                  </div>
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-gray-400 font-medium">Measurement ID</span>
-                    <span className="font-mono font-bold text-[#052A1A] bg-[#CCFF00]/10 border border-[#CCFF00]/30 px-2 py-0.5 rounded">
-                      G-Y6HN9JF1CM
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-gray-400 font-medium">Stream ID</span>
-                    <span className="font-mono text-gray-700">15078622590</span>
-                  </div>
-                </div>
-
-                <div className="text-xs text-gray-500 leading-normal border-t border-gray-100 pt-3">
-                  <strong>Status:</strong> Active. Your visitor streams are synced and reporting to the Google Analytics property dashboard.
-                </div>
-
-                <div className="pt-1 text-right">
-                  <a
-                    href="https://analytics.google.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs font-semibold text-black hover:underline inline-flex items-center gap-1"
-                  >
-                    Open Google Analytics Console &rarr;
-                  </a>
-                </div>
-              </div>
-
-              {/* Umami Analytics (Real, Privacy-First Visitor & Blog Read Telemetry) */}
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4 lg:col-span-2">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
-                    <Activity size={16} className="text-emerald-500" />
-                    Umami Analytics (100% Real & Ad-Blocker Resistant)
-                  </h3>
-                  <span className="text-[10px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                    <CheckCircle size={10} /> Active & Tracking
-                  </span>
-                </div>
-
-                <p className="text-xs text-gray-600 leading-relaxed">
-                  Umami is connected to track every real human visitor and blog reader without bot fake hits or ad-blocker dropouts.
-                </p>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-xl border border-gray-100">
-                  <div>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Website ID</span>
-                    <span className="font-mono text-xs font-bold text-gray-800 break-all">14be7ec2-6f32-451a-92d4-0961ff82c370</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Script Source</span>
-                    <span className="font-mono text-xs text-gray-700">https://cloud.umami.is/script.js</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Privacy & Accuracy</span>
-                    <span className="text-xs font-semibold text-emerald-700">No Cookies · Bot Filtered</span>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3">
-                  <p className="text-xs text-gray-500">
-                    Click below to open your real-time Umami dashboard for detailed blog reader counts & referral traffic.
+              {/* Bento Card 5: Direct Backend Telemetry API Guide */}
+              <div className="bg-[#0D1117] text-white p-6 rounded-2xl border border-gray-800 shadow-xs flex flex-col justify-between space-y-4 hover:shadow-md transition">
+                <div className="space-y-3">
+                  <h4 className="font-extrabold text-xs uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+                    <Database size={14} className="text-emerald-400" /> Direct API Stream Guide
+                  </h4>
+                  <p className="text-xs text-gray-400 leading-relaxed">
+                    To render live inline charts inside this admin, add these keys to Vercel env:
                   </p>
-                  <a
-                    href="https://cloud.umami.is/websites/14be7ec2-6f32-451a-92d4-0961ff82c370"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-gray-800 transition"
-                  >
-                    Open Live Umami Analytics Dashboard &rarr;
-                  </a>
+                  <div className="bg-black/60 p-3 rounded-xl border border-gray-800 font-mono text-[10px] space-y-1 text-emerald-300 overflow-x-auto">
+                    <p className="text-gray-500"># Umami API Token</p>
+                    <p>UMAMI_API_TOKEN=um_live_...</p>
+                    <p className="text-gray-500 pt-1"># Search Console JSON</p>
+                    <p>GOOGLE_SEARCH_CONSOLE_KEY=&#123;...&#125;</p>
+                  </div>
                 </div>
+                <span className="text-[10px] text-gray-500 font-mono">Optional setup for in-dashboard graphs</span>
               </div>
+
             </div>
           </div>
         )}
@@ -2196,7 +2106,7 @@ const Admin: React.FC = () => {
                 <span className={`text-xs border rounded-full px-3 py-1 font-semibold flex items-center gap-1 ${
                   isDbConnected ? 'text-green-600 bg-green-50 border-green-200' : 'text-amber-600 bg-amber-50 border-amber-200'
                 }`}>
-                  <Database size={11} /> {isDbConnected ? 'Synced to Supabase' : 'DB Offline — leads may be missing'}
+                  <Database size={11} /> {isDbConnected ? 'Synced to Firebase Firestore' : 'DB Offline — leads may be missing'}
                 </span>
                 {!isDbConnected && (
                   <button
@@ -2216,7 +2126,7 @@ const Admin: React.FC = () => {
                   <p className="mt-1 text-xs text-amber-700">
                     Contact, Newsletter, Estimator &amp; Workshop form submissions are <strong>not persisted</strong> while the database is offline.
                     Email notifications are still sent, but no data appears here.
-                    <br /><strong>Fix:</strong> Update <code className="font-mono bg-amber-100 px-1 rounded">DATABASE_URL</code> in Vercel to the Transaction Pooler URL (port 6543), then redeploy.
+                    <br /><strong>Fix:</strong> Add <code className="font-mono bg-amber-100 px-1 rounded">FIREBASE_PROJECT_ID</code>, <code className="font-mono bg-amber-100 px-1 rounded">FIREBASE_CLIENT_EMAIL</code>, and <code className="font-mono bg-amber-100 px-1 rounded">FIREBASE_PRIVATE_KEY</code> in Vercel environment variables, then redeploy.
                   </p>
                 </div>
               )}
@@ -2301,7 +2211,7 @@ const Admin: React.FC = () => {
                   <span className={`text-xs border rounded-full px-3 py-1 font-semibold flex items-center gap-1 ${
                     isDbConnected ? 'text-green-600 bg-green-50 border-green-200' : 'text-amber-600 bg-amber-50 border-amber-200'
                   }`}>
-                    <Database size={11} /> {isDbConnected ? 'Synced to Supabase' : 'DB Offline'}
+                    <Database size={11} /> {isDbConnected ? 'Synced to Firebase Firestore' : 'DB Offline'}
                   </span>
                   {!isDbConnected && (
                     <button
