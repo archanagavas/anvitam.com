@@ -518,6 +518,10 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
         <a href="https://www.linkedin.com/in/archana-gavas/" style="color: #CCFF00; text-decoration: none;">LinkedIn</a>
         <a href="https://www.instagram.com/anvitam_archit/" style="color: #CCFF00; text-decoration: none;">Instagram</a>
         <a href="https://topmate.io/archanagavas" style="color: #CCFF00; text-decoration: none;">Topmate Consultation</a>
+        <a href="https://indiehunt.io/project/anvitam" target="_blank" rel="noopener" style="color: #CCFF00; text-decoration: none;">IndieHunt</a>
+        <a href="https://makerhunt.io/project/anvitam" target="_blank" rel="noopener" title="Featured on MakerHunt" style="color: #CCFF00; text-decoration: none;">MakerHunt</a>
+        <a href="https://sidehunt.io/project/anvitam" target="_blank" rel="noopener" title="View project on Sidehunt" style="color: #CCFF00; text-decoration: none;">Sidehunt</a>
+        <a href="https://uno.directory" target="_blank" rel="noopener" style="color: #CCFF00; text-decoration: none;">Uno Directory</a>
         <a href="https://earlyhunt.com/project/anvitam" target="_blank" rel="noopener" style="color: #CCFF00; text-decoration: none;">EarlyHunt</a>
         <a href="https://auraplusplus.com/projects/anvitam" target="_blank" rel="noopener" style="color: #CCFF00; text-decoration: none;">Aura++</a>
         <a href="https://www.uneed.best/tool/anvitam" target="_blank" style="color: #CCFF00; text-decoration: none;">Uneed</a>
