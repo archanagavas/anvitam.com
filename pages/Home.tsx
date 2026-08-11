@@ -1147,17 +1147,6 @@ function AsSeenOnSection() {
       height: 48,
       imgClass: 'h-9 sm:h-11 w-auto object-contain',
     },
-    {
-      id: 'abacklaunch',
-      href: 'https://abacklaunch.com',
-      target: '_blank',
-      rel: 'dofollow',
-      imgSrc: 'https://abacklaunch.com/badges/launched-on-dark.svg',
-      alt: 'Listed on Aback Launch',
-      width: 150,
-      height: 32,
-      imgClass: 'h-8 sm:h-9 w-auto object-contain',
-    },
   ];
 
   return (
