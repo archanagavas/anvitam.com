@@ -522,9 +522,6 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
       <div style="margin: 20px 0;">
         <p style="color: #FAFAFA; font-size: 14px; margin-bottom: 12px;">As Seen On &amp; Featured In</p>
         <div style="display: flex; justify-content: center; gap: 15px; align-items: center; flex-wrap: wrap;">
-          <a href="https://startupbase.io/products/anvitam?utm_source=startupbase&utm_medium=badge&utm_campaign=featured-badge-light" target="_blank" rel="noopener noreferrer">
-            <img src="https://statics.startupbase.io/site/badges/featured-on-sb.svg" alt="Featured on StartupBase" height="55" style="height:55px;width:auto;" />
-          </a>
           <a href="https://submitforbacklinks.com/product/anvitam?utm_source=badge&utm_medium=embed&utm_campaign=anvitam&ref=submitforbacklinks" target="_blank" rel="noopener" data-s4b-token="zRY280VBHOeqyS1Mvd0jKnJd" data-s4b-theme="light"><img src="https://submitforbacklinks.com/api/badge/zRY280VBHOeqyS1Mvd0jKnJd.svg?variant=verified&theme=light" alt="Anvitam — Verified on SubmitForBacklinks" width="220" height="48" loading="lazy"></a>
           <a href="https://indiehunt.io/project/anvitam" target="_blank" rel="noopener"><img src="https://indiehunt.io/badges/indiehunt-badge-light.svg" alt="Featured on IndieHunt" width="265" height="58" /></a>
           <a href="https://makerhunt.io/project/anvitam" target="_blank" rel="noopener" title="Featured on MakerHunt"><img src="https://makerhunt.io/badges/makerhunt-badge-light.svg" alt="Featured on MakerHunt" width="200" height="60" /></a>
@@ -1210,9 +1207,6 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
         <section style="margin-bottom: 60px; text-align: center;">
           <h2 style="font-family: 'Playfair Display', serif; font-size: 32px; color: #03160E; border-bottom: 2px solid #CCFF00; padding-bottom: 10px; margin-bottom: 20px;">As Seen On &amp; Featured In</h2>
           <div style="display: flex; justify-content: center; gap: 15px; align-items: center; flex-wrap: wrap;">
-            <a href="https://startupbase.io/products/anvitam?utm_source=startupbase&utm_medium=badge&utm_campaign=featured-badge-light" target="_blank" rel="noopener noreferrer">
-              <img src="https://statics.startupbase.io/site/badges/featured-on-sb.svg" alt="Featured on StartupBase" height="55" style="height:55px;width:auto;" />
-            </a>
             <a href="https://submitforbacklinks.com/product/anvitam?utm_source=badge&utm_medium=embed&utm_campaign=anvitam&ref=submitforbacklinks" target="_blank" rel="noopener" data-s4b-token="zRY280VBHOeqyS1Mvd0jKnJd" data-s4b-theme="light"><img src="https://submitforbacklinks.com/api/badge/zRY280VBHOeqyS1Mvd0jKnJd.svg?variant=verified&theme=light" alt="Anvitam — Verified on SubmitForBacklinks" width="220" height="48" loading="lazy"></a>
             <a href="https://indiehunt.io/project/anvitam" target="_blank" rel="noopener"><img src="https://indiehunt.io/badges/indiehunt-badge-light.svg" alt="Featured on IndieHunt" width="265" height="58" /></a>
             <a href="https://makerhunt.io/project/anvitam" target="_blank" rel="noopener" title="Featured on MakerHunt"><img src="https://makerhunt.io/badges/makerhunt-badge-light.svg" alt="Featured on MakerHunt" width="200" height="60" /></a>

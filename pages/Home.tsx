@@ -1035,16 +1035,6 @@ function FaqSection() {
 function AsSeenOnSection() {
   const badgeItems = [
     {
-      id: 'startupbase',
-      href: 'https://startupbase.io/products/anvitam?utm_source=startupbase&utm_medium=badge&utm_campaign=featured-badge-light',
-      target: '_blank',
-      rel: 'noopener noreferrer',
-      imgSrc: 'https://statics.startupbase.io/site/badges/featured-on-sb.svg',
-      alt: 'Featured on StartupBase',
-      height: 55,
-      imgClass: 'h-9 sm:h-11 w-auto object-contain',
-    },
-    {
       id: 'nicklaunches',
       href: 'https://nicklaunches.com/products/anvitam/?utm_source=anvitam.com&utm_medium=badge&utm_campaign=featured',
       target: '_blank',
