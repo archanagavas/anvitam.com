@@ -1147,6 +1147,17 @@ function AsSeenOnSection() {
       height: 48,
       imgClass: 'h-9 sm:h-11 w-auto object-contain',
     },
+    {
+      id: 'noonlaunch',
+      href: 'https://noonlaunch.com/product/anvitam',
+      target: '_blank',
+      rel: 'dofollow',
+      imgSrc: 'https://noonlaunch.com/badges/anvitam.svg',
+      alt: 'Featured on Noonlaunch',
+      width: 220,
+      height: 60,
+      imgClass: 'h-9 sm:h-11 w-auto object-contain',
+    },
   ];
 
   return (
