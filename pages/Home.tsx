@@ -6,7 +6,7 @@ import { INITIAL_PARTNERS } from '../constants';
 import { ArrowRight, Trees, Linkedin, Mail, ArrowUpRight } from 'lucide-react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
 import SlidingTestimonials from '../components/SlidingTestimonials';
-import InfiniteMarquee from '../components/InfiniteMarquee';
+import InfiniteMarquee, { InfiniteSlider } from '../components/InfiniteMarquee';
 import VerticalTimeline from '../components/VerticalTimeline';
 import { ScrollFlipMethodologySection } from '../components/ui/flip-card-methodology';
 import { FlowButton } from '../components/ui/flow-button';
@@ -954,6 +954,9 @@ const Home: React.FC = () => {
       {/* ══ FAQ ══ */}
       <FaqSection />
 
+      {/* ══ AS SEEN ON / FEATURED ON ══ */}
+      <AsSeenOnSection />
+
     </div>
   );
 };
@@ -1022,6 +1025,77 @@ function FaqSection() {
             ))}
           </div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+/* ══ AS SEEN ON / FEATURED ON SECTION ══ */
+
+function AsSeenOnSection() {
+  const badgeItems = [
+    {
+      id: 'nicklaunches',
+      href: 'https://nicklaunches.com/products/anvitam/?utm_source=anvitam.com&utm_medium=badge&utm_campaign=featured',
+      target: '_blank',
+      rel: 'noopener',
+      imgSrc: 'https://nicklaunches.com/badges/featured.png',
+      alt: 'Anvitam on Nick Launches',
+      width: 244,
+      height: 56,
+      imgClass: 'h-9 sm:h-11 w-auto object-contain',
+    },
+    {
+      id: 'abacklaunch',
+      href: 'https://abacklaunch.com',
+      target: '_blank',
+      rel: 'dofollow',
+      imgSrc: 'https://abacklaunch.com/badges/launched-on-dark.svg',
+      alt: 'Listed on Aback Launch',
+      width: 150,
+      height: 32,
+      imgClass: 'h-8 sm:h-9 w-auto object-contain',
+    },
+  ];
+
+  return (
+    <section className="bg-[#0D0D0D] text-white py-16 sm:py-20 px-6 md:px-16 lg:px-24 border-t border-white/10">
+      <div className="max-w-screen-xl mx-auto text-center">
+        <FadeUp>
+          <div className="inline-flex items-center gap-2 border border-[#CCFF00]/30 bg-[#CCFF00]/10 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#CCFF00] mb-4">
+            ✦ AS SEEN ON
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-3">
+            As Seen On &amp; Featured In
+          </h2>
+          <p className="text-white/60 text-sm max-w-xl mx-auto mb-10">
+            Recognized and featured on global launch platforms, architectural directories, and design showcases.
+          </p>
+        </FadeUp>
+
+        <FadeUp delay={0.1}>
+          <div className="overflow-hidden py-4 max-w-4xl mx-auto" style={{ maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)' }}>
+            <InfiniteSlider gap={32} duration={25} durationOnHover={60}>
+              {[...badgeItems, ...badgeItems, ...badgeItems, ...badgeItems].map((badge, idx) => (
+                <a
+                  key={`${badge.id}-${idx}`}
+                  href={badge.href}
+                  target={badge.target}
+                  rel={badge.rel}
+                  className="inline-flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/15 hover:border-[#CCFF00]/60 rounded-2xl px-6 py-4 transition-all duration-300 shadow-xl hover:scale-105 group whitespace-nowrap min-w-[200px]"
+                >
+                  <img
+                    src={badge.imgSrc}
+                    alt={badge.alt}
+                    width={badge.width}
+                    height={badge.height}
+                    className={badge.imgClass}
+                  />
+                </a>
+              ))}
+            </InfiniteSlider>
+          </div>
+        </FadeUp>
       </div>
     </section>
   );

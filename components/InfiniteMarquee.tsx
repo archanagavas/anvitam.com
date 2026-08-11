@@ -11,7 +11,7 @@ type InfiniteSliderProps = {
   className?: string;
 };
 
-const InfiniteSlider = memo(function InfiniteSlider({
+export const InfiniteSlider = memo(function InfiniteSlider({
   children,
   gap = 40,
   duration = 30,
