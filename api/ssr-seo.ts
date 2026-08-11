@@ -518,16 +518,21 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
         <a href="https://www.linkedin.com/in/archana-gavas/" style="color: #CCFF00; text-decoration: none;">LinkedIn</a>
         <a href="https://www.instagram.com/anvitam_archit/" style="color: #CCFF00; text-decoration: none;">Instagram</a>
         <a href="https://topmate.io/archanagavas" style="color: #CCFF00; text-decoration: none;">Topmate Consultation</a>
-        <a href="https://submitforbacklinks.com/product/anvitam?utm_source=badge&utm_medium=embed&utm_campaign=anvitam&ref=submitforbacklinks" target="_blank" rel="noopener" data-s4b-token="zRY280VBHOeqyS1Mvd0jKnJd" data-s4b-theme="light" style="color: #CCFF00; text-decoration: none;">SubmitForBacklinks</a>
-        <a href="https://indiehunt.io/project/anvitam" target="_blank" rel="noopener" style="color: #CCFF00; text-decoration: none;">IndieHunt</a>
-        <a href="https://makerhunt.io/project/anvitam" target="_blank" rel="noopener" title="Featured on MakerHunt" style="color: #CCFF00; text-decoration: none;">MakerHunt</a>
-        <a href="https://sidehunt.io/project/anvitam" target="_blank" rel="noopener" title="View project on Sidehunt" style="color: #CCFF00; text-decoration: none;">Sidehunt</a>
-        <a href="https://uno.directory" target="_blank" rel="noopener" style="color: #CCFF00; text-decoration: none;">Uno Directory</a>
-        <a href="https://earlyhunt.com/project/anvitam" target="_blank" rel="noopener" style="color: #CCFF00; text-decoration: none;">EarlyHunt</a>
-        <a href="https://auraplusplus.com/projects/anvitam" target="_blank" rel="noopener" style="color: #CCFF00; text-decoration: none;">Aura++</a>
-        <a href="https://www.uneed.best/tool/anvitam" target="_blank" style="color: #CCFF00; text-decoration: none;">Uneed</a>
-        <a href="https://nicklaunches.com/products/anvitam/?utm_source=anvitam.com&utm_medium=badge&utm_campaign=featured" target="_blank" rel="noopener" style="color: #CCFF00; text-decoration: none;">Nick Launches</a>
-        <a href="https://abacklaunch.com" target="_blank" rel="dofollow" style="color: #CCFF00; text-decoration: none;">Aback Launch</a>
+      </div>
+      <div style="margin: 20px 0;">
+        <p style="color: #FAFAFA; font-size: 14px; margin-bottom: 12px;">As Seen On &amp; Featured In</p>
+        <div style="display: flex; justify-content: center; gap: 15px; align-items: center; flex-wrap: wrap;">
+          <a href="https://submitforbacklinks.com/product/anvitam?utm_source=badge&utm_medium=embed&utm_campaign=anvitam&ref=submitforbacklinks" target="_blank" rel="noopener" data-s4b-token="zRY280VBHOeqyS1Mvd0jKnJd" data-s4b-theme="light"><img src="https://submitforbacklinks.com/api/badge/zRY280VBHOeqyS1Mvd0jKnJd.svg?variant=verified&theme=light" alt="Anvitam — Verified on SubmitForBacklinks" width="220" height="48" loading="lazy"></a>
+          <a href="https://indiehunt.io/project/anvitam" target="_blank" rel="noopener"><img src="https://indiehunt.io/badges/indiehunt-badge-light.svg" alt="Featured on IndieHunt" width="265" height="58" /></a>
+          <a href="https://makerhunt.io/project/anvitam" target="_blank" rel="noopener" title="Featured on MakerHunt"><img src="https://makerhunt.io/badges/makerhunt-badge-light.svg" alt="Featured on MakerHunt" width="200" height="60" /></a>
+          <a href="https://sidehunt.io/project/anvitam" target="_blank" rel="noopener" title="View project on Sidehunt"><img src="https://sidehunt.io/badges/sidehunt-badge-light.svg" alt="Featured on Sidehunt" width="200" height="60" /></a>
+          <a href="https://uno.directory" target="_blank" rel="noopener"><img src="https://uno.directory/uno-directory.svg" alt="Listed on Uno Directory" width="120" height="30" /></a>
+          <a href="https://earlyhunt.com/project/anvitam" target="_blank" rel="noopener"><img src="https://earlyhunt.com/badges/earlyhunt-badge-light.svg" alt="Featured on EarlyHunt" width="265" height="58" /></a>
+          <a href="https://auraplusplus.com/projects/anvitam" target="_blank" rel="noopener" title="View this project on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="265" height="58" /></a>
+          <a href="https://www.uneed.best/tool/anvitam" target="_blank"><img src="https://www.uneed.best/EMBED3B.png" alt="Launching Soon on Uneed" width="250" /></a>
+          <a href="https://nicklaunches.com/products/anvitam/?utm_source=anvitam.com&utm_medium=badge&utm_campaign=featured" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Anvitam on Nick Launches" width="244" height="56" /></a>
+          <a href="https://abacklaunch.com" target="_blank" rel="dofollow"><img src="https://abacklaunch.com/badges/launched-on-dark.svg" alt="Listed on Aback Launch" width="150" height="32" /></a>
+        </div>
       </div>
       <p>&copy; ${new Date().getFullYear()} Anvitam. All rights reserved. <a href="/privacy" style="color: #A3B8AF;">Privacy Policy</a> | <a href="/terms" style="color: #A3B8AF;">Terms of Service</a></p>
     </footer>
@@ -1197,6 +1202,22 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
           
           <h3 style="font-size: 18px; color: #CCFF00; margin-top: 20px;">Do you handle food forest design?</h3>
           <p style="color: #A3B8AF; font-size: 15px; line-height: 1.6; margin-bottom: 20px;">Yes — edible garden design services and food forest design are core to our offering and can be added to any retreat or villa landscape project.</p>
+        </section>
+
+        <section style="margin-bottom: 60px; text-align: center;">
+          <h2 style="font-family: 'Playfair Display', serif; font-size: 32px; color: #03160E; border-bottom: 2px solid #CCFF00; padding-bottom: 10px; margin-bottom: 20px;">As Seen On &amp; Featured In</h2>
+          <div style="display: flex; justify-content: center; gap: 15px; align-items: center; flex-wrap: wrap;">
+            <a href="https://submitforbacklinks.com/product/anvitam?utm_source=badge&utm_medium=embed&utm_campaign=anvitam&ref=submitforbacklinks" target="_blank" rel="noopener" data-s4b-token="zRY280VBHOeqyS1Mvd0jKnJd" data-s4b-theme="light"><img src="https://submitforbacklinks.com/api/badge/zRY280VBHOeqyS1Mvd0jKnJd.svg?variant=verified&theme=light" alt="Anvitam — Verified on SubmitForBacklinks" width="220" height="48" loading="lazy"></a>
+            <a href="https://indiehunt.io/project/anvitam" target="_blank" rel="noopener"><img src="https://indiehunt.io/badges/indiehunt-badge-light.svg" alt="Featured on IndieHunt" width="265" height="58" /></a>
+            <a href="https://makerhunt.io/project/anvitam" target="_blank" rel="noopener" title="Featured on MakerHunt"><img src="https://makerhunt.io/badges/makerhunt-badge-light.svg" alt="Featured on MakerHunt" width="200" height="60" /></a>
+            <a href="https://sidehunt.io/project/anvitam" target="_blank" rel="noopener" title="View project on Sidehunt"><img src="https://sidehunt.io/badges/sidehunt-badge-light.svg" alt="Featured on Sidehunt" width="200" height="60" /></a>
+            <a href="https://uno.directory" target="_blank" rel="noopener"><img src="https://uno.directory/uno-directory.svg" alt="Listed on Uno Directory" width="120" height="30" /></a>
+            <a href="https://earlyhunt.com/project/anvitam" target="_blank" rel="noopener"><img src="https://earlyhunt.com/badges/earlyhunt-badge-light.svg" alt="Featured on EarlyHunt" width="265" height="58" /></a>
+            <a href="https://auraplusplus.com/projects/anvitam" target="_blank" rel="noopener" title="View this project on Aura++"><img src="https://auraplusplus.com/images/badges/featured-on-light.svg" alt="Featured on Aura++" width="265" height="58" /></a>
+            <a href="https://www.uneed.best/tool/anvitam" target="_blank"><img src="https://www.uneed.best/EMBED3B.png" alt="Launching Soon on Uneed" width="250" /></a>
+            <a href="https://nicklaunches.com/products/anvitam/?utm_source=anvitam.com&utm_medium=badge&utm_campaign=featured" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Anvitam on Nick Launches" width="244" height="56" /></a>
+            <a href="https://abacklaunch.com" target="_blank" rel="dofollow"><img src="https://abacklaunch.com/badges/launched-on-dark.svg" alt="Listed on Aback Launch" width="150" height="32" /></a>
+          </div>
         </section>
       </main>
     `;
