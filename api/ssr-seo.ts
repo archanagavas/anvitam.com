@@ -518,6 +518,7 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
         <a href="https://www.linkedin.com/in/archana-gavas/" style="color: #CCFF00; text-decoration: none;">LinkedIn</a>
         <a href="https://www.instagram.com/anvitam_archit/" style="color: #CCFF00; text-decoration: none;">Instagram</a>
         <a href="https://topmate.io/archanagavas" style="color: #CCFF00; text-decoration: none;">Topmate Consultation</a>
+        <a href="https://submitforbacklinks.com/product/anvitam?utm_source=badge&utm_medium=embed&utm_campaign=anvitam&ref=submitforbacklinks" target="_blank" rel="noopener" data-s4b-token="zRY280VBHOeqyS1Mvd0jKnJd" data-s4b-theme="light" style="color: #CCFF00; text-decoration: none;">SubmitForBacklinks</a>
         <a href="https://indiehunt.io/project/anvitam" target="_blank" rel="noopener" style="color: #CCFF00; text-decoration: none;">IndieHunt</a>
         <a href="https://makerhunt.io/project/anvitam" target="_blank" rel="noopener" title="Featured on MakerHunt" style="color: #CCFF00; text-decoration: none;">MakerHunt</a>
         <a href="https://sidehunt.io/project/anvitam" target="_blank" rel="noopener" title="View project on Sidehunt" style="color: #CCFF00; text-decoration: none;">Sidehunt</a>

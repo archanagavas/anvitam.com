@@ -1125,6 +1125,19 @@ function AsSeenOnSection() {
       imgClass: 'h-7 sm:h-8 w-auto object-contain',
     },
     {
+      id: 'submitforbacklinks',
+      href: 'https://submitforbacklinks.com/product/anvitam?utm_source=badge&utm_medium=embed&utm_campaign=anvitam&ref=submitforbacklinks',
+      target: '_blank',
+      rel: 'noopener',
+      dataS4bToken: 'zRY280VBHOeqyS1Mvd0jKnJd',
+      dataS4bTheme: 'light',
+      imgSrc: 'https://submitforbacklinks.com/api/badge/zRY280VBHOeqyS1Mvd0jKnJd.svg?variant=verified&theme=light',
+      alt: 'Anvitam — Verified on SubmitForBacklinks',
+      width: 220,
+      height: 48,
+      imgClass: 'h-9 sm:h-11 w-auto object-contain',
+    },
+    {
       id: 'abacklaunch',
       href: 'https://abacklaunch.com',
       target: '_blank',
@@ -1162,6 +1175,8 @@ function AsSeenOnSection() {
                   target={badge.target}
                   rel={badge.rel}
                   title={badge.title}
+                  data-s4b-token={badge.dataS4bToken}
+                  data-s4b-theme={badge.dataS4bTheme}
                   className="inline-flex items-center justify-center bg-gray-50/80 hover:bg-gray-100 border border-gray-200 hover:border-gray-900 rounded-2xl px-6 py-4 transition-all duration-300 shadow-xs hover:shadow-md hover:scale-105 group whitespace-nowrap min-w-[200px] h-[72px] sm:h-[80px]"
                 >
                   <img
@@ -1170,6 +1185,7 @@ function AsSeenOnSection() {
                     width={badge.width}
                     height={badge.height}
                     className={badge.imgClass}
+                    loading="lazy"
                   />
                 </a>
               ))}
