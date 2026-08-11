@@ -1046,6 +1046,28 @@ function AsSeenOnSection() {
       imgClass: 'h-9 sm:h-11 w-auto object-contain',
     },
     {
+      id: 'uneed',
+      href: 'https://www.uneed.best/tool/anvitam',
+      target: '_blank',
+      rel: 'noopener',
+      imgSrc: 'https://www.uneed.best/EMBED3B.png',
+      alt: 'Launching Soon on Uneed',
+      width: 250,
+      imgClass: 'h-9 sm:h-11 w-auto object-contain',
+    },
+    {
+      id: 'auraplusplus',
+      href: 'https://auraplusplus.com/projects/anvitam',
+      target: '_blank',
+      rel: 'noopener',
+      title: 'View this project on Aura++',
+      imgSrc: 'https://auraplusplus.com/images/badges/featured-on-light.svg',
+      alt: 'Featured on Aura++',
+      width: 265,
+      height: 58,
+      imgClass: 'h-9 sm:h-11 w-auto object-contain',
+    },
+    {
       id: 'abacklaunch',
       href: 'https://abacklaunch.com',
       target: '_blank',
@@ -1059,30 +1081,31 @@ function AsSeenOnSection() {
   ];
 
   return (
-    <section className="bg-[#0D0D0D] text-white py-16 sm:py-20 px-6 md:px-16 lg:px-24 border-t border-white/10">
+    <section className="bg-white text-[#111] py-16 sm:py-20 px-6 md:px-16 lg:px-24 border-t border-gray-100">
       <div className="max-w-screen-xl mx-auto text-center">
         <FadeUp>
-          <div className="inline-flex items-center gap-2 border border-[#CCFF00]/30 bg-[#CCFF00]/10 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#CCFF00] mb-4">
+          <div className="inline-flex items-center gap-2 border border-[#111]/20 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#111] mb-4">
             ✦ AS SEEN ON
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-3">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#111] mb-3">
             As Seen On &amp; Featured In
           </h2>
-          <p className="text-white/60 text-sm max-w-xl mx-auto mb-10">
+          <p className="text-[#555] text-sm max-w-xl mx-auto mb-10">
             Recognized and featured on global launch platforms, architectural directories, and design showcases.
           </p>
         </FadeUp>
 
         <FadeUp delay={0.1}>
-          <div className="overflow-hidden py-4 max-w-4xl mx-auto" style={{ maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)' }}>
+          <div className="overflow-hidden py-4 max-w-5xl mx-auto" style={{ maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)' }}>
             <InfiniteSlider gap={32} duration={25} durationOnHover={60}>
-              {[...badgeItems, ...badgeItems, ...badgeItems, ...badgeItems].map((badge, idx) => (
+              {[...badgeItems, ...badgeItems, ...badgeItems].map((badge, idx) => (
                 <a
                   key={`${badge.id}-${idx}`}
                   href={badge.href}
                   target={badge.target}
                   rel={badge.rel}
-                  className="inline-flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/15 hover:border-[#CCFF00]/60 rounded-2xl px-6 py-4 transition-all duration-300 shadow-xl hover:scale-105 group whitespace-nowrap min-w-[200px]"
+                  title={badge.title}
+                  className="inline-flex items-center justify-center bg-gray-50/80 hover:bg-gray-100 border border-gray-200 hover:border-gray-900 rounded-2xl px-6 py-4 transition-all duration-300 shadow-xs hover:shadow-md hover:scale-105 group whitespace-nowrap min-w-[200px] h-[72px] sm:h-[80px]"
                 >
                   <img
                     src={badge.imgSrc}
