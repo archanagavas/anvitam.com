@@ -1068,6 +1068,17 @@ function AsSeenOnSection() {
       imgClass: 'h-9 sm:h-11 w-auto object-contain',
     },
     {
+      id: 'earlyhunt',
+      href: 'https://earlyhunt.com/project/anvitam',
+      target: '_blank',
+      rel: 'noopener',
+      imgSrc: 'https://earlyhunt.com/badges/earlyhunt-badge-light.svg',
+      alt: 'Featured on EarlyHunt',
+      width: 265,
+      height: 58,
+      imgClass: 'h-9 sm:h-11 w-auto object-contain',
+    },
+    {
       id: 'abacklaunch',
       href: 'https://abacklaunch.com',
       target: '_blank',
