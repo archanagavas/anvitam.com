@@ -325,6 +325,24 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   </span>
                 </div>
               </a>
+
+              {/* Nick Launches Badge */}
+              <div className="mt-4">
+                <a
+                  href="https://nicklaunches.com/products/anvitam/?utm_source=anvitam.com&utm_medium=badge&utm_campaign=featured"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block hover:opacity-90 transition-opacity"
+                >
+                  <img
+                    src="https://nicklaunches.com/badges/featured.png"
+                    alt="Anvitam on Nick Launches"
+                    width={244}
+                    height={56}
+                    className="max-w-full h-auto"
+                  />
+                </a>
+              </div>
             </div>
             {/* Links */}
             <div>

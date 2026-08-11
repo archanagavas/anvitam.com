@@ -514,10 +514,11 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
     <footer style="background-color: #03160E; color: #A3B8AF; padding: 40px 20px; font-family: 'Inter', sans-serif; font-size: 14px; text-align: center; border-top: 1px solid rgba(163, 184, 175, 0.1);">
       <p style="color: #FAFAFA; font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 10px;">Anvitam — Sustainable Architecture & Eco Design Studio</p>
       <p style="margin-bottom: 20px;">Vadodara, Gujarat, India | Designing for the World</p>
-      <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;">
+      <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;">
         <a href="https://www.linkedin.com/in/archana-gavas/" style="color: #CCFF00; text-decoration: none;">LinkedIn</a>
         <a href="https://www.instagram.com/anvitam_archit/" style="color: #CCFF00; text-decoration: none;">Instagram</a>
         <a href="https://topmate.io/archanagavas" style="color: #CCFF00; text-decoration: none;">Topmate Consultation</a>
+        <a href="https://nicklaunches.com/products/anvitam/?utm_source=anvitam.com&utm_medium=badge&utm_campaign=featured" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Anvitam on Nick Launches" width="244" height="56" /></a>
       </div>
       <p>&copy; ${new Date().getFullYear()} Anvitam. All rights reserved. <a href="/privacy" style="color: #A3B8AF;">Privacy Policy</a> | <a href="/terms" style="color: #A3B8AF;">Terms of Service</a></p>
     </footer>
