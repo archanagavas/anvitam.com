@@ -178,46 +178,70 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           }))
       : [];
 
-    // ── DYNAMIC MODEL ROUTING & TOKEN ALLOCATION ──
-    // Simple greetings -> Llama 3.1 8B (fast, lightweight)
-    // Detailed questions -> Llama 3.3 70B (high intelligence, deep knowledge from system prompt)
+    // ── MULTI-MODEL CASCADE & AUTO-FALLBACK ROUTER ──
     const qLower = userQuery.toLowerCase().trim();
     const isGreetingOnly =
       qLower.length < 20 &&
       /^(hi|hello|hey|namaste|hola|bonjour|kaise ho|hallo|good morning|good evening)$/i.test(qLower);
 
-    const selectedModel = isGreetingOnly
-      ? 'meta/llama-3.1-8b-instruct'
-      : 'meta/llama-3.3-70b-instruct';
+    // Tiered model list for maximum intelligence, speed & high availability
+    const modelCascade = isGreetingOnly
+      ? [
+          'meta/llama-3.1-8b-instruct',
+          'nvidia/llama-3.1-nemotron-70b-instruct',
+          'meta/llama-3.3-70b-instruct'
+        ]
+      : [
+          'meta/llama-3.3-70b-instruct',             // #1 SOTA Llama 3.3 70B
+          'nvidia/llama-3.1-nemotron-70b-instruct',   // #2 NVIDIA High-Speed Nemotron 70B
+          'meta/llama-3.1-70b-instruct',             // #3 Llama 3.1 70B
+          'meta/llama-3.1-8b-instruct'              // #4 Fast 8B Backup
+        ];
 
     const maxTokens = isGreetingOnly ? 300 : 750; // Increased token limit so detailed replies never cut off!
 
-    try {
-      const nvRes = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${nvKey}`
-        },
-        body: JSON.stringify({
-          model: selectedModel,
-          messages: [
-            { role: 'system', content: ANVITAM_AI_SYSTEM_PROMPT },
-            ...formattedHistory,
-            { role: 'user', content: userQuery }
-          ],
-          temperature: 0.65,
-          max_tokens: maxTokens,
-          stream: true
-        })
-      });
+    let nvRes: Response | null = null;
 
-      if (!nvRes.ok) {
-        const errText = await nvRes.text();
-        console.error('[Chat AI] NVIDIA API error:', nvRes.status, errText);
-        return res.status(503).json({ reply: null, error: 'AI service temporarily unavailable.' });
+    // Loop through model cascade to guarantee response
+    for (const modelCandidate of modelCascade) {
+      try {
+        const resCandidate = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${nvKey}`
+          },
+          body: JSON.stringify({
+            model: modelCandidate,
+            messages: [
+              { role: 'system', content: ANVITAM_AI_SYSTEM_PROMPT },
+              ...formattedHistory,
+              { role: 'user', content: userQuery }
+            ],
+            temperature: 0.65,
+            max_tokens: maxTokens,
+            stream: true
+          })
+        });
+
+        if (resCandidate.ok) {
+          nvRes = resCandidate;
+          break; // Model connected successfully!
+        } else {
+          const errText = await resCandidate.text();
+          console.warn(`[Chat AI] Model ${modelCandidate} returned status ${resCandidate.status}. Trying next cascade model...`);
+        }
+      } catch (err) {
+        console.warn(`[Chat AI] Model ${modelCandidate} connection error. Trying next candidate...`, err);
       }
+    }
 
+    if (!nvRes || !nvRes.ok) {
+      console.error('[Chat AI] All models in cascade failed.');
+      return res.status(503).json({ reply: null, error: 'AI service temporarily unavailable.' });
+    }
+
+    try {
       // Stream SSE tokens back to the browser
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
@@ -236,10 +260,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       res.end();
       return;
-
     } catch (err) {
-      console.error('[Chat AI] Network error:', err);
-      return res.status(503).json({ reply: null, error: 'AI service temporarily unavailable.' });
+      console.error('[Chat AI] Streaming error:', err);
+      return res.status(500).json({ reply: null, error: 'Streaming response interrupted.' });
     }
   }
 
