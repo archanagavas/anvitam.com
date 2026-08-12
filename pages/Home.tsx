@@ -242,7 +242,7 @@ const Home: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <span className="flex text-amber-500 text-xs tracking-tighter">★ ★ ★ ★ ★</span>
-              <span className="text-gray-900 font-bold text-xs tracking-tight">Trusted by 20+ Landowners</span>
+              <span className="text-gray-900 font-bold text-xs tracking-tight">Trusted by 20+ Owners</span>
             </div>
           </motion.div>
 
@@ -909,7 +909,7 @@ const Home: React.FC = () => {
                 Is Anvitam the right fit<br className="hidden sm:inline" /> for your project?
               </h2>
               <p className="text-[#555] max-w-xl mx-auto text-base sm:text-lg">
-                We work best with landowners who value ecological design, natural materials, and long-term site resilience.
+                We work best with owners who value ecological design, natural materials, and long-term site resilience.
               </p>
             </div>
           </FadeUp>
