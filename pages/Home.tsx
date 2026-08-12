@@ -250,10 +250,10 @@ const Home: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-4xl sm:text-6xl md:text-7xl text-white font-extrabold leading-[1.12] tracking-tight mb-3 drop-shadow-md"
+            className="text-4xl sm:text-6xl md:text-7xl text-white font-extrabold leading-[1.15] tracking-tight mb-3 drop-shadow-md"
           >
             From Empty Space to a <br className="hidden sm:block" />
-            <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-[#CCFF00] via-[#E2FF66] to-[#A3E635] drop-shadow-lg mt-1">
+            <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-[#CCFF00] via-[#E2FF66] to-[#A3E635] drop-shadow-lg mt-1 pb-2">
               Living Place.
             </span>
           </motion.h1>
