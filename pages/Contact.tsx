@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
-import { ArrowRight, Plus, Minus, CheckCircle, Calendar, MapPin, Mail, Phone, Navigation, Clock } from 'lucide-react';
+import { ArrowRight, Plus, Minus, CheckCircle, Calendar, MapPin, Mail, Phone, Navigation, Clock, Calculator, Sparkles } from 'lucide-react';
 import FlowButton from '../components/ui/flow-button';
 
 const Contact: React.FC = () => {
@@ -117,72 +117,83 @@ ${formData.message}`;
         <link rel="canonical" href="https://www.anvitam.com/contact" />
       </Helmet>
       
-      {/* Hero Section */}
-      <div className="pt-32 pb-24 px-6 max-w-6xl mx-auto">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-medium mb-6 tracking-tight text-[#111]">
+      {/* Combined Hero Section */}
+      <div className="pt-28 pb-12 px-6 max-w-6xl mx-auto">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 text-[10px] font-bold uppercase tracking-widest text-[#111] bg-[#CCFF00] border border-black/10 rounded-full mb-4 shadow-xs">
+          <Sparkles size={12} /> Contact &amp; Consultation
+        </div>
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-[#111] mb-4">
           Get in Touch
         </h1>
-        <p className="text-gray-500 max-w-lg text-sm md:text-base leading-relaxed font-medium">
-          Whether you have a sustainable farmstay project in mind or just want to discuss green building design, we'd love to hear from you.
+        <p className="text-gray-600 max-w-2xl text-sm md:text-base leading-relaxed font-normal">
+          Whether you have a sustainable farmstay project, eco-resort master plan, or want to discuss biophilic architecture, share your project details below to schedule a tailored consultation.
         </p>
       </div>
 
-      <div className="w-full h-px bg-gray-100 mb-24 max-w-7xl mx-auto"></div>
+      <div className="w-full h-px bg-gray-100 mb-16 max-w-7xl mx-auto"></div>
 
-      {/* Form Section */}
+      {/* Form & Studio Details Section */}
       <div className="max-w-6xl mx-auto px-6 mb-32">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
           
-          {/* Left: Titles & Studio Details */}
-          <div className="flex flex-col justify-between">
-            <div>
-              <div className="inline-block px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[#111] border border-gray-200 rounded-full mb-8">
-                Get A Quote
-              </div>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight text-[#111] leading-tight max-w-sm">
-                Send us a Message
-              </h2>
-              <p className="text-gray-500 text-sm mt-4 leading-relaxed max-w-sm">
-                Fill out your project details below so we can tailor our initial feedback and schedule a consultation tailored to your vision.
-              </p>
-            </div>
-
-            {/* Quick Contact & Office Location Card */}
-            <div className="mt-12 space-y-4 pt-8 border-t border-gray-100">
-              <div className="flex items-start gap-4 p-4 rounded-2xl bg-gray-50/90 border border-gray-100">
-                <div className="p-2.5 rounded-full bg-[#D1F0AA] text-[#111] shrink-0 mt-0.5 shadow-xs">
-                  <MapPin size={18} />
+          {/* Left: Studio Info & Estimator CTA Card */}
+          <div className="flex flex-col justify-between space-y-8">
+            <div className="space-y-6">
+              {/* Not Sure? Get Instant Estimate Banner */}
+              <div className="p-6 rounded-3xl bg-gradient-to-br from-[#092E20] via-stone-900 to-black text-white shadow-xl border border-emerald-500/30 space-y-3 relative overflow-hidden">
+                <div className="flex items-center gap-2 text-[#CCFF00] font-bold text-xs uppercase tracking-wider">
+                  <Calculator size={16} /> Not Sure About Your Budget or Area?
                 </div>
-                <div>
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Studio Address</h4>
-                  <p className="text-xs sm:text-sm font-semibold text-[#111] leading-snug">
-                    2ND Floor, alisha chambers, Santram Mandir Rd, Nadiad, Gujarat 387001
-                  </p>
-                </div>
+                <h3 className="text-lg font-bold text-white">Generate an Instant Project Estimate</h3>
+                <p className="text-xs text-stone-300 leading-relaxed font-normal">
+                  Calculate itemized budget estimates for Food Forests, Farmhouses, and Eco-Resorts instantly on screen.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => window.dispatchEvent(new CustomEvent('open-estimator'))}
+                  className="inline-flex items-center gap-2 bg-[#CCFF00] text-black px-5 py-2.5 rounded-full text-xs font-bold hover:scale-105 transition-all shadow-md cursor-pointer mt-1"
+                >
+                  <Calculator size={15} /> Get Instant Estimate →
+                </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-gray-50/90 border border-gray-100">
-                  <div className="p-2 rounded-full bg-gray-200 text-[#111] shrink-0">
-                    <Phone size={15} />
+              {/* Quick Contact & Office Location Card */}
+              <div className="space-y-4 pt-4">
+                <div className="flex items-start gap-4 p-4 rounded-2xl bg-gray-50/90 border border-gray-100">
+                  <div className="p-2.5 rounded-full bg-[#D1F0AA] text-[#111] shrink-0 mt-0.5 shadow-xs">
+                    <MapPin size={18} />
                   </div>
                   <div>
-                    <h4 className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Phone</h4>
-                    <a href="tel:+917990657190" className="text-xs font-semibold text-[#111] hover:text-[#8bc34a]">
-                      +91 7990657190
-                    </a>
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Studio Address</h4>
+                    <p className="text-xs sm:text-sm font-semibold text-[#111] leading-snug">
+                      2ND Floor, alisha chambers, Santram Mandir Rd, Nadiad, Gujarat 387001
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-gray-50/90 border border-gray-100">
-                  <div className="p-2 rounded-full bg-gray-200 text-[#111] shrink-0">
-                    <Mail size={15} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-gray-50/90 border border-gray-100">
+                    <div className="p-2 rounded-full bg-gray-200 text-[#111] shrink-0">
+                      <Phone size={15} />
+                    </div>
+                    <div>
+                      <h4 className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Phone</h4>
+                      <a href="tel:+917990657190" className="text-xs font-semibold text-[#111] hover:text-[#8bc34a]">
+                        +91 7990657190
+                      </a>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Email</h4>
-                    <a href="mailto:ar.archanagavas@gmail.com" className="text-xs font-semibold text-[#111] hover:text-[#8bc34a] truncate block">
-                      ar.archanagavas@gmail.com
-                    </a>
+
+                  <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-gray-50/90 border border-gray-100">
+                    <div className="p-2 rounded-full bg-gray-200 text-[#111] shrink-0">
+                      <Mail size={15} />
+                    </div>
+                    <div>
+                      <h4 className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Email</h4>
+                      <a href="mailto:ar.archanagavas@gmail.com" className="text-xs font-semibold text-[#111] hover:text-[#8bc34a] truncate block">
+                        ar.archanagavas@gmail.com
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
