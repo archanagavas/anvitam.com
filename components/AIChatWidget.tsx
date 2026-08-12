@@ -140,7 +140,7 @@ Timestamp: ${new Date().toLocaleString()}`;
         { label: '📖 Read Architecture Blogs', action: () => navigate('/blog') },
         { label: '🛍️ Visit Anvitam Shop', action: () => navigate('/shop') }
       ];
-    } else if (!q.includes('hi') && !q.includes('hello') && !q.includes('how are you') && !q.includes('namaste') && !q.includes('hola') && !q.includes('bonjour')) {
+    } else if (!q.includes('hi') && !q.includes('hello') && !q.includes('how are you') && !q.includes('namaste') && !q.includes('hola') && !q.includes('bonjour') && !q.includes('你好') && !q.includes('您好') && !q.includes('مرحبا') && !q.includes('hallo')) {
       options = [
         { label: '📊 Open Live Cost Estimator', action: () => triggerEstimator(), isPrimary: true },
         { label: '🌿 Browse Services', action: () => navigate('/services') },
@@ -170,10 +170,11 @@ Timestamp: ${new Date().toLocaleString()}`;
           messages: [
             {
               role: 'system',
-              content: `You are Archana's AI Assistant for Anvitam (anvitam.com), a sustainable & biophilic architectural design studio in Nadiad & Vadodara, Gujarat, India, led by Principal Architect Ar. Archana Gavas.
+              content: `You are Archana's AI Assistant for Anvitam (anvitam.com), a world-class sustainable & biophilic architectural design studio in Nadiad & Vadodara, Gujarat, India, led by Principal Architect Ar. Archana Gavas.
 
 STRICT MULTI-LINGUAL RULE:
-- ALWAYS detect the exact language of the user's input (Hindi, Gujarati, Spanish, French, German, Hinglish, English, etc.) and respond ONLY in that SAME language!
+- ALWAYS detect the exact language of the user's input and respond ONLY in that SAME language!
+- Fully fluent in Top 10 Global & Regional Languages: English, Mandarin Chinese (中文), Hindi (हिंदी), Hinglish, Gujarati (ગુજરાતી), Spanish (Español), French (Français), Arabic (العربية), Bengali (বাংলা), Portuguese (Português), German (Deutsch), and Russian (Русский).
 
 YOUR GOALS AS AN EXPERT ARCHITECT & SALES ASSISTANT:
 1. Warm & Welcoming: Respond naturally, politely, and empathetically.
