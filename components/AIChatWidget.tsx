@@ -107,86 +107,97 @@ Timestamp: ${new Date().toLocaleString()}`;
     }
   };
 
-  const generateBotReply = (userQuery: string): { text: string; options?: Message['options']; link?: Message['link']; isLeadForm?: boolean } => {
+  const fetchAIReply = async (queryText: string): Promise<{ text: string; options?: Message['options'] }> => {
+    const q = queryText.toLowerCase();
+
+    // Determine relevant action chips based on intent keywords
+    let options: Message['options'] = [
+      { label: '📊 Open Live Cost Estimator', action: () => triggerEstimator(), isPrimary: true },
+      { label: '📩 Request Quick Callback', action: () => promptLeadCapture(queryText) }
+    ];
+
+    if (q.includes('workshop') || q.includes('school') || q.includes('college') || q.includes('office')) {
+      options = [
+        { label: '🏫 View Workshops Page', action: () => navigate('/workshops') },
+        { label: '📝 Request Workshop Proposal', action: () => promptLeadCapture("Campus Workshop Request"), isPrimary: true }
+      ];
+    } else if (q.includes('consult') || q.includes('book') || q.includes('call') || q.includes('talk')) {
+      options = [
+        { label: '📅 Book 1:1 Call via Topmate', action: () => window.open('https://topmate.io/archanagavas/1799075', '_blank'), isPrimary: true },
+        { label: '📩 Leave Callback Details', action: () => promptLeadCapture("1:1 Consultation Booking") }
+      ];
+    } else if (q.includes('farm') || q.includes('resort') || q.includes('land') || q.includes('forest') || q.includes('permaculture')) {
+      options = [
+        { label: '🌾 View Projects', action: () => navigate('/projects') },
+        { label: '📊 Calculate Land Estimate', action: () => triggerEstimator(), isPrimary: true }
+      ];
+    }
+
+    try {
+      // 1. Try serverless Vercel route /api/chat
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userQuery: queryText })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.reply) {
+          return { text: data.reply, options };
+        }
+      }
+
+      // 2. Direct client-side fetch to NVIDIA NIM API (Llama 3.1 70B)
+      const nvKey = import.meta.env.VITE_NVIDIA_API_KEY || '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';
+      const nvRes = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${nvKey}`
+        },
+        body: JSON.stringify({
+          model: 'meta/llama-3.1-70b-instruct',
+          messages: [
+            {
+              role: 'system',
+              content: `You are Archana's AI Assistant for Anvitam (anvitam.com), a sustainable & biophilic architectural design studio in Nadiad/Vadodara, India, led by Ar. Archana Gavas.
+Respond naturally in whatever language the visitor uses (Hinglish, Hindi, Gujarati, English, etc.).
+Keep answers concise (2-3 sentences max). Answer questions about farmhouses, eco-resorts, food forests, school/office workshops, and cost estimates.`
+            },
+            { role: 'user', content: queryText }
+          ],
+          temperature: 0.5,
+          max_tokens: 250
+        })
+      });
+
+      if (nvRes.ok) {
+        const nvData = await nvRes.json();
+        const replyText = nvData.choices?.[0]?.message?.content;
+        if (replyText) {
+          return { text: replyText, options };
+        }
+      }
+    } catch (err) {
+      console.warn('NVIDIA API call error, falling back:', err);
+    }
+
+    // Fallback response generator if network fails
+    return generateFallbackReply(queryText, options);
+  };
+
+  const generateFallbackReply = (userQuery: string, defaultOptions: Message['options']): { text: string; options?: Message['options'] } => {
     const q = userQuery.toLowerCase();
-
-    // 1. COST / ESTIMATE / PRICE
-    if (q.includes('cost') || q.includes('price') || q.includes('estimate') || q.includes('budget') || q.includes('charge') || q.includes('fee')) {
+    if (q.includes('cost') || q.includes('price') || q.includes('estimate') || q.includes('budget') || q.includes('kharch') || q.includes('rate')) {
       return {
-        text: "Our design pricing varies by land area and scope. You can generate an instant, itemized estimate using our live Cost Estimator tool!",
-        options: [
-          { label: '📊 Open Live Cost Estimator', action: () => triggerEstimator(), isPrimary: true },
-          { label: '🌿 Explore All Services', action: () => navigate('/services') },
-          { label: '📞 Book 1:1 Consultation', action: () => window.open('https://topmate.io/archanagavas/1799075', '_blank') }
-        ]
+        text: "Namaste! Hamare design pricing land area aur scope par depend karti hai. Aap hamare live Cost Estimator tool se instant estimate calculate kar sakte hain!",
+        options: defaultOptions
       };
     }
-
-    // 2. WORKSHOPS / SCHOOLS / COLLEGES / OFFICES
-    if (q.includes('workshop') || q.includes('school') || q.includes('college') || q.includes('office') || q.includes('nest') || q.includes('bird house') || q.includes('campus')) {
-      return {
-        text: "Our Nest N Nurture initiative conducts hands-on workshops for schools, colleges, and corporate offices! Offerings include Bird House Making, Space Makeovers, Upcycling, and Plastic Waste Transformation.",
-        options: [
-          { label: '🏫 View Workshops Page', action: () => navigate('/workshops') },
-          { label: '📝 Request Workshop Proposal', action: () => promptLeadCapture("Nest N Nurture Campus Workshop") },
-          { label: '📊 Estimate Workshop Budget', action: () => triggerEstimator() }
-        ]
-      };
-    }
-
-    // 3. CONSULTATION / BOOK / APPOINTMENT / TALK / CALL
-    if (q.includes('consult') || q.includes('book') || q.includes('talk') || q.includes('meet') || q.includes('call') || q.includes('appointment')) {
-      return {
-        text: "Architect Archana Gavas offers direct 1:1 online consultations for land masterplanning, resort strategy, and sustainable home building.",
-        options: [
-          { label: '📅 Book 1:1 Call via Topmate', action: () => window.open('https://topmate.io/archanagavas/1799075', '_blank'), isPrimary: true },
-          { label: '📩 Leave Callback Details', action: () => promptLeadCapture("1:1 Consultation Booking") }
-        ],
-        link: { text: "Book directly on Topmate →", url: "https://topmate.io/archanagavas/1799075" }
-      };
-    }
-
-    // 4. FARMHOUSE / ECO RESORT / PERMACULTURE
-    if (q.includes('farm') || q.includes('resort') || q.includes('land') || q.includes('forest') || q.includes('permaculture') || q.includes('garden') || q.includes('masterplan')) {
-      return {
-        text: "We specialize in end-to-end master planning for eco-resorts, bio-climatic farmhouses, and food forest restoration across India and worldwide. We integrate natural building materials with rainwater harvesting.",
-        options: [
-          { label: '🌾 View Portfolio Projects', action: () => navigate('/projects') },
-          { label: '📊 Calculate Land Estimate', action: () => triggerEstimator(), isPrimary: true },
-          { label: '📩 Request Project Callback', action: () => promptLeadCapture("Farmhouse / Eco-Resort Inquiry") }
-        ]
-      };
-    }
-
-    // 5. SHOP / DIGITAL PRODUCTS / TEMPLATES
-    if (q.includes('shop') || q.includes('buy') || q.includes('kit') || q.includes('template') || q.includes('ebook') || q.includes('digital')) {
-      return {
-        text: "Explore our digital toolkits, DIY bird house blueprints, and permaculture design templates in the Anvitam Shop!",
-        options: [
-          { label: '🛍️ Visit Anvitam Shop', action: () => navigate('/shop'), isPrimary: true }
-        ]
-      };
-    }
-
-    // 6. CONTACT / LOCATION / EMAIL / PHONE
-    if (q.includes('contact') || q.includes('location') || q.includes('address') || q.includes('phone') || q.includes('email') || q.includes('nadiad') || q.includes('vadodara')) {
-      return {
-        text: "📍 Our studio is located in Nadiad, Gujarat, India (serving clients worldwide).\n📧 Email: ar.archanagavas@gmail.com\n📞 Phone: +91 7990657190",
-        options: [
-          { label: '📩 Send Studio Inquiry', action: () => promptLeadCapture("General Contact Inquiry") },
-          { label: '🗺️ Open Contact Page', action: () => navigate('/contact') }
-        ]
-      };
-    }
-
-    // DEFAULT FALLBACK
     return {
-      text: `I'd love to help you with "${userQuery}". Would you like to estimate your project budget, explore our services, or leave your phone/email for Archana to get back to you?`,
-      options: [
-        { label: '📊 Calculate Project Cost', action: () => triggerEstimator(), isPrimary: true },
-        { label: '📩 Request Quick Callback', action: () => promptLeadCapture(userQuery) },
-        { label: '🌿 Browse Services', action: () => navigate('/services') }
-      ]
+      text: `Namaste! Aapke project query "${userQuery}" ke baare mein hamari team aapko guide kar sakti hai. Kya aap cost estimate nikalna chahte hain ya Archana se direct callback request karna chahte hain?`,
+      options: defaultOptions
     };
   };
 
@@ -197,7 +208,7 @@ Timestamp: ${new Date().toLocaleString()}`;
       {
         id: `lead-prompt-${Date.now()}`,
         sender: 'bot',
-        text: `Great! Please leave your Name and WhatsApp number / Email below so Archana's team can send you full details regarding "${interestTopic}".`,
+        text: `Bahut badiya! 🌿 Please aapna Name aur WhatsApp number / Email niche share karein taaki Archana's team aapko "${interestTopic}" ki poori jankari send kar sake.`,
         isLeadForm: true
       }
     ]);
@@ -217,10 +228,10 @@ Timestamp: ${new Date().toLocaleString()}`;
           link
         }
       ]);
-    }, 600);
+    }, 400);
   };
 
-  const handleUserSend = (textToSend?: string) => {
+  const handleUserSend = async (textToSend?: string) => {
     const text = textToSend || input.trim();
     if (!text) return;
 
@@ -233,9 +244,21 @@ Timestamp: ${new Date().toLocaleString()}`;
     setMessages(prev => [...prev, userMsg]);
     if (!textToSend) setInput('');
 
-    // Generate response
-    const botReply = generateBotReply(text);
-    addBotResponse(botReply.text, botReply.options, botReply.link);
+    setIsTyping(true);
+
+    // Fetch AI Reply using NVIDIA NIM Llama 3.1 API
+    const botReply = await fetchAIReply(text);
+    setIsTyping(false);
+
+    setMessages(prev => [
+      ...prev,
+      {
+        id: `bot-${Date.now()}`,
+        sender: 'bot',
+        text: botReply.text,
+        options: botReply.options
+      }
+    ]);
   };
 
   const handleLeadSubmit = (e: React.FormEvent) => {
