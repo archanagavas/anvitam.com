@@ -197,9 +197,12 @@ YOUR GOALS AS AN EXPERT ARCHITECT & SALES ASSISTANT:
         if (replyText) {
           return { text: replyText, options };
         }
+      } else {
+        const errText = await nvRes.text();
+        console.error('NVIDIA API Response Error:', nvRes.status, errText);
       }
     } catch (err) {
-      console.warn('NVIDIA API call error, falling back:', err);
+      console.error('NVIDIA API Network Error:', err);
     }
 
     return generateFallbackReply(queryText, options);
@@ -222,6 +225,18 @@ YOUR GOALS AS AN EXPERT ARCHITECT & SALES ASSISTANT:
       };
     }
 
+    // What do you offer / services / guide me
+    if (q.includes('offer') || q.includes('service') || q.includes('guide me') || q.includes('what do you do') || q.includes('kya karte ho')) {
+      return {
+        text: "At Anvitam, we specialize in 🌿 Sustainable & Biophilic Architecture! Our core offerings include:\n\n1. Bio-Climatic Farmhouses & Eco-Resorts\n2. Permaculture Masterplanning & Food Forests\n3. Campus Workshops & Bird House Architecture\n4. Landscape & Water Conservation Design\n\nWhich of these would you like to explore?",
+        options: defaultOptions || [
+          { label: '🌿 View All Services', action: () => navigate('/services'), isPrimary: true },
+          { label: '🌾 View Past Projects', action: () => navigate('/projects') },
+          { label: '🏫 Explore Workshops', action: () => navigate('/workshops') }
+        ]
+      };
+    }
+
     // Pricing Intent
     if (q.includes('cost') || q.includes('price') || q.includes('estimate') || q.includes('budget') || q.includes('kharch') || q.includes('rate')) {
       return {
@@ -233,7 +248,7 @@ YOUR GOALS AS AN EXPERT ARCHITECT & SALES ASSISTANT:
     }
 
     return {
-      text: `Namaste! I'd love to help you with that. Tell me a bit more about your project vision or what you'd like to explore!`,
+      text: `Namaste! We offer Bio-climatic Farmhouses, Eco-Resorts, Permaculture Planning, and Hands-on Workshops. How can Ar. Archana Gavas & team assist you with your land or project?`,
       options: defaultOptions
     };
   };
