@@ -38,21 +38,14 @@ async function sendLeadEmailNotification(name: string, email: string, message: s
   }
 }
 
-const ANVITAM_AI_SYSTEM_PROMPT = `CRITICAL RULE #1 — LANGUAGE DETECTION (FOLLOW BEFORE ANYTHING ELSE):
-Look at the user's message right now. Identify what language it is written in. Respond EXCLUSIVELY in that same language.
-- If user writes in Hindi → respond in Hindi
-- If user writes in Hinglish → respond in Hinglish  
-- If user writes in Gujarati → respond in Gujarati
-- If user writes in Spanish → respond in Spanish
-- If user writes in French → respond in French
-- If user writes in Arabic → respond in Arabic
-- If user writes in Mandarin Chinese → respond in Chinese
-- If user writes in Bengali → respond in Bengali
-- If user writes in Portuguese → respond in Portuguese
-- If user writes in German → respond in German
-- If user writes in Russian → respond in Russian
-- If user writes in English → respond in English
-NEVER respond in English if the user wrote in another language. This rule overrides everything else.
+const ANVITAM_AI_SYSTEM_PROMPT = `CRITICAL RULE #1 — LANGUAGE MATCHING (MATCH USER INPUT LANGUAGE EXACTLY):
+Identify the language of the user's LATEST message and reply in that EXACT language:
+- If user input is in English (e.g. "hello", "hi", "how are you doing", "what do you offer?") → ALWAYS respond in English.
+- If user input is in Hindi (Devanagari script) → respond in Hindi.
+- If user input is in Hinglish (Roman script Hindi like "kaise ho", "kya karte ho", "padhna hai") → respond in Hinglish.
+- If user input is in Gujarati (Gujarati script) → respond in Gujarati.
+- If user input is in Spanish, French, German, Mandarin, etc. → respond in that exact language.
+STRICT REQUIREMENT: NEVER default to Gujarati or Hindi when the user writes in English. Default to English for English inputs!
 
 CRITICAL RULE #2 — FOLLOW THE CONVERSATION CONTEXT:
 Read the entire conversation history. Never forget what the user has already told you. Build on what they said. If they are confused or struggling, be patient, warm, and clarify gently. Never reset or repeat yourself.
@@ -178,27 +171,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           }))
       : [];
 
-    // ── MULTI-MODEL CASCADE & AUTO-FALLBACK ROUTER ──
+    // ── HIGH-SPEED MODEL ROUTING & CASCADE ──
+    // Default to meta/llama-3.1-8b-instruct for lightning fast responses (1.5 seconds)
+    // Only route to 70B models if user asks a long, complex technical question (> 140 chars).
     const qLower = userQuery.toLowerCase().trim();
-    const isGreetingOnly =
-      qLower.length < 20 &&
-      /^(hi|hello|hey|namaste|hola|bonjour|kaise ho|hallo|good morning|good evening)$/i.test(qLower);
+    const isComplexTechnical =
+      qLower.length > 140 &&
+      /permaculture|masterplan|agroforestry|bio-climatic|zoning|water harvesting|soil regeneration|cost breakdown|financial/i.test(qLower);
 
-    // Tiered model list for maximum intelligence, speed & high availability
-    const modelCascade = isGreetingOnly
+    const modelCascade = isComplexTechnical
       ? [
-          'meta/llama-3.1-8b-instruct',
           'nvidia/llama-3.1-nemotron-70b-instruct',
-          'meta/llama-3.3-70b-instruct'
+          'meta/llama-3.1-8b-instruct'
         ]
       : [
-          'meta/llama-3.3-70b-instruct',             // #1 SOTA Llama 3.3 70B
-          'nvidia/llama-3.1-nemotron-70b-instruct',   // #2 NVIDIA High-Speed Nemotron 70B
-          'meta/llama-3.1-70b-instruct',             // #3 Llama 3.1 70B
-          'meta/llama-3.1-8b-instruct'              // #4 Fast 8B Backup
+          'meta/llama-3.1-8b-instruct',
+          'nvidia/llama-3.1-nemotron-70b-instruct'
         ];
 
-    const maxTokens = isGreetingOnly ? 300 : 750; // Increased token limit so detailed replies never cut off!
+    const maxTokens = isComplexTechnical ? 600 : 450;
 
     let nvRes: Response | null = null;
 
