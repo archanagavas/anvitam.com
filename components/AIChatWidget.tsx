@@ -122,6 +122,26 @@ Timestamp: ${new Date().toLocaleString()}`;
         { label: '📩 Leave Callback Details', action: () => promptLeadCapture("Budget & Cost Estimate Inquiry") }
       ];
     } else if (
+      q.includes('blog') || q.includes('article') || q.includes('read') || q.includes('guide') ||
+      q.includes('learn') || q.includes('padha') || q.includes('padhne') || q.includes('padna') ||
+      q.includes('post') || q.includes('khabar')
+    ) {
+      options = [
+        { label: '📖 Read Architecture Blogs', action: () => navigate('/blog'), isPrimary: true },
+        { label: '🌿 Explore Our Services', action: () => navigate('/services') },
+        { label: '🌾 View Portfolio Projects', action: () => navigate('/projects') }
+      ];
+    } else if (
+      q.includes('service') || q.includes('servic') || q.includes('offer') || q.includes('kya karte') ||
+      q.includes('jankari') || q.includes('info') || q.includes('detail') || q.includes('page') ||
+      q.includes('link') || q.includes('website') || q.includes('padh') || q.includes('know more')
+    ) {
+      options = [
+        { label: '🌿 Explore Services', action: () => navigate('/services'), isPrimary: true },
+        { label: '📖 Read Architecture Blogs', action: () => navigate('/blog') },
+        { label: '🌾 View Portfolio Projects', action: () => navigate('/projects') }
+      ];
+    } else if (
       q.includes('unsure') || q.includes('not sure') || q.includes('confus') || q.includes('dont know') || q.includes("don't know") ||
       q.includes('not clear') || q.includes('help me') || q.includes('kya karein') || q.includes('samajh nahi') ||
       q.includes('pata nahi') || q.includes('kuch samajh') || q.includes('lost') || q.includes('overwhelm')
@@ -130,7 +150,7 @@ Timestamp: ${new Date().toLocaleString()}`;
       options = [
         { label: '📞 Book Direct Call with Archana', action: () => window.open(BOOK_CALL_URL, '_blank'), isPrimary: true },
         { label: '📊 Try Cost Estimator', action: () => triggerEstimator() },
-        { label: '📩 Leave Your Details', action: () => promptLeadCapture("General Inquiry") }
+        { label: '🌿 Explore Services', action: () => navigate('/services') }
       ];
     } else if (q.includes('workshop') || q.includes('school') || q.includes('college') || q.includes('office') || q.includes('nest') || q.includes('taller') || q.includes('atelier')) {
       options = [
@@ -142,26 +162,21 @@ Timestamp: ${new Date().toLocaleString()}`;
         { label: '📅 Book 1:1 Call with Archana', action: () => window.open(BOOK_CALL_URL, '_blank'), isPrimary: true },
         { label: '📩 Leave Callback Details', action: () => promptLeadCapture("1:1 Consultation Booking") }
       ];
-    } else if (q.includes('farm') || q.includes('resort') || q.includes('land') || q.includes('forest') || q.includes('permaculture') || q.includes('house') || q.includes('service') || q.includes('project') || q.includes('design')) {
+    } else if (q.includes('farm') || q.includes('resort') || q.includes('land') || q.includes('forest') || q.includes('permaculture') || q.includes('house') || q.includes('project') || q.includes('design')) {
       options = [
-        { label: '🌿 Explore Services', action: () => navigate('/services') },
+        { label: '🌿 Explore Services', action: () => navigate('/services'), isPrimary: true },
         { label: '🌾 View Portfolio Projects', action: () => navigate('/projects') },
-        { label: '📊 Calculate Land Cost', action: () => triggerEstimator(), isPrimary: true }
-      ];
-    } else if (q.includes('blog') || q.includes('article') || q.includes('read') || q.includes('guide') || q.includes('learn')) {
-      options = [
-        { label: '📖 Read Architecture Blogs', action: () => navigate('/blog') },
-        { label: '🛍️ Visit Anvitam Shop', action: () => navigate('/shop') }
+        { label: '📊 Calculate Land Cost', action: () => triggerEstimator() }
       ];
     } else if (
       !q.includes('hi') && !q.includes('hello') && !q.includes('how are you') &&
       !q.includes('namaste') && !q.includes('hola') && !q.includes('bonjour') &&
-      !q.includes('你好') && !q.includes('您好') && !q.includes('مرحبا') && !q.includes('hallo') &&
-      q.length > 15
+      !q.includes('你好') && !q.includes('您好') && !q.includes('مرحبا') && !q.includes('hallo')
     ) {
-      // Generic non-greeting with some substance — show minimal contextual options
+      // General queries — show useful navigation buttons
       options = [
-        { label: '📊 Cost Estimator', action: () => triggerEstimator(), isPrimary: true },
+        { label: '🌿 Explore Services', action: () => navigate('/services'), isPrimary: true },
+        { label: '📖 Read Blogs', action: () => navigate('/blog') },
         { label: '📞 Book Call with Archana', action: () => window.open(BOOK_CALL_URL, '_blank') }
       ];
     }
