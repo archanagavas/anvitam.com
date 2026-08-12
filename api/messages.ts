@@ -178,6 +178,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           }))
       : [];
 
+    // ── DYNAMIC MODEL ROUTING & TOKEN ALLOCATION ──
+    // Simple greetings -> Llama 3.1 8B (fast, lightweight)
+    // Detailed questions -> Llama 3.3 70B (high intelligence, deep knowledge from system prompt)
+    const qLower = userQuery.toLowerCase().trim();
+    const isGreetingOnly =
+      qLower.length < 20 &&
+      /^(hi|hello|hey|namaste|hola|bonjour|kaise ho|hallo|good morning|good evening)$/i.test(qLower);
+
+    const selectedModel = isGreetingOnly
+      ? 'meta/llama-3.1-8b-instruct'
+      : 'meta/llama-3.3-70b-instruct';
+
+    const maxTokens = isGreetingOnly ? 300 : 750; // Increased token limit so detailed replies never cut off!
+
     try {
       const nvRes = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
         method: 'POST',
@@ -186,15 +200,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           'Authorization': `Bearer ${nvKey}`
         },
         body: JSON.stringify({
-          model: 'meta/llama-3.1-8b-instruct', // 8B = much faster than 70B
+          model: selectedModel,
           messages: [
             { role: 'system', content: ANVITAM_AI_SYSTEM_PROMPT },
             ...formattedHistory,
             { role: 'user', content: userQuery }
           ],
           temperature: 0.65,
-          max_tokens: 250,   // short focused replies
-          stream: true       // SSE streaming — user sees words appear immediately
+          max_tokens: maxTokens,
+          stream: true
         })
       });
 
