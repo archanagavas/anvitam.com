@@ -758,7 +758,7 @@ const Home: React.FC = () => {
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-[#111]">Learn before you build.</h2>
               </div>
               <Link to="/blog">
-                <FlowButton text="Explore All Entries" />
+                <FlowButton text="Explore All Chapters" />
               </Link>
             </div>
           </FadeUp>
