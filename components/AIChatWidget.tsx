@@ -113,20 +113,33 @@ Timestamp: ${new Date().toLocaleString()}`;
     // Determine relevant action chips based on intent keywords & context
     let options: Message['options'] = undefined;
 
-    if (q.includes('cost') || q.includes('price') || q.includes('estimate') || q.includes('budget') || q.includes('kharch') || q.includes('rate') || q.includes('unsure') || q.includes('not sure') || q.includes('paisa') || q.includes('presupuesto') || q.includes('tarif')) {
+    const BOOK_CALL_URL = 'https://topmate.io/archanagavas/1799075?utm_source=estimator&utm_campaign=estimate_lead';
+
+    if (q.includes('cost') || q.includes('price') || q.includes('estimate') || q.includes('budget') || q.includes('kharch') || q.includes('rate') || q.includes('paisa') || q.includes('presupuesto') || q.includes('tarif')) {
       options = [
         { label: '📊 Open Live Cost Estimator', action: () => triggerEstimator(), isPrimary: true },
-        { label: '📞 Book 1:1 Consultation', action: () => window.open('https://topmate.io/archanagavas/1799075', '_blank') },
+        { label: '📞 Book Call with Archana', action: () => window.open(BOOK_CALL_URL, '_blank') },
         { label: '📩 Leave Callback Details', action: () => promptLeadCapture("Budget & Cost Estimate Inquiry") }
+      ];
+    } else if (
+      q.includes('unsure') || q.includes('not sure') || q.includes('confus') || q.includes('dont know') || q.includes("don't know") ||
+      q.includes('not clear') || q.includes('help me') || q.includes('kya karein') || q.includes('samajh nahi') ||
+      q.includes('pata nahi') || q.includes('kuch samajh') || q.includes('lost') || q.includes('overwhelm')
+    ) {
+      // User is confused or unsure — offer direct call with Archana
+      options = [
+        { label: '📞 Book Direct Call with Archana', action: () => window.open(BOOK_CALL_URL, '_blank'), isPrimary: true },
+        { label: '📊 Try Cost Estimator', action: () => triggerEstimator() },
+        { label: '📩 Leave Your Details', action: () => promptLeadCapture("General Inquiry") }
       ];
     } else if (q.includes('workshop') || q.includes('school') || q.includes('college') || q.includes('office') || q.includes('nest') || q.includes('taller') || q.includes('atelier')) {
       options = [
-        { label: '🏫 View Workshops Page', action: () => navigate('/workshops') },
-        { label: '📝 Request Workshop Proposal', action: () => promptLeadCapture("Campus Workshop Request"), isPrimary: true }
+        { label: '🏫 View Workshops Page', action: () => navigate('/workshops'), isPrimary: true },
+        { label: '📝 Request Workshop Proposal', action: () => promptLeadCapture("Campus Workshop Request") }
       ];
-    } else if (q.includes('consult') || q.includes('book') || q.includes('call') || q.includes('talk') || q.includes('meet') || q.includes('appointment')) {
+    } else if (q.includes('consult') || q.includes('book') || q.includes('call') || q.includes('talk') || q.includes('meet') || q.includes('appointment') || q.includes('hire') || q.includes('start')) {
       options = [
-        { label: '📅 Book 1:1 Call via Topmate', action: () => window.open('https://topmate.io/archanagavas/1799075', '_blank'), isPrimary: true },
+        { label: '📅 Book 1:1 Call with Archana', action: () => window.open(BOOK_CALL_URL, '_blank'), isPrimary: true },
         { label: '📩 Leave Callback Details', action: () => promptLeadCapture("1:1 Consultation Booking") }
       ];
     } else if (q.includes('farm') || q.includes('resort') || q.includes('land') || q.includes('forest') || q.includes('permaculture') || q.includes('house') || q.includes('service') || q.includes('project') || q.includes('design')) {
@@ -140,11 +153,16 @@ Timestamp: ${new Date().toLocaleString()}`;
         { label: '📖 Read Architecture Blogs', action: () => navigate('/blog') },
         { label: '🛍️ Visit Anvitam Shop', action: () => navigate('/shop') }
       ];
-    } else if (!q.includes('hi') && !q.includes('hello') && !q.includes('how are you') && !q.includes('namaste') && !q.includes('hola') && !q.includes('bonjour') && !q.includes('你好') && !q.includes('您好') && !q.includes('مرحبا') && !q.includes('hallo')) {
+    } else if (
+      !q.includes('hi') && !q.includes('hello') && !q.includes('how are you') &&
+      !q.includes('namaste') && !q.includes('hola') && !q.includes('bonjour') &&
+      !q.includes('你好') && !q.includes('您好') && !q.includes('مرحبا') && !q.includes('hallo') &&
+      q.length > 15
+    ) {
+      // Generic non-greeting with some substance — show minimal contextual options
       options = [
-        { label: '📊 Open Live Cost Estimator', action: () => triggerEstimator(), isPrimary: true },
-        { label: '🌿 Browse Services', action: () => navigate('/services') },
-        { label: '📩 Request Quick Callback', action: () => promptLeadCapture(queryText) }
+        { label: '📊 Cost Estimator', action: () => triggerEstimator(), isPrimary: true },
+        { label: '📞 Book Call with Archana', action: () => window.open(BOOK_CALL_URL, '_blank') }
       ];
     }
 
@@ -260,12 +278,18 @@ Timestamp: ${new Date().toLocaleString()}`;
       sender: 'user',
       text
     };
-    setMessages(prev => [...prev, userMsg]);
+
+    // Strip options from ALL previous bot messages before appending new reply
+    // so action chips only appear on the LATEST message, never repeated
+    setMessages(prev => [
+      ...prev.map(m => m.sender === 'bot' && m.options ? { ...m, options: undefined } : m),
+      userMsg
+    ]);
     if (!textToSend) setInput('');
 
     setIsTyping(true);
 
-    // Fetch AI Reply using NVIDIA NIM Llama 3.1 API
+    // Fetch AI Reply via server-side NVIDIA NIM proxy
     const botReply = await fetchAIReply(text, messages);
     setIsTyping(false);
 
