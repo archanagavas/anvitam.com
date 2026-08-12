@@ -169,6 +169,64 @@ const compressImage = (file: File): Promise<string> => {
   });
 };
 
+// Compress inline data:image base64 images inside HTML to fit within Firestore's 1MB field limit
+const compressInlineHtmlImages = async (html: string): Promise<string> => {
+  if (!html || !html.includes('data:image/')) return html;
+
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const imgs = Array.from(doc.querySelectorAll('img[src^="data:image/"]'));
+
+    if (imgs.length === 0) return html;
+
+    for (const imgEl of imgs) {
+      const src = imgEl.getAttribute('src');
+      if (!src || src.length < 30000) continue; // Skip images already compressed under 30KB
+
+      try {
+        const compressed = await new Promise<string>((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let w = img.width;
+            let h = img.height;
+            const MAX_DIM = 900; // Optimal max dimension for embedded blog body images
+            if (w > MAX_DIM || h > MAX_DIM) {
+              if (w > h) {
+                h = Math.round((h * MAX_DIM) / w);
+                w = MAX_DIM;
+              } else {
+                w = Math.round((w * MAX_DIM) / h);
+                h = MAX_DIM;
+              }
+            }
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, w, h);
+              resolve(canvas.toDataURL('image/jpeg', 0.72)); // 72% JPEG quality is compact and crisp
+            } else {
+              resolve(src);
+            }
+          };
+          img.onerror = () => resolve(src);
+          img.src = src;
+        });
+        imgEl.setAttribute('src', compressed);
+      } catch (e) {
+        console.warn('[compressInlineHtmlImages] Failed to compress image:', e);
+      }
+    }
+
+    return doc.body.innerHTML;
+  } catch (err) {
+    console.error('[compressInlineHtmlImages] Failed to parse HTML:', err);
+    return html;
+  }
+};
+
 // ── Blog Editor Component ─────────────────────────────────────────────
 interface BlogEditorProps {
   initial?: BlogPost | null;
@@ -416,7 +474,19 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initial, onSave, onCancel }) =>
       if (overrideStatus) setStatus(overrideStatus);
       const rawContent = quillRef.current ? quillRef.current.root.innerHTML : (initial?.content || '');
       // Always sanitize before storing
-      const content = DOMPurify.sanitize(rawContent, RICH_TEXT_CONFIG) as string;
+      let content = DOMPurify.sanitize(rawContent, RICH_TEXT_CONFIG) as string;
+
+      // Automatically compress any pasted inline base64 images inside content HTML
+      content = await compressInlineHtmlImages(content);
+
+      // Check final byte size against Firestore's 1MB limit
+      const contentBytes = new Blob([content]).size;
+      if (contentBytes > 950000) {
+        throw new Error(
+          `Article content is too large (${(contentBytes / 1024 / 1024).toFixed(2)} MB). Firestore limits documents to 1MB. Please remove some images or use web URLs for body images.`
+        );
+      }
+
       const strippedText = content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
       const defaultExcerpt = strippedText.substring(0, 180) + (strippedText.length > 180 ? '...' : '');
 
