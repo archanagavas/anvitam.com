@@ -110,29 +110,41 @@ Timestamp: ${new Date().toLocaleString()}`;
   const fetchAIReply = async (queryText: string, history: Message[]): Promise<{ text: string; options?: Message['options'] }> => {
     const q = queryText.toLowerCase();
 
-    // Determine relevant action chips ONLY when there is clear intent
+    // Determine relevant action chips based on intent keywords & context
     let options: Message['options'] = undefined;
 
-    if (q.includes('cost') || q.includes('price') || q.includes('estimate') || q.includes('budget') || q.includes('kharch') || q.includes('rate')) {
+    if (q.includes('cost') || q.includes('price') || q.includes('estimate') || q.includes('budget') || q.includes('kharch') || q.includes('rate') || q.includes('unsure') || q.includes('not sure') || q.includes('paisa') || q.includes('presupuesto') || q.includes('tarif')) {
       options = [
         { label: '📊 Open Live Cost Estimator', action: () => triggerEstimator(), isPrimary: true },
-        { label: '📞 Book 1:1 Consultation', action: () => window.open('https://topmate.io/archanagavas/1799075', '_blank') }
+        { label: '📞 Book 1:1 Consultation', action: () => window.open('https://topmate.io/archanagavas/1799075', '_blank') },
+        { label: '📩 Leave Callback Details', action: () => promptLeadCapture("Budget & Cost Estimate Inquiry") }
       ];
-    } else if (q.includes('workshop') || q.includes('school') || q.includes('college') || q.includes('office') || q.includes('nest')) {
+    } else if (q.includes('workshop') || q.includes('school') || q.includes('college') || q.includes('office') || q.includes('nest') || q.includes('taller') || q.includes('atelier')) {
       options = [
         { label: '🏫 View Workshops Page', action: () => navigate('/workshops') },
         { label: '📝 Request Workshop Proposal', action: () => promptLeadCapture("Campus Workshop Request"), isPrimary: true }
       ];
-    } else if (q.includes('consult') || q.includes('book') || q.includes('call') || q.includes('talk') || q.includes('meet')) {
+    } else if (q.includes('consult') || q.includes('book') || q.includes('call') || q.includes('talk') || q.includes('meet') || q.includes('appointment')) {
       options = [
         { label: '📅 Book 1:1 Call via Topmate', action: () => window.open('https://topmate.io/archanagavas/1799075', '_blank'), isPrimary: true },
         { label: '📩 Leave Callback Details', action: () => promptLeadCapture("1:1 Consultation Booking") }
       ];
-    } else if (q.includes('farm') || q.includes('resort') || q.includes('land') || q.includes('forest') || q.includes('permaculture') || q.includes('house')) {
+    } else if (q.includes('farm') || q.includes('resort') || q.includes('land') || q.includes('forest') || q.includes('permaculture') || q.includes('house') || q.includes('service') || q.includes('project') || q.includes('design')) {
       options = [
-        { label: '🌾 View Projects', action: () => navigate('/projects') },
-        { label: '📊 Calculate Land Estimate', action: () => triggerEstimator(), isPrimary: true },
-        { label: '📩 Request Callback', action: () => promptLeadCapture("Farmhouse / Resort Inquiry") }
+        { label: '🌿 Explore Services', action: () => navigate('/services') },
+        { label: '🌾 View Portfolio Projects', action: () => navigate('/projects') },
+        { label: '📊 Calculate Land Cost', action: () => triggerEstimator(), isPrimary: true }
+      ];
+    } else if (q.includes('blog') || q.includes('article') || q.includes('read') || q.includes('guide') || q.includes('learn')) {
+      options = [
+        { label: '📖 Read Architecture Blogs', action: () => navigate('/blog') },
+        { label: '🛍️ Visit Anvitam Shop', action: () => navigate('/shop') }
+      ];
+    } else if (!q.includes('hi') && !q.includes('hello') && !q.includes('how are you') && !q.includes('namaste') && !q.includes('hola') && !q.includes('bonjour')) {
+      options = [
+        { label: '📊 Open Live Cost Estimator', action: () => triggerEstimator(), isPrimary: true },
+        { label: '🌿 Browse Services', action: () => navigate('/services') },
+        { label: '📩 Request Quick Callback', action: () => promptLeadCapture(queryText) }
       ];
     }
 
@@ -158,25 +170,23 @@ Timestamp: ${new Date().toLocaleString()}`;
           messages: [
             {
               role: 'system',
-              content: `You are Archana's AI Assistant for Anvitam (anvitam.com), a sustainable & biophilic architectural design studio in Nadiad/Vadodara, India, led by Ar. Archana Gavas.
+              content: `You are Archana's AI Assistant for Anvitam (anvitam.com), a sustainable & biophilic architectural design studio in Nadiad & Vadodara, Gujarat, India, led by Principal Architect Ar. Archana Gavas.
 
-CONVERSATIONAL RULES:
-1. Speak naturally, warmly, and empathetically in whatever language or mix of languages the user uses (Hinglish, English, Hindi, Gujarati, etc.).
-2. DO NOT aggressively push sales, cost estimates, or bookings on casual greetings or general questions.
-3. If the user asks casual questions like "how are you", "who are you", "hi", "hello", answer warmly and conversationally first, like a real human friend or architect assistant!
-4. First listen, converse, and understand the user's thoughts before suggesting services or tools.
-5. Keep answers concise (2-4 sentences max), clear, and natural.
+STRICT MULTI-LINGUAL RULE:
+- ALWAYS detect the exact language of the user's input (Hindi, Gujarati, Spanish, French, German, Hinglish, English, etc.) and respond ONLY in that SAME language!
 
-KNOWLEDGE SUMMARY:
-- Services: Bio-climatic Farmhouses, Eco-Resorts, Permaculture & Food Forests, Rainwater Harvesting, Landscape Design.
-- Nest N Nurture Workshops: Bird House Architecture, Campus Makeovers, Waste Upcycling for schools, colleges & offices.
-- Studio: Nadiad, Gujarat. Phone: +91 7990657190. Email: ar.archanagavas@gmail.com.`
+YOUR GOALS AS AN EXPERT ARCHITECT & SALES ASSISTANT:
+1. Warm & Welcoming: Respond naturally, politely, and empathetically.
+2. Educate & Guide: Explain services (Bio-climatic Farmhouses, Eco-Resorts, Food Forests, Permaculture Masterplanning, Rainwater Harvesting, Nest N Nurture Workshops) and suggest checking our site pages (/services, /projects, /workshops, /blog, /shop).
+3. Help Unsure Users: If the user is unsure about their budget, site area, or project scope, suggest trying our instant on-screen Live Cost Estimator tool!
+4. Book Consultations & Generate Leads: Encourage interested clients to book a 1:1 consultation with Archana or share their contact info (Name & WhatsApp/Email) for a callback.
+5. Concise & Clear: Keep responses under 3-4 sentences maximum.`
             },
             ...formattedHistory,
             { role: 'user', content: queryText }
           ],
           temperature: 0.6,
-          max_tokens: 300
+          max_tokens: 320
         })
       });
 
