@@ -80,18 +80,20 @@ try {
 
 // ── Collection Helpers ────────────────────────────────────────────────────────
 
-/** Get all documents from a collection, sorted by created_at */
+/** Get all documents from a collection, sorted by created_at or date */
 export async function getCollection(name: string, orderDir: 'asc' | 'desc' = 'desc'): Promise<any[]> {
   const db = getDb();
   try {
-    const snap = await db.collection(name).orderBy('created_at', orderDir).get();
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const snap = await db.collection(name).get();
+    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    docs.sort((a: any, b: any) => {
+      const timeA = new Date(a.created_at || a.updated_at || a.date || 0).getTime();
+      const timeB = new Date(b.created_at || b.updated_at || b.date || 0).getTime();
+      return orderDir === 'desc' ? timeB - timeA : timeA - timeB;
+    });
+    return docs;
   } catch (err: any) {
-    // If the collection doesn't exist yet, return empty array
-    if (err?.code === 5 || err?.message?.includes('no matching index')) {
-      const snap = await db.collection(name).get();
-      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    }
+    console.error(`[db] Failed to fetch collection ${name}:`, err);
     throw err;
   }
 }

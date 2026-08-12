@@ -219,7 +219,8 @@ const repairProject = (p: Project, def?: Project): Project => {
 const repairBlog = (b: BlogPost, def?: BlogPost): BlogPost => ({
   ...def,
   ...b,
-  image: b.image || def?.image || ''
+  image: b.image || def?.image || '',
+  status: b.status || def?.status || 'published'
 });
 
 export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -451,40 +452,42 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   const addBlog = async (blog: BlogPost) => {
     setBlogs(prev => [blog, ...prev]);
     const token = getAuthToken();
-    if (token) {
-      try {
-        const res = await fetch('/api/blogs', {
-          method: 'POST',
-          headers: authHeaders(),
-          body: JSON.stringify(blog),
-        });
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          console.error('[ContentContext] DB blog save failed:', res.status, err);
-        } else {
-          console.log('[ContentContext] ✅ Blog saved to DB:', blog.title);
-        }
-      } catch (err) {
-        console.error('[ContentContext] Failed to save blog to DB:', err);
-      }
-    } else {
+    if (!token) {
       console.warn('[ContentContext] No auth token — blog saved to localStorage only');
+      return;
+    }
+    const res = await fetch('/api/blogs', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify(blog),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      console.error('[ContentContext] DB blog save failed:', res.status, err);
+      throw new Error(err.error || `Failed to save blog to database (${res.status})`);
+    } else {
+      console.log('[ContentContext] ✅ Blog saved to DB:', blog.title);
     }
   };
 
   const updateBlog = async (blog: BlogPost) => {
     setBlogs(prev => prev.map(b => b.id === blog.id ? blog : b));
     const token = getAuthToken();
-    if (token) {
-      try {
-        await fetch(`/api/blogs/${blog.id}`, {
-          method: 'PUT',
-          headers: authHeaders(),
-          body: JSON.stringify(blog),
-        });
-      } catch (err) {
-        console.error('[ContentContext] Failed to update blog in DB:', err);
-      }
+    if (!token) {
+      console.warn('[ContentContext] No auth token — blog updated in localStorage only');
+      return;
+    }
+    const res = await fetch(`/api/blogs/${blog.id}`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify(blog),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      console.error('[ContentContext] DB blog update failed:', res.status, err);
+      throw new Error(err.error || `Failed to update blog in database (${res.status})`);
+    } else {
+      console.log('[ContentContext] ✅ Blog updated in DB:', blog.title);
     }
   };
 

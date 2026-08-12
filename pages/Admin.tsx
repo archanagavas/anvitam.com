@@ -1607,16 +1607,24 @@ const Admin: React.FC = () => {
     setNewItemDescription(''); setNewItemPrice(''); setNewItemLink(''); setNewItemIcon('PenTool');
   };
 
-  const handleBlogSave = (post: BlogPost, status: 'published' | 'draft') => {
-    if (editingBlog) {
-      updateBlog({ ...post, status });
-      showToast('Blog post updated successfully!');
-    } else {
-      addBlog({ ...post, status });
-      showToast('Blog post created successfully!');
+  const handleBlogSave = async (post: BlogPost, status: 'published' | 'draft') => {
+    const postWithStatus = { ...post, status };
+    try {
+      if (editingBlog) {
+        await updateBlog(postWithStatus);
+        showToast('Blog post updated and synced to database!');
+      } else {
+        await addBlog(postWithStatus);
+        showToast('Blog post published and synced to database!');
+      }
+      setBlogView('list');
+      setEditingBlog(null);
+    } catch (err: any) {
+      console.error('[Admin] Blog save failed:', err);
+      showToast(`⚠️ Saved locally, but DB sync failed: ${err.message || 'Check connection'}`);
+      setBlogView('list');
+      setEditingBlog(null);
     }
-    setBlogView('list');
-    setEditingBlog(null);
   };
 
   const handleProjectSave = (project: Project) => {

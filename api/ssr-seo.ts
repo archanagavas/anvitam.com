@@ -494,7 +494,7 @@ function generateSchemas(section: string, idOrSlug: string, data: { blog?: any, 
   return schemas;
 }
 
-function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, project?: any, service?: any, workshop?: any, allProjects?: any[], allServices?: any[] }): string {
+function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, project?: any, service?: any, workshop?: any, allProjects?: any[], allServices?: any[], allBlogs?: any[] }): string {
   const headerHtml = `
     <header style="padding: 20px; background-color: #03160E; color: #FAFAFA; display: flex; justify-content: space-between; align-items: center; font-family: 'Playfair Display', serif;">
       <div style="font-size: 24px; font-weight: bold;"><a href="/" style="color: #CCFF00; text-decoration: none;">Anvitam</a></div>
@@ -577,12 +577,13 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
         </article>
       `;
     } else {
+      const blogList = (data.allBlogs && data.allBlogs.length > 0 ? data.allBlogs : INITIAL_BLOGS).filter((b: any) => b.status !== 'draft');
       bodyHtml = `
         <main style="max-width: 1000px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', sans-serif;">
           <h1 style="font-family: 'Playfair Display', serif; font-size: 36px; color: #03160E; margin-bottom: 20px;">Blog & Insights</h1>
           <p style="color: #666; font-size: 18px; margin-bottom: 40px;">Deep dives, research, and project stories exploring sustainable materials, biophilic design, and ecological landscaping.</p>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
-            ${INITIAL_BLOGS.map(b => `
+            ${blogList.map((b: any) => `
               <div style="background: #FFF; border: 1px solid #E5E7EB; border-radius: 8px; overflow: hidden; padding: 20px;">
                 <h2 style="font-family: 'Playfair Display', serif; font-size: 22px; margin-top: 0;"><a href="/blog/${b.slug || b.id}" style="color: #03160E; text-decoration: none;">${b.title}</a></h2>
                 <p style="color: #888; font-size: 12px;">${b.date}</p>
@@ -1288,11 +1289,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let workshop: any = null;
   let allProjects: any[] | undefined;
   let allServices: any[] | undefined;
+  let allBlogs: any[] | undefined;
 
-  if (isDbConfigured && (!section || section === 'projects' || section === 'services')) {
+  if (isDbConfigured && (!section || section === 'projects' || section === 'services' || section === 'blog')) {
     try {
       allProjects = await getCollection('projects', 'desc');
       allServices = await getCollection('services', 'asc');
+      allBlogs = await getCollection('blogs', 'desc');
     } catch (e) {}
   }
 
@@ -1654,7 +1657,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // --- Inject Semantic Pre-Rendered HTML inside <div id="root"> ---
-  const ssrHtml = generateSsrHtml(section, idOrSlug, { blog, project, service, workshop, allProjects, allServices });
+  const ssrHtml = generateSsrHtml(section, idOrSlug, { blog, project, service, workshop, allProjects, allServices, allBlogs });
   template = template.replace(
     /<div id="root">(?:[\s\S]*?<\/noscript>\s*)?<\/div>/i,
     `<div id="root">${ssrHtml}</div>`

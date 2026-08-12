@@ -55,28 +55,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const token = extractToken(req.headers.authorization);
   if (!token || !verifyAdminToken(token)) return res.status(401).json({ error: 'Unauthorized' });
 
+  const b = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body ?? {});
+
   if (req.method === 'POST') {
-    const b = req.body ?? {};
     const targetId = id || b.id;
     if (!targetId) return res.status(400).json({ error: 'Missing blog ID' });
     try {
       await upsertDoc('blogs', targetId, buildBlogDoc(b, targetId));
-    } catch (err) { console.warn('[blogs API] upsert failed:', err); }
-    return res.status(201).json({ success: true });
+      return res.status(201).json({ success: true });
+    } catch (err: any) {
+      console.error('[blogs API] upsert failed:', err);
+      return res.status(500).json({ error: err?.message || 'Database save failed' });
+    }
   }
 
   if (req.method === 'PUT') {
-    if (!id) return res.status(400).json({ error: 'Missing blog ID' });
+    const targetId = id || b.id;
+    if (!targetId) return res.status(400).json({ error: 'Missing blog ID' });
     try {
-      await upsertDoc('blogs', id, buildBlogDoc(req.body ?? {}, id));
-    } catch (err) { console.warn('[blogs API] update failed:', err); }
-    return res.status(200).json({ success: true });
+      await upsertDoc('blogs', targetId, buildBlogDoc(b, targetId));
+      return res.status(200).json({ success: true });
+    } catch (err: any) {
+      console.error('[blogs API] update failed:', err);
+      return res.status(500).json({ error: err?.message || 'Database update failed' });
+    }
   }
 
   if (req.method === 'DELETE') {
     if (!id) return res.status(400).json({ error: 'Missing blog ID' });
-    try { await deleteDoc('blogs', id); } catch (err) { console.warn('[blogs API] delete failed:', err); }
-    return res.status(200).json({ success: true });
+    try {
+      await deleteDoc('blogs', id);
+      return res.status(200).json({ success: true });
+    } catch (err: any) {
+      console.error('[blogs API] delete failed:', err);
+      return res.status(500).json({ error: err?.message || 'Database delete failed' });
+    }
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
@@ -97,7 +110,7 @@ function buildBlogDoc(b: any, id: string) {
     coverImageAlt: b.coverImageAlt || null,
     faqs: b.faqs || [],
     tags: b.tags || [],
-    status: b.status || 'draft',
+    status: b.status || 'published',
     toc: b.toc || [],
     authorBio: b.authorBio || '',
     authorImage: b.authorImage || '',
@@ -115,7 +128,7 @@ function normalizeBlog(r: any) {
     metaTitle: r.metaTitle || r.meta_title || '',
     coverImageAlt: r.coverImageAlt || r.cover_image_alt || '',
     faqs: r.faqs || [], tags: r.tags || [],
-    status: r.status, toc: r.toc || [],
+    status: r.status || 'published', toc: r.toc || [],
     authorBio: r.authorBio || r.author_bio || '',
     authorImage: r.authorImage || r.author_image || '',
     metaKeywords: r.metaKeywords || r.meta_keywords || '',
