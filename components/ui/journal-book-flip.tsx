@@ -78,10 +78,10 @@ export function JournalBookFlip({ items, className }: JournalBookFlipProps) {
   };
 
   return (
-    <div className={cn("w-full max-w-4xl mx-auto my-6 px-2 sm:px-4 select-none relative", className)}>
+    <div className={cn("w-full max-w-4xl mx-auto my-6 px-2 sm:px-4 select-none relative flex flex-col items-center justify-center", className)}>
       {/* Top Close Button (Visible when book is open) */}
       {bookState === 'open' && (
-        <div className="flex justify-end mb-3 px-2">
+        <div className="w-full max-w-[900px] flex justify-end mb-3 px-2">
           <button
             onClick={() => setBookState('closed_front')}
             className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-stone-900 hover:bg-emerald-950 text-white text-xs font-bold transition-all cursor-pointer shadow-md group"
@@ -92,13 +92,13 @@ export function JournalBookFlip({ items, className }: JournalBookFlipProps) {
         </div>
       )}
 
-      {/* 3D PHYSICAL BOOK CONTAINER */}
+      {/* 3D PHYSICAL BOOK CONTAINER (PERFECTLY MATCHED OPEN SPREAD & CLOSED COVER DIMENSIONS) */}
       <div 
         className={cn(
-          "relative mx-auto transition-all duration-700",
+          "relative mx-auto transition-all duration-700 h-[460px] sm:h-[480px]",
           bookState === 'open' 
-            ? "w-full max-w-3xl h-[480px] sm:h-[450px] rounded-[18px] shadow-2xl overflow-hidden bg-[#F6F3EB] border border-stone-300/80" 
-            : "w-full max-w-md aspect-[937/959]"
+            ? "w-full max-w-[900px] rounded-[18px] shadow-2xl overflow-hidden bg-[#F6F3EB] border border-stone-300/80" 
+            : "w-full max-w-[450px] sm:max-w-[465px]"
         )}
         style={{ perspective: '2200px' }}
       >
