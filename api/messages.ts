@@ -173,25 +173,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           }))
       : [];
 
-    // ── HIGH-SPEED MODEL ROUTING & CASCADE ──
-    // Default to meta/llama-3.1-8b-instruct for lightning fast responses (1.5 seconds)
-    // Only route to 70B models if user asks a long, complex technical question (> 140 chars).
+    // ── 3-TIER SMART DYNAMIC MODEL ROUTER ──
     const qLower = userQuery.toLowerCase().trim();
-    const isComplexTechnical =
-      qLower.length > 140 &&
-      /permaculture|masterplan|agroforestry|bio-climatic|zoning|water harvesting|soil regeneration|cost breakdown|financial/i.test(qLower);
+    const isTechnical = /permaculture|masterplan|agroforestry|bio-climatic|zoning|water harvesting|soil regeneration|cost breakdown|financial|detailed/i.test(qLower);
 
-    const modelCascade = isComplexTechnical
-      ? [
-          'nvidia/llama-3.1-nemotron-70b-instruct',
-          'meta/llama-3.1-8b-instruct'
-        ]
-      : [
-          'meta/llama-3.1-8b-instruct',
-          'nvidia/llama-3.1-nemotron-70b-instruct'
-        ];
+    let modelCascade: string[];
+    let maxTokens: number;
 
-    const maxTokens = isComplexTechnical ? 600 : 450;
+    if (qLower.length > 200 || (qLower.length > 100 && isTechnical)) {
+      // TIER 3: Deep Technical Inquiries -> Llama 3.3 70B SOTA with 750 tokens
+      modelCascade = [
+        'meta/llama-3.3-70b-instruct',
+        'nvidia/llama-3.1-nemotron-70b-instruct',
+        'meta/llama-3.1-8b-instruct'
+      ];
+      maxTokens = 750;
+    } else if (qLower.length > 70 || isTechnical) {
+      // TIER 2: Intermediate Design / Service Questions -> Fast Nemotron 70B with 550 tokens
+      modelCascade = [
+        'nvidia/llama-3.1-nemotron-70b-instruct',
+        'meta/llama-3.1-8b-instruct',
+        'meta/llama-3.3-70b-instruct'
+      ];
+      maxTokens = 550;
+    } else {
+      // TIER 1: Standard Chat / Greetings -> Ultra-fast Llama 3.1 8B (~1s response time)
+      modelCascade = [
+        'meta/llama-3.1-8b-instruct',
+        'nvidia/llama-3.1-nemotron-70b-instruct',
+        'meta/llama-3.3-70b-instruct'
+      ];
+      maxTokens = 450;
+    }
 
     let nvRes: Response | null = null;
 
