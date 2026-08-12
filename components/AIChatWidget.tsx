@@ -107,34 +107,45 @@ Timestamp: ${new Date().toLocaleString()}`;
     }
   };
 
-  const fetchAIReply = async (queryText: string): Promise<{ text: string; options?: Message['options'] }> => {
+  const fetchAIReply = async (queryText: string, history: Message[]): Promise<{ text: string; options?: Message['options'] }> => {
     const q = queryText.toLowerCase();
 
-    // Determine relevant action chips based on intent keywords
-    let options: Message['options'] = [
-      { label: '📊 Open Live Cost Estimator', action: () => triggerEstimator(), isPrimary: true },
-      { label: '📩 Request Quick Callback', action: () => promptLeadCapture(queryText) }
-    ];
+    // Determine relevant action chips ONLY when there is clear intent
+    let options: Message['options'] = undefined;
 
-    if (q.includes('workshop') || q.includes('school') || q.includes('college') || q.includes('office')) {
+    if (q.includes('cost') || q.includes('price') || q.includes('estimate') || q.includes('budget') || q.includes('kharch') || q.includes('rate')) {
+      options = [
+        { label: '📊 Open Live Cost Estimator', action: () => triggerEstimator(), isPrimary: true },
+        { label: '📞 Book 1:1 Consultation', action: () => window.open('https://topmate.io/archanagavas/1799075', '_blank') }
+      ];
+    } else if (q.includes('workshop') || q.includes('school') || q.includes('college') || q.includes('office') || q.includes('nest')) {
       options = [
         { label: '🏫 View Workshops Page', action: () => navigate('/workshops') },
         { label: '📝 Request Workshop Proposal', action: () => promptLeadCapture("Campus Workshop Request"), isPrimary: true }
       ];
-    } else if (q.includes('consult') || q.includes('book') || q.includes('call') || q.includes('talk')) {
+    } else if (q.includes('consult') || q.includes('book') || q.includes('call') || q.includes('talk') || q.includes('meet')) {
       options = [
         { label: '📅 Book 1:1 Call via Topmate', action: () => window.open('https://topmate.io/archanagavas/1799075', '_blank'), isPrimary: true },
         { label: '📩 Leave Callback Details', action: () => promptLeadCapture("1:1 Consultation Booking") }
       ];
-    } else if (q.includes('farm') || q.includes('resort') || q.includes('land') || q.includes('forest') || q.includes('permaculture')) {
+    } else if (q.includes('farm') || q.includes('resort') || q.includes('land') || q.includes('forest') || q.includes('permaculture') || q.includes('house')) {
       options = [
         { label: '🌾 View Projects', action: () => navigate('/projects') },
-        { label: '📊 Calculate Land Estimate', action: () => triggerEstimator(), isPrimary: true }
+        { label: '📊 Calculate Land Estimate', action: () => triggerEstimator(), isPrimary: true },
+        { label: '📩 Request Callback', action: () => promptLeadCapture("Farmhouse / Resort Inquiry") }
       ];
     }
 
     try {
-      // Direct client-side fetch to NVIDIA NIM API (Llama 3.1 70B)
+      // Build conversation history for Llama 3.1
+      const formattedHistory = history
+        .filter(m => !m.isLeadForm)
+        .slice(-6)
+        .map(m => ({
+          role: m.sender === 'user' ? 'user' : 'assistant',
+          content: m.text
+        }));
+
       const nvKey = import.meta.env.VITE_NVIDIA_API_KEY || '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';
       const nvRes = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
         method: 'POST',
@@ -148,13 +159,24 @@ Timestamp: ${new Date().toLocaleString()}`;
             {
               role: 'system',
               content: `You are Archana's AI Assistant for Anvitam (anvitam.com), a sustainable & biophilic architectural design studio in Nadiad/Vadodara, India, led by Ar. Archana Gavas.
-Respond naturally in whatever language the visitor uses (Hinglish, Hindi, Gujarati, English, etc.).
-Keep answers concise (2-3 sentences max). Answer questions about farmhouses, eco-resorts, food forests, school/office workshops, and cost estimates.`
+
+CONVERSATIONAL RULES:
+1. Speak naturally, warmly, and empathetically in whatever language or mix of languages the user uses (Hinglish, English, Hindi, Gujarati, etc.).
+2. DO NOT aggressively push sales, cost estimates, or bookings on casual greetings or general questions.
+3. If the user asks casual questions like "how are you", "who are you", "hi", "hello", answer warmly and conversationally first, like a real human friend or architect assistant!
+4. First listen, converse, and understand the user's thoughts before suggesting services or tools.
+5. Keep answers concise (2-4 sentences max), clear, and natural.
+
+KNOWLEDGE SUMMARY:
+- Services: Bio-climatic Farmhouses, Eco-Resorts, Permaculture & Food Forests, Rainwater Harvesting, Landscape Design.
+- Nest N Nurture Workshops: Bird House Architecture, Campus Makeovers, Waste Upcycling for schools, colleges & offices.
+- Studio: Nadiad, Gujarat. Phone: +91 7990657190. Email: ar.archanagavas@gmail.com.`
             },
+            ...formattedHistory,
             { role: 'user', content: queryText }
           ],
-          temperature: 0.5,
-          max_tokens: 250
+          temperature: 0.6,
+          max_tokens: 300
         })
       });
 
@@ -169,20 +191,38 @@ Keep answers concise (2-3 sentences max). Answer questions about farmhouses, eco
       console.warn('NVIDIA API call error, falling back:', err);
     }
 
-    // Fallback response generator if network fails
     return generateFallbackReply(queryText, options);
   };
 
-  const generateFallbackReply = (userQuery: string, defaultOptions: Message['options']): { text: string; options?: Message['options'] } => {
+  const generateFallbackReply = (userQuery: string, defaultOptions?: Message['options']): { text: string; options?: Message['options'] } => {
     const q = userQuery.toLowerCase();
-    if (q.includes('cost') || q.includes('price') || q.includes('estimate') || q.includes('budget') || q.includes('kharch') || q.includes('rate')) {
+    
+    // Casual Greetings
+    if (q.includes('how are you') || q.includes('kaise ho') || q.includes('kya haal')) {
       return {
-        text: "Namaste! Hamare design pricing land area aur scope par depend karti hai. Aap hamare live Cost Estimator tool se instant estimate calculate kar sakte hain!",
+        text: "Namaste! I'm doing great, thank you for asking! 😊 How are you doing today? What brings you to Anvitam?",
         options: defaultOptions
       };
     }
+    if (q.includes('hi') || q.includes('hello') || q.includes('hey') || q.includes('namaste')) {
+      return {
+        text: "Namaste! Welcome to Anvitam. How can I help you today? Feel free to ask me anything about our eco-resorts, farmhouses, or workshops!",
+        options: defaultOptions
+      };
+    }
+
+    // Pricing Intent
+    if (q.includes('cost') || q.includes('price') || q.includes('estimate') || q.includes('budget') || q.includes('kharch') || q.includes('rate')) {
+      return {
+        text: "Namaste! Our design pricing depends on site area and project scope. You can use our live Cost Estimator to calculate an instant budget!",
+        options: defaultOptions || [
+          { label: '📊 Open Live Cost Estimator', action: () => triggerEstimator(), isPrimary: true }
+        ]
+      };
+    }
+
     return {
-      text: `Namaste! Aapke project query "${userQuery}" ke baare mein hamari team aapko guide kar sakti hai. Kya aap cost estimate nikalna chahte hain ya Archana se direct callback request karna chahte hain?`,
+      text: `Namaste! I'd love to help you with that. Tell me a bit more about your project vision or what you'd like to explore!`,
       options: defaultOptions
     };
   };
@@ -233,7 +273,7 @@ Keep answers concise (2-3 sentences max). Answer questions about farmhouses, eco
     setIsTyping(true);
 
     // Fetch AI Reply using NVIDIA NIM Llama 3.1 API
-    const botReply = await fetchAIReply(text);
+    const botReply = await fetchAIReply(text, messages);
     setIsTyping(false);
 
     setMessages(prev => [
