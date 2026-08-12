@@ -195,6 +195,7 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initial, onSave, onCancel }) =>
   const [author, setAuthor] = useState(initial?.author || 'Archana Gavas');
   const [authorBio, setAuthorBio] = useState(initial?.authorBio || 'Architect & Permaculture Designer | Farm Retreats, Eco Homestays, Food Forests, Agroforestry & Agrotourism | Consultation, Site Planning, Designing & Visualization - 4 years experience');
   const [authorImage, setAuthorImage] = useState(initial?.authorImage || '/archana.png');
+  const [authorImageMode, setAuthorImageMode] = useState<'url' | 'upload'>('url');
   const [status, setStatus] = useState<'published' | 'draft'>(initial?.status || 'published');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
