@@ -166,30 +166,7 @@ Timestamp: ${new Date().toLocaleString()}`;
       ];
     }
 
-    try {
-      // Call server-side AI proxy (avoids browser CORS restrictions)
-      const res = await fetch('/api/messages?chat=true', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userQuery: queryText,
-          history: history
-        })
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.reply) {
-          return { text: data.reply, options };
-        }
-      } else {
-        const errText = await res.text();
-        console.error('AI Chat Proxy Error:', res.status, errText);
-      }
-    } catch (err) {
-      console.error('AI Chat Network Error:', err);
-    }
-
+    // This function now only returns fallback — streaming is handled in handleUserSend
     return generateFallbackReply(queryText, options);
   };
 
@@ -272,35 +249,86 @@ Timestamp: ${new Date().toLocaleString()}`;
     const text = textToSend || input.trim();
     if (!text) return;
 
-    // Add user message
-    const userMsg: Message = {
-      id: `user-${Date.now()}`,
-      sender: 'user',
-      text
-    };
+    const userMsg: Message = { id: `user-${Date.now()}`, sender: 'user', text };
 
-    // Strip options from ALL previous bot messages before appending new reply
-    // so action chips only appear on the LATEST message, never repeated
+    // Strip old chips so buttons only show on latest message
     setMessages(prev => [
       ...prev.map(m => m.sender === 'bot' && m.options ? { ...m, options: undefined } : m),
       userMsg
     ]);
     if (!textToSend) setInput('');
-
     setIsTyping(true);
 
-    // Fetch AI Reply via server-side NVIDIA NIM proxy
-    const botReply = await fetchAIReply(text, messages);
-    setIsTyping(false);
+    // Determine contextual chips from user query
+    const { options } = await fetchAIReply(text, messages);
 
+    // ── STREAMING: create a live bot message that fills in word-by-word ──
+    const botId = `bot-${Date.now()}`;
+    let accumulated = '';
+    let streamStarted = false;
+
+    try {
+      const res = await fetch('/api/messages?chat=true', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userQuery: text, history: messages })
+      });
+
+      if (res.ok && res.body) {
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        setIsTyping(false);
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          // SSE lines: "data: {...}" or "data: [DONE]"
+          const lines = chunk.split('\n');
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            const payload = line.slice(6).trim();
+            if (payload === '[DONE]') break;
+            try {
+              const parsed = JSON.parse(payload);
+              const token = parsed.choices?.[0]?.delta?.content || '';
+              if (!token) continue;
+              accumulated += token;
+              if (!streamStarted) {
+                // Insert placeholder message on first token
+                streamStarted = true;
+                setMessages(prev => [...prev, { id: botId, sender: 'bot', text: accumulated }]);
+              } else {
+                // Update the live message in place
+                setMessages(prev =>
+                  prev.map(m => m.id === botId ? { ...m, text: accumulated } : m)
+                );
+              }
+            } catch { /* skip malformed chunks */ }
+          }
+        }
+
+        // Attach action chips to the completed message
+        if (accumulated) {
+          setMessages(prev =>
+            prev.map(m => m.id === botId ? { ...m, options } : m)
+          );
+          return;
+        }
+      } else {
+        console.error('AI stream error:', res.status);
+      }
+    } catch (err) {
+      console.error('AI stream network error:', err);
+    }
+
+    // Fallback if streaming failed
+    setIsTyping(false);
+    const fallback = generateFallbackReply(text, options);
     setMessages(prev => [
       ...prev,
-      {
-        id: `bot-${Date.now()}`,
-        sender: 'bot',
-        text: botReply.text,
-        options: botReply.options
-      }
+      { id: botId, sender: 'bot', text: fallback.text, options: fallback.options }
     ]);
   };
 

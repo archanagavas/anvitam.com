@@ -146,7 +146,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // ──────────────────────────────────────────────────────────
   // AI CHAT PROXY — POST /api/messages?chat=true
-  // Calls NVIDIA NIM server-side to avoid browser CORS issues
+  // Calls NVIDIA NIM server-side via SSE streaming for instant token display
+  // Model: llama-3.1-8b-instruct (fast) instead of 70B (slow)
   // ──────────────────────────────────────────────────────────
   if (req.query.chat === 'true' && req.method === 'POST') {
     const { userQuery, history } = req.body ?? {};
@@ -154,17 +155,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const nvKey = process.env.NVIDIA_API_KEY || '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';
 
-    try {
-      const formattedHistory = Array.isArray(history)
-        ? history
-            .filter((m: { isLeadForm?: boolean }) => !m.isLeadForm)
-            .slice(-10)
-            .map((m: { sender: string; text: string }) => ({
-              role: m.sender === 'user' ? 'user' : 'assistant',
-              content: m.text
-            }))
-        : [];
+    const formattedHistory = Array.isArray(history)
+      ? history
+          .filter((m: { isLeadForm?: boolean }) => !m.isLeadForm)
+          .slice(-4) // last 4 messages only — keeps context, reduces latency
+          .map((m: { sender: string; text: string }) => ({
+            role: m.sender === 'user' ? 'user' : 'assistant',
+            content: m.text
+          }))
+      : [];
 
+    try {
       const nvRes = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -172,31 +173,50 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           'Authorization': `Bearer ${nvKey}`
         },
         body: JSON.stringify({
-          model: 'meta/llama-3.1-70b-instruct',
+          model: 'meta/llama-3.1-8b-instruct', // 8B = much faster than 70B
           messages: [
             { role: 'system', content: ANVITAM_AI_SYSTEM_PROMPT },
             ...formattedHistory,
             { role: 'user', content: userQuery }
           ],
-          temperature: 0.7,
-          max_tokens: 500
+          temperature: 0.65,
+          max_tokens: 250,   // short focused replies
+          stream: true       // SSE streaming — user sees words appear immediately
         })
       });
 
-      if (nvRes.ok) {
-        const nvData = await nvRes.json();
-        const reply = nvData.choices?.[0]?.message?.content;
-        if (reply) return res.status(200).json({ reply });
-      } else {
+      if (!nvRes.ok) {
         const errText = await nvRes.text();
         console.error('[Chat AI] NVIDIA API error:', nvRes.status, errText);
+        return res.status(503).json({ reply: null, error: 'AI service temporarily unavailable.' });
       }
+
+      // Stream SSE tokens back to the browser
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+
+      const reader = (nvRes.body as unknown as ReadableStream<Uint8Array>).getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        // Forward raw SSE lines as-is to the client
+        res.write(chunk);
+      }
+      res.end();
+      return;
+
     } catch (err) {
       console.error('[Chat AI] Network error:', err);
+      return res.status(503).json({ reply: null, error: 'AI service temporarily unavailable.' });
     }
-
-    return res.status(503).json({ reply: null, error: 'AI service temporarily unavailable.' });
   }
+
+
 
   // ──────────────────────────────────────────────────────────
   // STANDARD MESSAGES / LEAD HANDLING
