@@ -13,7 +13,7 @@ import { INITIAL_PROJECTS, INITIAL_BLOGS, SERVICES, DIGITAL_PRODUCTS, INITIAL_TE
 // ── Auth token helpers (JWT stored in sessionStorage — auto-clears on tab close) ──
 export const getAuthToken = (): string | null => {
   try {
-    return sessionStorage.getItem('anvitam_admin_token');
+    return sessionStorage.getItem('anvitam_admin_token') || localStorage.getItem('anvitam_admin_token');
   } catch (e) {
     return null;
   }
@@ -21,11 +21,13 @@ export const getAuthToken = (): string | null => {
 export const setAuthToken = (token: string) => {
   try {
     sessionStorage.setItem('anvitam_admin_token', token);
+    localStorage.setItem('anvitam_admin_token', token);
   } catch (e) {}
 };
 export const clearAuthToken = () => {
   try {
     sessionStorage.removeItem('anvitam_admin_token');
+    localStorage.removeItem('anvitam_admin_token');
   } catch (e) {}
 };
 export const authHeaders = (): Record<string, string> => {
@@ -450,11 +452,15 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const addBlog = async (blog: BlogPost) => {
-    setBlogs(prev => [blog, ...prev]);
+    setBlogs(prev => {
+      const next = [blog, ...prev.filter(b => b.id !== blog.id)];
+      saveToStorage('anvitam_blogs_v2', next);
+      return next;
+    });
     const token = getAuthToken();
     if (!token) {
-      console.warn('[ContentContext] No auth token — blog saved to localStorage only');
-      return;
+      console.warn('[ContentContext] No auth token — DB sync cannot proceed');
+      throw new Error('Admin session missing. Please re-login to sync to database.');
     }
     const res = await fetch('/api/blogs', {
       method: 'POST',
@@ -471,11 +477,15 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const updateBlog = async (blog: BlogPost) => {
-    setBlogs(prev => prev.map(b => b.id === blog.id ? blog : b));
+    setBlogs(prev => {
+      const next = prev.map(b => b.id === blog.id ? blog : b);
+      saveToStorage('anvitam_blogs_v2', next);
+      return next;
+    });
     const token = getAuthToken();
     if (!token) {
-      console.warn('[ContentContext] No auth token — blog updated in localStorage only');
-      return;
+      console.warn('[ContentContext] No auth token — DB sync cannot proceed');
+      throw new Error('Admin session missing. Please re-login to sync to database.');
     }
     const res = await fetch(`/api/blogs/${blog.id}`, {
       method: 'PUT',

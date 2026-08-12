@@ -195,9 +195,9 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initial, onSave, onCancel }) =>
   const [author, setAuthor] = useState(initial?.author || 'Archana Gavas');
   const [authorBio, setAuthorBio] = useState(initial?.authorBio || 'Architect & Permaculture Designer | Farm Retreats, Eco Homestays, Food Forests, Agroforestry & Agrotourism | Consultation, Site Planning, Designing & Visualization - 4 years experience');
   const [authorImage, setAuthorImage] = useState(initial?.authorImage || '/archana.png');
-  const [authorImageMode, setAuthorImageMode] = useState<'url' | 'upload'>('url');
-  const [status, setStatus] = useState<'published' | 'draft'>(initial?.status || 'draft');
+  const [status, setStatus] = useState<'published' | 'draft'>(initial?.status || 'published');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [slugManual, setSlugManual] = useState(!!initial?.slug);
 
   // ── Error states (replaces all alert() calls) ─────────────────────
@@ -405,39 +405,47 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initial, onSave, onCancel }) =>
     } finally { setIsGenerating(false); }
   };
 
-  const handleSubmit = (overrideStatus?: 'published' | 'draft') => {
+  const handleSubmit = async (overrideStatus?: 'published' | 'draft') => {
     setEditorError(null);
     if (!title.trim()) { setEditorError('A title is required before saving.'); return; }
     
-    const finalStatus = overrideStatus || status;
-    if (overrideStatus) setStatus(overrideStatus);
-    const rawContent = quillRef.current ? quillRef.current.root.innerHTML : (initial?.content || '');
-    // Always sanitize before storing
-    const content = DOMPurify.sanitize(rawContent, RICH_TEXT_CONFIG) as string;
-    const strippedText = content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-    const defaultExcerpt = strippedText.substring(0, 180) + (strippedText.length > 180 ? '...' : '');
+    setIsSubmitting(true);
+    try {
+      const finalStatus = overrideStatus || status;
+      if (overrideStatus) setStatus(overrideStatus);
+      const rawContent = quillRef.current ? quillRef.current.root.innerHTML : (initial?.content || '');
+      // Always sanitize before storing
+      const content = DOMPurify.sanitize(rawContent, RICH_TEXT_CONFIG) as string;
+      const strippedText = content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      const defaultExcerpt = strippedText.substring(0, 180) + (strippedText.length > 180 ? '...' : '');
 
-    const post: BlogPost = {
-      id: initial?.id || crypto.randomUUID(), // secure UUID, not Date.now()
-      slug: slug || toSlug(title),
-      title: title.trim(),
-      date: initial?.date || new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }),
-      author,
-      excerpt: excerpt.trim() || defaultExcerpt,
-      content,
-      image: image || `https://picsum.photos/1200/800?random=${Math.floor(Math.random() * 9999)}`,
-      metaDescription: metaDescription.trim() || defaultExcerpt.substring(0, 160),
-      metaTitle: metaTitle.trim() || title.trim(),
-      coverImageAlt: coverImageAlt.trim(),
-      faqs,
-      tags,
-      status: finalStatus,
-      authorBio: authorBio.trim(),
-      authorImage: authorImage.trim(),
-      metaKeywords: metaKeywords.trim(),
-      metaRobots: metaRobots.trim(),
-    };
-    onSave(post, finalStatus);
+      const post: BlogPost = {
+        id: initial?.id || crypto.randomUUID(), // secure UUID, not Date.now()
+        slug: slug || toSlug(title),
+        title: title.trim(),
+        date: initial?.date || new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }),
+        author,
+        excerpt: excerpt.trim() || defaultExcerpt,
+        content,
+        image: image || `https://picsum.photos/1200/800?random=${Math.floor(Math.random() * 9999)}`,
+        metaDescription: metaDescription.trim() || defaultExcerpt.substring(0, 160),
+        metaTitle: metaTitle.trim() || title.trim(),
+        coverImageAlt: coverImageAlt.trim(),
+        faqs,
+        tags,
+        status: finalStatus,
+        authorBio: authorBio.trim(),
+        authorImage: authorImage.trim(),
+        metaKeywords: metaKeywords.trim(),
+        metaRobots: metaRobots.trim(),
+      };
+      await onSave(post, finalStatus);
+    } catch (err: any) {
+      console.error('[BlogEditor] Save error:', err);
+      setEditorError(err.message || 'Failed to save blog post to database');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -472,7 +480,7 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initial, onSave, onCancel }) =>
         <div className="flex items-center space-x-3">
           <button
             onClick={handleAIDraft}
-            disabled={isGenerating}
+            disabled={isGenerating || isSubmitting}
             className="flex items-center space-x-1.5 bg-purple-50 text-purple-700 border border-purple-200 text-sm px-3 py-1.5 rounded-lg hover:bg-purple-100 transition disabled:opacity-50"
           >
             <Sparkles size={14} />
@@ -480,17 +488,19 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initial, onSave, onCancel }) =>
           </button>
           <button
             onClick={() => handleSubmit('draft')}
-            className="flex items-center space-x-1.5 border border-gray-300 text-gray-700 text-sm px-4 py-1.5 rounded-lg hover:bg-gray-50 transition font-medium"
+            disabled={isSubmitting}
+            className="flex items-center space-x-1.5 border border-gray-300 text-gray-700 text-sm px-4 py-1.5 rounded-lg hover:bg-gray-50 transition font-medium disabled:opacity-50"
           >
             <Save size={14} />
-            <span>Save Draft</span>
+            <span>{isSubmitting ? 'Saving...' : 'Save Draft'}</span>
           </button>
           <button
             onClick={() => handleSubmit('published')}
-            className="flex items-center space-x-1.5 bg-black text-white text-sm px-5 py-1.5 rounded-lg hover:bg-gray-800 transition font-bold"
+            disabled={isSubmitting}
+            className="flex items-center space-x-1.5 bg-black text-white text-sm px-5 py-1.5 rounded-lg hover:bg-gray-800 transition font-bold disabled:opacity-50"
           >
-            <Globe size={14} />
-            <span>Publish</span>
+            {isSubmitting ? <RefreshCw size={14} className="animate-spin" /> : <Globe size={14} />}
+            <span>{isSubmitting ? 'Publishing...' : 'Publish'}</span>
           </button>
         </div>
       </div>
@@ -1621,9 +1631,8 @@ const Admin: React.FC = () => {
       setEditingBlog(null);
     } catch (err: any) {
       console.error('[Admin] Blog save failed:', err);
-      showToast(`⚠️ Saved locally, but DB sync failed: ${err.message || 'Check connection'}`);
-      setBlogView('list');
-      setEditingBlog(null);
+      showToast(`⚠️ DB sync issue: ${err.message || 'Check connection'}`);
+      throw err;
     }
   };
 
