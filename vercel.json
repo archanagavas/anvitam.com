@@ -36,7 +36,25 @@
       ]
     },
     {
-      "source": "/(.*\\.webp|.*\\.jpg|.*\\.png|.*\\.svg|.*\\.ico|.*\\.woff2)",
+      "source": "/images/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/workshops/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/uploads/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*\\.(?:webp|jpg|jpeg|png|svg|ico|woff2|woff|ttf|eot|mp4|webm))",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
