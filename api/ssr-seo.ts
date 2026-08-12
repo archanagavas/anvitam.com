@@ -1663,8 +1663,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     `<div id="root">${ssrHtml}</div>`
   );
 
-  // Disable shared CDN cache to prevent cross-URL cache poisoning (each path must be served independently)
-  res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=0, must-revalidate');
+  // Enable Vercel Edge CDN caching (1 hour Edge cache, 24 hour stale-while-revalidate) to eliminate Fast Origin Transfer bandwidth
+  res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
   res.setHeader('Vary', 'Accept-Encoding');
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('X-Robots-Tag', robots);

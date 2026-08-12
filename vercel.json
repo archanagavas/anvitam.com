@@ -24,7 +24,7 @@
       ]
     },
     {
-      "source": "/api/(blogs|projects|services|workshops|products|partners|testimonials|estimator-services)(.*)",
+      "source": "/api/admin/(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0" }
       ]
@@ -32,13 +32,13 @@
     {
       "source": "/assets/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     },
     {
       "source": "/(.*\\.webp|.*\\.jpg|.*\\.png|.*\\.svg|.*\\.ico|.*\\.woff2)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     }
   ],
