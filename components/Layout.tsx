@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Helmet } from 'react-helmet-async';
 import EstimatorModal from './EstimatorModal';
 import MorphicNavbar from './MorphicNavbar';
+import AIChatWidget from './AIChatWidget';
 import { useContent } from '../context/ContentContext';
 
 // ── Newsletter Section Component ───────────────────────────────────────
@@ -277,6 +278,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Main */}
       <main className="flex-grow">{children}</main>
+
+      {/* Floating AI Chatbot Assistant */}
+      <AIChatWidget />
 
       {/* ── BIOGAX-STYLE DARK FOOTER ── */}
       <footer className="bg-[#0D0D0D] text-white pt-20 pb-10">
