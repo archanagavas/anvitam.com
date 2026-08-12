@@ -134,21 +134,7 @@ Timestamp: ${new Date().toLocaleString()}`;
     }
 
     try {
-      // 1. Try serverless Vercel route /api/chat
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userQuery: queryText })
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.reply) {
-          return { text: data.reply, options };
-        }
-      }
-
-      // 2. Direct client-side fetch to NVIDIA NIM API (Llama 3.1 70B)
+      // Direct client-side fetch to NVIDIA NIM API (Llama 3.1 70B)
       const nvKey = import.meta.env.VITE_NVIDIA_API_KEY || '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';
       const nvRes = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
         method: 'POST',
