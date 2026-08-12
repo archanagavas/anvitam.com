@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, MapPin, Globe, Leaf } from 'lucide-react';
+import { ArrowRight, MapPin, Globe, Leaf, Calculator } from 'lucide-react';
 
 /* ── Shared scroll-reveal wrapper ── */
 const FadeUp: React.FC<{ children: React.ReactNode; delay?: number; className?: string }> = ({
@@ -40,35 +40,34 @@ const ScaleFade: React.FC<{ children: React.ReactNode; delay?: number; className
 
 const TOPMATE = 'https://topmate.io/archanagavas/1799075?utm_source=public_profile&campaign=archanagavas';
 const neonBtn =
-  'inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-6 py-3 rounded-full text-sm font-semibold hover:scale-105 transition-transform duration-300 cursor-pointer';
+  'inline-flex items-center gap-2 bg-[#CCFF00] text-[#111] px-6 py-3 rounded-full text-sm font-semibold hover:scale-105 transition-transform duration-300 cursor-pointer shadow-sm';
+const outlineBtn =
+  'inline-flex items-center gap-2 bg-white border border-black/20 text-[#111] px-6 py-3 rounded-full text-sm font-semibold hover:bg-[#111] hover:text-white hover:border-[#111] transition-all duration-300 cursor-pointer shadow-xs';
 
 /* ── Stats ── */
 const STATS = [
   { num: '10+', label: 'Projects Completed' },
   { num: '2022', label: 'Founded' },
   { num: '6+', label: 'Service Areas' },
-  { num: '3', label: 'Countries Served' },
+  { num: 'Global', label: 'India, USA, Bali & Worldwide' },
 ];
 
-/* ── Feature cards (right column) ── */
+/* ── Feature cards (right column of Our Approach) ── */
 const FEATURES = [
   {
-    // Lush green tropical canopy — passive solar / biophilic ecology
-    img: 'https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=900&auto=format&fit=crop',
+    img: '/images/about/natural-cooling.png',
     title: 'Natural Cooling & Eco Design',
     body:
       'We place windows, courtyards, and trees to catch cool breeze and block hot summer sun. This keeps rooms fresh naturally without running ACs all day.',
   },
   {
-    // Natural wood grain / bamboo craft — artisanal earth materials
-    img: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=900&auto=format&fit=crop',
+    img: '/images/about/local-earth-craft.png',
     title: 'Local Earth & Natural Crafts',
     body:
       'We build with natural clay plaster, local stone, reused wood, and bamboo. These natural textures give your rooms warmth and fresh air while lasting for generations.',
   },
   {
-    // Sun-drenched interior with plants and light — biophilic interiors
-    img: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=80&w=900&auto=format&fit=crop',
+    img: '/images/about/comfortable-rooms.png',
     title: 'Comfortable, Light-Filled Rooms',
     body:
       'We bring sunlight, fresh breeze, and lush garden views right into your living room, creating peaceful spaces where your family loves to spend time.',
@@ -82,9 +81,9 @@ const Why: React.FC = () => {
         <title>About Anvitam | Sustainable Resort Architect & Eco Retreat Designer</title>
         <meta
           name="description"
-          content="Discover Anvitam's philosophy of contextual architecture and interior design, practicing sustainable, eco-friendly biophilic designs, including farm retreat architecture and wellness retreat design."
+          content="Discover Anvitam's philosophy of contextual architecture and interior design, practicing sustainable, eco-friendly biophilic designs across India, the USA, Australia, Bali, and worldwide."
         />
-        <meta name="keywords" content="about anvitam, sustainable resort architect, eco retreat designer, bio-climatic design, natural building materials, archana gavas, Vadodara, India" />
+        <meta name="keywords" content="about anvitam, sustainable resort architect, eco retreat designer, bio-climatic design, natural building materials, archana gavas, Vadodara, India, worldwide architecture" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://www.anvitam.com/why" />
       </Helmet>
@@ -111,7 +110,7 @@ const Why: React.FC = () => {
               </h1>
             </FadeUp>
 
-            {/* Right: avatar row + paragraph */}
+            {/* Right: avatar row + paragraph + dual buttons */}
             <FadeUp delay={0.12}>
               <div className="flex flex-col gap-6">
                 {/* Stacked avatars */}
@@ -135,12 +134,21 @@ const Why: React.FC = () => {
                 </div>
 
                 <p className="text-[#555] text-base leading-relaxed max-w-lg">
-                  Anvitam is an architecture firm that designs <strong className="text-[#111]">homes, farmhouses, and resorts that stay cool naturally and feel connected to nature</strong>. From organic food forests and farm retreats to community centers and eco-resorts, our designs fit your land, local weather, and budget. We work across <strong className="text-[#111]">India, the USA, Australia, Bali</strong>, and worldwide.
+                  Anvitam is an architecture firm that designs <strong className="text-[#111]">homes, farmhouses, and resorts that stay cool naturally and feel connected to nature</strong>. From organic food forests and farm retreats to community centers and eco-resorts, our designs fit your land, local weather, and budget. We work across <strong className="text-[#111]">India, the USA, Australia, Bali, and worldwide</strong>.
                 </p>
 
-                <a href={TOPMATE} target="_blank" rel="noreferrer" className={neonBtn}>
-                  Book a Design Consultation <ArrowRight size={16} />
-                </a>
+                {/* Dual action buttons */}
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <a href={TOPMATE} target="_blank" rel="noreferrer" className={neonBtn}>
+                    Book a Design Consultation <ArrowRight size={16} />
+                  </a>
+                  <button
+                    onClick={() => window.dispatchEvent(new CustomEvent('open-estimator'))}
+                    className={outlineBtn}
+                  >
+                    <Calculator size={16} /> Estimate Project Fit
+                  </button>
+                </div>
               </div>
             </FadeUp>
           </div>
@@ -165,8 +173,7 @@ const Why: React.FC = () => {
       </section>
 
       {/* ══════════════════════════════════════════
-          WHAT WE DO — 2 col, full-height image left / stacked cards right
-          Biogax "Cleaner Tomorrow" section style
+          WHAT WE DO — 2 col, sticky left heading / stacked cards right
       ══════════════════════════════════════════ */}
       <section className="py-24 px-6 md:px-16 lg:px-24 bg-[#EFEFEB]">
         <div className="max-w-screen-xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
@@ -182,9 +189,17 @@ const Why: React.FC = () => {
             <p className="text-[#555] text-base leading-relaxed mb-8">
               We design spaces that save electricity, capture rainwater, and use local stone, clay, and wood. You get a comfortable home or farm that stays cool in summer and cozy in winter without heavy AC bills.
             </p>
-            <Link to="/contact" className={neonBtn}>
-              Work With Us <ArrowRight size={16} />
-            </Link>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link to="/contact" className={neonBtn}>
+                Work With Us <ArrowRight size={16} />
+              </Link>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('open-estimator'))}
+                className={outlineBtn}
+              >
+                <Calculator size={15} /> Estimate Fit
+              </button>
+            </div>
           </FadeUp>
 
           {/* Right — stacked feature cards (image + text) */}
@@ -192,13 +207,13 @@ const Why: React.FC = () => {
             {FEATURES.map((f, i) => (
               <FadeUp key={i} delay={i * 0.1}>
                 <div className="bg-white rounded-2xl overflow-hidden border border-black/5 hover:shadow-xl transition-shadow duration-300 group">
-                  <div className="relative h-52 overflow-hidden">
+                  <div className="relative h-64 overflow-hidden">
                     <img
                       src={f.img}
                       alt={f.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
                     <h3 className="absolute bottom-4 left-5 text-white text-xl font-bold">{f.title}</h3>
                   </div>
                   <div className="p-6">
@@ -212,27 +227,40 @@ const Why: React.FC = () => {
       </section>
 
       {/* ══════════════════════════════════════════
-          PHILOSOPHY DETAIL — alternating full-image rows
+          PHILOSOPHY DETAIL — alternating full-image cards
       ══════════════════════════════════════════ */}
-      <section className="py-12 md:py-24 px-6 md:px-16 lg:px-24 bg-[#EFEFEB] border-t border-black/5">
-        <div className="max-w-screen-xl mx-auto space-y-12 md:space-y-24">
+      <section className="py-16 md:py-24 px-6 md:px-16 lg:px-24 bg-[#EFEFEB] border-t border-black/5">
+        <div className="max-w-screen-xl mx-auto space-y-12 md:space-y-20">
+
+          {/* Section Heading */}
+          <FadeUp>
+            <div className="text-center max-w-2xl mx-auto mb-6">
+              <div className="inline-flex items-center gap-2 border border-[#111]/20 rounded-full px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-[#111]/60 mb-4">
+                <span>↓</span> Our Core Philosophy
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] text-[#111]">
+                Guiding Design Principles
+              </h2>
+            </div>
+          </FadeUp>
+
           {/* Row 1 */}
           <ScaleFade>
             <div className="relative rounded-2xl overflow-hidden h-[440px] md:h-[520px] group shadow-2xl">
               <img
-                src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2000&auto=format&fit=crop"
-                alt="Farm retreat architecture — golden fields and nature"
+                src="/images/about/shaping-space.png"
+                alt="Shaping Space from the Ground Up"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/30 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
               <div className="absolute inset-0 flex flex-col justify-end p-10 md:p-16 max-w-2xl">
                 <span className="inline-block bg-[#CCFF00] text-[#111] text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full w-fit mb-4">
                   01 · Belief
                 </span>
-                <h2 className="text-white text-3xl md:text-4xl font-bold leading-tight mb-4">
+                <h3 className="text-white text-3xl md:text-4xl font-bold leading-tight mb-4">
                   Shaping Space from the Ground Up
-                </h2>
-                <p className="text-white/75 text-sm md:text-base leading-relaxed">
+                </h3>
+                <p className="text-white/80 text-sm md:text-base leading-relaxed">
                   We believe design can transform the way we live. Every project, whether a weekend villa or a
                   large-scale wellness retreat, must be approached with sensitivity, purpose, and responsibility.
                 </p>
@@ -244,19 +272,19 @@ const Why: React.FC = () => {
           <ScaleFade delay={0.1}>
             <div className="relative rounded-2xl overflow-hidden h-[440px] md:h-[520px] group shadow-2xl">
               <img
-                src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?q=80&w=2000&auto=format&fit=crop"
-                alt="Biophilic interior with warm light — wellness retreat architecture"
+                src="/images/about/context-central.png"
+                alt="Context is Central to Every Design"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-l from-black/75 via-black/30 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-l from-black/80 via-black/40 to-transparent" />
               <div className="absolute inset-0 flex flex-col justify-end items-end text-right p-10 md:p-16 max-w-2xl ml-auto">
                 <span className="inline-block bg-[#CCFF00] text-[#111] text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full w-fit mb-4">
                   02 · Philosophy
                 </span>
-                <h2 className="text-white text-3xl md:text-4xl font-bold leading-tight mb-4">
+                <h3 className="text-white text-3xl md:text-4xl font-bold leading-tight mb-4">
                   Context is Central to Every Design
-                </h2>
-                <p className="text-white/75 text-sm md:text-base leading-relaxed">
+                </h3>
+                <p className="text-white/80 text-sm md:text-base leading-relaxed">
                   Every project is a story shaped by site, climate, material, labour, and budget. Our work
                   is never formulaic as we listen to the land, the people, and the pulse of each project.
                 </p>
@@ -268,19 +296,19 @@ const Why: React.FC = () => {
           <ScaleFade delay={0.15}>
             <div className="relative rounded-2xl overflow-hidden h-[440px] md:h-[520px] group shadow-2xl">
               <img
-                src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2000&auto=format&fit=crop"
-                alt="Forest path — care for the earth and natural architecture"
+                src="/images/about/care-earth-craft.png"
+                alt="Care for the Earth & Craft"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/30 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
               <div className="absolute inset-0 flex flex-col justify-end p-10 md:p-16 max-w-2xl">
                 <span className="inline-block bg-[#CCFF00] text-[#111] text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full w-fit mb-4">
-                  03 · Approach
+                  03 · Principles
                 </span>
-                <h2 className="text-white text-3xl md:text-4xl font-bold leading-tight mb-4">
+                <h3 className="text-white text-3xl md:text-4xl font-bold leading-tight mb-4">
                   Care for the Earth &amp; Craft
-                </h2>
-                <p className="text-white/75 text-sm md:text-base leading-relaxed">
+                </h3>
+                <p className="text-white/80 text-sm md:text-base leading-relaxed">
                   Our approach begins with care for the land, for people, and for the craft. We focus on
                   ecological practices, consider health impacts, and find joy in the design process through
                   curiosity, creativity, and playful exploration.
@@ -322,7 +350,7 @@ const Why: React.FC = () => {
               {
                 icon: '🌍',
                 title: 'Global Outlook, Local Intelligence',
-                body: 'Working across India, the USA, and Australia, we apply global standards while responding deeply to local climate, culture, and construction traditions.',
+                body: 'Working across India, the USA, Australia, Bali, and worldwide, we apply global standards while responding deeply to local climate, culture, and construction traditions.',
               },
               {
                 icon: '♻️',
@@ -378,7 +406,7 @@ const Why: React.FC = () => {
                   Based in Vadodara and working across geographies, Archana approaches design through careful observation, research, and time spent understanding the land. Each project begins by listening to climate, materials, and how a place is meant to be lived in.
                 </p>
                 <p className="text-white/70 text-base leading-relaxed mb-8">
-                  Her work spans farm retreats, wellness environments, and biophilic interiors across India, and Bali, shaped by a commitment to ecological responsibility, material honesty, and craft-led making rather than trends.
+                  Her work spans farm retreats, wellness environments, and biophilic interiors across India, the USA, Australia, and Bali, shaped by a commitment to ecological responsibility, material honesty, and craft-led making rather than trends.
                 </p>
                 <div className="flex flex-wrap gap-4">
                   <a href={TOPMATE} target="_blank" rel="noreferrer" className={neonBtn}>
@@ -412,11 +440,19 @@ const Why: React.FC = () => {
             </h2>
             <p className="text-[#555] text-base max-w-xl mx-auto mb-10">
               Whether it's a farm retreat, wellness centre, or urban home — we'd love to hear about your
-              vision. Let's start with a design consultation.
+              vision. Let's start with a design consultation or estimate your project fit.
             </p>
-            <a href={TOPMATE} target="_blank" rel="noreferrer" className={neonBtn}>
-              Book a Consultation <ArrowRight size={16} />
-            </a>
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <a href={TOPMATE} target="_blank" rel="noreferrer" className={neonBtn}>
+                Book a Consultation <ArrowRight size={16} />
+              </a>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('open-estimator'))}
+                className={outlineBtn}
+              >
+                <Calculator size={16} /> Estimate Project Fit
+              </button>
+            </div>
           </FadeUp>
         </div>
       </section>
@@ -424,4 +460,4 @@ const Why: React.FC = () => {
   );
 };
 
-export default Why;
+export default Why;
