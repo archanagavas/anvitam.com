@@ -13,6 +13,8 @@ import { FlowButton } from '../components/ui/flow-button';
 import { TypingAnimation } from '../components/TypingAnimation';
 import { NumberCounter } from '../components/NumberCounter';
 import { CoverflowCarousel, CoverflowSlide } from '../components/ui/coverflow-carousel';
+import { JournalBookFlip } from '../components/ui/journal-book-flip';
+import { BlogPost } from '../types';
 import { cn } from '../lib/utils';
 
 const FLIP_WORDS = [
@@ -123,7 +125,46 @@ const Home: React.FC = () => {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
   const showcaseProjects = projects?.slice(0, 6) || [];
-  const recentBlogs = blogs?.filter(b => b.status === 'published').slice(0, 2) || [];
+  const publishedBlogs = blogs?.filter(b => b.status === 'published') || [];
+  
+  const displayBlogs: BlogPost[] = publishedBlogs.length > 0 ? publishedBlogs : [
+    {
+      id: 'blog-permaculture',
+      title: 'How Permaculture Site Planning Transforms Farm Retreats',
+      slug: 'permaculture-site-planning-farm-retreats',
+      date: 'Mar 2025',
+      excerpt: 'A breakdown of how we use permaculture design principles to create self-sustaining eco retreats across India, the USA, and Australia.',
+      content: '',
+      image: SERVICE_3,
+      author: 'Archana Gavas',
+      tags: ['Permaculture', 'Masterplanning'],
+      status: 'published'
+    },
+    {
+      id: 'blog-villa-design',
+      title: 'Weekend Villa Architect: What to Look for in Land Planning',
+      slug: 'weekend-villa-architect-land-planning',
+      date: 'Feb 2025',
+      excerpt: 'Key questions to ask any landscape architect for villas before committing to a boutique villa landscape design project.',
+      content: '',
+      image: SERVICE_1,
+      author: 'Archana Gavas',
+      tags: ['Villa Design', 'Landscape Architecture'],
+      status: 'published'
+    },
+    {
+      id: 'blog-airbnb-design',
+      title: 'Designing High-Yield Airbnb & Rental Cottages with Natural Materials',
+      slug: 'designing-high-yield-airbnb-rental-cottages',
+      date: 'Jan 2025',
+      excerpt: 'How photogenic outdoor decks, local bamboo, and low-maintenance vernacular finishes drive 5-star reviews and fast payback.',
+      content: '',
+      image: SERVICE_2,
+      author: 'Archana Gavas',
+      tags: ['Airbnb Design', 'Hospitality'],
+      status: 'published'
+    }
+  ];
 
   const serviceSlides: CoverflowSlide[] = services.map((s, idx) => ({
     id: s.id,
@@ -704,73 +745,27 @@ const Home: React.FC = () => {
       </section>
 
       {/* ══════════════════════════════════════════
-          BLOG — section label + grid
+          BLOG — Interactive Journal Book Flip
       ══════════════════════════════════════════ */}
-      <section className="bg-white py-24 px-6 md:px-16 lg:px-24 border-t border-gray-100">
+      <section className="bg-white py-20 px-4 sm:px-8 md:px-16 lg:px-24 border-t border-gray-100 overflow-hidden">
         <div className="max-w-screen-xl mx-auto">
           <FadeUp>
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-6">
               <div>
-                <div className="inline-flex items-center gap-2 border border-[#111]/20 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#111] mb-6">
+                <div className="inline-flex items-center gap-2 border border-[#111]/20 rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#111] mb-4">
                   <span>↓</span> Our Journal
                 </div>
-                <h2 className="text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-[#111]">Learn before you build.</h2>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight text-[#111]">Learn before you build.</h2>
               </div>
               <Link to="/blog">
-                <FlowButton text="Read the Journal" />
+                <FlowButton text="Explore All Entries" />
               </Link>
             </div>
           </FadeUp>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {recentBlogs.length > 0 ? recentBlogs.map((post, i) => (
-              <FadeUp key={post.id} delay={i * 0.1}>
-                <Link to={`/blog/${post.slug || post.id}`} className="bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 hover:shadow-xl transition-shadow group cursor-pointer">
-                  {post.image && (
-                    <div className="h-52 overflow-hidden">
-                      <img src={post.image} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                    </div>
-                  )}
-                  <div className="p-8">
-                    <div className="flex items-center gap-3 mb-4 text-xs text-[#888]">
-                      <span className="border border-[#111]/15 rounded-full px-3 py-1">{post.category || 'Design'}</span>
-                      <span>{post.date}</span>
-                    </div>
-                    <h3 className="text-xl font-bold mb-3 group-hover:text-[#555] transition-colors">{post.title}</h3>
-                    <p className="text-[#555] text-sm leading-relaxed mb-6">{post.excerpt}</p>
-                    <span className="inline-flex items-center gap-2 text-[#111] font-semibold text-sm group-hover:gap-4 transition-all">
-                      Read blog <ArrowRight size={14} />
-                    </span>
-                  </div>
-                </Link>
-              </FadeUp>
-            )) : (
-              /* placeholder blog cards */
-              [
-                { tag: 'Permaculture', date: 'Mar 2025', title: 'How Permaculture Site Planning Transforms Farm Retreats', excerpt: 'A breakdown of how we use permaculture design principles to create self-sustaining eco retreats across the USA and Australia.' },
-                { tag: 'Villa Design', date: 'Feb 2025', title: 'Weekend Villa Architect: What to Look for in Australia', excerpt: 'Key questions to ask any landscape architect for villas before committing to a boutique villa landscape design project.' },
-              ].map((post, i) => (
-                <FadeUp key={i} delay={i * 0.1}>
-                  <Link to="/blog" className="bg-white rounded-2xl overflow-hidden flex flex-col border border-gray-200 hover:shadow-xl transition-shadow group cursor-pointer">
-                    <div className="h-52 overflow-hidden">
-                      <img src={i === 0 ? SERVICE_3 : SERVICE_1} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                    </div>
-                    <div className="p-8">
-                      <div className="flex items-center gap-3 mb-4 text-xs text-[#888]">
-                        <span className="border border-[#111]/15 rounded-full px-3 py-1">{post.tag}</span>
-                        <span>{post.date}</span>
-                      </div>
-                      <h3 className="text-xl font-bold mb-3 group-hover:text-[#555] transition-colors">{post.title}</h3>
-                      <p className="text-[#555] text-sm leading-relaxed mb-6">{post.excerpt}</p>
-                      <span className="inline-flex items-center gap-2 text-[#111] font-semibold text-sm group-hover:gap-4 transition-all">
-                        Read the Guide <ArrowRight size={14} />
-                      </span>
-                    </div>
-                  </Link>
-                </FadeUp>
-              ))
-            )}
-          </div>
+          <FadeUp delay={0.1}>
+            <JournalBookFlip items={displayBlogs} />
+          </FadeUp>
         </div>
       </section>
 
