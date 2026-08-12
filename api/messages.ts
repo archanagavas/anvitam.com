@@ -161,7 +161,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { userQuery, history } = req.body ?? {};
     if (!userQuery) return res.status(400).json({ error: 'userQuery is required.' });
 
-    const nvKey = process.env.NVIDIA_API_KEY || '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';
+    const nvKey = process.env.NVIDIA_API_KEY;
+    if (!nvKey) {
+      console.error('[Chat AI] NVIDIA_API_KEY environment variable is not configured.');
+      return res.status(500).json({ reply: null, error: 'AI service configuration missing.' });
+    }
 
     const formattedHistory = Array.isArray(history)
       ? history
