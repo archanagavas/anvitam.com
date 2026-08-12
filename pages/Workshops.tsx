@@ -302,7 +302,7 @@ Additional Notes: ${formState.notes || 'None'}`;
   return (
     <div className="w-full bg-white text-[#111] min-h-screen font-sans overflow-hidden">
       <Helmet>
-        <title>Hands-On Workshops for Schools & Campuses | Nest N Nurture</title>
+        <title>Hands-On Workshops for Schools, offices &amp; colleges | Nest N Nurture</title>
         <meta name="description" content="Nest N Nurture by Anvitam offers hands-on bird house architecture, campus space makeovers, and eco-craft workshops for schools, colleges, and workplaces." />
         <meta name="keywords" content="nest n nurture, bird house workshop, sustainable architecture workshop, campus space makeover, eco school workshop, plastic waste upcycling" />
       </Helmet>
@@ -330,7 +330,7 @@ Additional Notes: ${formState.notes || 'None'}`;
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.18] mb-4 max-w-3xl mx-auto text-gray-900"
           >
-            Hands-On Workshops for Schools &amp; Campuses
+            Hands-On Workshops for Schools, offices &amp; colleges
           </motion.h1>
 
           {/* Subtitle */}
