@@ -129,6 +129,7 @@ export interface Service {
   icon: string; 
   // New fields for detailed page
   category?: 'Homes & Retreats' | 'Hospitality & Resorts' | 'Land & Gardens' | string;
+  order?: number;
   heroImage?: string;
   whatItIs?: string[]; // Paragraphs
   whoItsFor?: string[]; // Bullet points

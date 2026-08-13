@@ -18,32 +18,36 @@ import { BlogPost } from '../types';
 import { cn } from '../lib/utils';
 
 const FLIP_WORDS = [
-  "Farms",
-  "Eco Resorts",
+  "Consultations",
   "Airbnbs",
+  "Food Forests",
+  "Interior Spaces",
   "Farm Retreats",
   "Homestays",
   "Weekend Villas",
+  "Eco Resorts",
   "Wellness Centers",
-  "Food Forests",
   "Agrotourism",
-  "Community Centers",
-  "Terrace Gardens"
+  "Terrace Gardens",
+  "Community Centers"
 ];
 
 const SERVICES_CHECKLIST = [
-  "Permaculture Design",
-  "Farm retreat",
-  "Airbnb",
-  "Homestay",
-  "Community Center",
+  "Architecture Consultation",
+  "Airbnb & Rental Stays",
+  "Food Forest & Orchards",
+  "Interior Design & Styling",
+  "Farm Retreat & Farmhouse",
+  "Homestay & Eco Stays",
   "Weekend Villa",
-  "Eco Resort",
+  "Eco Resort & Glamping",
+  "Permaculture Design",
   "Wellness Retreat Center",
-  "Food Forest",
+  "Landscape & Yard Design",
   "Agrotourism",
-  "Landscape Design",
-  "Terrace Garden"
+  "Terrace & Balcony Garden",
+  "Backyard & Courtyard",
+  "Community Center"
 ];
 
 /* ─── HERO BACKGROUND VIDEO/IMAGE URL ─── */

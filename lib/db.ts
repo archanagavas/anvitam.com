@@ -87,6 +87,9 @@ export async function getCollection(name: string, orderDir: 'asc' | 'desc' = 'de
     const snap = await db.collection(name).get();
     const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     docs.sort((a: any, b: any) => {
+      if (typeof a.order === 'number' && typeof b.order === 'number') {
+        return a.order - b.order;
+      }
       const timeA = new Date(a.created_at || a.updated_at || a.date || 0).getTime();
       const timeB = new Date(b.created_at || b.updated_at || b.date || 0).getTime();
       return orderDir === 'desc' ? timeB - timeA : timeA - timeB;
@@ -206,6 +209,7 @@ export async function initDatabase(force: boolean = false): Promise<{ success: b
         batch.set(docRef, {
           id: s.id, title: s.title, description: s.description, icon: s.icon,
           category: s.category || '',
+          order: s.order || 99,
           valueProps: s.valueProps || [], heroImage: s.heroImage || '',
           whatItIs: s.whatItIs || [], whoItsFor: s.whoItsFor || [],
           caseStudyId: s.caseStudyId || '', caseStudyIds: s.caseStudyIds || [],
