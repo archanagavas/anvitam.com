@@ -1347,8 +1347,7 @@ export const INITIAL_ESTIMATOR_SERVICES: EstimatorService[] = [
       8000,
       12000,
       18000,
-      20000,
-      15000
+      20000
     ]
   },
   {
