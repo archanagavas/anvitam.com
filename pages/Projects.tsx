@@ -15,12 +15,19 @@ const Projects: React.FC = () => {
     { label: 'All Projects', value: 'All' },
     { label: '🏡 Homes & Retreats', value: 'Residential' },
     { label: '🏨 Hospitality & Resorts', value: 'Hospitality' },
-    { label: '🌾 Land & Gardens', value: 'Permaculture' }
+    { label: '🌿 Land & Gardens', value: 'Permaculture' },
+    { label: '💬 Consultation', value: 'Consultation' }
   ];
 
   const filteredProjects = selectedCategory === 'All'
     ? projects
-    : projects.filter(p => p.category?.toLowerCase().includes(selectedCategory.toLowerCase()) || (selectedCategory === 'Residential' && (p.category === 'Residential' || p.title.toLowerCase().includes('home') || p.title.toLowerCase().includes('house') || p.title.toLowerCase().includes('villa'))) || (selectedCategory === 'Hospitality' && (p.category === 'Hospitality' || p.title.toLowerCase().includes('resort') || p.title.toLowerCase().includes('stay') || p.title.toLowerCase().includes('yurt'))) || (selectedCategory === 'Permaculture' && (p.category === 'Permaculture' || p.title.toLowerCase().includes('farm') || p.title.toLowerCase().includes('garden'))));
+    : projects.filter(p => 
+        p.category?.toLowerCase().includes(selectedCategory.toLowerCase()) || 
+        (selectedCategory === 'Residential' && (p.category === 'Residential' || p.category === 'Homes & Retreats' || p.title.toLowerCase().includes('home') || p.title.toLowerCase().includes('house') || p.title.toLowerCase().includes('villa'))) || 
+        (selectedCategory === 'Hospitality' && (p.category === 'Hospitality' || p.category === 'Hospitality & Resorts' || p.title.toLowerCase().includes('resort') || p.title.toLowerCase().includes('stay') || p.title.toLowerCase().includes('yurt'))) || 
+        (selectedCategory === 'Permaculture' && (p.category === 'Permaculture' || p.category === 'Land & Gardens' || p.title.toLowerCase().includes('farm') || p.title.toLowerCase().includes('garden'))) ||
+        (selectedCategory === 'Consultation' && (p.category === 'Consultation' || p.title.toLowerCase().includes('consult') || p.title.toLowerCase().includes('advisory')))
+      );
 
   const featuredProjects = filteredProjects.slice(0, 4);
   const archivedProjects = filteredProjects.slice(4);

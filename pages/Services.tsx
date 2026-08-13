@@ -18,12 +18,18 @@ const Services: React.FC = () => {
     { label: 'All Services', value: 'All' },
     { label: '🏡 Homes & Retreats', value: 'Homes & Retreats' },
     { label: '🏨 Hospitality & Resorts', value: 'Hospitality & Resorts' },
-    { label: '🌾 Land & Gardens', value: 'Land & Gardens' }
+    { label: '🌿 Land & Gardens', value: 'Land & Gardens' },
+    { label: '💬 Consultation', value: 'Consultation' }
   ];
 
   const filteredServices = selectedCategory === 'All' 
     ? services 
-    : services.filter(s => s.category === selectedCategory || (selectedCategory === 'Homes & Retreats' && (s.id.includes('home') || s.id.includes('villa') || s.id.includes('retreat'))) || (selectedCategory === 'Land & Gardens' && (s.id.includes('permaculture') || s.id.includes('forest') || s.id.includes('garden') || s.id.includes('landscape'))));
+    : services.filter(s => 
+        s.category === selectedCategory || 
+        (selectedCategory === 'Homes & Retreats' && (s.id.includes('home') || s.id.includes('villa') || s.id.includes('retreat'))) || 
+        (selectedCategory === 'Land & Gardens' && (s.id.includes('permaculture') || s.id.includes('forest') || s.id.includes('garden') || s.id.includes('landscape'))) ||
+        (selectedCategory === 'Consultation' && (s.category === 'Consultation' || s.id.includes('consult') || s.title.toLowerCase().includes('consult')))
+      );
 
   const faqs = [
     { question: 'What is your architectural design process?', answer: 'We follow a simple 4-step process: Site reading & land analysis, masterplan & 3D designs, detailed drawings, and site visits to guide your local builders.' },
