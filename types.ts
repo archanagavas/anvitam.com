@@ -3,6 +3,14 @@ export interface GalleryItem {
   caption: string;
 }
 
+export interface ProjectDocument {
+  id: string;
+  label: string;        // Display name, e.g. "Site Plan PDF"
+  url: string;          // External link (Google Drive, Dropbox, etc.)
+  description?: string; // Optional short description
+  gatedAccess: boolean; // If true, require lead capture before access
+}
+
 export interface StorySection {
   title: string;
   content: string;
@@ -28,6 +36,7 @@ export interface Project {
   tags?: string[]; // Tag list
   faqs?: { question: string; answer: string }[]; // FAQ Schema builder items
   status?: 'ongoing' | 'delivered'; // New: Project status
+  documents?: ProjectDocument[]; // Attached resource links
   metaTitle?: string;
   metaDescription?: string;
   metaKeywords?: string;
@@ -131,6 +140,7 @@ export interface Service {
   gallery?: GalleryItem[];
   caseStudyIds?: string[];
   videos?: { url: string; caption: string }[];
+  documents?: ProjectDocument[]; // Attached resource links
   metaTitle?: string;
   metaDescription?: string;
   metaKeywords?: string;

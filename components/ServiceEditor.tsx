@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { 
   ArrowLeft, Save, Sparkles, AlertCircle, X, Plus, Trash2, 
   Image as ImageIcon, Link as LinkIcon, MoveUp, MoveDown, CheckCircle,
-  ChevronUp, ChevronDown, Video, Play, Globe
+  ChevronUp, ChevronDown, Video, Play, Globe, FileText, Lock
 } from 'lucide-react';
-import { Service, ServiceProcess, ServiceFAQ, Project, GalleryItem } from '../types';
+import { Service, ServiceProcess, ServiceFAQ, Project, GalleryItem, ProjectDocument } from '../types';
 import { useContent } from '../context/ContentContext';
 
 // Helper for compressing images client-side
@@ -106,6 +106,9 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({ initial, onSave, onCancel
   // Videos
   const [videos, setVideos] = useState<{ url: string; caption: string }[]>(initial?.videos || []);
 
+  // Documents
+  const [documents, setDocuments] = useState<ProjectDocument[]>(initial?.documents || []);
+
   const [editorError, setEditorError] = useState<string | null>(null);
 
   const handleGalleryItemUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -205,6 +208,7 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({ initial, onSave, onCancel
       bookingLink: bookingLink.trim(),
       gallery,
       videos,
+      documents,
       metaTitle: metaTitle.trim() || title.trim(),
       metaDescription: metaDescription.trim() || description.trim(),
       metaKeywords: metaKeywords.trim(),
@@ -603,6 +607,98 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({ initial, onSave, onCancel
               </div>
             ) : (
               <p className="text-center py-6 border border-dashed border-gray-200 rounded-lg text-xs text-gray-400">No custom screenshot photos added yet.</p>
+            )}
+          </div>
+
+          {/* ── Documents & Files Section ── */}
+          <div className="bg-white border border-gray-150 rounded-xl p-5 shadow-sm space-y-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <h4 className="text-sm font-bold flex items-center gap-1.5 text-gray-800">
+                  <FileText size={15} className="text-blue-600" /> Documents & Resource Files
+                </h4>
+                <p className="text-xs text-gray-500 mt-1">
+                  Attach external file links (Google Drive, Dropbox, Notion, etc.) that visitors can request access to. Gated docs capture leads automatically.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDocuments(prev => [...prev, { id: crypto.randomUUID(), label: '', url: '', description: '', gatedAccess: true }])}
+                className="flex items-center space-x-1.5 bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-blue-700 transition font-bold shrink-0"
+              >
+                <Plus size={12} />
+                <span>Add Document</span>
+              </button>
+            </div>
+
+            {documents.length > 0 ? (
+              <div className="space-y-3 mt-2">
+                {documents.map((doc, index) => (
+                  <div key={doc.id} className="border border-gray-100 rounded-xl p-4 bg-gray-50 space-y-3 relative">
+                    <button
+                      type="button"
+                      onClick={() => setDocuments(prev => prev.filter((_, i) => i !== index))}
+                      className="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-6">
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Document Label *</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Service Brochure, Process PDF"
+                          value={doc.label}
+                          onChange={e => setDocuments(prev => prev.map((d, i) => i === index ? { ...d, label: e.target.value } : d))}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-black bg-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Short Description (optional)</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. 4 pages, includes pricing guide"
+                          value={doc.description || ''}
+                          onChange={e => setDocuments(prev => prev.map((d, i) => i === index ? { ...d, description: e.target.value } : d))}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-black bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">External Link (Google Drive, Dropbox, etc.) *</label>
+                      <div className="relative">
+                        <LinkIcon size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input
+                          type="url"
+                          placeholder="https://drive.google.com/file/d/..."
+                          value={doc.url}
+                          onChange={e => setDocuments(prev => prev.map((d, i) => i === index ? { ...d, url: e.target.value } : d))}
+                          className="w-full border border-gray-200 rounded-lg pl-8 pr-3 py-2 text-xs outline-none focus:border-black bg-white font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <label className="flex items-center gap-2.5 cursor-pointer select-none bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                      <input
+                        type="checkbox"
+                        checked={doc.gatedAccess}
+                        onChange={e => setDocuments(prev => prev.map((d, i) => i === index ? { ...d, gatedAccess: e.target.checked } : d))}
+                        className="rounded border-gray-300 text-black focus:ring-black h-3.5 w-3.5"
+                      />
+                      <Lock size={12} className="text-amber-600 shrink-0" />
+                      <span className="text-xs text-amber-800 font-bold">Gated Access — visitors must enter Name, Email & Phone before viewing this link</span>
+                    </label>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-xl">
+                <FileText size={24} className="mx-auto text-gray-300 mb-2" />
+                <p className="text-xs text-gray-400 font-medium">No documents added yet.</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">Add Google Drive, Dropbox or any file links — with optional lead gate.</p>
+              </div>
             )}
           </div>
 
