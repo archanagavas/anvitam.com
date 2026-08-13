@@ -16,38 +16,60 @@ async function processImage(filePath) {
 
   console.log(`Optimizing: ${path.relative(publicDir, filePath)} (${(stat.size / 1024 / 1024).toFixed(2)} MB)...`);
 
-  try {
-    let pipeline = sharp(filePath);
-    const metadata = await pipeline.metadata();
+  // Await the full conversion pipeline and propagate failures
+  let pipeline = sharp(filePath);
+  const metadata = await pipeline.metadata();
 
-    // If wider than 1920px, scale down to 1920px max for web
-    if (metadata.width && metadata.width > 1920) {
-      pipeline = pipeline.resize({ width: 1920, fit: 'inside', withoutEnlargement: true });
-    }
-
-    await pipeline
-      .webp({ quality: 80, effort: 6 })
-      .toFile(webpPath);
-
-    const newStat = fs.statSync(webpPath);
-    console.log(`  -> Saved ${path.relative(publicDir, webpPath)} (${(newStat.size / 1024).toFixed(1)} KB) - ${((1 - newStat.size / stat.size) * 100).toFixed(1)}% reduction!`);
-  } catch (err) {
-    console.error(`  Error processing ${filePath}:`, err.message);
+  // If wider than 1920px, scale down to 1920px max for web
+  if (metadata.width && metadata.width > 1920) {
+    pipeline = pipeline.resize({ width: 1920, fit: 'inside', withoutEnlargement: true });
   }
+
+  await pipeline
+    .webp({ quality: 80, effort: 6 })
+    .toFile(webpPath);
+
+  const newStat = fs.statSync(webpPath);
+  console.log(`  -> Saved ${path.relative(publicDir, webpPath)} (${(newStat.size / 1024).toFixed(1)} KB) - ${((1 - newStat.size / stat.size) * 100).toFixed(1)}% reduction!`);
 }
 
-function walkDir(dir) {
-  const files = fs.readdirSync(dir);
-  for (const file of files) {
+// Collect all image paths, then process concurrently and await all
+function collectImages(dir) {
+  const results = [];
+  for (const file of fs.readdirSync(dir)) {
     const fullPath = path.join(dir, file);
     if (fs.statSync(fullPath).isDirectory()) {
-      walkDir(fullPath);
+      results.push(...collectImages(fullPath));
     } else {
-      processImage(fullPath);
+      results.push(fullPath);
     }
+  }
+  return results;
+}
+
+async function main() {
+  console.log('Starting image optimization...');
+  const images = collectImages(publicDir);
+
+  const results = await Promise.allSettled(images.map(f => processImage(f)));
+
+  let failures = 0;
+  for (const r of results) {
+    if (r.status === 'rejected') {
+      console.error('  [ERROR] Conversion failed:', r.reason?.message || r.reason);
+      failures++;
+    }
+  }
+
+  if (failures > 0) {
+    console.error(`\nDone with ${failures} failure(s). Check errors above.`);
+    process.exit(1); // Non-zero exit so CI/CD pipelines catch failures
+  } else {
+    console.log('Done optimizing images — all conversions succeeded!');
   }
 }
 
-console.log('Starting image optimization...');
-walkDir(publicDir);
-console.log('Done optimizing images!');
+main().catch(err => {
+  console.error('Fatal error in optimize-images:', err);
+  process.exit(1);
+});

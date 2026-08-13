@@ -77,6 +77,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   return res.status(405).json({ error: 'Method not allowed' });
 }
 
+function sanitizeDocuments(raw: any): { id: string; label: string; url: string; description: string; gatedAccess: boolean }[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((d): d is Record<string, any> => d !== null && typeof d === 'object')
+    .map(d => ({
+      id: typeof d.id === 'string' && d.id.trim() ? d.id.trim().substring(0, 64) : crypto.randomUUID(),
+      label: typeof d.label === 'string' ? d.label.trim().substring(0, 200) : '',
+      description: typeof d.description === 'string' ? d.description.trim().substring(0, 400) : '',
+      url: (typeof d.url === 'string' && /^https?:\/\//i.test(d.url.trim())) ? d.url.trim().substring(0, 2048) : '',
+      gatedAccess: d.gatedAccess !== false,
+    }))
+    .filter(d => d.label && d.url);
+}
+
 function buildServiceDoc(b: any, id: string) {
   return {
     id, title: b.title || '', description: b.description || '',
@@ -86,7 +100,7 @@ function buildServiceDoc(b: any, id: string) {
     caseStudyIds: b.caseStudyIds || [], process: b.process || [],
     pricing: b.pricing || '', faq: b.faq || [],
     bookingLink: b.bookingLink || '', gallery: b.gallery || [],
-    videos: b.videos || [], documents: b.documents || [],
+    videos: b.videos || [], documents: sanitizeDocuments(b.documents),
     metaTitle: b.metaTitle || '', metaDescription: b.metaDescription || '',
     metaKeywords: b.metaKeywords || '',
     metaRobots: b.metaRobots?.trim() ? b.metaRobots : 'index, follow',

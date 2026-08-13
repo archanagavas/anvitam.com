@@ -38,7 +38,13 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
             alt={`${name} - ${role}`}
             className="w-full h-full object-cover object-center"
             onError={(e) => {
-              e.currentTarget.src = "/archana.webp";
+              // Guard against recursive error loop: only apply fallback if not already on it
+              if (e.currentTarget.src !== window.location.origin + '/archana.webp') {
+                e.currentTarget.src = '/archana.webp';
+              } else {
+                // Already on the fallback and it also failed — stop retrying
+                e.currentTarget.onerror = null;
+              }
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />

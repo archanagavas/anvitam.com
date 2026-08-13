@@ -794,13 +794,31 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
             {/* Category */}
             <div>
               <label className="block text-xxs font-bold uppercase tracking-widest text-gray-700 mb-1">Category</label>
-              <input
-                type="text"
-                placeholder="e.g. Residential, Retreat, Farm"
-                value={category}
-                onChange={e => setCategory(e.target.value)}
+              <select
+                value={['Homes & Retreats', 'Hospitality & Resorts', 'Land & Gardens', 'Consultation'].includes(category) ? category : (category ? 'Other' : '')}
+                onChange={e => {
+                  if (e.target.value !== 'Other') setCategory(e.target.value);
+                  else setCategory('');
+                }}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-black transition bg-white"
-              />
+              >
+                <option value="">-- Select Category --</option>
+                <option value="Homes & Retreats">🏡 Homes & Retreats</option>
+                <option value="Hospitality & Resorts">🏨 Hospitality & Resorts</option>
+                <option value="Land & Gardens">🌿 Land & Gardens</option>
+                <option value="Consultation">💬 Consultation</option>
+                <option value="Other">✏️ Other (custom)</option>
+              </select>
+              {/* Show text input only when "Other" is chosen or has a custom value */}
+              {(!['Homes & Retreats', 'Hospitality & Resorts', 'Land & Gardens', 'Consultation', ''].includes(category)) && (
+                <input
+                  type="text"
+                  placeholder="Enter custom category..."
+                  value={category}
+                  onChange={e => setCategory(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-black transition bg-white mt-2"
+                />
+              )}
             </div>
 
             {/* Location & Year */}

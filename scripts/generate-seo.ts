@@ -101,13 +101,14 @@ async function fetchBlogsFromDB(): Promise<BlogSeoItem[]> {
     const rows = await queryDb("SELECT slug, date, updated_at, created_at FROM blogs WHERE status = 'published'");
     return rows.map((r: any) => {
       let lastmod = TODAY;
-      if (r.updated_at) {
-        try { lastmod = new Date(r.updated_at).toISOString().split('T')[0]; } catch (e) {}
-      } else if (r.created_at) {
-        try { lastmod = new Date(r.created_at).toISOString().split('T')[0]; } catch (e) {}
-      } else if (r.date && /^\d{4}-\d{2}-\d{2}$/.test(r.date)) {
-        lastmod = r.date;
-      }
+      // Helper: parse and verify a date value is actually valid before using it
+      const tryDate = (val: any): string | null => {
+        if (!val) return null;
+        const d = new Date(val);
+        if (isNaN(d.getTime())) return null;
+        return d.toISOString().split('T')[0];
+      };
+      lastmod = tryDate(r.updated_at) || tryDate(r.created_at) || (r.date && /^\d{4}-\d{2}-\d{2}$/.test(r.date) ? r.date : null) || TODAY;
       return { slug: r.slug, lastmod };
     }).filter(b => Boolean(b.slug));
   } catch (error) {
@@ -123,12 +124,13 @@ async function fetchProjectsFromDB(): Promise<ProjectSeoItem[]> {
     const rows = await queryDb("SELECT id, slug, updated_at, created_at FROM projects");
     if (rows.length === 0) return PROJECT_IDS.map(id => ({ path: id, lastmod: TODAY }));
     return rows.map((r: any) => {
-      let lastmod = TODAY;
-      if (r.updated_at) {
-        try { lastmod = new Date(r.updated_at).toISOString().split('T')[0]; } catch (e) {}
-      } else if (r.created_at) {
-        try { lastmod = new Date(r.created_at).toISOString().split('T')[0]; } catch (e) {}
-      }
+      const tryDate = (val: any): string | null => {
+        if (!val) return null;
+        const d = new Date(val);
+        if (isNaN(d.getTime())) return null;
+        return d.toISOString().split('T')[0];
+      };
+      const lastmod = tryDate(r.updated_at) || tryDate(r.created_at) || TODAY;
       return { path: r.slug || r.id, lastmod };
     }).filter(p => Boolean(p.path));
   } catch (error) {
