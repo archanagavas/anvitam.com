@@ -354,7 +354,7 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
               <div className="bg-[#111] rounded-2xl sm:rounded-3xl p-4 sm:p-5 text-white shadow-xl">
                 <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
                   <img
-                    src="/archana.png"
+                    src="/archana.webp"
                     alt="Ar. Archana Gavas"
                     className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-[#CCFF00] shrink-0 shadow-md bg-[#222]"
                   />

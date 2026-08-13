@@ -117,7 +117,7 @@ const Why: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <div className="flex -space-x-3">
                     {[
-                      '/archana.png',
+                      '/archana.webp',
                       '/uploads/akash.jpg',
                       '/uploads/rucha.jpg',
                       '/uploads/navin.jpg',
@@ -389,7 +389,7 @@ const Why: React.FC = () => {
             <div className="bg-[#0D0D0D] rounded-3xl overflow-hidden flex flex-col md:flex-row">
               <div className="md:w-1/3 relative">
                 <img
-                  src="/archana.png"
+                  src="/archana.webp"
                   alt="Archana Gavas — Principal Architect, Anvitam"
                   className="w-full h-80 md:h-full object-cover object-top"
                 />

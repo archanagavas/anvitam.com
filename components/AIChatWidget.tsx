@@ -414,7 +414,7 @@ Timestamp: ${new Date().toLocaleString()}`;
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <img 
-                    src="/archana.png" 
+                    src="/archana.webp" 
                     alt="Archana Gavas AI" 
                     className="w-9 h-9 rounded-full object-cover border border-[#CCFF00]" 
                   />

@@ -112,25 +112,8 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 }
 
 const App: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const isBot = /bot|googlebot|crawler|spider|robot|crawling/i.test(navigator.userAgent);
-      if (isBot) return false;
-      return !sessionStorage.getItem('anvitam_loaded');
-    }
-    return true;
-  });
-
-  useEffect(() => {
-    if (!isLoading) return;
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-      try {
-        sessionStorage.setItem('anvitam_loaded', 'true');
-      } catch (e) {}
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [isLoading]);
+  // Render main layout immediately to maximize Web Vitals (FCP, LCP, CLS)
+  const [isLoading, setIsLoading] = useState(false);
 
 
   return (

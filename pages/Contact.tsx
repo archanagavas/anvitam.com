@@ -218,7 +218,7 @@ ${formData.message}`;
                 <div className="bg-[#111] text-white rounded-2xl p-5 sm:p-6 shadow-xl">
                   <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
                     <img
-                      src="/archana.png"
+                      src="/archana.webp"
                       alt="Ar. Archana Gavas"
                       className="w-20 h-20 rounded-full object-cover border-2 border-[#D1F0AA] shrink-0 shadow-md bg-[#222]"
                     />

@@ -17,7 +17,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
   name = "Archana Gavas",
   role = "Founder & Principal Architect, Ecological Design",
   bio = "Archana Gavas is an architect interested in what happens when we stop treating buildings, landscapes, and ecosystems as separate things. Her work sits at the intersection of architecture, permaculture, climate-responsive design, and natural building.",
-  imageSrc = "/archana.png",
+  imageSrc = "/archana.webp",
   linkedinUrl = "https://www.linkedin.com/in/archana-gavas/",
   emailUrl = "mailto:ar.archanagavas@gmail.com",
   badge = "The Architect",
@@ -38,7 +38,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
             alt={`${name} - ${role}`}
             className="w-full h-full object-cover object-center"
             onError={(e) => {
-              e.currentTarget.src = "/archana.png";
+              e.currentTarget.src = "/archana.webp";
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />

@@ -47,7 +47,7 @@ const SERVICES_CHECKLIST = [
 ];
 
 /* ─── HERO BACKGROUND VIDEO/IMAGE URL ─── */
-const HERO_BG = '/hero-image.png';
+const HERO_BG = '/hero-image.webp';
 const SERVICE_1 = 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=75&w=600&auto=format&fit=crop';
 const SERVICE_2 = 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=75&w=600&auto=format&fit=crop';
 const SERVICE_3 = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=75&w=600&auto=format&fit=crop';
@@ -845,7 +845,7 @@ const Home: React.FC = () => {
               {/* Left Profile Image Container */}
               <div className="w-full lg:w-[480px] shrink-0 h-[480px] sm:h-[520px] rounded-[32px] overflow-hidden bg-[#e5dfd5] shadow-xl relative border border-gray-200">
                 <img
-                  src="/archana.png"
+                  src="/archana.webp"
                   alt="Archana Gavas - Principal Architect"
                   className="w-full h-full object-cover object-center"
                 />

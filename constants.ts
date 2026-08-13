@@ -1404,7 +1404,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     name: 'Archana Gavas',
     role: 'Principal Architect, Founder',
     // Updated image link
-    image: '/archana.png',
+    image: '/archana.webp',
     bio: 'Architect & Permaculture Designer helping landowners turn empty land into beautiful farmhouses, eco-resorts, and food forests.',
     linkedin: 'https://www.linkedin.com/in/archana-gavas/'
   },

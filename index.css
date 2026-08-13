@@ -1,0 +1,171 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+
+  --color-biogax-base: #03160E;
+  --color-biogax-neon: #CCFF00;
+  --color-biogax-card: #052A1A;
+  --color-biogax-text: #FAFAFA;
+  --color-biogax-muted: #A3B8AF;
+
+  --color-anvitam-cream: #03160E;
+  --color-anvitam-stone: #CCFF00;
+  --color-anvitam-charcoal: #FAFAFA;
+  --color-anvitam-green: #052A1A;
+  --color-anvitam-blue: #A3B8AF;
+  --color-anvitam-accent: #CCFF00;
+  --color-arch-black: #03160E;
+
+  --animate-slide-up: slideUp 1.2s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+  --animate-fade-in: fadeIn 1s ease-out forwards;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-breathe: breathe 10s ease-in-out infinite alternate;
+
+  @keyframes slideUp {
+    0% { transform: translateY(110%); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+  }
+  @keyframes breathe {
+    0% { transform: scale(1.05); }
+    100% { transform: scale(1.15); }
+  }
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+@keyframes marqueeLeft {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+@keyframes marqueeRight {
+  0% { transform: translate3d(-50%, 0, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+.animate-marquee-left {
+  animation: marqueeLeft 30s linear infinite;
+  will-change: transform;
+}
+.animate-marquee-right {
+  animation: marqueeRight 30s linear infinite;
+  will-change: transform;
+}
+.animate-marquee-infinite {
+  display: flex;
+  width: max-content;
+  animation: customMarquee 25s linear infinite;
+  will-change: transform;
+}
+.animate-marquee-infinite:hover {
+  animation-play-state: paused;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: #EFEFEB;
+  background-size: 100% 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Desktop/PC display zoom preference */
+@media (min-width: 1024px) {
+  html {
+    zoom: 80%;
+  }
+}
+
+@media (min-width: 768px) {
+  body.hide-default-cursor {
+    cursor: none;
+  }
+  .modal-overlay,
+  .modal-overlay *,
+  input,
+  select,
+  textarea,
+  button,
+  a,
+  [role="button"] {
+    cursor: auto !important;
+  }
+  button,
+  a,
+  [role="button"],
+  select,
+  option,
+  .cursor-pointer {
+    cursor: pointer !important;
+  }
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  textarea {
+    cursor: text !important;
+  }
+}
+
+/* LEAF ANIMATION CSS */
+.leaf {
+  position: fixed;
+  top: -10%;
+  width: 30px;
+  height: 30px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23CCFF00' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 13-1.8 17.9A7 7 0 0 1 11 20Z'/%3E%3Cpath d='m19 2-8.4 17.4'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.1;
+  z-index: 0;
+  pointer-events: none;
+  animation: falling linear infinite;
+  filter: blur(1px);
+}
+
+.leaf:nth-child(2n) {
+  filter: blur(2px);
+  opacity: 0.05;
+}
+
+.leaf:nth-child(3n) {
+  filter: blur(0px);
+  opacity: 0.15;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A3B8AF' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12c0-1-1-2.5-1-2.5S7 12 5 9c-1.5-2.25-1.25-5.5 1-7.5 2 2 5.5 2.25 7.75.75C17.5 3 20 6 20 6s-1.5 1-2.5 1c-1 0-2.52 2.5-2.42 5.84C15.71 16.15 18.07 18 21 18'/%3E%3Cpath d='M6.15 15.65 14 8'/%3E%3C/svg%3E");
+}
+
+@keyframes falling {
+  0% {
+    transform: translate(0, -10vh) rotate(0deg) rotateX(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate(100px, 110vh) rotate(360deg) rotateX(180deg);
+    opacity: 0;
+  }
+}

@@ -280,7 +280,7 @@ export function JournalBookFlip({ items, className }: JournalBookFlipProps) {
           className="absolute inset-0 w-full h-full cursor-pointer z-40 group"
         >
           <img 
-            src="/journal-front-page.png" 
+            src="/journal-front-page.webp" 
             alt="Anvitam Journal Front Cover Artwork" 
             className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-700" 
           />
@@ -316,7 +316,7 @@ export function JournalBookFlip({ items, className }: JournalBookFlipProps) {
           className="absolute inset-0 w-full h-full cursor-pointer z-30 group"
         >
           <img 
-            src="/journal-back-cover.png" 
+            src="/journal-back-cover.webp" 
             alt="Anvitam Journal Back Cover Artwork" 
             className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-700" 
           />
