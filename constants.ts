@@ -1416,6 +1416,38 @@ export const TESTIMONIALS: Testimonial[] = INITIAL_TESTIMONIALS;
 
 export const INITIAL_ESTIMATOR_SERVICES: EstimatorService[] = [
   {
+    id: 'interior-design',
+    title: 'Interior Design',
+    icon: '🛋️',
+    desc: 'End-to-end interior design for homes, apartments, villas, and weekend residences from space planning and material selection to detailed drawings and design documentation.',
+    subs: [
+      'Initial Consultation & Site Reading',
+      'Space Planning & Furniture Layout',
+      'Concept & Moodboard',
+      '3D Interior Views',
+      'Detailed Interior Drawings',
+      'Custom Furniture & Joinery Drawings',
+      'Material & Finish Selection',
+      'Lighting Design',
+      'Kitchen & Wardrobe Design',
+      'BOQ / Material Schedule',
+      'Site Coordination / Design Support'
+    ],
+    baseINR: [5000, 15000, 10000, 20000, 15000, 20000, 10000, 5000, 10000, 20000, 20000],
+  },
+  {
+    id: 'project-consultation-reports',
+    title: 'Project Consultation Reports',
+    icon: '🌿',
+    desc: 'If you are unsure if you should move forward on your project, take this without thinking.',
+    subs: [
+      'Initial Consultation & Site Reading',
+      'Development Consultation Report Site Clarity Report',
+      'Detailed Feasibility & Strategy Report'
+    ],
+    baseINR: [5000, 10000, 20000],
+  },
+  {
     id: 'permaculture-design',
     title: 'Food Forest & Land Masterplan',
     icon: '🌾',

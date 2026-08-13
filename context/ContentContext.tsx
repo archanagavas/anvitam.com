@@ -225,6 +225,15 @@ const repairBlog = (b: BlogPost, def?: BlogPost): BlogPost => ({
   status: b.status || def?.status || 'published'
 });
 
+const repairEstimatorService = (e: EstimatorService, def?: EstimatorService): EstimatorService => ({
+  ...def,
+  ...e,
+  icon: e.icon || def?.icon || '🌿',
+  desc: e.desc || def?.desc || '',
+  subs: Array.isArray(e.subs) ? e.subs : (def?.subs || []),
+  baseINR: Array.isArray(e.baseINR) ? e.baseINR : (def?.baseINR || [])
+});
+
 export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [projects, setProjects] = useState<Project[]>(() => {
     const stored = loadFromStorage<Project>('anvitam_projects_v2', INITIAL_PROJECTS);
@@ -248,9 +257,10 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [testimonials, setTestimonials] = useState<Testimonial[]>(() =>
     loadFromStorage<Testimonial>('anvitam_testimonials', INITIAL_TESTIMONIALS)
   );
-  const [estimatorServices, setEstimatorServices] = useState<EstimatorService[]>(() =>
-    loadFromStorage<EstimatorService>('anvitam_estimator_services_v1', INITIAL_ESTIMATOR_SERVICES)
-  );
+  const [estimatorServices, setEstimatorServices] = useState<EstimatorService[]>(() => {
+    const stored = loadFromStorage<EstimatorService>('anvitam_estimator_services_v1', INITIAL_ESTIMATOR_SERVICES);
+    return mergePreservingLocal(stored, [], INITIAL_ESTIMATOR_SERVICES, repairEstimatorService);
+  });
   const [partners, setPartners] = useState<PartnerBrand[]>(() => {
     const raw = loadFromStorage<PartnerBrand>('anvitam_partners_v3', INITIAL_PARTNERS);
     return raw.map(p => {
@@ -271,14 +281,15 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   // ── Fetch from Neon DB ────────────────────────────────────────────
   const refreshFromDb = async () => {
     try {
-      const [blogsRes, projectsRes, servicesRes, productsRes, testimonialsRes, partnersRes, workshopsRes] = await Promise.all([
+      const [blogsRes, projectsRes, servicesRes, productsRes, testimonialsRes, partnersRes, workshopsRes, estimatorRes] = await Promise.all([
         fetch('/api/blogs'),
         fetch('/api/projects'),
         fetch('/api/services'),
         fetch('/api/products'),
         fetch('/api/testimonials'),
         fetch('/api/partners'),
-        fetch('/api/workshops')
+        fetch('/api/workshops'),
+        fetch('/api/estimator-services')
       ]);
 
       const hasAnyFallback = 
@@ -288,13 +299,23 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
         productsRes.headers.get('x-db-fallback') === 'true' ||
         testimonialsRes.headers.get('x-db-fallback') === 'true' ||
         partnersRes.headers.get('x-db-fallback') === 'true' ||
-        workshopsRes.headers.get('x-db-fallback') === 'true';
+        workshopsRes.headers.get('x-db-fallback') === 'true' ||
+        estimatorRes.headers.get('x-db-fallback') === 'true';
 
       if (workshopsRes.ok) {
         const rawWorkshops: Workshop[] = await workshopsRes.json();
         setWorkshops(prev => {
           const merged = mergePreservingLocal(prev, rawWorkshops, INITIAL_WORKSHOPS, repairWorkshop);
           saveToStorage('anvitam_workshops_v2', merged);
+          return merged;
+        });
+      }
+
+      if (estimatorRes.ok) {
+        const rawEstimator: EstimatorService[] = await estimatorRes.json();
+        setEstimatorServices(prev => {
+          const merged = mergePreservingLocal(prev, rawEstimator, INITIAL_ESTIMATOR_SERVICES, repairEstimatorService);
+          saveToStorage('anvitam_estimator_services_v1', merged);
           return merged;
         });
       }
@@ -771,11 +792,21 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const addEstimatorService = async (s: EstimatorService) => {
-    setEstimatorServices(prev => [s, ...prev]);
+    setEstimatorServices(prev => {
+      const next = [s, ...prev.filter(item => item.id !== s.id)];
+      saveToStorage('anvitam_estimator_services_v1', next);
+      return next;
+    });
     const token = getAuthToken();
     if (token) {
       try {
-        await fetch('/api/estimator-services', { method: 'POST', headers: authHeaders(), body: JSON.stringify(s) });
+        const res = await fetch('/api/estimator-services', { method: 'POST', headers: authHeaders(), body: JSON.stringify(s) });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          console.error('[ContentContext] Failed to save estimator service to DB:', res.status, err);
+        } else {
+          console.log('[ContentContext] ✅ Saved estimator service to DB:', s.title);
+        }
       } catch (err) {
         console.error('Failed to save estimator service to DB:', err);
       }
@@ -783,11 +814,21 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const updateEstimatorService = async (s: EstimatorService) => {
-    setEstimatorServices(prev => prev.map(item => item.id === s.id ? s : item));
+    setEstimatorServices(prev => {
+      const next = prev.map(item => item.id === s.id ? s : item);
+      saveToStorage('anvitam_estimator_services_v1', next);
+      return next;
+    });
     const token = getAuthToken();
     if (token) {
       try {
-        await fetch(`/api/estimator-services/${s.id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(s) });
+        const res = await fetch(`/api/estimator-services/${s.id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(s) });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          console.error('[ContentContext] Failed to update estimator service in DB:', res.status, err);
+        } else {
+          console.log('[ContentContext] ✅ Updated estimator service in DB:', s.title);
+        }
       } catch (err) {
         console.error('Failed to update estimator service in DB:', err);
       }
