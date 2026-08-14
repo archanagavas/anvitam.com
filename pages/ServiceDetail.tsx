@@ -3,10 +3,11 @@ import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
 import { Project } from '../types';
-import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardList, PenTool, Wrench, Sprout, Check, HelpCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardList, PenTool, Wrench, Sprout, Check, HelpCircle, FileText } from 'lucide-react';
 import TestimonialCarousel from '../components/TestimonialCarousel';
 import VerticalTimeline from '../components/VerticalTimeline';
 import FlowButton from '../components/ui/flow-button';
+import DocumentsList from '../components/DocumentLeadGate';
 import { formatCMSContent } from '../utils/cmsFormatter';
 import '../blog-prose.css';
 
@@ -333,6 +334,32 @@ const ServiceDetail: React.FC = () => {
             className="blog-prose max-w-3xl"
             dangerouslySetInnerHTML={{ __html: formatCMSContent(service.whatItIs) }}
           />
+        </div>
+      )}
+
+      {/* Attached Service Documents & Resource Files */}
+      {service.documents && service.documents.length > 0 && (
+        <div className="max-w-4xl mx-auto px-6 mb-24">
+          <div className="bg-[#f8fdf4] border border-[#c3e88d] rounded-2xl p-6 sm:p-8 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2 border-b border-[#c3e88d]/50 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#8bc34a]/20 flex items-center justify-center text-[#5a8a2d] shrink-0">
+                  <FileText size={20} />
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#5a8a2d]">Service Deliverables & Guides</span>
+                  <h3 className="text-xl font-bold text-[#111] tracking-tight">Service Resources & Documents</h3>
+                </div>
+              </div>
+              <span className="text-xs font-semibold bg-[#8bc34a]/20 text-[#33691e] px-3 py-1 rounded-full self-start sm:self-auto">
+                {service.documents.length} File{service.documents.length > 1 ? 's' : ''} Available
+              </span>
+            </div>
+            <p className="text-xs text-gray-600 mb-4 leading-relaxed">
+              Access official service guidelines, design sample PDFs, or project planning decks below.
+            </p>
+            <DocumentsList documents={service.documents} contextTitle={service.title} />
+          </div>
         </div>
       )}
 

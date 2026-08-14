@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, HelpCircle, FileText } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import FlowButton from '../components/ui/flow-button';
+import DocumentsList from '../components/DocumentLeadGate';
 import { formatCMSContent } from '../utils/cmsFormatter';
 import '../blog-prose.css';
 
@@ -173,8 +174,17 @@ const ProjectDetail: React.FC = () => {
           </div>
         )}
 
-        <div className="mb-4">
+        <div className="mb-4 flex flex-wrap items-center justify-center gap-3">
           {ctaButton}
+          {project.documents && project.documents.length > 0 && (
+            <a 
+              href="#project-reports" 
+              className="inline-flex items-center gap-2 bg-[#111] text-white hover:bg-gray-800 font-bold text-xs px-5 py-3 rounded-full transition shadow-md group"
+            >
+              <FileText size={14} className="text-[#CCFF00]" />
+              <span>Get Full Report ({project.documents.length})</span>
+            </a>
+          )}
         </div>
       </div>
 
@@ -340,6 +350,32 @@ const ProjectDetail: React.FC = () => {
             className="blog-prose max-w-3xl"
             dangerouslySetInnerHTML={{ __html: formatCMSContent(project.fullDescription) }}
           />
+        </div>
+      )}
+
+      {/* 7. Attached Project Reports & Resource Files (Gated Lead Capture) */}
+      {project.documents && project.documents.length > 0 && (
+        <div id="project-reports" className="max-w-4xl mx-auto px-6 mb-24 scroll-mt-28">
+          <div className="bg-[#f8fdf4] border border-[#c3e88d] rounded-2xl p-6 sm:p-8 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2 border-b border-[#c3e88d]/50 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#8bc34a]/20 flex items-center justify-center text-[#5a8a2d] shrink-0">
+                  <FileText size={20} />
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#5a8a2d]">Official Deliverables & Reports</span>
+                  <h3 className="text-xl font-bold text-[#111] tracking-tight">Full Project Reports & Resources</h3>
+                </div>
+              </div>
+              <span className="text-xs font-semibold bg-[#8bc34a]/20 text-[#33691e] px-3 py-1 rounded-full self-start sm:self-auto">
+                {project.documents.length} File{project.documents.length > 1 ? 's' : ''} Available
+              </span>
+            </div>
+            <p className="text-xs text-gray-600 mb-4 leading-relaxed">
+              Access the complete consultation report, masterplan diagrams, rollout roadmap, or investor decks for this project below.
+            </p>
+            <DocumentsList documents={project.documents} contextTitle={project.title} />
+          </div>
         </div>
       )}
 
