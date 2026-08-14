@@ -25,6 +25,8 @@ import {
   ChevronDown
 } from 'lucide-react';
 import FlowButton from '../components/ui/flow-button';
+import { formatCMSContent } from '../utils/cmsFormatter';
+import '../blog-prose.css';
 
 const WorkshopDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -434,9 +436,10 @@ Additional Notes: ${formState.notes || 'None'}`;
             <h2 className="text-2xl font-black text-gray-950 flex items-center gap-2">
               <Sparkles size={20} className="text-emerald-600" /> Workshop Overview & Highlights
             </h2>
-            <p className="text-gray-700 leading-relaxed text-base whitespace-pre-line bg-gray-50 p-6 rounded-2xl border border-gray-150">
-              {workshop.description}
-            </p>
+            <div 
+              className="blog-prose bg-gray-50/60 p-6 sm:p-8 rounded-2xl border border-gray-150"
+              dangerouslySetInnerHTML={{ __html: formatCMSContent(workshop.description) }}
+            />
           </div>
 
           {/* Offerings Matrix */}

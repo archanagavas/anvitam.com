@@ -7,6 +7,8 @@ import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardList, PenTool, Wrench, Sp
 import TestimonialCarousel from '../components/TestimonialCarousel';
 import VerticalTimeline from '../components/VerticalTimeline';
 import FlowButton from '../components/ui/flow-button';
+import { formatCMSContent } from '../utils/cmsFormatter';
+import '../blog-prose.css';
 
 // Helper to extract SSR-injected metadata from the DOM during hydration
 const getSSRMetadata = () => {
@@ -327,11 +329,10 @@ const ServiceDetail: React.FC = () => {
       {service.whatItIs && service.whatItIs.length > 0 && (
         <div className="max-w-4xl mx-auto px-6 mb-24">
           <h3 className="text-xl md:text-2xl font-bold text-[#111] mb-6 tracking-tight">Service Overview & Philosophy</h3>
-          <div className="space-y-6 text-gray-600 leading-relaxed font-light text-sm md:text-base max-w-3xl">
-            {service.whatItIs.map((para, idx) => (
-              <p key={idx}>{para}</p>
-            ))}
-          </div>
+          <div 
+            className="blog-prose max-w-3xl"
+            dangerouslySetInnerHTML={{ __html: formatCMSContent(service.whatItIs) }}
+          />
         </div>
       )}
 

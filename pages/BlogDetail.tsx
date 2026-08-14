@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
 import { ArrowRight, Calendar, Link as LinkIcon, Tag, Linkedin, Instagram, Facebook } from 'lucide-react';
 import DOMPurify from 'dompurify';
+import { formatCMSContent } from '../utils/cmsFormatter';
 import '../blog-prose.css';
 
 // Strict DOMPurify allowlist for rendering blog content.
@@ -218,7 +219,7 @@ const BlogDetail: React.FC = () => {
       <div className="max-w-3xl mx-auto px-6 mb-16">
         <div
           className="blog-prose"
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blog.content, BLOG_PURIFY_CONFIG) as string }}
+          dangerouslySetInnerHTML={{ __html: formatCMSContent(blog.content) }}
         />
 
         {/* Visible FAQ Section */}

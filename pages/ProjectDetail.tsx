@@ -5,6 +5,8 @@ import { useContent } from '../context/ContentContext';
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import FlowButton from '../components/ui/flow-button';
+import { formatCMSContent } from '../utils/cmsFormatter';
+import '../blog-prose.css';
 
 // Helper to extract SSR-injected metadata from the DOM during hydration
 const getSSRMetadata = () => {
@@ -335,8 +337,8 @@ const ProjectDetail: React.FC = () => {
         <div className="max-w-4xl mx-auto px-6 mb-24">
           <h3 className="text-xl md:text-2xl font-bold text-[#111] mb-6 tracking-tight">Detailed Case Study</h3>
           <div 
-            className="prose prose-sm md:prose-base text-gray-600 leading-relaxed font-light space-y-4 ql-editor"
-            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(project.fullDescription) }}
+            className="blog-prose max-w-3xl"
+            dangerouslySetInnerHTML={{ __html: formatCMSContent(project.fullDescription) }}
           />
         </div>
       )}
