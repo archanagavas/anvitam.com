@@ -1787,13 +1787,13 @@ const Admin: React.FC = () => {
             <form onSubmit={handleLogin} className="p-8 space-y-5">
               {/* Email */}
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest">Gmail Address</label>
+                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest">Email Address</label>
                 <div className="relative">
                   <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300" />
                   <input
                     type="email"
                     required
-                    placeholder="ar.archanagavas@gmail.com"
+                    placeholder="name@example.com"
                     value={email}
                     onChange={(e) => { setEmail(e.target.value); setLoginError(null); }}
                     className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3.5 outline-none focus:border-[#111] text-gray-800 text-sm transition bg-gray-50 focus:bg-white"
