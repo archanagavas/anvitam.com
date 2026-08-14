@@ -446,42 +446,52 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   // ── CRUD Operations ──────────────────────────────────────────────────────
   const addProject = async (project: Project) => {
-    setProjects(prev => [project, ...prev]);
+    setProjects(prev => {
+      const next = [project, ...prev.filter(p => p.id !== project.id)];
+      saveToStorage('anvitam_projects_v2', next);
+      return next;
+    });
     const token = getAuthToken();
-    if (token) {
-      try {
-        const res = await fetch('/api/projects', {
-          method: 'POST',
-          headers: authHeaders(),
-          body: JSON.stringify(project),
-        });
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          console.error('[ContentContext] DB project save failed:', res.status, err);
-        } else {
-          console.log('[ContentContext] ✅ Project saved to DB:', project.title);
-        }
-      } catch (err) {
-        console.error('[ContentContext] Failed to save project to DB:', err);
-      }
+    if (!token) {
+      console.warn('[ContentContext] No auth token — DB sync cannot proceed');
+      throw new Error('Admin session missing. Please re-login to sync to database.');
+    }
+    const res = await fetch('/api/projects', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify(project),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      console.error('[ContentContext] DB project save failed:', res.status, err);
+      throw new Error(err.error || `Failed to save project to database (${res.status})`);
     } else {
-      console.warn('[ContentContext] No auth token — project saved to localStorage only');
+      console.log('[ContentContext] ✅ Project saved to DB:', project.title);
     }
   };
 
   const updateProject = async (project: Project) => {
-    setProjects(prev => prev.map(p => p.id === project.id ? project : p));
+    setProjects(prev => {
+      const next = prev.map(p => p.id === project.id ? project : p);
+      saveToStorage('anvitam_projects_v2', next);
+      return next;
+    });
     const token = getAuthToken();
-    if (token) {
-      try {
-        await fetch(`/api/projects/${project.id}`, {
-          method: 'PUT',
-          headers: authHeaders(),
-          body: JSON.stringify(project),
-        });
-      } catch (err) {
-        console.error('[ContentContext] Failed to update project in DB:', err);
-      }
+    if (!token) {
+      console.warn('[ContentContext] No auth token — DB sync cannot proceed');
+      throw new Error('Admin session missing. Please re-login to sync to database.');
+    }
+    const res = await fetch(`/api/projects/${project.id}`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify(project),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      console.error('[ContentContext] DB project update failed:', res.status, err);
+      throw new Error(err.error || `Failed to update project in database (${res.status})`);
+    } else {
+      console.log('[ContentContext] ✅ Project updated in DB:', project.title);
     }
   };
 
@@ -536,66 +546,86 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const addService = async (service: Service) => {
-    setServices(prev => [...prev, service]);
+    setServices(prev => {
+      const next = [...prev.filter(s => s.id !== service.id), service];
+      saveToStorage('anvitam_services_v7', next);
+      return next;
+    });
     const token = getAuthToken();
-    if (token) {
-      try {
-        await fetch('/api/services', {
-          method: 'POST',
-          headers: authHeaders(),
-          body: JSON.stringify(service),
-        });
-      } catch (err) {
-        console.error('[ContentContext] Failed to save service to DB:', err);
-      }
+    if (!token) {
+      throw new Error('Admin session missing. Please re-login to sync to database.');
+    }
+    const res = await fetch('/api/services', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify(service),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Failed to save service (${res.status})`);
     }
   };
 
   const updateService = async (service: Service) => {
-    setServices(prev => prev.map(s => s.id === service.id ? service : s));
+    setServices(prev => {
+      const next = prev.map(s => s.id === service.id ? service : s);
+      saveToStorage('anvitam_services_v7', next);
+      return next;
+    });
     const token = getAuthToken();
-    if (token) {
-      try {
-        await fetch(`/api/services/${service.id}`, {
-          method: 'PUT',
-          headers: authHeaders(),
-          body: JSON.stringify(service),
-        });
-      } catch (err) {
-        console.error('[ContentContext] Failed to update service in DB:', err);
-      }
+    if (!token) {
+      throw new Error('Admin session missing. Please re-login to sync to database.');
+    }
+    const res = await fetch(`/api/services/${service.id}`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify(service),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Failed to update service (${res.status})`);
     }
   };
 
   const addDigitalProduct = async (product: DigitalProduct) => {
-    setDigitalProducts(prev => [product, ...prev]);
+    setDigitalProducts(prev => {
+      const next = [product, ...prev.filter(p => p.id !== product.id)];
+      saveToStorage('anvitam_products', next);
+      return next;
+    });
     const token = getAuthToken();
-    if (token) {
-      try {
-        await fetch('/api/products', {
-          method: 'POST',
-          headers: authHeaders(),
-          body: JSON.stringify(product),
-        });
-      } catch (err) {
-        console.error('[ContentContext] Failed to save product to DB:', err);
-      }
+    if (!token) {
+      throw new Error('Admin session missing. Please re-login to sync to database.');
+    }
+    const res = await fetch('/api/products', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify(product),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Failed to save product (${res.status})`);
     }
   };
 
   const updateDigitalProduct = async (product: DigitalProduct) => {
-    setDigitalProducts(prev => prev.map(p => p.id === product.id ? product : p));
+    setDigitalProducts(prev => {
+      const next = prev.map(p => p.id === product.id ? product : p);
+      saveToStorage('anvitam_products', next);
+      return next;
+    });
     const token = getAuthToken();
-    if (token) {
-      try {
-        await fetch(`/api/products/${product.id}`, {
-          method: 'PUT',
-          headers: authHeaders(),
-          body: JSON.stringify(product),
-        });
-      } catch (err) {
-        console.error('[ContentContext] Failed to update product in DB:', err);
-      }
+    if (!token) {
+      throw new Error('Admin session missing. Please re-login to sync to database.');
+    }
+    const res = await fetch(`/api/products/${product.id}`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify(product),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Failed to update product (${res.status})`);
     }
   };
 

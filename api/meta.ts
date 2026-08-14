@@ -89,7 +89,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // ── POST ─────────────────────────────────────────────────────────────────
   if (req.method === 'POST') {
-    const b = req.body ?? {};
+    const b = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body ?? {});
     let targetId = id || b.id;
 
     if (resource === 'partners') {
@@ -123,8 +123,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // ── PUT ──────────────────────────────────────────────────────────────────
   if (req.method === 'PUT') {
-    if (!id) return res.status(400).json({ error: `Missing ${resource} ID` });
-    const b = req.body ?? {};
+    const b = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body ?? {});
+    const targetId = id || b.id;
+    if (!targetId) return res.status(400).json({ error: `Missing ${resource} ID` });
 
     if (resource === 'partners') {
       const { name, logo, icon, website } = b;

@@ -55,21 +55,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!token || !verifyAdminToken(token)) return res.status(401).json({ error: 'Unauthorized' });
 
   if (req.method === 'POST') {
-    const b = req.body ?? {};
+    const b = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body ?? {});
     const targetId = id || b.id;
     if (!targetId) return res.status(400).json({ error: 'Missing project ID' });
     try {
       await upsertDoc('projects', targetId, buildProjectDoc(b, targetId));
-    } catch (err) { console.warn('[projects API] upsert failed:', err); }
-    return res.status(201).json({ success: true });
+      return res.status(201).json({ success: true, id: targetId });
+    } catch (err: any) {
+      console.error('[projects API] upsert failed:', err);
+      return res.status(500).json({ error: err?.message || 'Database save failed' });
+    }
   }
 
   if (req.method === 'PUT') {
-    if (!id) return res.status(400).json({ error: 'Missing project ID' });
+    const b = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body ?? {});
+    const targetId = id || b.id;
+    if (!targetId) return res.status(400).json({ error: 'Missing project ID' });
     try {
-      await upsertDoc('projects', id, buildProjectDoc(req.body ?? {}, id));
-    } catch (err) { console.warn('[projects API] update failed:', err); }
-    return res.status(200).json({ success: true });
+      await upsertDoc('projects', targetId, buildProjectDoc(b, targetId));
+      return res.status(200).json({ success: true, id: targetId });
+    } catch (err: any) {
+      console.error('[projects API] update failed:', err);
+      return res.status(500).json({ error: err?.message || 'Database update failed' });
+    }
   }
 
   if (req.method === 'DELETE') {

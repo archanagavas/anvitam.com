@@ -1707,52 +1707,72 @@ const Admin: React.FC = () => {
     }
   };
 
-  const handleProjectSave = (project: Project) => {
-    if (editingProject) {
-      updateProject(project);
-      showToast('Project updated successfully!');
-    } else {
-      addProject(project);
-      showToast('Project created successfully!');
+  const handleProjectSave = async (project: Project) => {
+    try {
+      if (editingProject) {
+        await updateProject(project);
+        showToast('Project updated and synced to database!');
+      } else {
+        await addProject(project);
+        showToast('Project created and synced to database!');
+      }
+      setProjectView('list');
+      setEditingProject(null);
+    } catch (err: any) {
+      console.error('[Admin] Project save failed:', err);
+      showToast(`⚠️ DB sync issue: ${err.message || 'Check connection'}`);
     }
-    setProjectView('list');
-    setEditingProject(null);
   };
 
-  const handleServiceSave = (service: Service) => {
-    if (editingService) {
-      updateService(service);
-      showToast('Service updated successfully!');
-    } else {
-      addService(service);
-      showToast('Service created successfully!');
+  const handleServiceSave = async (service: Service) => {
+    try {
+      if (editingService) {
+        await updateService(service);
+        showToast('Service updated and synced to database!');
+      } else {
+        await addService(service);
+        showToast('Service created and synced to database!');
+      }
+      setServiceView('list');
+      setEditingService(null);
+    } catch (err: any) {
+      console.error('[Admin] Service save failed:', err);
+      showToast(`⚠️ DB sync issue: ${err.message || 'Check connection'}`);
     }
-    setServiceView('list');
-    setEditingService(null);
   };
 
-  const handleProductSave = (product: DigitalProduct) => {
-    if (editingProduct) {
-      updateDigitalProduct(product);
-      showToast('Product updated successfully!');
-    } else {
-      addDigitalProduct(product);
-      showToast('Product created successfully!');
+  const handleProductSave = async (product: DigitalProduct) => {
+    try {
+      if (editingProduct) {
+        await updateDigitalProduct(product);
+        showToast('Product updated and synced to database!');
+      } else {
+        await addDigitalProduct(product);
+        showToast('Product created and synced to database!');
+      }
+      setProductView('list');
+      setEditingProduct(null);
+    } catch (err: any) {
+      console.error('[Admin] Product save failed:', err);
+      showToast(`⚠️ DB sync issue: ${err.message || 'Check connection'}`);
     }
-    setProductView('list');
-    setEditingProduct(null);
   };
 
-  const handleWorkshopSave = (workshop: Workshop) => {
-    if (editingWorkshop) {
-      updateWorkshop(workshop);
-      showToast('Workshop updated successfully!');
-    } else {
-      addWorkshop(workshop);
-      showToast('Workshop created successfully!');
+  const handleWorkshopSave = async (workshop: Workshop) => {
+    try {
+      if (editingWorkshop) {
+        await updateWorkshop(workshop);
+        showToast('Workshop updated and synced to database!');
+      } else {
+        await addWorkshop(workshop);
+        showToast('Workshop created and synced to database!');
+      }
+      setWorkshopView('list');
+      setEditingWorkshop(null);
+    } catch (err: any) {
+      console.error('[Admin] Workshop save failed:', err);
+      showToast(`⚠️ DB sync issue: ${err.message || 'Check connection'}`);
     }
-    setWorkshopView('list');
-    setEditingWorkshop(null);
   };
 
   // ── Auth checking splash ──────────────────────────────────────────
