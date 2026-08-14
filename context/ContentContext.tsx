@@ -472,7 +472,8 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const updateProject = async (project: Project) => {
     setProjects(prev => {
-      const next = prev.map(p => p.id === project.id ? project : p);
+      const filtered = prev.filter(p => p.id !== project.id);
+      const next = [project, ...filtered];
       saveToStorage('anvitam_projects_v2', next);
       return next;
     });
