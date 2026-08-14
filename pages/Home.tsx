@@ -215,7 +215,7 @@ const Home: React.FC = () => {
       {/* ══════════════════════════════════════════
           HERO — full-bleed mountain image, centered text
       ══════════════════════════════════════════ */}
-      <section ref={heroRef} className="relative min-h-[650px] lg:h-screen lg:min-h-[700px] flex flex-col items-center justify-center overflow-hidden pt-20 sm:pt-24 lg:pt-0 pb-16 sm:pb-20 lg:pb-0">
+      <section ref={heroRef} className="relative min-h-[720px] sm:min-h-[780px] lg:min-h-screen flex flex-col items-center justify-center overflow-hidden pt-20 sm:pt-24 lg:pt-20 pb-28 sm:pb-32 lg:pb-28">
         {/* BG image with parallax */}
         <motion.div style={{ y: heroY }} className="absolute inset-0 z-0">
           <img 
@@ -230,7 +230,7 @@ const Home: React.FC = () => {
         </motion.div>
 
         {/* Centered hero text */}
-        <motion.div style={{ opacity: heroOpacity }} className="relative z-10 text-center px-4 sm:px-6 max-w-5xl md:max-w-6xl mx-auto pt-10 pb-6">
+        <motion.div style={{ opacity: heroOpacity }} className="relative z-10 text-center px-4 sm:px-6 max-w-5xl md:max-w-6xl mx-auto pt-6 sm:pt-10 pb-4 sm:pb-6">
           {/* Trust Pill Badge */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -291,12 +291,12 @@ const Home: React.FC = () => {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="pt-1"
+            className="pt-2 sm:pt-3"
           >
-            <p className="text-xs uppercase tracking-widest text-[#CCFF00] font-bold mb-2.5 drop-shadow-sm">
+            <p className="text-xs sm:text-sm uppercase tracking-widest text-[#CCFF00] font-bold mb-3 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
               What space are you looking to create?
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-xs">
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm">
               {[
                 { label: '🏡 Private Home or Villa?', path: '/services?category=Homes+%26+Retreats' },
                 { label: '🏨 Farmstay, Airbnb or Eco Resort?', path: '/services?category=Hospitality+%26+Resorts' },
@@ -305,10 +305,10 @@ const Home: React.FC = () => {
                 <Link
                   key={cat.label}
                   to={cat.path}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/10 hover:bg-[#CCFF00] hover:text-black backdrop-blur-md border border-white/25 text-white font-semibold transition-all duration-300 hover:scale-105 shadow-md group/pill whitespace-nowrap text-xs sm:text-xs"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-black/60 hover:bg-[#CCFF00] hover:text-black backdrop-blur-md border border-white/30 text-white font-semibold transition-all duration-300 hover:scale-105 shadow-xl group/pill whitespace-nowrap text-xs sm:text-sm"
                 >
                   <span>{cat.label}</span>
-                  <ArrowRight size={13} className="text-[#CCFF00] group-hover/pill:text-black transition-colors shrink-0" />
+                  <ArrowRight size={14} className="text-[#CCFF00] group-hover/pill:text-black transition-colors shrink-0" />
                 </Link>
               ))}
             </div>
