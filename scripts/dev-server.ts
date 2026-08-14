@@ -18,6 +18,7 @@ import productsHandler from '../api/products';
 import metaHandler from '../api/meta';
 import workshopsHandler from '../api/workshops';
 import analyticsHandler from '../api/analytics';
+import seoHandler from '../api/seo';
 
 const PORT = 3005;
 
@@ -140,13 +141,35 @@ const server = createServer(async (req, res) => {
       await metaHandler(vercelReq, vercelRes);
     } else if (pathname.startsWith('/api/meta')) {
       await metaHandler(vercelReq, vercelRes);
-    } else if (pathname === '/api/sitemap' || pathname === '/api/sitemap/' || pathname === '/api/sitemap.xml') {
-      // Served as static pre-generated sitemap.xml on Vercel; dev-server mocks it
-      res.setHeader('Content-Type', 'application/xml');
-      res.end('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>');
-    } else if (pathname === '/api/llms' || pathname === '/api/llms/' || pathname === '/api/llms.txt' || pathname === '/api/llms-full') {
-      res.setHeader('Content-Type', 'text/plain');
-      res.end('# LLMs documentation (Mocked in dev server)');
+    } else if (
+      pathname === '/sitemap.xml' ||
+      pathname === '/api/sitemap' ||
+      pathname === '/api/sitemap/' ||
+      pathname === '/api/sitemap.xml'
+    ) {
+      vercelReq.query.action = 'sitemap';
+      await seoHandler(vercelReq, vercelRes);
+    } else if (
+      pathname === '/llms.txt' ||
+      pathname === '/llm.txt' ||
+      pathname === '/api/llms' ||
+      pathname === '/api/llms/' ||
+      pathname === '/api/llms.txt'
+    ) {
+      vercelReq.query.action = 'llms';
+      vercelReq.query.mode = 'short';
+      await seoHandler(vercelReq, vercelRes);
+    } else if (
+      pathname === '/llms-full.txt' ||
+      pathname === '/llmsfull.txt' ||
+      pathname === '/api/llms-full' ||
+      pathname === '/api/llms-full.txt'
+    ) {
+      vercelReq.query.action = 'llms';
+      vercelReq.query.mode = 'full';
+      await seoHandler(vercelReq, vercelRes);
+    } else if (pathname === '/api/seo' || pathname.startsWith('/api/seo/')) {
+      await seoHandler(vercelReq, vercelRes);
     } else {
       res.statusCode = 404;
       res.end(JSON.stringify({ error: 'Route not found' }));

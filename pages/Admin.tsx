@@ -2976,9 +2976,9 @@ const Admin: React.FC = () => {
 
         {/* ── SEO ── */}
         {activeTab === 'seo' && (() => {
-          const sitemapUrl = `${window.location.protocol}//${window.location.host}/api/sitemap.xml`;
-          const llmsUrl = `${window.location.protocol}//${window.location.host}/api/llms.txt`;
-          const llmsFullUrl = `${window.location.protocol}//${window.location.host}/api/llms-full.txt`;
+          const sitemapUrl = `${window.location.protocol}//${window.location.host}/sitemap.xml`;
+          const llmsUrl = `${window.location.protocol}//${window.location.host}/llms.txt`;
+          const llmsFullUrl = `${window.location.protocol}//${window.location.host}/llms-full.txt`;
 
           return (
             <div className="space-y-6 animate-fade-in font-sans">

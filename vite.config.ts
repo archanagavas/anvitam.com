@@ -21,6 +21,22 @@ export default defineConfig({
         target: 'http://localhost:3005',
         changeOrigin: true,
       },
+      '/sitemap.xml': {
+        target: 'http://localhost:3005',
+        changeOrigin: true,
+      },
+      '/llms.txt': {
+        target: 'http://localhost:3005',
+        changeOrigin: true,
+      },
+      '/llms-full.txt': {
+        target: 'http://localhost:3005',
+        changeOrigin: true,
+      },
+      '/llm.txt': {
+        target: 'http://localhost:3005',
+        changeOrigin: true,
+      },
     },
   },
   plugins: [react(), tailwindcss()],

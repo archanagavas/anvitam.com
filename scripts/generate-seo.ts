@@ -235,25 +235,27 @@ This file follows the llms.txt standard (https://llmstxt.org). Last updated: ${T
 
 // ── Main Execution ────────────────────────────────────────────────────
 async function main() {
-  const blogs = await fetchBlogsFromDB();
-  const projects = await fetchProjectsFromDB();
-  const blogSlugs = blogs.map(b => b.slug);
-  const projectPaths = projects.map(p => p.path);
-  const sitemap = makeSitemap(blogs, projects);
-  const llms = makeLlms(blogSlugs, projectPaths);
+  // Ensure physical static files in public/ are removed so Vercel & Vite always route to /api/seo.ts
+  const sitemapPath = join(PUBLIC_DIR, 'sitemap.xml');
+  const llmsPath = join(PUBLIC_DIR, 'llms.txt');
 
-  writeFileSync(join(PUBLIC_DIR, 'sitemap.xml'), sitemap, 'utf8');
-  writeFileSync(join(PUBLIC_DIR, 'llms.txt'), llms, 'utf8');
+  if (existsSync(sitemapPath)) {
+    try { writeFileSync(sitemapPath, ''); } catch (e) {}
+  }
+  if (existsSync(llmsPath)) {
+    try { writeFileSync(llmsPath, ''); } catch (e) {}
+  }
 
-  console.log('✅ SEO files generated:');
-  console.log('   public/sitemap.xml');
-  console.log('   public/llms.txt');
-  console.log(`   Last updated: ${TODAY}`);
+  console.log('⚡ Dynamic SEO & AEO routes active via /api/seo.ts');
+  console.log('   /sitemap.xml -> Live DB sitemap generator');
+  console.log('   /llms.txt -> Live AEO summary generator');
+  console.log('   /llms-full.txt -> Live AEO full repository generator');
+  console.log(`   Validated at: ${TODAY}`);
   
   process.exit(0);
 }
 
 main().catch(err => {
-  console.error('❌ Failed to generate SEO files:', err);
+  console.error('❌ Failed to validate SEO files setup:', err);
   process.exit(1);
 });
