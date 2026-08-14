@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, ChevronRight, Ruler, Zap, Clock, Leaf } from 'lucide-react';
+import { MapPin, ChevronRight, User, Wrench, Calendar, Activity } from 'lucide-react';
 import FlowButton from '../components/ui/flow-button';
 
 const Projects: React.FC = () => {
@@ -37,110 +37,151 @@ const Projects: React.FC = () => {
     return statusA - statusB;
   });
 
-  const getSpecIcon = (label: string) => {
-    const l = label.toLowerCase();
-    if (l.includes('area') || l.includes('sqft') || l.includes('size')) return <Ruler size={16} strokeWidth={2.5} className="text-[#0a0a0a] shrink-0" />;
-    if (l.includes('energy') || l.includes('power')) return <Zap size={16} strokeWidth={2.5} className="text-[#0a0a0a] shrink-0" />;
-    if (l.includes('time') || l.includes('duration')) return <Clock size={16} strokeWidth={2.5} className="text-[#0a0a0a] shrink-0" />;
-    if (l.includes('team') || l.includes('lead')) return <Leaf size={16} fill="#CCFF00" strokeWidth={1} className="text-[#0a0a0a] shrink-0" />;
-    return <ChevronRight size={16} strokeWidth={2.5} className="text-[#0a0a0a] shrink-0" />;
+  const getClientValue = (project: typeof projects[0]) => {
+    const found = project.specs?.find(s => s.label.toLowerCase() === 'client');
+    if (found) return found.value;
+    return null;
   };
 
-  const renderProjectCard = (project: typeof projects[0]) => (
-    <motion.div 
-      key={project.id} 
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.6 }}
-      className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 lg:gap-24 items-center bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
-    >
-      {/* Image */}
-      <div 
-        className="w-full aspect-square bg-gray-100 rounded-2xl cursor-pointer overflow-hidden relative group" 
-        onClick={() => navigate(`/projects/${project.slug || project.id}`)}
+  const getTechniquesValue = (project: typeof projects[0]) => {
+    const found = project.specs?.find(s => 
+      ['techniques', 'typology', 'materials', 'focus', 'strategy'].includes(s.label.toLowerCase())
+    );
+    if (found) return found.value;
+    return null;
+  };
+
+  const renderProjectCard = (project: typeof projects[0]) => {
+    const clientVal = getClientValue(project);
+    const techVal = getTechniquesValue(project);
+
+    return (
+      <motion.div 
+        key={project.id} 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.6 }}
+        className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 lg:gap-24 items-center bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
       >
-        <img 
-          src={project.image} 
-          alt={project.title} 
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-        />
-        {/* Floating status badge on image */}
-        <div className="absolute top-4 left-4 z-10">
-          <span className={`px-3 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider backdrop-blur-md border shadow-xs flex items-center gap-1.5 ${
-            project.status === 'ongoing' 
-              ? 'bg-amber-500/90 text-white border-amber-400' 
-              : 'bg-emerald-950/80 text-[#CCFF00] border-emerald-500/40'
-          }`}>
-            {project.status === 'ongoing' ? (
-              <>
-                <span className="w-2 h-2 rounded-full bg-amber-200 animate-ping"></span>
-                Ongoing Development
-              </>
-            ) : (
-              'Delivered Project'
-            )}
-          </span>
-        </div>
-      </div>
-      
-      {/* Text Block */}
-      <div className="flex flex-col">
-        <div className="flex flex-wrap items-center gap-3 mb-3">
-          <span className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-800 bg-emerald-50 px-3 py-1 rounded-md border border-emerald-200">
-            {project.category}
-          </span>
-          {project.year && (
-            <span className="text-[11px] font-bold text-gray-400">
-              {project.year}
-            </span>
-          )}
-        </div>
-
-        <h3 
+        {/* Image */}
+        <div 
+          className="w-full aspect-square bg-gray-100 rounded-2xl cursor-pointer overflow-hidden relative group" 
           onClick={() => navigate(`/projects/${project.slug || project.id}`)}
-          className="text-2xl md:text-3xl font-bold text-[#0a0a0a] leading-tight cursor-pointer hover:text-emerald-900 transition-colors mb-3"
         >
-          {project.title}
-        </h3>
-
-        <p className="text-[#0a0a0a]/70 text-sm md:text-base leading-relaxed mb-8 pb-4 border-b border-gray-100">
-          {project.description}
-        </p>
-        
-        {/* Specs List */}
-        <div className="space-y-0 text-xs mb-8">
-          {/* Location */}
-          <div className="flex justify-between items-center border-b border-gray-100 py-2.5">
-            <span className="font-bold flex items-center gap-2.5 text-[#0a0a0a]">
-              <MapPin size={15} fill="#CCFF00" strokeWidth={1} className="text-[#0a0a0a] shrink-0" /> 
-              Location
+          <img 
+            src={project.image} 
+            alt={project.title} 
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+          />
+          {/* Floating status badge on image */}
+          <div className="absolute top-4 left-4 z-10">
+            <span className={`px-3 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider backdrop-blur-md border shadow-xs flex items-center gap-1.5 ${
+              project.status === 'ongoing' 
+                ? 'bg-amber-500/90 text-white border-amber-400' 
+                : 'bg-emerald-950/80 text-[#CCFF00] border-emerald-500/40'
+            }`}>
+              {project.status === 'ongoing' ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-amber-200 animate-ping"></span>
+                  Ongoing Development
+                </>
+              ) : (
+                'Delivered Project'
+              )}
             </span>
-            <span className="text-[#0a0a0a]/70 font-medium">{project.location}</span>
+          </div>
+        </div>
+        
+        {/* Text Block */}
+        <div className="flex flex-col">
+          <div className="flex flex-wrap items-center gap-3 mb-3">
+            <span className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-800 bg-emerald-50 px-3 py-1 rounded-md border border-emerald-200">
+              {project.category}
+            </span>
+            {project.year && (
+              <span className="text-[11px] font-bold text-gray-400">
+                {project.year}
+              </span>
+            )}
           </div>
 
-          {/* Dynamic Specs */}
-          {project.specs?.slice(0, 3).map(spec => (
-            <div key={spec.label} className="flex justify-between items-center border-b border-gray-100 py-2.5">
-              <span className="font-bold flex items-center gap-2.5 text-[#0a0a0a]">
-                {getSpecIcon(spec.label)}
-                {spec.label}
-              </span>
-              <span className="text-[#0a0a0a]/70 font-medium">{spec.value}</span>
-            </div>
-          ))}
-        </div>
-
-        <div>
-          <FlowButton 
-            text="Explore Project Study"
-            variant="lime"
+          <h3 
             onClick={() => navigate(`/projects/${project.slug || project.id}`)}
-          />
+            className="text-2xl md:text-3xl font-bold text-[#0a0a0a] leading-tight cursor-pointer hover:text-emerald-900 transition-colors mb-3"
+          >
+            {project.title}
+          </h3>
+
+          <p className="text-[#0a0a0a]/70 text-sm md:text-base leading-relaxed mb-8 pb-4 border-b border-gray-100">
+            {project.description}
+          </p>
+          
+          {/* Standardized Specs Table */}
+          <div className="space-y-0 text-xs mb-8">
+            {/* Location */}
+            <div className="flex justify-between items-center border-b border-gray-100 py-2.5">
+              <span className="font-bold flex items-center gap-2.5 text-[#0a0a0a]">
+                <MapPin size={15} fill="#CCFF00" strokeWidth={1} className="text-[#0a0a0a] shrink-0" /> 
+                Location
+              </span>
+              <span className="text-[#0a0a0a]/70 font-medium">{project.location || 'Vadodara, India'}</span>
+            </div>
+
+            {/* Client (if present) */}
+            {clientVal && (
+              <div className="flex justify-between items-center border-b border-gray-100 py-2.5">
+                <span className="font-bold flex items-center gap-2.5 text-[#0a0a0a]">
+                  <User size={15} fill="#CCFF00" strokeWidth={1} className="text-[#0a0a0a] shrink-0" /> 
+                  Client
+                </span>
+                <span className="text-[#0a0a0a]/70 font-medium">{clientVal}</span>
+              </div>
+            )}
+
+            {/* Techniques / Typology */}
+            {techVal && (
+              <div className="flex justify-between items-center border-b border-gray-100 py-2.5">
+                <span className="font-bold flex items-center gap-2.5 text-[#0a0a0a]">
+                  <Wrench size={15} fill="#CCFF00" strokeWidth={1} className="text-[#0a0a0a] shrink-0" /> 
+                  Techniques / Typology
+                </span>
+                <span className="text-[#0a0a0a]/70 font-medium">{techVal}</span>
+              </div>
+            )}
+
+            {/* Project Year */}
+            <div className="flex justify-between items-center border-b border-gray-100 py-2.5">
+              <span className="font-bold flex items-center gap-2.5 text-[#0a0a0a]">
+                <Calendar size={15} fill="#CCFF00" strokeWidth={1} className="text-[#0a0a0a] shrink-0" /> 
+                Project Year
+              </span>
+              <span className="text-[#0a0a0a]/70 font-medium">{project.year || '2026'}</span>
+            </div>
+
+            {/* Project Status */}
+            <div className="flex justify-between items-center border-b border-gray-100 py-2.5">
+              <span className="font-bold flex items-center gap-2.5 text-[#0a0a0a]">
+                <Activity size={15} className="text-emerald-700 shrink-0" /> 
+                Project Status
+              </span>
+              <span className="text-[#0a0a0a]/70 font-medium">
+                {project.status === 'ongoing' ? 'Ongoing Development' : 'Delivered'}
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <FlowButton 
+              text="Explore Project Study"
+              variant="lime"
+              onClick={() => navigate(`/projects/${project.slug || project.id}`)}
+            />
+          </div>
         </div>
-      </div>
-    </motion.div>
-  );
+      </motion.div>
+    );
+  };
 
   return (
     <div className="bg-[#ffffff] text-[#0a0a0a] min-h-screen font-sans selection:bg-[#CCFF00] selection:text-[#111]">

@@ -99,6 +99,12 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
   const [slug, setSlug] = useState(initial?.slug || '');
   const [category, setCategory] = useState(initial?.category || '');
   const [location, setLocation] = useState(initial?.location || 'Vadodara');
+  const [client, setClient] = useState(
+    initial?.specs?.find(s => s.label.toLowerCase() === 'client')?.value || ''
+  );
+  const [techniques, setTechniques] = useState(
+    initial?.specs?.find(s => ['techniques', 'typology', 'materials', 'focus', 'strategy'].includes(s.label.toLowerCase()))?.value || ''
+  );
   const [year, setYear] = useState(initial?.year || new Date().getFullYear().toString());
   const [description, setDescription] = useState(initial?.description || '');
   const [metaTitle, setMetaTitle] = useState(initial?.metaTitle || '');
@@ -265,6 +271,23 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
     const rawContent = quillRef.current ? quillRef.current.root.innerHTML : (initial?.fullDescription || '');
     const fullDescription = DOMPurify.sanitize(rawContent, RICH_TEXT_CONFIG) as string;
 
+    const updatedSpecs: { label: string; value: string }[] = [];
+    if (location.trim()) updatedSpecs.push({ label: 'Location', value: location.trim() });
+    if (client.trim()) updatedSpecs.push({ label: 'Client', value: client.trim() });
+    if (techniques.trim()) updatedSpecs.push({ label: 'Techniques', value: techniques.trim() });
+    if (year.trim()) updatedSpecs.push({ label: 'Year', value: year.trim() });
+    if (status) updatedSpecs.push({ label: 'Status', value: status === 'ongoing' ? 'Ongoing Development' : 'Delivered' });
+
+    // Preserve any custom specs from previous entries
+    if (initial?.specs) {
+      initial.specs.forEach(s => {
+        const lbl = s.label.toLowerCase();
+        if (!['location', 'client', 'techniques', 'typology', 'materials', 'focus', 'strategy', 'year', 'project year', 'status', 'project status'].includes(lbl)) {
+          updatedSpecs.push(s);
+        }
+      });
+    }
+
     const project: Project = {
       id: initial?.id || crypto.randomUUID(),
       title: title.trim(),
@@ -283,7 +306,7 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
       status: status || undefined,
       tags,
       faqs,
-      specs: initial?.specs || [],
+      specs: updatedSpecs,
       story: initial?.story || [],
       metaTitle: metaTitle.trim() || title.trim(),
       metaDescription: metaDescription.trim() || description.trim(),
@@ -843,6 +866,30 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-black transition bg-white"
                 />
               </div>
+            </div>
+
+            {/* Client Name */}
+            <div>
+              <label className="block text-xxs font-bold uppercase tracking-widest text-gray-700 mb-1">Client Name / Owner</label>
+              <input
+                type="text"
+                placeholder="e.g. Akash Jha / Private Client"
+                value={client}
+                onChange={e => setClient(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-black transition bg-white"
+              />
+            </div>
+
+            {/* Techniques / Typology */}
+            <div>
+              <label className="block text-xxs font-bold uppercase tracking-widest text-gray-700 mb-1">Techniques / Typology</label>
+              <input
+                type="text"
+                placeholder="e.g. Lime plaster, natural stone & louver windows"
+                value={techniques}
+                onChange={e => setTechniques(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:border-black transition bg-white"
+              />
             </div>
 
             {/* Status Dropdown */}
