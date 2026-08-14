@@ -3,27 +3,20 @@ import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, MapPin, Calendar, ChevronRight, Ruler, Zap, Clock, Leaf, Activity } from 'lucide-react';
+import { MapPin, ChevronRight, Ruler, Zap, Clock, Leaf } from 'lucide-react';
 import FlowButton from '../components/ui/flow-button';
 
 const Projects: React.FC = () => {
   const { projects } = useContent();
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [selectedStatus, setSelectedStatus] = useState<string>('All');
   
   const categories = [
-    { label: 'All Categories', value: 'All' },
+    { label: 'All Projects', value: 'All' },
     { label: '🏡 Homes & Retreats', value: 'Residential' },
     { label: '🏨 Hospitality & Resorts', value: 'Hospitality' },
     { label: '🌿 Land & Gardens', value: 'Permaculture' },
     { label: '💬 Consultation', value: 'Consultation' }
-  ];
-
-  const statusFilters = [
-    { label: 'All Statuses', value: 'All' },
-    { label: '⚡ Ongoing & Live', value: 'ongoing' },
-    { label: '✅ Realized & Delivered', value: 'delivered' }
   ];
 
   // Category filter
@@ -37,20 +30,12 @@ const Projects: React.FC = () => {
         (selectedCategory === 'Consultation' && (p.category === 'Consultation' || p.title.toLowerCase().includes('consult') || p.title.toLowerCase().includes('advisory')))
       );
 
-  // Status filter
-  const statusFiltered = selectedStatus === 'All'
-    ? categoryFiltered
-    : categoryFiltered.filter(p => (p.status || 'delivered') === selectedStatus);
-
   // Sort Ongoing projects first, then Delivered. Within each group, keep user creation/update order
-  const sortedProjects = [...statusFiltered].sort((a, b) => {
+  const sortedProjects = [...categoryFiltered].sort((a, b) => {
     const statusA = a.status === 'ongoing' ? 0 : 1;
     const statusB = b.status === 'ongoing' ? 0 : 1;
     return statusA - statusB;
   });
-
-  const ongoingProjects = sortedProjects.filter(p => p.status === 'ongoing');
-  const deliveredProjects = sortedProjects.filter(p => p.status !== 'ongoing');
 
   const getSpecIcon = (label: string) => {
     const l = label.toLowerCase();
@@ -197,9 +182,8 @@ const Projects: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter Controls Bar */}
-      <div className="max-w-screen-xl mx-auto px-6 md:px-12 pt-10 pb-4 space-y-4">
-        {/* Category Pills */}
+      {/* Category Selection Tabs */}
+      <div className="max-w-screen-xl mx-auto px-6 md:px-12 pt-10 pb-4">
         <div className="flex flex-wrap items-center justify-center gap-2.5">
           {categories.map((cat) => (
             <button
@@ -215,79 +199,22 @@ const Projects: React.FC = () => {
             </button>
           ))}
         </div>
-
-        {/* Status Pills */}
-        <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-          {statusFilters.map((st) => (
-            <button
-              key={st.value}
-              onClick={() => setSelectedStatus(st.value)}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                selectedStatus === st.value
-                  ? 'bg-emerald-950 text-[#CCFF00] border border-emerald-700 shadow-xs'
-                  : 'bg-gray-50 text-gray-500 hover:bg-gray-100 border border-gray-200'
-              }`}
-            >
-              {st.label}
-            </button>
-          ))}
-        </div>
       </div>
 
       <div className="max-w-screen-xl mx-auto px-6 md:px-12 py-12 md:py-20">
-
          {sortedProjects.length === 0 ? (
            <div className="text-center py-20 bg-gray-50 rounded-3xl border border-gray-200">
-             <p className="text-base text-gray-500 font-medium">No projects found matching the selected criteria.</p>
+             <p className="text-base text-gray-500 font-medium">No projects found matching the selected category.</p>
              <button 
-               onClick={() => { setSelectedCategory('All'); setSelectedStatus('All'); }}
+               onClick={() => setSelectedCategory('All')}
                className="mt-4 px-4 py-2 bg-black text-[#CCFF00] rounded-full text-xs font-bold"
              >
-               Reset Filters
+               Show All Projects
              </button>
            </div>
          ) : (
-           <div className="space-y-24">
-             {/* ── ONGOING PROJECTS SECTION (If Viewing All or Ongoing) ── */}
-             {selectedStatus === 'All' && ongoingProjects.length > 0 && (
-               <div className="space-y-12">
-                 <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
-                   <div className="w-3 h-3 rounded-full bg-amber-500 animate-ping"></div>
-                   <h2 className="text-2xl md:text-3xl font-bold text-[#0a0a0a]">Ongoing & Live Projects</h2>
-                   <span className="text-xs font-bold bg-amber-100 text-amber-800 px-3 py-1 rounded-full">
-                     {ongoingProjects.length} Active
-                   </span>
-                 </div>
-
-                 <div className="space-y-16">
-                   {ongoingProjects.map(project => renderProjectCard(project))}
-                 </div>
-               </div>
-             )}
-
-             {/* ── DELIVERED PROJECTS SECTION (If Viewing All) ── */}
-             {selectedStatus === 'All' && deliveredProjects.length > 0 && (
-               <div className="space-y-12 pt-8">
-                 <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
-                   <span className="text-emerald-600 text-lg">🌿</span>
-                   <h2 className="text-2xl md:text-3xl font-bold text-[#0a0a0a]">Realized & Delivered Portfolio</h2>
-                   <span className="text-xs font-bold bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full">
-                     {deliveredProjects.length} Delivered
-                   </span>
-                 </div>
-
-                 <div className="space-y-16">
-                   {deliveredProjects.map(project => renderProjectCard(project))}
-                 </div>
-               </div>
-             )}
-
-             {/* ── FILTERED SINGLE STATUS SECTION ── */}
-             {selectedStatus !== 'All' && (
-               <div className="space-y-16">
-                 {sortedProjects.map(project => renderProjectCard(project))}
-               </div>
-             )}
+           <div className="space-y-16">
+             {sortedProjects.map(project => renderProjectCard(project))}
            </div>
          )}
       </div>
