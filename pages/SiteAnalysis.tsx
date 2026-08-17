@@ -199,16 +199,12 @@ export default function SiteAnalysis() {
 
         map.on('load', () => {
           map.resize();
+          setTimeout(() => map.resize(), 100);
+          setTimeout(() => map.resize(), 300);
           if (pendingCoords) positionMarker(pendingCoords.lat, pendingCoords.lon);
         });
-
-        map.on('error', (e) => {
-          console.warn('Mapbox 3D error, switching to 2D engine:', e);
-          setMapEngine('2d');
-        });
       } catch (err) {
-        console.warn('Mapbox initialization failed, falling back to 2D:', err);
-        setMapEngine('2d');
+        console.warn('Mapbox 3D initialization warning:', err);
       }
     } else {
       // Initialize Leaflet 2D Engine
