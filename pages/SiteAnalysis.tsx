@@ -134,131 +134,180 @@ export default function SiteAnalysis() {
     }
 
     if (mapEngine === '3d') {
-      try {
-        mapboxgl.accessToken = MAPBOX_TOKEN;
-        const validStyle = MAPBOX_3D_STYLES.some(s => s.id === mapboxStyleId) ? mapboxStyleId : MAPBOX_3D_STYLES[0].id;
+      const isWebGLAvailable = (() => {
+        try {
+          const canvas = document.createElement('canvas');
+          return !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+        } catch {
+          return false;
+        }
+      })();
 
-        const map = new mapboxgl.Map({
-          container: mapContainerRef.current,
-          style: validStyle,
-          center: [centerLon, centerLat],
-          zoom: 15,
-          pitch: 60, // 3D Perspective Tilt Angle
-          bearing: -17.6,
-          projection: 'mercator',
-        });
+      if (isWebGLAvailable) {
+        try {
+          mapboxgl.accessToken = MAPBOX_TOKEN;
+          const validStyle = MAPBOX_3D_STYLES.some(s => s.id === mapboxStyleId) ? mapboxStyleId : MAPBOX_3D_STYLES[0].id;
 
-        mapboxRef.current = map;
+          const map = new mapboxgl.Map({
+            container: mapContainerRef.current,
+            style: validStyle,
+            center: [centerLon, centerLat],
+            zoom: 15,
+            pitch: 60, // 3D Perspective Tilt Angle
+            bearing: -17.6,
+            projection: 'mercator',
+          });
 
-        const add3DBuildings = () => {
-          try {
-            const layers = map.getStyle().layers;
-            const labelLayerId = layers?.find(
-              (layer) => layer.type === 'symbol' && layer.layout?.['text-field']
-            )?.id;
+          mapboxRef.current = map;
 
-            if (!map.getLayer('add-3d-buildings')) {
-              map.addLayer(
-                {
-                  id: 'add-3d-buildings',
-                  source: 'composite',
-                  'source-layer': 'building',
-                  filter: ['==', 'extrude', 'true'],
-                  type: 'fill-extrusion',
-                  minzoom: 13,
-                  paint: {
-                    'fill-extrusion-color': '#e4e4e7',
-                    'fill-extrusion-height': [
-                      'interpolate',
-                      ['linear'],
-                      ['zoom'],
-                      13,
-                      0,
-                      14.05,
-                      ['get', 'height']
-                    ],
-                    'fill-extrusion-base': [
-                      'interpolate',
-                      ['linear'],
-                      ['zoom'],
-                      13,
-                      0,
-                      14.05,
-                      ['get', 'min_height']
-                    ],
-                    'fill-extrusion-opacity': 0.85
-                  }
-                },
-                labelLayerId
-              );
-            }
-          } catch { /* silent fallback */ }
-        };
+          const add3DBuildings = () => {
+            try {
+              const layers = map.getStyle().layers;
+              const labelLayerId = layers?.find(
+                (layer) => layer.type === 'symbol' && layer.layout?.['text-field']
+              )?.id;
 
-        map.on('style.load', () => {
-          add3DBuildings();
-          try {
-            if (!map.getSource('mapbox-dem')) {
-              map.addSource('mapbox-dem', {
-                type: 'raster-dem',
-                url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-                tileSize: 512,
-                maxzoom: 14
-              });
-            }
-            map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.2 });
-          } catch { /* silent fallback */ }
-        });
+              if (!map.getLayer('add-3d-buildings')) {
+                map.addLayer(
+                  {
+                    id: 'add-3d-buildings',
+                    source: 'composite',
+                    'source-layer': 'building',
+                    filter: ['==', 'extrude', 'true'],
+                    type: 'fill-extrusion',
+                    minzoom: 13,
+                    paint: {
+                      'fill-extrusion-color': '#e4e4e7',
+                      'fill-extrusion-height': [
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        13,
+                        0,
+                        14.05,
+                        ['get', 'height']
+                      ],
+                      'fill-extrusion-base': [
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        13,
+                        0,
+                        14.05,
+                        ['get', 'min_height']
+                      ],
+                      'fill-extrusion-opacity': 0.85
+                    }
+                  },
+                  labelLayerId
+                );
+              }
+            } catch { /* silent fallback */ }
+          };
 
-        map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
+          map.on('style.load', () => {
+            add3DBuildings();
+            try {
+              if (!map.getSource('mapbox-dem')) {
+                map.addSource('mapbox-dem', {
+                  type: 'raster-dem',
+                  url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+                  tileSize: 512,
+                  maxzoom: 14
+                });
+              }
+              map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.2 });
+            } catch { /* silent fallback */ }
+          });
 
-        map.on('click', (e) => {
-          const { lng, lat } = e.lngLat;
-          positionMarker(lat, lng);
-          setPendingCoords({ lat, lon: lng });
-          setIsAnalyzed(false);
-        });
+          map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
 
-        map.on('load', () => {
-          map.resize();
-          setTimeout(() => map.resize(), 100);
-          setTimeout(() => map.resize(), 300);
-          if (pendingCoords) positionMarker(pendingCoords.lat, pendingCoords.lon);
-        });
-      } catch (err) {
-        console.warn('Mapbox 3D initialization error:', err);
+          map.on('click', (e) => {
+            const { lng, lat } = e.lngLat;
+            positionMarker(lat, lng);
+            setPendingCoords({ lat, lon: lng });
+            setIsAnalyzed(false);
+          });
+
+          map.on('load', () => {
+            map.resize();
+            setTimeout(() => map.resize(), 100);
+            setTimeout(() => map.resize(), 300);
+            if (pendingCoords) positionMarker(pendingCoords.lat, pendingCoords.lon);
+          });
+        } catch (err) {
+          console.warn('Mapbox WebGL init error, using CSS 3D Perspective engine:', err);
+          initLeaflet3D(centerLat, centerLon);
+        }
+      } else {
+        initLeaflet3D(centerLat, centerLon);
       }
     } else {
-      // Initialize Leaflet 2D Engine
-      const selectedStyle = LEAFLET_2D_STYLES.find(s => s.id === leafletStyleId) || LEAFLET_2D_STYLES[0];
-
-      const map = L.map(mapContainerRef.current, {
-        center: [centerLat, centerLon],
-        zoom: 13,
-        zoomControl: true,
-      });
-
-      leafletRef.current = map;
-
-      const tileLayer = L.tileLayer(selectedStyle.url, {
-        maxZoom: selectedStyle.maxZoom,
-        attribution: selectedStyle.attribution,
-        subdomains: 'abc',
-      }).addTo(map);
-
-      leafletTileLayerRef.current = tileLayer;
-
-      map.on('click', (e: L.LeafletMouseEvent) => {
-        const { lat, lng } = e.latlng;
-        positionMarker(lat, lng);
-        setPendingCoords({ lat, lon: lng });
-        setIsAnalyzed(false);
-      });
-
-      setTimeout(() => map.invalidateSize(), 150);
-      if (pendingCoords) positionMarker(pendingCoords.lat, pendingCoords.lon);
+      initLeaflet2D(centerLat, centerLon);
     }
   }, [mapEngine]);
+
+  const initLeaflet3D = (centerLat: number, centerLon: number) => {
+    if (!mapContainerRef.current) return;
+    mapContainerRef.current.classList.add('leaflet-3d-perspective-active');
+
+    const selectedStyle = LEAFLET_2D_STYLES.find(s => s.id === leafletStyleId) || LEAFLET_2D_STYLES[0];
+    const map = L.map(mapContainerRef.current, {
+      center: [centerLat, centerLon],
+      zoom: 15,
+      zoomControl: true,
+    });
+
+    leafletRef.current = map;
+    const tileLayer = L.tileLayer(selectedStyle.url, {
+      maxZoom: selectedStyle.maxZoom,
+      attribution: selectedStyle.attribution,
+      subdomains: 'abc',
+    }).addTo(map);
+
+    leafletTileLayerRef.current = tileLayer;
+
+    map.on('click', (e: L.LeafletMouseEvent) => {
+      const { lat, lng } = e.latlng;
+      positionMarker(lat, lng);
+      setPendingCoords({ lat, lon: lng });
+      setIsAnalyzed(false);
+    });
+
+    setTimeout(() => map.invalidateSize(), 150);
+    if (pendingCoords) positionMarker(pendingCoords.lat, pendingCoords.lon);
+  };
+
+  const initLeaflet2D = (centerLat: number, centerLon: number) => {
+    if (!mapContainerRef.current) return;
+    mapContainerRef.current.classList.remove('leaflet-3d-perspective-active');
+
+    const selectedStyle = LEAFLET_2D_STYLES.find(s => s.id === leafletStyleId) || LEAFLET_2D_STYLES[0];
+    const map = L.map(mapContainerRef.current, {
+      center: [centerLat, centerLon],
+      zoom: 13,
+      zoomControl: true,
+    });
+
+    leafletRef.current = map;
+    const tileLayer = L.tileLayer(selectedStyle.url, {
+      maxZoom: selectedStyle.maxZoom,
+      attribution: selectedStyle.attribution,
+      subdomains: 'abc',
+    }).addTo(map);
+
+    leafletTileLayerRef.current = tileLayer;
+
+    map.on('click', (e: L.LeafletMouseEvent) => {
+      const { lat, lng } = e.latlng;
+      positionMarker(lat, lng);
+      setPendingCoords({ lat, lon: lng });
+      setIsAnalyzed(false);
+    });
+
+    setTimeout(() => map.invalidateSize(), 150);
+    if (pendingCoords) positionMarker(pendingCoords.lat, pendingCoords.lon);
+  };
 
   // Handle URL coordinate loading
   useEffect(() => {
