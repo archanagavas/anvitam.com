@@ -28,11 +28,49 @@ import {
 const DEFAULT_MAPBOX_TOKEN = atob('cGsuZXlKMUlqb2lZVzUyYVhSaGJTSXNJbUVpT2lKamJYTjNNR0ZqTlhreFpIWTRNbmh5TVRsek9IWnZOalF5SW4wLl9uNGg0bW1RTDVzSXgxQnFRdkZ0d3c=');
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || DEFAULT_MAPBOX_TOKEN;
 
+// Helper to construct token-free 3D WebGL Mapbox style specs
+const createRaster3DStyle = (tileUrl: string, maxZoom = 19) => ({
+  version: 8 as const,
+  sources: {
+    'raster-tiles': {
+      type: 'raster' as const,
+      tiles: [tileUrl],
+      tileSize: 256,
+      attribution: '&copy; Esri &copy; OpenStreetMap &copy; CARTO'
+    }
+  },
+  layers: [
+    {
+      id: 'raster-layer',
+      type: 'raster' as const,
+      source: 'raster-tiles',
+      minzoom: 0,
+      maxzoom: maxZoom
+    }
+  ]
+});
+
 const MAPBOX_3D_STYLES = [
-  { id: 'mapbox://styles/mapbox/satellite-streets-v12', name: '🌐 3D Satellite Perspective' },
-  { id: 'mapbox://styles/mapbox/streets-v12', name: '🏢 3D Streets & Extruded Buildings' },
-  { id: 'mapbox://styles/mapbox/dark-v11', name: '📐 3D Dark Architectural Studio' },
-  { id: 'mapbox://styles/mapbox/outdoors-v12', name: '⛰️ 3D Terrain & Elevation Contours' }
+  {
+    id: 'satellite-3d',
+    name: '🌐 3D High-Res Satellite',
+    style: createRaster3DStyle('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}')
+  },
+  {
+    id: 'streets-3d',
+    name: '🏢 3D OpenStreetMap Perspective',
+    style: createRaster3DStyle('https://tile.openstreetmap.org/{z}/{x}/{y}.png')
+  },
+  {
+    id: 'studio-3d',
+    name: '📐 3D Light Architectural Studio',
+    style: createRaster3DStyle('https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png')
+  },
+  {
+    id: 'dark-3d',
+    name: '🌙 3D Dark Studio Perspective',
+    style: createRaster3DStyle('https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png')
+  }
 ];
 
 const LEAFLET_2D_STYLES = [
@@ -65,7 +103,7 @@ export default function SiteAnalysis() {
   
   // Dual Map Engine State ('3d' or '2d')
   const [mapEngine, setMapEngine] = useState<'3d' | '2d'>('3d');
-  const [mapboxStyleUrl, setMapboxStyleUrl] = useState(MAPBOX_3D_STYLES[0].id);
+  const [mapboxStyleId, setMapboxStyleId] = useState(MAPBOX_3D_STYLES[0].id);
   const [leafletStyleId, setLeafletStyleId] = useState(LEAFLET_2D_STYLES[0].id);
 
   // Authentication & Credits
@@ -134,94 +172,44 @@ export default function SiteAnalysis() {
     }
 
     if (mapEngine === '3d') {
-      // Initialize Mapbox 3D Engine
-      mapboxgl.accessToken = MAPBOX_TOKEN;
+      try {
+        mapboxgl.accessToken = MAPBOX_TOKEN;
+        const currentStyleObj = (MAPBOX_3D_STYLES.find(s => s.id === mapboxStyleId) || MAPBOX_3D_STYLES[0]).style;
 
-      const map = new mapboxgl.Map({
-        container: mapContainerRef.current,
-        style: mapboxStyleUrl,
-        center: [centerLon, centerLat],
-        zoom: 14,
-        pitch: 50, // 3D Perspective Tilt
-        bearing: -17.6,
-        projection: 'mercator',
-      });
+        const map = new mapboxgl.Map({
+          container: mapContainerRef.current,
+          style: currentStyleObj as mapboxgl.Style,
+          center: [centerLon, centerLat],
+          zoom: 14,
+          pitch: 50, // 3D Perspective Tilt
+          bearing: -17.6,
+          projection: 'mercator',
+        });
 
-      mapboxRef.current = map;
+        mapboxRef.current = map;
 
-      const add3DBuildings = () => {
-        try {
-          const layers = map.getStyle().layers;
-          const labelLayerId = layers?.find(
-            (layer) => layer.type === 'symbol' && layer.layout?.['text-field']
-          )?.id;
+        map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
 
-          if (!map.getLayer('add-3d-buildings')) {
-            map.addLayer(
-              {
-                id: 'add-3d-buildings',
-                source: 'composite',
-                'source-layer': 'building',
-                filter: ['==', 'extrude', 'true'],
-                type: 'fill-extrusion',
-                minzoom: 13,
-                paint: {
-                  'fill-extrusion-color': '#d4d4d8',
-                  'fill-extrusion-height': [
-                    'interpolate',
-                    ['linear'],
-                    ['zoom'],
-                    13,
-                    0,
-                    14.05,
-                    ['get', 'height']
-                  ],
-                  'fill-extrusion-base': [
-                    'interpolate',
-                    ['linear'],
-                    ['zoom'],
-                    13,
-                    0,
-                    14.05,
-                    ['get', 'min_height']
-                  ],
-                  'fill-extrusion-opacity': 0.85
-                }
-              },
-              labelLayerId
-            );
-          }
-        } catch { /* silent fallback */ }
-      };
+        map.on('click', (e) => {
+          const { lng, lat } = e.lngLat;
+          positionMarker(lat, lng);
+          setPendingCoords({ lat, lon: lng });
+          setIsAnalyzed(false);
+        });
 
-      map.on('style.load', () => {
-        add3DBuildings();
-        try {
-          if (!map.getSource('mapbox-dem')) {
-            map.addSource('mapbox-dem', {
-              type: 'raster-dem',
-              url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-              tileSize: 512,
-              maxzoom: 14
-            });
-          }
-          map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.3 });
-        } catch { /* silent fallback */ }
-      });
+        map.on('load', () => {
+          map.resize();
+          if (pendingCoords) positionMarker(pendingCoords.lat, pendingCoords.lon);
+        });
 
-      map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
-
-      map.on('click', (e) => {
-        const { lng, lat } = e.lngLat;
-        positionMarker(lat, lng);
-        setPendingCoords({ lat, lon: lng });
-        setIsAnalyzed(false);
-      });
-
-      map.on('load', () => {
-        map.resize();
-        if (pendingCoords) positionMarker(pendingCoords.lat, pendingCoords.lon);
-      });
+        map.on('error', (e) => {
+          console.warn('Mapbox 3D error, switching to 2D engine:', e);
+          setMapEngine('2d');
+        });
+      } catch (err) {
+        console.warn('Mapbox initialization failed, falling back to 2D:', err);
+        setMapEngine('2d');
+      }
     } else {
       // Initialize Leaflet 2D Engine
       const selectedStyle = LEAFLET_2D_STYLES.find(s => s.id === leafletStyleId) || LEAFLET_2D_STYLES[0];
@@ -266,10 +254,11 @@ export default function SiteAnalysis() {
     }
   }, [latParam, lonParam]);
 
-  const change3DStyle = (styleUrl: string) => {
-    setMapboxStyleUrl(styleUrl);
+  const change3DStyle = (styleId: string) => {
+    setMapboxStyleId(styleId);
+    const selectedObj = (MAPBOX_3D_STYLES.find(s => s.id === styleId) || MAPBOX_3D_STYLES[0]).style;
     if (mapboxRef.current) {
-      mapboxRef.current.setStyle(styleUrl);
+      mapboxRef.current.setStyle(selectedObj as mapboxgl.Style);
     }
   };
 
@@ -528,7 +517,7 @@ export default function SiteAnalysis() {
               {/* Style Dropdown Selector */}
               <div className="flex items-center gap-1">
                 <select
-                  value={mapEngine === '3d' ? mapboxStyleUrl : leafletStyleId}
+                  value={mapEngine === '3d' ? mapboxStyleId : leafletStyleId}
                   onChange={(e) => mapEngine === '3d' ? change3DStyle(e.target.value) : change2DStyle(e.target.value)}
                   className="bg-gray-100 text-gray-900 text-xs font-semibold rounded-xl px-2.5 py-1.5 border border-gray-200 outline-none cursor-pointer hover:bg-gray-200"
                 >
