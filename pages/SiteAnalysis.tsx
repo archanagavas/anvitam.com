@@ -66,6 +66,7 @@ export default function SiteAnalysis() {
   const [mapEngine, setMapEngine] = useState<'3d' | '2d'>('3d');
   const [mapboxStyleId, setMapboxStyleId] = useState(MAPBOX_3D_STYLES[0].id);
   const [leafletStyleId, setLeafletStyleId] = useState(LEAFLET_2D_STYLES[0].id);
+  const [webglFailed, setWebglFailed] = useState(false);
 
   // Authentication & Credits
   const [user, setUser] = useState<ToolUser | null>(null);
@@ -111,7 +112,7 @@ export default function SiteAnalysis() {
   }, []);
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // MAP ENGINE INITIALIZATION (Mapbox GL JS 3D Globe vs Leaflet 2D Flat)
+  // MAP ENGINE INITIALIZATION (Mapbox GL JS 3D Globe vs Leaflet 2D/3D Fallback)
   // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -137,7 +138,18 @@ export default function SiteAnalysis() {
       mapContainerRef.current.innerHTML = '';
     }
 
-    if (mapEngine === '3d') {
+    const checkWebGL = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        return !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+      } catch {
+        return false;
+      }
+    };
+
+    const useMapbox3D = mapEngine === '3d' && checkWebGL() && !webglFailed;
+
+    if (useMapbox3D) {
       try {
         mapboxgl.accessToken = MAPBOX_TOKEN;
         const validStyle = MAPBOX_3D_STYLES.some(s => s.id === mapboxStyleId) ? mapboxStyleId : MAPBOX_3D_STYLES[0].id;
@@ -149,6 +161,7 @@ export default function SiteAnalysis() {
           zoom: 14,
           pitch: 50, // 3D Perspective Pitch Angle
           bearing: -15,
+          failIfMajorPerformanceCaveat: false
         });
 
         mapboxRef.current = map;
@@ -279,15 +292,16 @@ export default function SiteAnalysis() {
           resizeObserver.observe(mapContainerRef.current);
         }
       } catch (err) {
-        console.warn('Mapbox 3D Globe init warning:', err);
+        console.warn('Mapbox 3D init failed, switching to HTML5 3D engine:', err);
+        setWebglFailed(true);
       }
     } else {
-      // Leaflet 2D Engine
+      // Leaflet High-Performance Raster Engine (2D or 3D Fallback)
       const selectedStyle = LEAFLET_2D_STYLES.find(s => s.id === leafletStyleId) || LEAFLET_2D_STYLES[0];
 
       const map = L.map(mapContainerRef.current, {
         center: [centerLat, centerLon],
-        zoom: 13,
+        zoom: mapEngine === '3d' ? 15 : 13,
         zoomControl: true,
       });
 
@@ -317,7 +331,7 @@ export default function SiteAnalysis() {
         resizeObserver.disconnect();
       }
     };
-  }, [mapEngine]);
+  }, [mapEngine, webglFailed]);
 
   // Handle URL coordinate loading
   useEffect(() => {
