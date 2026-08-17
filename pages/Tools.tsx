@@ -52,13 +52,13 @@ export default function Tools() {
         <meta name="description" content="Get instant sun path, wind patterns, soil reports, and 3D shadows for any building location in the world with Anvitam site tools." />
       </Helmet>
 
-      <div className="bg-[#EFEFEB] text-[#111111] min-h-screen pt-28 pb-20 font-sans relative selection:bg-[#CCFF00] selection:text-black">
+      <div className="bg-white text-[#111111] min-h-screen pt-28 pb-12 font-sans relative selection:bg-[#CCFF00] selection:text-black">
         
         {/* Subtle grid accent background */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#0000000a_1px,transparent_1px),linear-gradient(to_bottom,#0000000a_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
 
         {/* ── HERO HEADER SECTION ── */}
-        <div className="max-w-screen-xl mx-auto px-6 md:px-12 mb-16 text-center relative z-10">
+        <div className="max-w-screen-xl mx-auto px-6 md:px-12 mb-12 text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -69,9 +69,9 @@ export default function Tools() {
           </motion.div>
 
           <h1 className="text-4xl md:text-6xl font-black text-[#111111] tracking-tight leading-tight mb-6">
-            Smart Site Reports for Your <br className="hidden md:inline" />
-            <span className="text-[#111111] bg-[#CCFF00] px-3 py-1 rounded-xl inline-block mt-1 border border-black/10 shadow-xs">
-              Building Projects in Seconds
+            Get Smart Site Reports <br className="hidden md:inline" />
+            <span className="text-[#111111] bg-[#CCFF00] px-4 py-1.5 rounded-xl inline-block mt-1 border border-black/10 shadow-xs">
+              in Seconds
             </span>
           </h1>
 
@@ -80,7 +80,7 @@ export default function Tools() {
           </p>
 
           {/* Search & Category Filter Bar */}
-          <div className="max-w-3xl mx-auto space-y-5">
+          <div className="max-w-3xl mx-auto space-y-4">
             <div className="relative">
               <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
@@ -109,7 +109,7 @@ export default function Tools() {
                   className={`px-4 py-2 rounded-full text-xs font-extrabold transition cursor-pointer ${
                     selectedCategory === cat
                       ? 'bg-[#111111] text-[#CCFF00] shadow-md ring-2 ring-black'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300/80 shadow-2xs'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300/80 shadow-2xs'
                   }`}
                 >
                   {cat}
@@ -120,13 +120,13 @@ export default function Tools() {
         </div>
 
         {/* ── 16+ TOOLS GRID ── */}
-        <div className="max-w-screen-xl mx-auto px-6 md:px-12 mb-24 relative z-10">
-          <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-300/70">
+        <div className="max-w-screen-xl mx-auto px-6 md:px-12 mb-16 relative z-10">
+          <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
             <h2 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
               <Sliders size={20} className="text-gray-700" />
               {selectedCategory === 'All Tools' ? 'All 16 Architectural Tools' : `${selectedCategory} Tools`}
             </h2>
-            <span className="text-xs font-bold text-gray-700 bg-white px-3.5 py-1.5 rounded-full border border-gray-300 shadow-2xs">
+            <span className="text-xs font-bold text-gray-700 bg-gray-50 px-3.5 py-1.5 rounded-full border border-gray-300 shadow-2xs">
               Showing {filteredTools.length} of {TOOLS_SUITE.length} Tools
             </span>
           </div>
@@ -184,12 +184,12 @@ export default function Tools() {
         </div>
 
         {/* ── PRICING SECTION (7th GRADE SIMPLE COPY) ── */}
-        <div className="bg-[#111111] text-white py-20 border-t border-b border-black relative overflow-hidden">
+        <div className="bg-[#111111] text-white py-16 border-t border-b border-black relative overflow-hidden">
           {/* Subtle accent glow */}
           <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#CCFF00]/10 blur-[120px] rounded-full pointer-events-none" />
 
           <div className="max-w-screen-xl mx-auto px-6 md:px-12 relative z-10">
-            <div className="text-center max-w-2xl mx-auto mb-14">
+            <div className="text-center max-w-2xl mx-auto mb-12">
               <span className="inline-block py-1.5 px-4 rounded-full border border-[#CCFF00]/30 text-[10px] font-black uppercase tracking-widest text-[#CCFF00] mb-3 bg-[#CCFF00]/10">
                 Simple Pricing
               </span>
