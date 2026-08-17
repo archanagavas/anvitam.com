@@ -87,7 +87,7 @@ export default function SiteAnalysis() {
     return () => window.removeEventListener('anvitam-user-updated', handleUserUpdate);
   }, []);
 
-  // Initialize Mapbox 3D Globe & Polygons
+  // Initialize Mapbox 3D Map & Draw Controls
   useEffect(() => {
     if (!mapContainerRef.current || !MAPBOX_TOKEN) return;
     if (mapRef.current) return;
@@ -98,30 +98,25 @@ export default function SiteAnalysis() {
       container: mapContainerRef.current,
       style: currentMapStyle,
       center: [73.1812, 22.3072],
-      zoom: 3,
-      pitch: 40,
+      zoom: 12,
+      pitch: 30,
       bearing: 0,
-      projection: 'globe',
+      projection: 'mercator',
     });
 
     mapRef.current = map;
 
     map.on('style.load', () => {
-      map.setFog({
-        color: 'rgb(240, 244, 250)',
-        'high-color': 'rgb(200, 220, 255)',
-        'space-color': 'rgb(220, 230, 245)',
-        'star-intensity': 0.2
-      });
-
       try {
-        map.addSource('mapbox-dem', {
-          type: 'raster-dem',
-          url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-          tileSize: 512,
-          maxzoom: 14
-        });
-        map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
+        if (!map.getSource('mapbox-dem')) {
+          map.addSource('mapbox-dem', {
+            type: 'raster-dem',
+            url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+            tileSize: 512,
+            maxzoom: 14
+          });
+        }
+        map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.2 });
       } catch { /* silent */ }
     });
 
@@ -133,7 +128,7 @@ export default function SiteAnalysis() {
     map.addControl(draw, 'top-right');
     drawRef.current = draw;
 
-    map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
 
     map.on('click', (e) => {
       const { lng, lat } = e.lngLat;
@@ -144,8 +139,9 @@ export default function SiteAnalysis() {
 
     map.on('load', () => {
       map.resize();
-      setTimeout(() => map.resize(), 200);
-      setTimeout(() => map.resize(), 500);
+      setTimeout(() => map.resize(), 100);
+      setTimeout(() => map.resize(), 300);
+      setTimeout(() => map.resize(), 800);
     });
 
     const handleWindowResize = () => {
@@ -158,7 +154,7 @@ export default function SiteAnalysis() {
       map.remove();
       mapRef.current = null;
     };
-  }, [currentMapStyle]);
+  }, []);
 
   // Handle URL coordinate loading
   useEffect(() => {

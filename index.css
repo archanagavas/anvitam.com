@@ -174,11 +174,18 @@ html {
 .site-analysis-page {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  padding-top: 65px; /* header offset */
+  min-height: 100vh;
+  height: auto;
   background: #ffffff;
   color: #111111;
   font-family: var(--font-sans);
+}
+
+.mapboxgl-map,
+.mapboxgl-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  outline: none;
 }
 
 .sa-topbar {
