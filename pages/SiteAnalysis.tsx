@@ -146,10 +146,9 @@ export default function SiteAnalysis() {
           container: mapContainerRef.current,
           style: validStyle,
           center: [centerLon, centerLat],
-          zoom: 15,
-          pitch: 60, // 3D Perspective Pitch Angle
-          bearing: -17.6,
-          projection: 'globe', // Interactive 3D Earth Globe
+          zoom: 14,
+          pitch: 50, // 3D Perspective Pitch Angle
+          bearing: -15,
         });
 
         mapboxRef.current = map;
