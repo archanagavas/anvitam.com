@@ -4,6 +4,8 @@ import { Helmet } from 'react-helmet-async';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import mapboxgl from 'mapbox-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import { fetchAllSiteData, type SiteAnalysisResult } from '../services/siteAnalysisService';
 import { AnalysisPanel, type DesignCategory } from '../components/siteanalysis/AnalysisPanel';
 import { ShadowSimulator3D } from '../components/siteanalysis/ShadowSimulator3D';
@@ -142,6 +144,8 @@ export default function SiteAnalysis() {
 
     map.on('load', () => {
       map.resize();
+      setTimeout(() => map.resize(), 200);
+      setTimeout(() => map.resize(), 500);
     });
 
     const handleWindowResize = () => {
@@ -280,67 +284,93 @@ export default function SiteAnalysis() {
         <meta name="description" content="Drop a pin anywhere in the world and instantly generate 11+ site analysis diagrams." />
       </Helmet>
 
-      <div className="site-analysis-page bg-[#F8F9FA] text-[#111111] pt-24 min-h-screen flex flex-col font-sans">
+      <div className="site-analysis-page bg-[#F8F9FA] text-[#111111] pt-20 min-h-screen flex flex-col font-sans">
         
-        {/* Trial Status Banner */}
-        {user && !user.is_subscribed && user.trial_days_remaining > 0 && (
-          <TrialBanner daysRemaining={user.trial_days_remaining} onUpgrade={() => setShowPaywall(true)} />
-        )}
-
-        {/* Top Header Bar */}
-        <div className="sa-topbar bg-white text-gray-900 flex flex-wrap items-center justify-between px-6 py-3 border-b border-gray-200/80 gap-4 shadow-xs">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/tools')}>
+        {/* Sleek, Single-Bar Integrated Header */}
+        <div className="sa-topbar bg-white text-gray-900 px-6 py-2.5 border-b border-gray-200/80 shadow-xs flex flex-col lg:flex-row items-center justify-between gap-3 z-20">
+          {/* Brand Logo & Location Search */}
+          <div className="flex items-center gap-4 w-full lg:w-auto justify-between lg:justify-start">
+            <div className="flex items-center gap-2 cursor-pointer shrink-0" onClick={() => navigate('/tools')}>
               <span className="w-8 h-8 rounded-xl bg-black text-[#CCFF00] font-bold flex items-center justify-center text-xs shadow-xs">SA</span>
               <div>
-                <h1 className="text-sm font-bold text-gray-900 leading-none">Site Intelligence Canvas</h1>
+                <h1 className="text-xs sm:text-sm font-bold text-gray-900 leading-none">Site Intelligence Canvas</h1>
                 <p className="text-[10px] text-gray-500 font-medium">by Anvitam</p>
               </div>
             </div>
 
-            <form onSubmit={handleSearch} className="flex items-center relative">
+            <form onSubmit={handleSearch} className="flex items-center relative flex-1 sm:max-w-xs ml-2">
               <input
                 type="text"
-                className="bg-gray-100 text-gray-900 placeholder-gray-400 text-xs px-4 py-2 rounded-full border border-gray-200 focus:border-black outline-none w-64 sm:w-80 font-normal"
-                placeholder="Search location, address, city…"
+                className="bg-gray-100 text-gray-900 placeholder-gray-400 text-xs px-4 py-1.5 rounded-full border border-gray-200 focus:border-black outline-none w-full font-normal"
+                placeholder="Search location, city, lat/lon…"
                 value={searchInput}
                 onChange={e => setSearchInput(e.target.value)}
               />
             </form>
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* Integrated Category Selector Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto w-full lg:w-auto py-1 lg:py-0 no-scrollbar justify-start sm:justify-center">
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => handleCategoryChange(cat.id)}
+                className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer whitespace-nowrap ${
+                  category === cat.id ? 'bg-black text-[#CCFF00] font-bold shadow-xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200/80'
+                }`}
+              >
+                <span className="text-xs">{cat.icon}</span>
+                <span>{cat.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Controls, Credits, Dashboard & Trial Status */}
+          <div className="flex items-center gap-2.5 shrink-0 w-full lg:w-auto justify-end">
             {/* Draw 3D Polygon Control */}
             <button
               onClick={toggleDrawMode}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer border ${
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer border ${
                 isDrawMode
                   ? 'bg-black text-[#CCFF00] border-black font-bold'
                   : 'bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200'
               }`}
             >
-              <Box size={14} /> Draw 3D Footprint
+              <Box size={13} /> Draw 3D
             </button>
 
             <button
               onClick={() => navigate('/dashboard')}
-              className="bg-gray-100 hover:bg-black hover:text-[#CCFF00] text-gray-800 text-xs font-semibold px-4 py-2 rounded-full transition border border-gray-200 cursor-pointer"
+              className="bg-gray-100 hover:bg-black hover:text-[#CCFF00] text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-full transition border border-gray-200 cursor-pointer hidden sm:inline-flex items-center gap-1"
             >
-              📊 Studio Dashboard
+              📊 Dashboard
             </button>
+
+            {/* Trial Status Chip (if in trial) */}
+            {user && !user.is_subscribed && (user.trial_days_remaining ?? 0) > 0 && (
+              <button
+                onClick={() => setShowPaywall(true)}
+                className="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 transition cursor-pointer"
+                title="Click to upgrade"
+              >
+                <span>🎉</span>
+                <span className="hidden sm:inline">{user.trial_days_remaining}d trial</span>
+                <span className="bg-amber-900 text-amber-100 text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider">Upgrade</span>
+              </button>
+            )}
 
             {user ? (
               <div
                 onClick={() => navigate('/dashboard')}
-                className="flex items-center gap-3 bg-gray-100 hover:bg-gray-200/80 border border-gray-200 px-4 py-1.5 rounded-full cursor-pointer transition"
+                className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200/80 border border-gray-200 px-3 py-1 rounded-full cursor-pointer transition"
               >
                 <div className="text-xs font-bold text-black flex items-center gap-1">
-                  <Zap size={14} className="text-black" />
-                  <span>{user.is_subscribed ? 'Pro Member (250/mo)' : `${user.credits_remaining ?? 5} credits`}</span>
+                  <Zap size={13} className="text-black fill-black" />
+                  <span>{user.is_subscribed ? 'Pro' : `${user.credits_remaining ?? 5} creds`}</span>
                 </div>
-                <div className="h-4 w-px bg-gray-300" />
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-black text-[#CCFF00] font-bold text-xs flex items-center justify-center">
+                <div className="h-3.5 w-px bg-gray-300" />
+                <div className="flex items-center gap-1.5">
+                  <div className="w-5 h-5 rounded-full bg-black text-[#CCFF00] font-bold text-[10px] flex items-center justify-center">
                     {user.name?.charAt(0)?.toUpperCase() || user.email.charAt(0).toUpperCase()}
                   </div>
                   <span className="text-xs font-semibold text-gray-900 hidden sm:inline">{user.name || user.email.split('@')[0]}</span>
@@ -348,7 +378,7 @@ export default function SiteAnalysis() {
               </div>
             ) : (
               <button
-                className="bg-black text-[#CCFF00] font-bold text-xs px-4 py-2 rounded-full hover:scale-105 transition cursor-pointer"
+                className="bg-black text-[#CCFF00] font-bold text-xs px-3.5 py-1.5 rounded-full hover:scale-105 transition cursor-pointer"
                 onClick={() => { setAuthMode('login'); setShowAuth(true); }}
               >
                 Sign In
@@ -357,26 +387,10 @@ export default function SiteAnalysis() {
           </div>
         </div>
 
-        {/* Category Selector Bar */}
-        <div className="bg-white border-b border-gray-200/80 px-6 py-2 flex items-center gap-2 overflow-x-auto">
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat.id}
-              onClick={() => handleCategoryChange(cat.id)}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition cursor-pointer whitespace-nowrap ${
-                category === cat.id ? 'bg-black text-[#CCFF00] font-bold shadow-xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200/80'
-              }`}
-            >
-              <span>{cat.icon}</span>
-              <span>{cat.label}</span>
-            </button>
-          ))}
-        </div>
-
         {/* WORKSPACE LAYOUT */}
         <div className="flex-1 flex flex-col">
           {/* 3D Map Container */}
-          <div className="w-full h-[60vh] relative bg-gray-100 border-b border-gray-200">
+          <div className="w-full h-[70vh] min-h-[500px] relative bg-gray-100 border-b border-gray-200">
             {noMapbox ? (
               <div className="h-full flex flex-col items-center justify-center text-gray-800">
                 <p className="font-bold text-sm">Mapbox Token Required</p>
