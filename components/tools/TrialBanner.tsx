@@ -1,6 +1,5 @@
 // components/tools/TrialBanner.tsx
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 interface Props {
   daysRemaining: number;
@@ -13,15 +12,17 @@ export const TrialBanner: React.FC<Props> = ({ daysRemaining, onUpgrade }) => {
   const isUrgent = daysRemaining <= 3;
 
   return (
-    <div className={`trial-banner ${isUrgent ? 'urgent' : ''}`}>
-      <span className="trial-banner-icon">{isUrgent ? '⚠️' : '🎉'}</span>
-      <span className="trial-banner-text">
+    <div className="w-full bg-[#111111] text-white py-2.5 px-4 flex items-center justify-center gap-3 text-xs border-b border-[#CCFF00]/40 shadow-xs">
+      <span className="text-sm">{isUrgent ? '⚠️' : '🎉'}</span>
+      <span className="font-medium text-gray-200">
         {isUrgent
           ? `Your free trial ends in ${daysRemaining} day${daysRemaining === 1 ? '' : 's'}.`
           : `${daysRemaining} days left in your free trial.`}
-        {' '}
       </span>
-      <button className="trial-banner-cta" onClick={onUpgrade}>
+      <button
+        onClick={onUpgrade}
+        className="bg-[#CCFF00] text-black font-bold px-3 py-1 rounded-full text-xs hover:bg-white transition cursor-pointer"
+      >
         Upgrade from $5/mo →
       </button>
     </div>

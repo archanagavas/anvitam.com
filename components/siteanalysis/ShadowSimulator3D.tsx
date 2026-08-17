@@ -34,7 +34,7 @@ export const ShadowSimulator3D: React.FC<ShadowSimulator3DProps> = ({
     return new Date(year, 2, 21); // March 21 Equinox
   };
 
-  // Calculate sun position & shadow physics client-side (0 cost, Vercel free tier compatible)
+  // Calculate sun position & shadow physics client-side
   useEffect(() => {
     const date = getSeasonDate(season);
     date.setHours(Math.floor(hour), (hour % 1) * 60, 0, 0);
@@ -58,7 +58,6 @@ export const ShadowSimulator3D: React.FC<ShadowSimulator3DProps> = ({
     });
 
     if (onLightChange) {
-      // Mapbox light position vector [r, azimuth, altitude]
       const r = 1.5;
       const mapboxAzimuth = (azimuthDeg + 180) % 360;
       const mapboxAltitude = Math.max(5, altitudeDeg);
@@ -90,48 +89,48 @@ export const ShadowSimulator3D: React.FC<ShadowSimulator3DProps> = ({
   const estimatedShadowLength = Math.round(buildingHeightMeters * calculatedSun.shadowLengthMultiplier);
 
   return (
-    <div className="bg-[#111111] text-white p-5 rounded-2xl border border-white/10 shadow-2xl space-y-4">
+    <div className="bg-white text-gray-900 p-5 rounded-3xl border border-gray-200/80 shadow-xs space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[#CCFF00] text-black flex items-center justify-center font-bold">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-black text-[#CCFF00] flex items-center justify-center font-bold">
             <Sun size={18} />
           </div>
           <div>
-            <h4 className="text-sm font-extrabold text-white tracking-tight flex items-center gap-2">
+            <h4 className="text-sm font-bold text-gray-900 tracking-tight flex items-center gap-2">
               Phase 2: 3D Solar Shadow Simulator
-              <span className="text-[9px] bg-[#CCFF00]/20 text-[#CCFF00] px-2 py-0.5 rounded-full border border-[#CCFF00]/30 uppercase font-black">
+              <span className="text-[9px] bg-black text-[#CCFF00] px-2 py-0.5 rounded-full font-bold">
                 Interactive
               </span>
             </h4>
-            <p className="text-[11px] text-gray-400">
-              Simulates solar rays, shadow casting & roof solar heat gain in real-time.
+            <p className="text-[11px] text-gray-500 font-normal">
+              Simulates solar rays, shadow casting &amp; roof solar heat gain in real-time.
             </p>
           </div>
         </div>
 
         <button
           onClick={() => setIsPlaying(!isPlaying)}
-          className={`px-3 py-1.5 rounded-full text-xs font-extrabold flex items-center gap-1.5 transition ${
+          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
             isPlaying
-              ? 'bg-amber-400 text-black shadow-lg animate-pulse'
-              : 'bg-white/10 hover:bg-white/20 text-white'
+              ? 'bg-amber-400 text-black shadow-sm animate-pulse'
+              : 'bg-black text-white hover:bg-gray-800'
           }`}
         >
-          {isPlaying ? <Pause size={12} /> : <Play size={12} />}
+          {isPlaying ? <Pause size={13} /> : <Play size={13} />}
           {isPlaying ? 'Pause Time-Lapse' : 'Play Time-Lapse'}
         </button>
       </div>
 
       {/* Controls Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white/5 p-4 rounded-xl border border-white/5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-2xl border border-gray-200/80">
         {/* Time Slider */}
         <div className="space-y-2">
           <div className="flex justify-between items-center text-xs">
-            <span className="text-gray-400 font-semibold flex items-center gap-1">
-              <Clock size={12} className="text-[#CCFF00]" /> Time of Day
+            <span className="text-gray-600 font-semibold flex items-center gap-1">
+              <Clock size={13} className="text-black" /> Time of Day
             </span>
-            <span className="font-mono font-bold text-[#CCFF00]">
+            <span className="font-mono font-bold text-black bg-white px-2 py-0.5 rounded-md border border-gray-200">
               {Math.floor(hour).toString().padStart(2, '0')}:
               {Math.round((hour % 1) * 60)
                 .toString()
@@ -146,7 +145,7 @@ export const ShadowSimulator3D: React.FC<ShadowSimulator3DProps> = ({
             step={0.25}
             value={hour}
             onChange={(e) => setHour(parseFloat(e.target.value))}
-            className="w-full accent-[#CCFF00] cursor-pointer"
+            className="w-full accent-black cursor-pointer"
           />
           <div className="flex justify-between text-[10px] text-gray-500 font-mono">
             <span>6:00 AM (Sunrise)</span>
@@ -157,8 +156,8 @@ export const ShadowSimulator3D: React.FC<ShadowSimulator3DProps> = ({
 
         {/* Season Selector */}
         <div className="space-y-2">
-          <span className="text-xs text-gray-400 font-semibold flex items-center gap-1">
-            <Calendar size={12} className="text-[#CCFF00]" /> Seasonal Preset
+          <span className="text-xs text-gray-600 font-semibold flex items-center gap-1">
+            <Calendar size={13} className="text-black" /> Seasonal Preset
           </span>
           <div className="grid grid-cols-3 gap-2">
             {[
@@ -169,10 +168,10 @@ export const ShadowSimulator3D: React.FC<ShadowSimulator3DProps> = ({
               <button
                 key={item.id}
                 onClick={() => setSeason(item.id as any)}
-                className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition text-center ${
+                className={`py-1.5 px-2 rounded-xl text-[10px] font-bold transition text-center cursor-pointer ${
                   season === item.id
-                    ? 'bg-[#CCFF00] text-black shadow-sm'
-                    : 'bg-white/10 text-gray-300 hover:bg-white/15'
+                    ? 'bg-black text-[#CCFF00] shadow-xs'
+                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
                 }`}
               >
                 {item.label}
@@ -184,30 +183,30 @@ export const ShadowSimulator3D: React.FC<ShadowSimulator3DProps> = ({
 
       {/* Physics Readouts */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-white/5 p-3 rounded-xl border border-white/5">
-          <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Sun Altitude</p>
-          <p className="text-lg font-mono font-extrabold text-white mt-1">
-            {calculatedSun.altitudeDeg > 0 ? `${calculatedSun.altitudeDeg}°` : '0° (Below Horizon)'}
+        <div className="bg-gray-50 p-3 rounded-2xl border border-gray-200/80">
+          <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Sun Altitude</p>
+          <p className="text-lg font-mono font-bold text-gray-900 mt-0.5">
+            {calculatedSun.altitudeDeg > 0 ? `${calculatedSun.altitudeDeg}°` : '0° (Night)'}
           </p>
         </div>
 
-        <div className="bg-white/5 p-3 rounded-xl border border-white/5">
-          <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Sun Azimuth</p>
-          <p className="text-lg font-mono font-extrabold text-[#CCFF00] mt-1">
+        <div className="bg-gray-50 p-3 rounded-2xl border border-gray-200/80">
+          <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Sun Azimuth</p>
+          <p className="text-lg font-mono font-bold text-gray-900 mt-0.5">
             {calculatedSun.azimuthDeg}°
           </p>
         </div>
 
-        <div className="bg-white/5 p-3 rounded-xl border border-white/5">
-          <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Shadow Projection</p>
-          <p className="text-lg font-mono font-extrabold text-amber-300 mt-1">
+        <div className="bg-gray-50 p-3 rounded-2xl border border-gray-200/80">
+          <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Shadow Projection</p>
+          <p className="text-lg font-mono font-bold text-gray-900 mt-0.5">
             {calculatedSun.altitudeDeg > 0 ? `~${estimatedShadowLength}m` : 'Infinite (Night)'}
           </p>
         </div>
 
-        <div className="bg-white/5 p-3 rounded-xl border border-white/5">
-          <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Solar Radiation</p>
-          <p className="text-lg font-mono font-extrabold text-green-400 mt-1">
+        <div className="bg-gray-50 p-3 rounded-2xl border border-gray-200/80">
+          <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Solar Radiation</p>
+          <p className="text-lg font-mono font-bold text-emerald-700 mt-0.5">
             {calculatedSun.solarRadiationKwh} kWh/m²
           </p>
         </div>
