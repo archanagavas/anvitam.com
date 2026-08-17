@@ -30,6 +30,11 @@ const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || DEFAULT_MAPBOX_TOKEN;
 // 100% Free Zero-Dollar 3D Tech Stack (MapLibre GL JS v4+ + OpenFreeMap + AWS Terrain)
 const MAPLIBRE_3D_STYLES = [
   {
+    id: 'openfreemap-streets',
+    name: '🏢 3D Google Maps Style (OpenFreeMap 3D)',
+    style: 'https://tiles.openfreemap.org/styles/liberty'
+  },
+  {
     id: 'satellite-3d',
     name: '🌐 3D Real Satellite Globe (Esri High-Res)',
     style: {
@@ -43,24 +48,30 @@ const MAPLIBRE_3D_STYLES = [
         }
       },
       layers: [
-        { id: 'satellite-bg', type: 'raster' as const, source: 'esri-satellite', minzoom: 0, maxzoom: 22 }
+        {
+          id: 'bg-color',
+          type: 'background' as const,
+          paint: { 'background-color': '#090d16' }
+        },
+        {
+          id: 'satellite-bg',
+          type: 'raster' as const,
+          source: 'esri-satellite',
+          minzoom: 0,
+          maxzoom: 22
+        }
       ]
     }
-  },
-  {
-    id: 'openfreemap-streets',
-    name: '🏢 3D Google Maps Style (OpenFreeMap)',
-    style: 'https://tiles.openfreemap.org/styles/liberty'
-  },
-  {
-    id: 'carto-dark-3d',
-    name: '📐 3D Architectural Dark Studio',
-    style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
   },
   {
     id: 'carto-positron-3d',
     name: '☀️ 3D Architectural Light Studio',
     style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
+  },
+  {
+    id: 'carto-dark-3d',
+    name: '📐 3D Architectural Dark Studio',
+    style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
   }
 ];
 
@@ -573,7 +584,7 @@ export default function SiteAnalysis() {
         {/* WORKSPACE LAYOUT */}
         <div className="flex-1 flex flex-col">
           {/* Map Container */}
-          <div className="w-full h-[70vh] min-h-[500px] relative bg-gray-950 border-b border-gray-800 overflow-hidden">
+          <div className="w-full h-[70vh] min-h-[500px] relative bg-white border-b border-gray-200 overflow-hidden">
             <div ref={mapContainerRef} className="w-full h-full absolute inset-0 z-0" />
 
             {/* Map Overlay Bar: 3D Globe / 2D Engine Switcher & Style Selector */}
