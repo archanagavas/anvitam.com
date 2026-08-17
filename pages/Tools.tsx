@@ -1,5 +1,6 @@
 // pages/Tools.tsx — Architectural Site Intelligence Suite Directory (16+ Live Tools)
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
@@ -19,6 +20,18 @@ export default function Tools() {
   const [activeModalTool, setActiveModalTool] = useState<ToolItem | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [pendingToolRedirect, setPendingToolRedirect] = useState<string | null>(null);
+
+  // Prevent background scrolling when tool modal is open
+  useEffect(() => {
+    if (activeModalTool) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [activeModalTool]);
 
   // Detect Indian currency preference
   const isIndia = Intl.DateTimeFormat().resolvedOptions().timeZone.includes('Kolkata');
@@ -322,77 +335,84 @@ export default function Tools() {
           </div>
         </section>
 
-        {/* ── TOOL DETAIL PREVIEW MODAL ── */}
-        <AnimatePresence>
-          {activeModalTool && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
-              <motion.div
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="tool-modal-title"
-                initial={{ opacity: 0, scale: 0.96, y: 15 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.96, y: 15 }}
-                className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative overflow-hidden max-h-[90vh] overflow-y-auto border border-gray-200 text-gray-900"
+        {/* ── TOOL DETAIL PREVIEW MODAL (PORTAL TO BODY) ── */}
+        {typeof document !== 'undefined' && createPortal(
+          <AnimatePresence>
+            {activeModalTool && (
+              <div 
+                className="fixed inset-0 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs"
+                style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', zIndex: 99999 }}
+                onClick={(e) => e.target === e.currentTarget && setActiveModalTool(null)}
               >
-                <button
-                  onClick={() => setActiveModalTool(null)}
-                  className="absolute top-5 right-5 p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition cursor-pointer"
-                  aria-label="Close modal"
+                <motion.div
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="tool-modal-title"
+                  initial={{ opacity: 0, scale: 0.96, y: 15 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.96, y: 15 }}
+                  className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative overflow-hidden max-h-[90vh] overflow-y-auto border border-gray-200 text-gray-900"
                 >
-                  <X size={16} />
-                </button>
+                  <button
+                    onClick={() => setActiveModalTool(null)}
+                    className="absolute top-5 right-5 p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition cursor-pointer"
+                    aria-label="Close modal"
+                  >
+                    <X size={16} />
+                  </button>
 
-                <div className="flex items-center gap-3.5 mb-5">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${activeModalTool.iconBg}`}>
-                    {activeModalTool.iconSvg}
+                  <div className="flex items-center gap-3.5 mb-5">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${activeModalTool.iconBg}`}>
+                      {activeModalTool.iconSvg}
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-black bg-[#CCFF00] px-2.5 py-0.5 rounded-full border border-black/10">
+                        {activeModalTool.category}
+                      </span>
+                      <h2 id="tool-modal-title" className="text-lg font-bold text-gray-900 mt-1 tracking-tight">{activeModalTool.name}</h2>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-black bg-[#CCFF00] px-2.5 py-0.5 rounded-full border border-black/10">
-                      {activeModalTool.category}
-                    </span>
-                    <h2 id="tool-modal-title" className="text-lg font-bold text-gray-900 mt-1 tracking-tight">{activeModalTool.name}</h2>
+
+                  <div className="h-44 w-full rounded-xl overflow-hidden mb-5 bg-gray-100 border border-gray-200">
+                    <img
+                      src={activeModalTool.previewImage}
+                      alt={activeModalTool.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                </div>
 
-                <div className="h-44 w-full rounded-xl overflow-hidden mb-5 bg-gray-100 border border-gray-200">
-                  <img
-                    src={activeModalTool.previewImage}
-                    alt={activeModalTool.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+                  <p className="text-xs sm:text-sm text-gray-600 leading-relaxed mb-5 font-normal">
+                    {activeModalTool.fullDesc}
+                  </p>
 
-                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed mb-5 font-normal">
-                  {activeModalTool.fullDesc}
-                </p>
+                  <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                    <Sparkles size={14} className="text-amber-500" /> What This Tool Gives You
+                  </h4>
+                  <ul className="space-y-2 mb-6">
+                    {activeModalTool.features.map((feat, i) => (
+                      <li key={i} className="flex items-center gap-2.5 text-xs text-gray-700 font-medium">
+                        <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
+                        <span>{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
 
-                <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                  <Sparkles size={14} className="text-amber-500" /> What This Tool Gives You
-                </h4>
-                <ul className="space-y-2 mb-6">
-                  {activeModalTool.features.map((feat, i) => (
-                    <li key={i} className="flex items-center gap-2.5 text-xs text-gray-700 font-medium">
-                      <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
-                      <span>{feat}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  onClick={() => {
-                    const tool = activeModalTool;
-                    setActiveModalTool(null);
-                    handleLaunchTool(tool);
-                  }}
-                  className="w-full bg-[#111111] hover:bg-black text-[#CCFF00] font-bold py-3.5 px-6 rounded-full text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
-                >
-                  Open Tool Now <ArrowRight size={15} />
-                </button>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
+                  <button
+                    onClick={() => {
+                      const tool = activeModalTool;
+                      setActiveModalTool(null);
+                      handleLaunchTool(tool);
+                    }}
+                    className="w-full bg-[#111111] hover:bg-black text-[#CCFF00] font-bold py-3.5 px-6 rounded-full text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
+                  >
+                    Open Tool Now <ArrowRight size={15} />
+                  </button>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
 
         <ToolsAuthModal
           isOpen={showAuthModal}
