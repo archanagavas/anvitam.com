@@ -88,6 +88,17 @@
   left: 0;
   animation: pulsePin 2s infinite;
 }
+
+/* Universal HTML5 3D Perspective Map Canvas (Real Earth Satellite & 3D Pitch) */
+.leaflet-3d-perspective-active {
+  perspective: 1000px;
+  overflow: hidden;
+}
+.leaflet-3d-perspective-active .leaflet-map-pane {
+  transform: perspective(1000px) rotateX(45deg) scale(1.22) !important;
+  transform-origin: 50% 55% !important;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
 @keyframes pulsePin {
   0% { transform: scale(0.5); opacity: 1; }
   100% { transform: scale(1.6); opacity: 0; }
