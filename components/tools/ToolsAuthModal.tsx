@@ -97,20 +97,6 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={e => e.target === e.currentTarget && onClose()}
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            width: '100vw',
-            height: '100vh',
-            zIndex: 99999,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '16px'
-          }}
         >
           <motion.div
             className="auth-modal"

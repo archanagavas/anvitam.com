@@ -340,8 +340,7 @@ export default function Tools() {
           <AnimatePresence>
             {activeModalTool && (
               <div 
-                className="fixed inset-0 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs"
-                style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', zIndex: 99999 }}
+                className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs"
                 onClick={(e) => e.target === e.currentTarget && setActiveModalTool(null)}
               >
                 <motion.div
