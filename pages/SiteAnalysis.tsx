@@ -27,11 +27,18 @@ import {
 
 const DEFAULT_MAPBOX_TOKEN = atob('cGsuZXlKMUlqb2lZVzUyYVhSaGJTSXNJbUVpT2lKamJYTjNNR0ZqTlhreFpIWTRNbmh5TVRsek9IWnZOalF5SW4wLl9uNGg0bW1RTDVzSXgxQnFRdkZ0d3c=');
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || DEFAULT_MAPBOX_TOKEN;
-const MAP_STYLES = [
-  { id: 'google-streets', name: '🏢 Google Maps Vibrant Streets', url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', maxZoom: 19, attribution: '&copy; OpenStreetMap' },
-  { id: 'satellite', name: '🌐 High-Res Satellite Imagery (Esri)', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', maxZoom: 19, attribution: 'Tiles &copy; Esri' },
-  { id: 'studio-light', name: '📐 Architectural Light Studio (Positron)', url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', maxZoom: 19, attribution: '&copy; CARTO' },
-  { id: 'studio-dark', name: '🌙 Architectural Dark Studio', url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', maxZoom: 19, attribution: '&copy; CARTO' }
+
+const MAPBOX_3D_STYLES = [
+  { id: 'mapbox://styles/mapbox/satellite-streets-v12', name: '🌐 3D Interactive Satellite Globe' },
+  { id: 'mapbox://styles/mapbox/streets-v12', name: '🏢 3D Google Maps Style (Extruded Buildings)' },
+  { id: 'mapbox://styles/mapbox/dark-v11', name: '📐 3D Architectural Dark Studio' },
+  { id: 'mapbox://styles/mapbox/outdoors-v12', name: '⛰️ 3D Topo Contours & Terrain' }
+];
+
+const LEAFLET_2D_STYLES = [
+  { id: 'satellite-2d', name: '🛰️ 2D High-Res Satellite (Esri)', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', maxZoom: 19, attribution: 'Tiles &copy; Esri' },
+  { id: 'streets-2d', name: '🏢 2D OpenStreetMap Streets', url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', maxZoom: 19, attribution: '&copy; OpenStreetMap' },
+  { id: 'studio-2d', name: '📐 2D Architectural Studio (Positron)', url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', maxZoom: 19, attribution: '&copy; CARTO' }
 ];
 
 const CATEGORIES: { id: DesignCategory; label: string; icon: string }[] = [
@@ -58,7 +65,8 @@ export default function SiteAnalysis() {
   
   // Dual Map Engine State ('3d' or '2d')
   const [mapEngine, setMapEngine] = useState<'3d' | '2d'>('3d');
-  const [activeStyleId, setActiveStyleId] = useState(MAP_STYLES[0].id);
+  const [mapboxStyleId, setMapboxStyleId] = useState(MAPBOX_3D_STYLES[0].id);
+  const [leafletStyleId, setLeafletStyleId] = useState(LEAFLET_2D_STYLES[0].id);
 
   // Authentication & Credits
   const [user, setUser] = useState<ToolUser | null>(null);
@@ -69,6 +77,9 @@ export default function SiteAnalysis() {
 
   // Map Container & Instance Refs
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapboxRef = useRef<mapboxgl.Map | null>(null);
+  const mapboxMarkerRef = useRef<mapboxgl.Marker | null>(null);
+
   const leafletRef = useRef<L.Map | null>(null);
   const leafletTileLayerRef = useRef<L.TileLayer | null>(null);
   const leafletMarkerRef = useRef<L.Marker | null>(null);
@@ -92,7 +103,7 @@ export default function SiteAnalysis() {
     return () => window.removeEventListener('anvitam-user-updated', handleUserUpdate);
   }, []);
 
-  // CRITICAL: Disable html { zoom: 80% } on this page to ensure WebGL/DOM coordinates align
+  // CRITICAL: Disable html { zoom: 80% } on this page to ensure WebGL coordinates align
   useEffect(() => {
     document.documentElement.classList.add('no-zoom');
     return () => {
@@ -101,7 +112,7 @@ export default function SiteAnalysis() {
   }, []);
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // UNIVERSAL MAP INITIALIZATION (3D Perspective vs 2D Flat)
+  // MAP ENGINE INITIALIZATION (3D Globe Mapbox GL vs 2D Leaflet)
   // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -109,19 +120,144 @@ export default function SiteAnalysis() {
     const centerLat = pendingCoords?.lat ?? 22.3072;
     const centerLon = pendingCoords?.lon ?? 73.1812;
 
-    // Toggle 3D CSS Perspective container class
-    if (mapEngine === '3d') {
-      mapContainerRef.current.classList.add('leaflet-3d-perspective-active');
-    } else {
-      mapContainerRef.current.classList.remove('leaflet-3d-perspective-active');
+    // Cleanup previous maps before initializing active engine
+    if (mapboxRef.current) {
+      mapboxRef.current.remove();
+      mapboxRef.current = null;
+      mapboxMarkerRef.current = null;
+    }
+    if (leafletRef.current) {
+      leafletRef.current.remove();
+      leafletRef.current = null;
+      leafletTileLayerRef.current = null;
+      leafletMarkerRef.current = null;
     }
 
-    if (!leafletRef.current) {
-      const selectedStyle = MAP_STYLES.find(s => s.id === activeStyleId) || MAP_STYLES[0];
+    if (mapEngine === '3d') {
+      try {
+        mapboxgl.accessToken = MAPBOX_TOKEN;
+        const validStyle = MAPBOX_3D_STYLES.some(s => s.id === mapboxStyleId) ? mapboxStyleId : MAPBOX_3D_STYLES[0].id;
+
+        const map = new mapboxgl.Map({
+          container: mapContainerRef.current,
+          style: validStyle,
+          center: [centerLon, centerLat],
+          zoom: 14,
+          pitch: 50, // 3D Perspective Angle
+          bearing: -17.6,
+          projection: 'globe', // Interactive 3D Globe Projection
+        });
+
+        mapboxRef.current = map;
+
+        const forceResize = () => {
+          if (mapboxRef.current) {
+            mapboxRef.current.resize();
+          }
+        };
+
+        map.on('style.load', () => {
+          // Atmosphere Fog for 3D Globe
+          try {
+            map.setFog({
+              color: 'rgb(186, 210, 235)',
+              'high-color': 'rgb(36, 92, 223)',
+              'space-color': 'rgb(11, 11, 25)',
+              'horizon-blend': 0.02
+            });
+          } catch { /* silent fallback */ }
+
+          // 3D Building Extrusions
+          try {
+            const layers = map.getStyle().layers;
+            const labelLayerId = layers?.find(
+              (layer) => layer.type === 'symbol' && layer.layout?.['text-field']
+            )?.id;
+
+            if (!map.getLayer('add-3d-buildings')) {
+              map.addLayer(
+                {
+                  id: 'add-3d-buildings',
+                  source: 'composite',
+                  'source-layer': 'building',
+                  filter: ['==', 'extrude', 'true'],
+                  type: 'fill-extrusion',
+                  minzoom: 13,
+                  paint: {
+                    'fill-extrusion-color': '#e4e4e7',
+                    'fill-extrusion-height': [
+                      'interpolate',
+                      ['linear'],
+                      ['zoom'],
+                      13,
+                      0,
+                      14.05,
+                      ['get', 'height']
+                    ],
+                    'fill-extrusion-base': [
+                      'interpolate',
+                      ['linear'],
+                      ['zoom'],
+                      13,
+                      0,
+                      14.05,
+                      ['get', 'min_height']
+                    ],
+                    'fill-extrusion-opacity': 0.85
+                  }
+                },
+                labelLayerId
+              );
+            }
+          } catch { /* silent fallback */ }
+
+          // 3D Terrain Elevation DEM
+          try {
+            if (!map.getSource('mapbox-dem')) {
+              map.addSource('mapbox-dem', {
+                type: 'raster-dem',
+                url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+                tileSize: 512,
+                maxzoom: 14
+              });
+            }
+            map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.2 });
+          } catch { /* silent fallback */ }
+        });
+
+        map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
+
+        map.on('click', (e) => {
+          const { lng, lat } = e.lngLat;
+          positionMarker(lat, lng);
+          setPendingCoords({ lat, lon: lng });
+          setIsAnalyzed(false);
+        });
+
+        map.on('load', () => {
+          forceResize();
+          setTimeout(forceResize, 100);
+          setTimeout(forceResize, 300);
+          setTimeout(forceResize, 600);
+          if (pendingCoords) positionMarker(pendingCoords.lat, pendingCoords.lon);
+        });
+
+        const resizeObserver = new ResizeObserver(() => {
+          forceResize();
+        });
+        if (mapContainerRef.current) {
+          resizeObserver.observe(mapContainerRef.current);
+        }
+      } catch (err) {
+        console.warn('Mapbox 3D Globe init warning:', err);
+      }
+    } else {
+      // Initialize Leaflet 2D Engine
+      const selectedStyle = LEAFLET_2D_STYLES.find(s => s.id === leafletStyleId) || LEAFLET_2D_STYLES[0];
 
       const map = L.map(mapContainerRef.current, {
         center: [centerLat, centerLon],
-        zoom: mapEngine === '3d' ? 15 : 13,
+        zoom: 13,
         zoomControl: true,
       });
 
@@ -144,9 +280,6 @@ export default function SiteAnalysis() {
 
       setTimeout(() => map.invalidateSize(), 150);
       if (pendingCoords) positionMarker(pendingCoords.lat, pendingCoords.lon);
-    } else {
-      leafletRef.current.setZoom(mapEngine === '3d' ? 15 : 13);
-      setTimeout(() => leafletRef.current?.invalidateSize(), 150);
     }
   }, [mapEngine]);
 
@@ -162,9 +295,16 @@ export default function SiteAnalysis() {
     }
   }, [latParam, lonParam]);
 
-  const changeMapStyle = (styleId: string) => {
-    const selected = MAP_STYLES.find(s => s.id === styleId) || MAP_STYLES[0];
-    setActiveStyleId(selected.id);
+  const change3DStyle = (styleId: string) => {
+    setMapboxStyleId(styleId);
+    if (mapboxRef.current) {
+      mapboxRef.current.setStyle(styleId);
+    }
+  };
+
+  const change2DStyle = (styleId: string) => {
+    const selected = LEAFLET_2D_STYLES.find(s => s.id === styleId) || LEAFLET_2D_STYLES[0];
+    setLeafletStyleId(selected.id);
     if (leafletRef.current && leafletTileLayerRef.current) {
       leafletRef.current.removeLayer(leafletTileLayerRef.current);
       const newLayer = L.tileLayer(selected.url, {
@@ -177,23 +317,42 @@ export default function SiteAnalysis() {
   };
 
   const positionMarker = (lat: number, lon: number) => {
-    if (!leafletRef.current) return;
+    if (mapEngine === '3d') {
+      if (!mapboxRef.current) return;
+      const map = mapboxRef.current;
 
-    if (leafletMarkerRef.current) {
-      leafletMarkerRef.current.remove();
+      if (mapboxMarkerRef.current) {
+        mapboxMarkerRef.current.remove();
+      }
+
+      const el = document.createElement('div');
+      el.className = 'map-pin';
+      el.innerHTML = `<div class="pin-dot"></div><div class="pin-pulse"></div>`;
+
+      mapboxMarkerRef.current = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
+        .setLngLat([lon, lat])
+        .addTo(map);
+
+      map.flyTo({ center: [lon, lat], zoom: 16, pitch: 55, bearing: -15, duration: 1000 });
+    } else {
+      if (!leafletRef.current) return;
+
+      if (leafletMarkerRef.current) {
+        leafletMarkerRef.current.remove();
+      }
+
+      const customPin = L.divIcon({
+        className: 'custom-leaflet-pin',
+        html: `<div class="map-pin"><div class="pin-dot"></div><div class="pin-pulse"></div></div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      });
+
+      const marker = L.marker([lat, lon], { icon: customPin }).addTo(leafletRef.current);
+      leafletMarkerRef.current = marker;
+
+      leafletRef.current.setView([lat, lon], 13, { animate: true });
     }
-
-    const customPin = L.divIcon({
-      className: 'custom-leaflet-pin',
-      html: `<div class="map-pin"><div class="pin-dot"></div><div class="pin-pulse"></div></div>`,
-      iconSize: [24, 24],
-      iconAnchor: [12, 12]
-    });
-
-    const marker = L.marker([lat, lon], { icon: customPin }).addTo(leafletRef.current);
-    leafletMarkerRef.current = marker;
-
-    leafletRef.current.flyTo([lat, lon], 15, { duration: 1.2 });
   };
 
   const executeSiteAnalysis = async () => {
@@ -398,15 +557,23 @@ export default function SiteAnalysis() {
               {/* Style Dropdown Selector */}
               <div className="flex items-center gap-1">
                 <select
-                  value={activeStyleId}
-                  onChange={(e) => changeMapStyle(e.target.value)}
+                  value={mapEngine === '3d' ? mapboxStyleId : leafletStyleId}
+                  onChange={(e) => mapEngine === '3d' ? change3DStyle(e.target.value) : change2DStyle(e.target.value)}
                   className="bg-gray-100 text-gray-900 text-xs font-semibold rounded-xl px-2.5 py-1.5 border border-gray-200 outline-none cursor-pointer hover:bg-gray-200"
                 >
-                  {MAP_STYLES.map(st => (
-                    <option key={st.id} value={st.id} className="bg-white text-gray-900">
-                      {st.name}
-                    </option>
-                  ))}
+                  {mapEngine === '3d' ? (
+                    MAPBOX_3D_STYLES.map(st => (
+                      <option key={st.id} value={st.id} className="bg-white text-gray-900">
+                        {st.name}
+                      </option>
+                    ))
+                  ) : (
+                    LEAFLET_2D_STYLES.map(st => (
+                      <option key={st.id} value={st.id} className="bg-white text-gray-900">
+                        {st.name}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
             </div>
