@@ -488,16 +488,18 @@ export default function SiteAnalysis() {
         <ToolsPaywallOverlay
           isOpen={showPaywall}
           trialDaysRemaining={user?.trial_days_remaining ?? 0}
-          creditsRemaining={user?.credits_remaining ?? 5}
+          creditsRemaining={user ? user.credits_remaining : 0}
+          userCountry={user?.country}
           onClose={() => setShowPaywall(false)}
           onUseFreeTrial={() => setShowPaywall(false)}
           onSubscribe={(plan) => {
             const checkoutUrl = plan === 'monthly' 
               ? 'https://checkout.dodopayments.com/buy/pdt_0NlZ5wDhqx68MxeHE06JE?quantity=1'
               : 'https://checkout.dodopayments.com/buy/pdt_0NlZ5UEJiErzLixmkxbda?quantity=1';
-            window.open(`${checkoutUrl}&email=${encodeURIComponent(user?.email || '')}`, '_blank');
+            window.open(`${checkoutUrl}&email=${encodeURIComponent(user?.email || '')}`, '_blank', 'noopener,noreferrer');
           }}
-          onLogin={() => { setShowPaywall(false); setAuthMode('register'); setShowAuth(true); }}
+          onLogin={() => { setShowPaywall(false); setAuthMode('login'); setShowAuth(true); }}
+          onRegister={() => { setShowPaywall(false); setAuthMode('register'); setShowAuth(true); }}
         />
       </div>
     </>

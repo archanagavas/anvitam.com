@@ -118,7 +118,7 @@ Timestamp: ${new Date().toLocaleString()}`;
     if (q.includes('cost') || q.includes('price') || q.includes('estimate') || q.includes('budget') || q.includes('kharch') || q.includes('rate') || q.includes('paisa') || q.includes('presupuesto') || q.includes('tarif')) {
       options = [
         { label: '📊 Open Live Cost Estimator', action: () => triggerEstimator(), isPrimary: true },
-        { label: '📞 Book Call with Archana', action: () => window.open(BOOK_CALL_URL, '_blank') },
+        { label: '📞 Book Call with Archana', action: () => window.open(BOOK_CALL_URL, '_blank', 'noopener,noreferrer') },
         { label: '📩 Leave Callback Details', action: () => promptLeadCapture("Budget & Cost Estimate Inquiry") }
       ];
     } else if (
@@ -148,7 +148,7 @@ Timestamp: ${new Date().toLocaleString()}`;
     ) {
       // User is confused or unsure — offer direct call with Archana
       options = [
-        { label: '📞 Book Direct Call with Archana', action: () => window.open(BOOK_CALL_URL, '_blank'), isPrimary: true },
+        { label: '📞 Book Direct Call with Archana', action: () => window.open(BOOK_CALL_URL, '_blank', 'noopener,noreferrer'), isPrimary: true },
         { label: '📊 Try Cost Estimator', action: () => triggerEstimator() },
         { label: '🌿 Explore Services', action: () => navigate('/services') }
       ];
@@ -159,7 +159,7 @@ Timestamp: ${new Date().toLocaleString()}`;
       ];
     } else if (q.includes('consult') || q.includes('book') || q.includes('call') || q.includes('talk') || q.includes('meet') || q.includes('appointment') || q.includes('hire') || q.includes('start')) {
       options = [
-        { label: '📅 Book 1:1 Call with Archana', action: () => window.open(BOOK_CALL_URL, '_blank'), isPrimary: true },
+        { label: '📅 Book 1:1 Call with Archana', action: () => window.open(BOOK_CALL_URL, '_blank', 'noopener,noreferrer'), isPrimary: true },
         { label: '📩 Leave Callback Details', action: () => promptLeadCapture("1:1 Consultation Booking") }
       ];
     } else if (q.includes('farm') || q.includes('resort') || q.includes('land') || q.includes('forest') || q.includes('permaculture') || q.includes('house') || q.includes('project') || q.includes('design')) {
@@ -177,7 +177,7 @@ Timestamp: ${new Date().toLocaleString()}`;
       options = [
         { label: '🌿 Explore Services', action: () => navigate('/services'), isPrimary: true },
         { label: '📖 Read Blogs', action: () => navigate('/blog') },
-        { label: '📞 Book Call with Archana', action: () => window.open(BOOK_CALL_URL, '_blank') }
+        { label: '📞 Book Call with Archana', action: () => window.open(BOOK_CALL_URL, '_blank', 'noopener,noreferrer') }
       ];
     }
 

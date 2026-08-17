@@ -38,7 +38,7 @@ export default function UserDashboard() {
   const [nameInput, setNameInput] = useState('');
 
   const targetToolParam = searchParams.get('tool');
-  const isIndia = Intl.DateTimeFormat().resolvedOptions().timeZone.includes('Kolkata');
+  const isIndia = user?.country ? user.country === 'IN' : false;
   const topupPrice = isIndia ? DODO_PRODUCTS.topup_10.priceINR : DODO_PRODUCTS.topup_10.priceUSD;
   const monthlyPrice = isIndia ? DODO_PRODUCTS.pro_monthly.priceINR : DODO_PRODUCTS.pro_monthly.priceUSD;
 
@@ -422,7 +422,7 @@ export default function UserDashboard() {
                       <p className="text-2xl font-bold text-gray-900 mb-4">{topupPrice}</p>
                     </div>
                     <button
-                      onClick={() => window.open(DODO_PRODUCTS.topup_10.checkoutUrl, '_blank')}
+                      onClick={() => window.open(DODO_PRODUCTS.topup_10.checkoutUrl, '_blank', 'noopener,noreferrer')}
                       className="w-full bg-black text-white hover:bg-gray-800 font-bold py-3 rounded-xl text-xs transition cursor-pointer"
                     >
                       Buy Top-Up Pack ({topupPrice})
@@ -437,7 +437,7 @@ export default function UserDashboard() {
                       <p className="text-2xl font-bold text-white mb-4">{monthlyPrice}/mo</p>
                     </div>
                     <button
-                      onClick={() => window.open(DODO_PRODUCTS.pro_monthly.checkoutUrl, '_blank')}
+                      onClick={() => window.open(DODO_PRODUCTS.pro_monthly.checkoutUrl, '_blank', 'noopener,noreferrer')}
                       className="w-full bg-[#CCFF00] text-black hover:bg-white font-bold py-3 rounded-xl text-xs transition cursor-pointer"
                     >
                       Get Pro Monthly ({monthlyPrice}/mo)
@@ -463,9 +463,11 @@ export default function UserDashboard() {
 
       <ToolsPaywallOverlay
         isOpen={showPaywall}
+        userCountry={user?.country}
         onClose={() => setShowPaywall(false)}
         onUseFreeTrial={() => setShowPaywall(false)}
         onLogin={() => { setShowPaywall(false); setShowAuthModal(true); }}
+        onRegister={() => { setShowPaywall(false); setShowAuthModal(true); }}
       />
     </>
   );

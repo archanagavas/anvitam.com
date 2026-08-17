@@ -13,6 +13,7 @@ interface Props {
   userCountry?: string;
   onSubscribe?: (plan: 'monthly' | 'credits_10') => void;
   onLogin?: () => void;
+  onRegister?: () => void;
   onClose?: () => void;
   onUseFreeTrial?: () => void;
 }
@@ -21,18 +22,21 @@ export const ToolsPaywallOverlay: React.FC<Props> = ({
   isOpen = true,
   trialDaysRemaining,
   creditsRemaining: propCredits,
-  userCountry = 'IN',
+  userCountry,
   onSubscribe,
   onLogin,
+  onRegister,
   onClose,
   onUseFreeTrial,
 }) => {
   const user = getToolUser();
-  const currentCredits = propCredits ?? user?.credits_remaining ?? 5;
+  const currentCredits = propCredits ?? (user ? user.credits_remaining : 0);
   const daysLeft = trialDaysRemaining ?? user?.trial_days_remaining ?? 15;
-  const isExpired = currentCredits <= 0 && !user?.is_subscribed;
+  const isExpired = user ? (currentCredits <= 0 && !user.is_subscribed) : false;
 
-  const isIndia = userCountry === 'IN' || Intl.DateTimeFormat().resolvedOptions().timeZone.includes('Kolkata');
+  const detectedCountry = userCountry || user?.country;
+  const isIndia = detectedCountry ? detectedCountry === 'IN' : false;
+
   const monthlyPrice = isIndia ? DODO_PRODUCTS.pro_monthly.priceINR : DODO_PRODUCTS.pro_monthly.priceUSD;
   const topupPrice = isIndia ? DODO_PRODUCTS.topup_10.priceINR : DODO_PRODUCTS.topup_10.priceUSD;
 
@@ -52,11 +56,11 @@ export const ToolsPaywallOverlay: React.FC<Props> = ({
       onSubscribe(plan);
     } else {
       const product = plan === 'monthly' ? DODO_PRODUCTS.pro_monthly : DODO_PRODUCTS.topup_10;
-      window.open(product.checkoutUrl, '_blank');
+      window.open(product.checkoutUrl, '_blank', 'noopener,noreferrer');
     }
   };
 
-  if (!isOpen || typeof document === 'undefined') return null;
+  if (typeof document === 'undefined') return null;
 
   return createPortal(
     <AnimatePresence>
@@ -100,7 +104,7 @@ export const ToolsPaywallOverlay: React.FC<Props> = ({
             </div>
 
             {/* FREE TRIAL / FREE CREDITS CALLOUT BANNER */}
-            {currentCredits > 0 ? (
+            {user && currentCredits > 0 ? (
               <div className="bg-[#CCFF00]/20 border-2 border-black/80 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-xs">
                 <div>
                   <div className="flex items-center gap-1.5 text-xs font-bold text-gray-900">
@@ -134,7 +138,8 @@ export const ToolsPaywallOverlay: React.FC<Props> = ({
                 </div>
                 <button
                   onClick={() => {
-                    if (onLogin) onLogin();
+                    if (onRegister) onRegister();
+                    else if (onLogin) onLogin();
                   }}
                   className="bg-[#111111] hover:bg-black text-[#CCFF00] font-bold text-xs px-4 py-2.5 rounded-full transition shadow-sm whitespace-nowrap cursor-pointer hover:scale-105 shrink-0 flex items-center gap-1"
                 >
@@ -242,12 +247,25 @@ export const ToolsPaywallOverlay: React.FC<Props> = ({
             {/* Footer actions */}
             <div className="space-y-2 pt-1 text-center">
               {!user ? (
-                <button
-                  onClick={onLogin}
-                  className="text-xs font-bold text-gray-600 hover:text-black transition cursor-pointer underline underline-offset-4"
-                >
-                  Already have an account? Sign in
-                </button>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 text-xs font-bold pt-1">
+                  <button
+                    onClick={() => {
+                      if (onRegister) onRegister();
+                      else if (onLogin) onLogin();
+                    }}
+                    className="text-black bg-[#CCFF00] px-4 py-2 rounded-full hover:bg-black hover:text-[#CCFF00] transition cursor-pointer shadow-xs"
+                  >
+                    Sign Up Free (5 Credits)
+                  </button>
+                  {onLogin && (
+                    <button
+                      onClick={onLogin}
+                      className="text-gray-600 hover:text-black transition cursor-pointer underline underline-offset-4"
+                    >
+                      Already have an account? Sign in
+                    </button>
+                  )}
+                </div>
               ) : onClose ? (
                 <button
                   onClick={onClose}
