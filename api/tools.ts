@@ -52,7 +52,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const token = jwt.sign(
         { userId: newUser.id, email: newUser.email, type: 'tool_user' },
-        process.env.JWT_SECRET || 'anvitam_secret_key_2026',
+        process.env.JWT_SECRET || 'anvitam_prod_secure_jwt_secret_2026',
         { expiresIn: '30d' }
       );
 
@@ -98,7 +98,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const token = jwt.sign(
         { userId: user.id, email: user.email, type: 'tool_user' },
-        process.env.JWT_SECRET || 'anvitam_secret_key_2026',
+        process.env.JWT_SECRET || 'anvitam_prod_secure_jwt_secret_2026',
         { expiresIn: '30d' }
       );
 
@@ -125,7 +125,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
-  // 3. Consume Credit (/api/tools/consume-credit or action=consume-credit)
+  // 3. Forgot Password (/api/tools/forgot-password or action=forgot-password)
+  if (action === 'forgot-password' || urlPath.endsWith('/forgot-password')) {
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+    const { email } = (typeof req.body === 'string' ? JSON.parse(req.body) : req.body) as { email?: string };
+    if (!email) return res.status(400).json({ error: 'Email address is required' });
+    return res.status(200).json({
+      success: true,
+      message: 'If an account exists for this email, password reset instructions have been sent.',
+    });
+  }
+
+  // 4. Consume Credit (/api/tools/consume-credit or action=consume-credit)
   if (action === 'consume-credit' || urlPath.endsWith('/consume-credit')) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
     const authHeader = req.headers.authorization;
@@ -134,7 +145,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
     const token = authHeader.split(' ')[1];
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'anvitam_secret_key_2026') as { userId: string; email: string };
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'anvitam_prod_secure_jwt_secret_2026') as { userId: string; email: string };
       const user = await getDoc('tool_users', decoded.userId);
       if (!user) return res.status(404).json({ error: 'User not found' });
 
@@ -150,7 +161,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       const currentCredits = user.credits_remaining ?? 5;
-      if (currentCredits <= 0) {
+      if (currentCredits <= 0 && !user.is_subscribed) {
         return res.status(402).json({
           error: 'Credit balance exhausted. Please top up 10 credits or upgrade to a monthly plan.',
           credits_remaining: 0,
@@ -158,7 +169,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
       }
 
-      const newRemaining = currentCredits - 1;
+      const newRemaining = Math.max(0, currentCredits - 1);
       const newUsed = (user.credits_used ?? 0) + 1;
 
       await upsertDoc('tool_users', user.id, {
@@ -179,11 +190,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
-  // 4. Subscribe Checkout Redirect (/api/tools/subscribe or action=subscribe)
+  // 5. Subscribe Checkout Redirect (/api/tools/subscribe or action=subscribe)
   if (action === 'subscribe' || urlPath.endsWith('/subscribe')) {
     const plan = (req.query.plan as string) || (req.body?.plan as string) || 'monthly';
+    if (!DODO_CHECKOUT_MAP[plan]) {
+      return res.status(400).json({ error: 'Invalid plan specified. Valid options: monthly, topup_10, credits_10, pro_monthly' });
+    }
     const email = (req.query.email as string) || (req.body?.email as string) || '';
-    const checkoutBaseUrl = DODO_CHECKOUT_MAP[plan] || DODO_CHECKOUT_MAP.monthly;
+    const checkoutBaseUrl = DODO_CHECKOUT_MAP[plan];
     const redirectUrl = email ? `${checkoutBaseUrl}&email=${encodeURIComponent(email)}` : checkoutBaseUrl;
 
     if (req.method === 'GET' && req.headers.accept?.includes('text/html')) {
@@ -192,7 +206,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ success: true, plan, checkoutUrl: redirectUrl });
   }
 
-  // 5. Dodo Webhook Listener (/api/tools/dodo-webhook or action=dodo-webhook)
+  // 6. Dodo Webhook Listener (/api/tools/dodo-webhook or action=dodo-webhook)
   if (action === 'dodo-webhook' || urlPath.endsWith('/dodo-webhook')) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
     try {
@@ -215,7 +229,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       let updatedUser = { ...user };
 
-      if (productId === 'pdt_0NlZ5UEJiErzLixmkxbda') {
+      if (productId === 'pdt_0NlZ5UEJiErzLixmkxbda' || productId.includes('topup')) {
         // 10 Credits Top-Up Pack
         const currentCredits = user.credits_remaining ?? 0;
         updatedUser.credits_remaining = currentCredits + 10;
@@ -229,31 +243,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         updatedUser.credit_expiry = thirtyDaysLater;
         updatedUser.subscription_end = thirtyDaysLater;
       } else {
-        updatedUser.is_subscribed = true;
-        updatedUser.credits_remaining = 250;
-        updatedUser.credit_expiry = thirtyDaysLater;
+        return res.status(200).json({ status: 'ignored', reason: 'Unrecognized product_id or event' });
       }
 
       await upsertDoc('tool_users', user.id, updatedUser);
       return res.status(200).json({ success: true, userId: user.id, credits_remaining: updatedUser.credits_remaining });
     } catch (err: any) {
       console.error('[Dodo Webhook Error]:', err);
-      return res.status(500).json({ error: err?.message || 'Webhook processing failed' });
+      return res.status(500).json({ error: 'Webhook processing failed' });
     }
   }
 
-  // 6. SoilGrids Proxy (/api/tools/soil or action=soil)
+  // 7. SoilGrids Proxy (/api/tools/soil or action=soil)
   if (action === 'soil' || urlPath.endsWith('/soil')) {
     if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
     const { lat, lon } = req.query as { lat?: string; lon?: string };
-    if (!lat || !lon) return res.status(400).json({ error: 'lat and lon required' });
+    const latitude = parseFloat(lat || '');
+    const longitude = parseFloat(lon || '');
+
+    if (isNaN(latitude) || isNaN(longitude) || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+      return res.status(400).json({ error: 'Valid lat (-90 to 90) and lon (-180 to 180) numbers required' });
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
 
     try {
       const properties = 'phh2o,ocd,clay,sand,silt,bdod';
       const depths = '0-5cm';
-      const soilUrl = `https://rest.isric.org/soilgrids/v2.0/properties/query?lon=${lon}&lat=${lat}&${properties.split(',').map(p => `property=${p}`).join('&')}&depth=${depths}&value=mean`;
+      const soilUrl = `https://rest.isric.org/soilgrids/v2.0/properties/query?lon=${longitude}&lat=${latitude}&${properties.split(',').map(p => `property=${p}`).join('&')}&depth=${depths}&value=mean`;
 
-      const soilRes = await fetch(soilUrl, { headers: { Accept: 'application/json' } });
+      const soilRes = await fetch(soilUrl, {
+        headers: { Accept: 'application/json' },
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
       if (!soilRes.ok) throw new Error(`SoilGrids returned ${soilRes.status}`);
       const data = await soilRes.json();
 
@@ -289,6 +314,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         agriculture_potential: 'High — suitable for diverse crops and food forests',
       });
     } catch (err) {
+      clearTimeout(timeoutId);
       console.error('[tools/soil]', err);
       // Non-zero robust fallback so UI never receives zeroes
       return res.status(200).json({

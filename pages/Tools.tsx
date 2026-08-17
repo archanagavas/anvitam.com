@@ -315,6 +315,9 @@ export default function Tools() {
           {activeModalTool && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
               <motion.div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="tool-modal-title"
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -323,6 +326,7 @@ export default function Tools() {
                 <button
                   onClick={() => setActiveModalTool(null)}
                   className="absolute top-6 right-6 p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition cursor-pointer"
+                  aria-label="Close modal"
                 >
                   <X size={18} />
                 </button>
@@ -335,7 +339,7 @@ export default function Tools() {
                     <span className="text-[10px] font-extrabold uppercase tracking-widest text-black bg-[#CCFF00] px-2.5 py-0.5 rounded-full border border-black/10">
                       {activeModalTool.category}
                     </span>
-                    <h2 className="text-xl font-black text-gray-900 mt-1 tracking-tight">{activeModalTool.name}</h2>
+                    <h2 id="tool-modal-title" className="text-xl font-black text-gray-900 mt-1 tracking-tight">{activeModalTool.name}</h2>
                   </div>
                 </div>
 

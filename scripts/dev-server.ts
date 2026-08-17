@@ -85,7 +85,7 @@ const server = createServer(async (req, res) => {
     const partnersIdMatch = pathname.match(/^\/api\/partners\/([^/]+)$/);
     const estimatorIdMatch = pathname.match(/^\/api\/estimator-services\/([^/]+)$/);
 
-    if (pathname.startsWith('/api/admin') || pathname === '/api/db-init') {
+    if (pathname.startsWith('/api/admin') || pathname === '/api/db-init' || pathname === '/api/upload') {
       await adminHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/analytics') {
       await analyticsHandler(vercelReq, vercelRes);

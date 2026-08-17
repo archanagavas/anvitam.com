@@ -4,12 +4,12 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export interface ToolUser {
-  id: number;
+  id: string | number;
   email: string;
   name: string;
   trial_days_remaining: number;
   is_subscribed: boolean;
-  subscription_end?: string;
+  subscription_end?: string | null;
   has_access: boolean;
 }
 
@@ -44,7 +44,7 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
           body: JSON.stringify({ email }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to send');
+        if (!res.ok) throw new Error(data.error || 'Failed to send password reset request');
         setForgotSent(true);
         setLoading(false);
         return;
@@ -64,6 +64,7 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
 
       localStorage.setItem('anvitam_tool_token', data.token);
       localStorage.setItem('anvitam_tool_user', JSON.stringify(data.user));
+      window.dispatchEvent(new CustomEvent('anvitam-user-updated', { detail: data.user }));
       onSuccess(data.user, data.token);
       onClose();
     } catch (err) {
@@ -85,6 +86,9 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
         >
           <motion.div
             className="auth-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="auth-modal-title"
             initial={{ opacity: 0, y: 24, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 24, scale: 0.97 }}
@@ -94,14 +98,14 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
             <div className="auth-modal-header">
               <div>
                 <div className="auth-logo-badge">SA</div>
-                <h2 className="auth-title">Site Analysis by Anvitam</h2>
+                <h2 id="auth-modal-title" className="auth-title">Site Analysis by Anvitam</h2>
                 <p className="auth-subtitle">
-                  {mode === 'register' ? '15-day free trial. No credit card required.' :
-                   mode === 'forgot' ? 'Enter your email to receive a reset link.' :
-                   'Sign in to access your site analyses.'}
+                  {mode === 'register' ? '5 Free Credits included. No credit card required.' :
+                   mode === 'forgot' ? 'Enter your email to receive password reset instructions.' :
+                   'Sign in to access your architectural tools.'}
                 </p>
               </div>
-              <button className="auth-close-btn" onClick={onClose}>✕</button>
+              <button className="auth-close-btn" onClick={onClose} aria-label="Close modal">✕</button>
             </div>
 
             {/* Tabs (login/register) */}
@@ -121,7 +125,7 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
               <div className="forgot-sent-state">
                 <div style={{ fontSize: 40 }}>📧</div>
                 <p style={{ fontWeight: 700, fontSize: 15, color: '#111' }}>Check your inbox</p>
-                <p style={{ fontSize: 13, color: '#6b7280', textAlign: 'center' }}>We sent a password reset link to <strong>{email}</strong>. It expires in 1 hour.</p>
+                <p style={{ fontSize: 13, color: '#6b7280', textAlign: 'center' }}>If an account exists for <strong>{email}</strong>, password reset instructions have been sent.</p>
                 <button className="auth-submit-btn" onClick={() => { setMode('login'); setForgotSent(false); }}>Back to sign in</button>
               </div>
             ) : (
@@ -147,8 +151,8 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
 
                 <button type="submit" className="auth-submit-btn" disabled={loading}>
                   {loading ? 'Please wait…' :
-                   mode === 'register' ? 'Start Free Trial →' :
-                   mode === 'forgot' ? 'Send Reset Link' :
+                   mode === 'register' ? 'Start Free Trial (5 Credits) →' :
+                   mode === 'forgot' ? 'Send Reset Request' :
                    'Sign In →'}
                 </button>
 
@@ -166,7 +170,7 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
                 </div>
 
                 {mode === 'register' && (
-                  <p className="auth-terms">By creating an account you agree to our Terms of Service and Privacy Policy. After your 15-day free trial, continue for $5/month or $45/year.</p>
+                  <p className="auth-terms">By creating an account you agree to our Terms of Service and Privacy Policy. Get 5 free credits on signup; top up 10 credits or get Pro Monthly when you need more.</p>
                 )}
               </form>
             )}

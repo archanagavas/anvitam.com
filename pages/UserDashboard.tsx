@@ -1,4 +1,4 @@
-// pages/UserDashboard.tsx — Architectural Studio SaaS Dashboard (Image 4 & 2 Design Layout)
+// pages/UserDashboard.tsx — Architectural Studio SaaS Dashboard
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -8,7 +8,6 @@ import {
   Crown,
   LogOut,
   Search,
-  Plus,
   Compass,
   TrendingUp,
   CreditCard,
@@ -16,12 +15,15 @@ import {
   ChevronRight,
   Edit2,
   X,
-  Filter
+  Sliders,
+  CheckCircle2,
+  ArrowRight
 } from 'lucide-react';
 import { getToolUser, logoutToolUser, updateToolUser, type ToolUser } from '../utils/userAuth';
 import { TOOLS_SUITE, type ToolItem } from '../constants/toolsData';
 import { ToolsAuthModal } from '../components/tools/ToolsAuthModal';
 import { ToolsPaywallOverlay } from '../components/tools/ToolsPaywallOverlay';
+import { DODO_PRODUCTS } from '../constants/dodoConfig';
 
 export default function UserDashboard() {
   const navigate = useNavigate();
@@ -36,8 +38,11 @@ export default function UserDashboard() {
   const [nameInput, setNameInput] = useState('');
 
   const targetToolParam = searchParams.get('tool');
+  const isIndia = Intl.DateTimeFormat().resolvedOptions().timeZone.includes('Kolkata');
+  const topupPrice = isIndia ? DODO_PRODUCTS.topup_10.priceINR : DODO_PRODUCTS.topup_10.priceUSD;
+  const monthlyPrice = isIndia ? DODO_PRODUCTS.pro_monthly.priceINR : DODO_PRODUCTS.pro_monthly.priceUSD;
 
-  const categories = ['All', 'Site & Urban', '3D & Shadow (Phase 2)', 'Climate', 'Ecology & Soil', 'Building Science'];
+  const categories = ['All', 'Sun & Site', '3D & Shadows', 'Weather & Wind', 'Soil & Water', 'Building Cost & Carbon'];
 
   useEffect(() => {
     const current = getToolUser();
@@ -83,6 +88,11 @@ export default function UserDashboard() {
     return matchesSearch && matchesCat;
   });
 
+  const totalCreditsAllocated = Math.max(
+    user?.is_subscribed ? 250 : 5,
+    (user?.credits_remaining ?? 5) + (user?.credits_used ?? 0)
+  );
+
   return (
     <>
       <Helmet>
@@ -111,7 +121,6 @@ export default function UserDashboard() {
                   {[
                     { id: 'dashboard', label: 'Dashboard', icon: <LayoutGrid size={18} /> },
                     { id: 'tools', label: `Tools Suite (${TOOLS_SUITE.length})`, icon: <Compass size={18} /> },
-                    { id: 'analytics', label: 'Site Analytics', icon: <TrendingUp size={18} /> },
                     { id: 'billing', label: 'Billing & Credits', icon: <CreditCard size={18} /> },
                   ].map(item => (
                     <button
@@ -119,84 +128,42 @@ export default function UserDashboard() {
                       onClick={() => setActiveMenu(item.id as any)}
                       className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition cursor-pointer ${
                         activeMenu === item.id
-                          ? 'bg-[#052E16] text-[#CCFF00] shadow-sm'
+                          ? 'bg-[#111111] text-[#CCFF00] shadow-sm'
                           : 'text-gray-600 hover:bg-gray-100 hover:text-black'
                       }`}
                     >
                       {item.icon}
-                      <span>{item.label}</span>
+                      {item.label}
                     </button>
                   ))}
                 </nav>
               </div>
-
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3 px-3">General</p>
-                <nav className="space-y-1">
-                  <button
-                    onClick={() => setActiveMenu('settings')}
-                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition cursor-pointer ${
-                      activeMenu === 'settings'
-                        ? 'bg-[#052E16] text-[#CCFF00]'
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-black'
-                    }`}
-                  >
-                    <Settings size={18} />
-                    <span>Settings</span>
-                  </button>
-                </nav>
-              </div>
             </div>
           </div>
 
-          <div className="pt-6 border-t border-gray-100">
-            <div className="flex items-center justify-between bg-gray-50 p-3 rounded-2xl border border-gray-200/60">
-              <div className="flex items-center gap-2.5 overflow-hidden">
-                <div className="w-8 h-8 rounded-full bg-black text-[#CCFF00] font-black text-xs flex items-center justify-center shrink-0">
-                  {user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'A'}
-                </div>
-                <div className="truncate">
-                  <p className="text-xs font-bold text-gray-900 truncate">{user?.name || user?.email?.split('@')[0]}</p>
-                  <p className="text-[10px] text-gray-400 truncate">{user?.email}</p>
-                </div>
+          <div className="pt-6 border-t border-gray-100 space-y-3">
+            <div className="flex items-center gap-3 px-2">
+              <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-800 font-extrabold flex items-center justify-center text-xs">
+                {user?.email?.charAt(0).toUpperCase() || 'U'}
               </div>
-              <button
-                onClick={handleLogout}
-                className="p-1.5 hover:bg-red-100 text-gray-400 hover:text-red-600 rounded-lg transition cursor-pointer"
-                title="Sign Out"
-              >
-                <LogOut size={16} />
-              </button>
+              <div className="flex-1 overflow-hidden">
+                <p className="text-xs font-bold text-gray-900 truncate">{user?.name || user?.email?.split('@')[0]}</p>
+                <p className="text-[10px] text-gray-400 truncate">{user?.email}</p>
+              </div>
             </div>
+
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 transition cursor-pointer"
+            >
+              <LogOut size={15} /> Sign Out
+            </button>
           </div>
         </aside>
 
-        {/* ── MAIN WORKSPACE AREA ── */}
-        <main className="flex-1 p-6 md:p-10 max-w-7xl mx-auto overflow-y-auto">
-
-          {/* Top Bar Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-            <div className="relative flex-1 max-w-md">
-              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search tools, site analyses or metrics..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white border border-gray-200 rounded-2xl pl-11 pr-4 py-2.5 text-xs font-medium text-gray-900 placeholder-gray-400 outline-none focus:border-black shadow-xs"
-              />
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => navigate('/site-analysis')}
-                className="bg-[#052E16] text-[#CCFF00] hover:bg-black font-extrabold text-xs px-5 py-2.5 rounded-2xl transition shadow-sm flex items-center gap-2 cursor-pointer"
-              >
-                <Plus size={16} /> Run Full 11+ Site Intelligence Report
-              </button>
-            </div>
-          </div>
-
+        {/* ── MAIN CONTENT AREA ── */}
+        <main className="flex-1 p-6 md:p-10 max-w-screen-xl overflow-x-hidden">
+          
           {/* DASHBOARD VIEW */}
           {activeMenu === 'dashboard' && (
             <div className="space-y-8">
@@ -217,7 +184,7 @@ export default function UserDashboard() {
                       Active Studio
                     </span>
                   </div>
-                  <h2 className="text-4xl font-black text-[#CCFF00]">24</h2>
+                  <h2 className="text-4xl font-black text-[#CCFF00]">{user?.credits_used ?? 0}</h2>
                   <p className="text-[11px] text-emerald-200/80 mt-2">Active site reports generated</p>
                 </div>
 
@@ -312,20 +279,20 @@ export default function UserDashboard() {
                 <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs flex flex-col justify-between space-y-6">
                   <div>
                     <h3 className="text-base font-black text-gray-900 mb-1">Credit Usage & Plan</h3>
-                    <p className="text-xs text-gray-500 font-medium">Monthly API generation limits</p>
+                    <p className="text-xs text-gray-500 font-medium">Metered credit status</p>
                   </div>
 
                   <div className="bg-gray-50 p-4 rounded-2xl border border-gray-200/60 space-y-3">
                     <div className="flex justify-between text-xs font-bold">
                       <span className="text-gray-600">Credits Remaining</span>
                       <span className="text-black font-mono">
-                        {user?.is_subscribed ? '250 / 250' : `${user?.credits_remaining ?? 5} / 5`}
+                        {user?.credits_remaining ?? 5} / {totalCreditsAllocated}
                       </span>
                     </div>
                     <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-[#052E16] transition-all duration-500"
-                        style={{ width: user?.is_subscribed ? '100%' : `${((user?.credits_remaining ?? 5) / 5) * 100}%` }}
+                        style={{ width: `${Math.min(100, Math.max(0, ((user?.credits_remaining ?? 5) / totalCreditsAllocated) * 100))}%` }}
                       />
                     </div>
                     <p className="text-[10px] text-gray-500">
@@ -348,8 +315,8 @@ export default function UserDashboard() {
             </div>
           )}
 
-          {/* ── ALL 16+ TOOLS TAB (IMAGE 2 COMPLETE FIX) ── */}
-          {(activeMenu === 'tools' || activeMenu === 'billing') && (
+          {/* ── TOOLS TAB ── */}
+          {activeMenu === 'tools' && (
             <div className="space-y-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-gray-200 shadow-xs">
                 <div>
@@ -422,78 +389,82 @@ export default function UserDashboard() {
             </div>
           )}
 
-          {activeMenu === 'settings' && (
-            <div className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm space-y-6 max-w-xl">
-              <h2 className="text-xl font-black text-gray-900">Studio Settings</h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-bold text-gray-500 block mb-1">Email Address</label>
-                  <input
-                    type="text"
-                    disabled
-                    value={user?.email || ''}
-                    className="w-full bg-gray-100 text-gray-600 px-4 py-3 rounded-2xl border border-gray-200 text-xs font-bold"
-                  />
+          {/* ── BILLING & CREDITS TAB ── */}
+          {activeMenu === 'billing' && (
+            <div className="space-y-8 max-w-4xl">
+              <div>
+                <h2 className="text-2xl font-black text-gray-900">Billing & Metered Credits</h2>
+                <p className="text-xs text-gray-500 mt-1">Manage your credit balance, top-up packs, and monthly studio subscriptions.</p>
+              </div>
+
+              <div className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-100">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                      CURRENT PLAN
+                    </span>
+                    <h3 className="text-2xl font-black text-gray-900 mt-2">
+                      {user?.is_subscribed ? 'Pro Monthly Subscription' : user?.subscription_plan === 'topup_10' ? '10 Credits Top-Up Pack' : 'Starter Pass (Free Trial)'}
+                    </h3>
+                  </div>
+                  <div className="text-left sm:text-right">
+                    <p className="text-3xl font-black text-gray-900">{user?.credits_remaining ?? 5} <span className="text-sm font-bold text-gray-500">Credits Remaining</span></p>
+                    <p className="text-xs text-gray-400 font-medium mt-1">{user?.credits_used ?? 0} credits consumed so far</p>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="text-xs font-bold text-gray-500 block mb-1">Studio Display Name</label>
-                  {isEditingName ? (
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={nameInput}
-                        onChange={e => setNameInput(e.target.value)}
-                        className="flex-1 bg-white border border-black px-4 py-3 rounded-2xl text-xs font-bold outline-none"
-                      />
-                      <button onClick={handleSaveName} className="bg-black text-[#CCFF00] font-bold px-4 py-3 rounded-2xl text-xs cursor-pointer">
-                        Save
-                      </button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Top-up */}
+                  <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200 flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-extrabold text-base text-gray-900 mb-1">10 Credits Top-Up Pack</h4>
+                      <p className="text-xs text-gray-500 mb-4">Pay once. Credits stay valid for 90 days across all 16 tools.</p>
+                      <p className="text-2xl font-black text-gray-900 mb-4">{topupPrice}</p>
                     </div>
-                  ) : (
-                    <div className="flex justify-between items-center bg-gray-50 px-4 py-3 rounded-2xl border border-gray-200">
-                      <span className="text-xs font-bold text-gray-900">{user?.name || 'Not specified'}</span>
-                      <button onClick={() => setIsEditingName(true)} className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1 cursor-pointer">
-                        <Edit2 size={13} /> Edit
-                      </button>
-                    </div>
-                  )}
-                </div>
+                    <button
+                      onClick={() => window.open(DODO_PRODUCTS.topup_10.checkoutUrl, '_blank')}
+                      className="w-full bg-black text-white hover:bg-gray-800 font-bold py-3 rounded-xl text-xs transition cursor-pointer"
+                    >
+                      Buy Top-Up Pack ({topupPrice})
+                    </button>
+                  </div>
 
-                <div className="pt-6 border-t border-gray-200">
-                  <button
-                    onClick={handleLogout}
-                    className="w-full bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 font-bold py-3.5 rounded-2xl text-xs transition cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    <LogOut size={16} /> Sign Out of Studio Account
-                  </button>
+                  {/* Pro monthly */}
+                  <div className="bg-emerald-950 text-white p-6 rounded-2xl border border-emerald-800 flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-extrabold text-base text-[#CCFF00] mb-1">Pro Monthly Subscription</h4>
+                      <p className="text-xs text-emerald-200 mb-4">250 credits per month refilled automatically for active studios.</p>
+                      <p className="text-2xl font-black text-white mb-4">{monthlyPrice}/mo</p>
+                    </div>
+                    <button
+                      onClick={() => window.open(DODO_PRODUCTS.pro_monthly.checkoutUrl, '_blank')}
+                      className="w-full bg-[#CCFF00] text-black hover:bg-white font-black py-3 rounded-xl text-xs transition cursor-pointer"
+                    >
+                      Get Pro Monthly ({monthlyPrice}/mo)
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
         </main>
+
       </div>
 
       <ToolsAuthModal
         isOpen={showAuthModal}
-        onClose={() => navigate('/tools')}
+        onClose={() => setShowAuthModal(false)}
         onSuccess={(u) => {
           setUser(u);
           setShowAuthModal(false);
         }}
-        initialMode="login"
       />
 
-      {showPaywall && (
-        <ToolsPaywallOverlay
-          trialDaysRemaining={user?.trial_days_remaining ?? 0}
-          onSubscribe={(plan) => {
-            window.open(`/api/tools/subscribe?plan=${plan}&email=${user?.email || ''}`, '_blank');
-          }}
-          onLogin={() => { setShowPaywall(false); setShowAuthModal(true); }}
-        />
-      )}
+      <ToolsPaywallOverlay
+        isOpen={showPaywall}
+        onClose={() => setShowPaywall(false)}
+      />
     </>
   );
 }

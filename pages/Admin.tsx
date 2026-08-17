@@ -3500,11 +3500,11 @@ const Admin: React.FC = () => {
                           </td>
                           <td className="py-4 px-5">
                             <span className="font-extrabold text-green-700 bg-green-50 px-2.5 py-1 rounded-full border border-green-200">
-                              ⚡ {u.credits} free
+                              ⚡ {u.credits_remaining ?? u.credits ?? 5} credits
                             </span>
                           </td>
                           <td className="py-4 px-5 text-gray-500 font-bold">
-                            {u.credits_used} used
+                            {u.credits_used ?? 0} used
                           </td>
                           <td className="py-4 px-5">
                             <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
@@ -3514,7 +3514,7 @@ const Admin: React.FC = () => {
                             </span>
                           </td>
                           <td className="py-4 px-5 text-gray-400 text-[11px]">
-                            {new Date(u.created_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            {u.created_at ? new Date(u.created_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
                           </td>
                         </tr>
                       ))}

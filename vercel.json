@@ -96,7 +96,6 @@
     { "source": "/api/tools/subscribe", "destination": "/api/tools.ts?action=subscribe" },
     { "source": "/api/tools/dodo-webhook", "destination": "/api/tools.ts?action=dodo-webhook" },
     { "source": "/api/tools/soil", "destination": "/api/tools.ts?action=soil" },
-    { "source": "/api/tools/db-init", "destination": "/api/tools.ts?action=db-init" },
     { "source": "/api/tools/:path*", "destination": "/api/tools.ts?path=:path" },
     { "source": "/sitemap.xml", "destination": "/api/seo.ts?action=sitemap" },
     { "source": "/api/sitemap.xml", "destination": "/api/seo.ts?action=sitemap" },
