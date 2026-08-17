@@ -136,15 +136,16 @@ export default function SiteAnalysis() {
     if (mapEngine === '3d') {
       try {
         mapboxgl.accessToken = MAPBOX_TOKEN;
+        const validStyle = MAPBOX_3D_STYLES.some(s => s.id === mapboxStyleId) ? mapboxStyleId : MAPBOX_3D_STYLES[0].id;
 
         const map = new mapboxgl.Map({
           container: mapContainerRef.current,
-          style: mapboxStyleId,
+          style: validStyle,
           center: [centerLon, centerLat],
           zoom: 15,
-          pitch: 55, // 3D Perspective Angle
+          pitch: 60, // 3D Perspective Tilt Angle
           bearing: -17.6,
-          projection: 'globe',
+          projection: 'mercator',
         });
 
         mapboxRef.current = map;
