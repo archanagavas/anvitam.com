@@ -147,17 +147,17 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
                 {mode === 'register' && (
                   <div className="auth-field">
                     <label className="auth-label">Name</label>
-                    <input className="auth-input" type="text" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} />
+                    <input className="auth-input text-gray-900 bg-white placeholder-gray-400" type="text" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} />
                   </div>
                 )}
                 <div className="auth-field">
                   <label className="auth-label">Email</label>
-                  <input className="auth-input" type="email" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} required />
+                  <input className="auth-input text-gray-900 bg-white placeholder-gray-400" type="email" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} required />
                 </div>
                 {mode !== 'forgot' && (
                   <div className="auth-field">
                     <label className="auth-label">Password</label>
-                    <input className="auth-input" type="password" placeholder={mode === 'register' ? 'Min 8 characters' : '••••••••'} value={password} onChange={e => setPassword(e.target.value)} required minLength={mode === 'register' ? 8 : 1} />
+                    <input className="auth-input text-gray-900 bg-white placeholder-gray-400" type="password" placeholder={mode === 'register' ? 'Min 8 characters' : '••••••••'} value={password} onChange={e => setPassword(e.target.value)} required minLength={mode === 'register' ? 8 : 1} />
                   </div>
                 )}
 

@@ -817,10 +817,26 @@ html {
   border-radius: 10px;
   font-size: 14px;
   outline: none;
+  background-color: #ffffff !important;
+  color: #111111 !important;
+  color-scheme: light;
+}
+
+.auth-input::placeholder {
+  color: #9ca3af !important;
 }
 
 .auth-input:focus {
-  border-color: #111;
+  border-color: #111111 !important;
+  background-color: #ffffff !important;
+  color: #111111 !important;
+}
+
+.auth-input:-webkit-autofill,
+.auth-input:-webkit-autofill:hover, 
+.auth-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #111111 !important;
+  -webkit-box-shadow: 0 0 0px 1000px #eff6ff inset !important;
 }
 
 .auth-submit-btn {
