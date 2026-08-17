@@ -43,6 +43,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const payload = verifyAdminToken(token);
     if (!payload) return res.status(401).json({ valid: false, error: 'Invalid or expired token.' });
 
+    if (action === 'tool-users') {
+      try {
+        const { getCollection } = await import('../lib/db.js');
+        const users = await getCollection('tool_users');
+        const safeUsers = users.map(u => ({
+          id: u.id,
+          email: u.email,
+          name: u.name || u.email.split('@')[0],
+          credits: u.credits ?? 5,
+          credits_used: u.credits_used ?? 0,
+          is_subscribed: u.is_subscribed ?? false,
+          subscription_tier: u.subscription_tier ?? (u.is_subscribed ? 'pro_monthly' : 'free_trial'),
+          country: u.country ?? 'Unknown',
+          created_at: u.created_at || u.updated_at || new Date().toISOString()
+        }));
+        return res.status(200).json({ users: safeUsers });
+      } catch (err: any) {
+        console.error('[admin/tool-users] Failed to fetch users:', err);
+        return res.status(500).json({ error: 'Failed to fetch tool users list.' });
+      }
+    }
+
     return res.status(200).json({ valid: true, email: payload.email });
   }
 
@@ -138,6 +160,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     } catch (err) {
       console.error('[api/generate] Unexpected error:', err);
       return res.status(500).json({ error: 'Content generation failed. Please try again.' });
+    }
+  }
+
+  // 5. Image Upload (POST /api/upload -> action === 'upload')
+  if (action === 'upload' || req.url?.includes('upload')) {
+    const token = extractToken(req.headers.authorization);
+    if (!token || !verifyAdminToken(token)) return res.status(401).json({ error: 'Unauthorized' });
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+    if (!process.env.CLOUDINARY_CLOUD_NAME) {
+      return res.status(500).json({ error: 'Cloudinary not configured on server.' });
+    }
+
+    try {
+      const { v2: cloudinary } = await import('cloudinary');
+      cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET,
+        secure: true,
+      });
+
+      const bodyData = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+      const fileData = bodyData?.file || bodyData?.image;
+      if (!fileData) {
+        return res.status(400).json({ error: 'No image file or data URI provided.' });
+      }
+
+      const result = await cloudinary.uploader.upload(fileData, {
+        folder: 'anvitam',
+        resource_type: 'image',
+        quality: 'auto',
+        fetch_format: 'auto',
+        transformation: [{ width: 2400, crop: 'limit' }],
+      });
+
+      return res.status(200).json({
+        url: result.secure_url,
+        publicId: result.public_id,
+        width: result.width,
+        height: result.height,
+      });
+    } catch (err: any) {
+      console.error('[api/admin/upload] Error:', err);
+      return res.status(500).json({ error: err.message || 'Upload failed.' });
     }
   }
 

@@ -19,6 +19,7 @@ import metaHandler from '../api/meta';
 import workshopsHandler from '../api/workshops';
 import analyticsHandler from '../api/analytics';
 import seoHandler from '../api/seo';
+import toolsHandler from '../api/tools';
 
 const PORT = 3005;
 
@@ -168,6 +169,8 @@ const server = createServer(async (req, res) => {
       vercelReq.query.action = 'llms';
       vercelReq.query.mode = 'full';
       await seoHandler(vercelReq, vercelRes);
+    } else if (pathname.startsWith('/api/tools/')) {
+      await toolsHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/seo' || pathname.startsWith('/api/seo/')) {
       await seoHandler(vercelReq, vercelRes);
     } else {

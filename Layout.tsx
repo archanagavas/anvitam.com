@@ -24,6 +24,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { name: 'Services', path: '/services' },
     { name: 'Workshops', path: '/workshops' },
     { name: 'Projects', path: '/projects' },
+    { name: 'Tools', path: '/tools', isNew: true },
     { name: 'Shop', path: '/shop' },
     { name: 'Blog', path: '/blog' },
   ];
@@ -51,14 +52,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
 
           {/* Desktop Nav — Perfectly Centered */}
-          <nav className="hidden md:flex items-center justify-center space-x-5 lg:space-x-8">
+          <nav className="hidden md:flex items-center justify-center space-x-4 lg:space-x-7">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 to={link.path}
-                className="text-sm font-medium text-[#333] hover:text-[#111] transition-colors"
+                className="relative text-sm font-medium text-[#333] hover:text-[#111] transition-colors flex items-center gap-1.5"
               >
                 {link.name}
+                {link.isNew && (
+                  <span className="bg-[#111] text-[#CCFF00] text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                    NEW
+                  </span>
+                )}
               </Link>
             ))}
           </nav>

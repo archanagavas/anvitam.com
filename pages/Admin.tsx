@@ -1425,7 +1425,9 @@ const Admin: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const [activeTab, setActiveTab] = useState<'projects' | 'blog' | 'analytics' | 'shop' | 'services' | 'messages' | 'seo' | 'testimonials' | 'partners' | 'estimator' | 'estimator-pricing' | 'workshops'>('analytics');
+  const [activeTab, setActiveTab] = useState<'projects' | 'blog' | 'analytics' | 'shop' | 'services' | 'messages' | 'seo' | 'testimonials' | 'partners' | 'estimator' | 'estimator-pricing' | 'workshops' | 'tool-users'>('analytics');
+  const [toolUsers, setToolUsers] = useState<any[]>([]);
+  const [loadingToolUsers, setLoadingToolUsers] = useState(false);
   const [seoStatus, setSeoStatus] = useState<null | 'generating' | 'done'>(null);
   const [previewFile, setPreviewFile] = useState<{ name: string; content: string } | null>(null);
 
@@ -1510,12 +1512,34 @@ const Admin: React.FC = () => {
   const [newItemIcon, setNewItemIcon] = useState('PenTool');
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // ── Fetch analytics when authenticated ──
+  const fetchToolUsers = useCallback(async () => {
+    const token = getAuthToken();
+    if (!token) return;
+    setLoadingToolUsers(true);
+    try {
+      const res = await fetch('/api/admin?path=tool-users', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setToolUsers(data.users || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch tool users:', err);
+    } finally {
+      setLoadingToolUsers(false);
+    }
+  }, []);
+
+  // ── Fetch analytics and tool users when authenticated ──
   useEffect(() => {
     if (isAuthenticated) {
       fetchAnalytics();
+      if (activeTab === 'tool-users') {
+        fetchToolUsers();
+      }
     }
-  }, [isAuthenticated, fetchAnalytics]);
+  }, [isAuthenticated, fetchAnalytics, activeTab, fetchToolUsers]);
 
   // ── Check existing JWT session on mount ───────────────────────────
   useEffect(() => {
@@ -1948,6 +1972,7 @@ const Admin: React.FC = () => {
           <NavButton id="workshops" icon={Sparkles} label="Nest N Nurture Workshops" />
           <NavButton id="testimonials" icon={MessageCircle} label="Testimonials" />
           <NavButton id="partners" icon={Building2} label="Partner Brands" />
+          <NavButton id="tool-users" icon={Shield} label="Tool Users & Credits" />
           <NavButton id="seo" icon={Globe} label="SEO Files" />
         </nav>
         <div className="p-3 border-t border-gray-100 space-y-1">
@@ -3397,6 +3422,107 @@ const Admin: React.FC = () => {
                 )}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ── TOOL USERS & CREDITS TAB ── */}
+        {activeTab === 'tool-users' && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Tool Users & Credit Monitoring</h2>
+                <p className="text-xs text-gray-500 mt-0.5 font-medium">Track registered architects, credit consumption, and active subscriptions.</p>
+              </div>
+              <button
+                onClick={fetchToolUsers}
+                disabled={loadingToolUsers}
+                className="bg-black hover:bg-gray-800 text-white font-bold text-xs px-4 py-2 rounded-xl flex items-center gap-2 transition disabled:opacity-50"
+              >
+                <RefreshCw size={14} className={loadingToolUsers ? 'animate-spin' : ''} />
+                Refresh Users
+              </button>
+            </div>
+
+            {/* Quick Summary Stat Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs">
+                <p className="text-gray-400 text-[11px] font-bold uppercase tracking-wider mb-1">Total Registered Users</p>
+                <p className="text-3xl font-extrabold text-gray-900">{toolUsers.length}</p>
+              </div>
+              <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs">
+                <p className="text-gray-400 text-[11px] font-bold uppercase tracking-wider mb-1">Paid / Pro Subscribers</p>
+                <p className="text-3xl font-extrabold text-emerald-600">
+                  {toolUsers.filter(u => u.is_subscribed).length}
+                </p>
+              </div>
+              <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs">
+                <p className="text-gray-400 text-[11px] font-bold uppercase tracking-wider mb-1">Total Credits Used</p>
+                <p className="text-3xl font-extrabold text-[#111]">
+                  ⚡ {toolUsers.reduce((sum, u) => sum + (u.credits_used || 0), 0)}
+                </p>
+              </div>
+            </div>
+
+            {/* Users Table */}
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xs">
+              {loadingToolUsers ? (
+                <div className="p-12 text-center text-gray-500 text-sm font-medium">
+                  Loading tool users from Firestore...
+                </div>
+              ) : toolUsers.length === 0 ? (
+                <div className="p-12 text-center text-gray-400 text-sm">
+                  No tool users registered yet. Users will appear here when they register for Site Analysis.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-gray-50 border-b border-gray-200 text-gray-500 font-extrabold uppercase tracking-wider">
+                      <tr>
+                        <th className="py-3.5 px-5">User</th>
+                        <th className="py-3.5 px-5">Country</th>
+                        <th className="py-3.5 px-5">Credits Remaining</th>
+                        <th className="py-3.5 px-5">Credits Used</th>
+                        <th className="py-3.5 px-5">Subscription</th>
+                        <th className="py-3.5 px-5">Joined Date</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 font-medium text-gray-800">
+                      {toolUsers.map((u) => (
+                        <tr key={u.id} className="hover:bg-gray-50/80 transition">
+                          <td className="py-4 px-5">
+                            <div className="font-bold text-gray-900">{u.name}</div>
+                            <div className="text-gray-400 text-[11px]">{u.email}</div>
+                          </td>
+                          <td className="py-4 px-5">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 font-bold text-[10px]">
+                              {u.country === 'India' || u.country === 'IN' ? '🇮🇳 India' : '🌐 Global'}
+                            </span>
+                          </td>
+                          <td className="py-4 px-5">
+                            <span className="font-extrabold text-green-700 bg-green-50 px-2.5 py-1 rounded-full border border-green-200">
+                              ⚡ {u.credits} free
+                            </span>
+                          </td>
+                          <td className="py-4 px-5 text-gray-500 font-bold">
+                            {u.credits_used} used
+                          </td>
+                          <td className="py-4 px-5">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
+                              u.is_subscribed ? 'bg-[#CCFF00] text-[#111]' : 'bg-gray-100 text-gray-600'
+                            }`}>
+                              {u.is_subscribed ? 'PRO MEMBER' : 'FREE TRIAL'}
+                            </span>
+                          </td>
+                          <td className="py-4 px-5 text-gray-400 text-[11px]">
+                            {new Date(u.created_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
