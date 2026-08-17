@@ -464,6 +464,8 @@ export default function UserDashboard() {
       <ToolsPaywallOverlay
         isOpen={showPaywall}
         onClose={() => setShowPaywall(false)}
+        onUseFreeTrial={() => setShowPaywall(false)}
+        onLogin={() => { setShowPaywall(false); setShowAuthModal(true); }}
       />
     </>
   );
