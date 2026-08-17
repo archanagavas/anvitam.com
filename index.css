@@ -188,10 +188,52 @@ html.no-zoom {
 }
 
 .mapboxgl-map,
-.mapboxgl-canvas {
+.mapboxgl-canvas,
+.leaflet-container {
   width: 100% !important;
   height: 100% !important;
   outline: none;
+  background: #f8f9fa !important;
+}
+
+.custom-leaflet-pin {
+  background: transparent !important;
+  border: none !important;
+}
+
+.map-pin {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+
+.pin-dot {
+  width: 14px;
+  height: 14px;
+  background: #CCFF00;
+  border: 2px solid #000000;
+  border-radius: 50%;
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  box-shadow: 0 0 10px rgba(204, 255, 0, 0.9);
+  z-index: 2;
+}
+
+.pin-pulse {
+  width: 28px;
+  height: 28px;
+  border: 2px solid #CCFF00;
+  border-radius: 50%;
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  animation: mapPinPulse 1.8s ease-out infinite;
+}
+
+@keyframes mapPinPulse {
+  0% { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(1.6); opacity: 0; }
 }
 
 .sa-topbar {

@@ -2,14 +2,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import mapboxgl from 'mapbox-gl';
-import MapboxDraw from '@mapbox/mapbox-gl-draw';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { fetchAllSiteData, type SiteAnalysisResult } from '../services/siteAnalysisService';
 import { AnalysisPanel, type DesignCategory } from '../components/siteanalysis/AnalysisPanel';
 import { ShadowSimulator3D } from '../components/siteanalysis/ShadowSimulator3D';
-import { TrialBanner } from '../components/tools/TrialBanner';
 import { ToolUserDashboardModal } from '../components/tools/ToolUserDashboardModal';
 import { ToolsAuthModal } from '../components/tools/ToolsAuthModal';
 import { ToolsPaywallOverlay } from '../components/tools/ToolsPaywallOverlay';
@@ -19,17 +16,43 @@ import {
   Layers,
   Zap,
   Box,
-  Compass
+  Search,
+  Check,
+  Share2
 } from 'lucide-react';
 
 const DEFAULT_MAPBOX_TOKEN = atob('cGsuZXlKMUlqb2lZVzUyYVhSaGJTSXNJbUVpT2lKamJYTjNNR0ZqTlhreFpIWTRNbmh5TVRsek9IWnZOalF5SW4wLl9uNGg0bW1RTDVzSXgxQnFRdkZ0d3c=');
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || DEFAULT_MAPBOX_TOKEN;
 
 const MAP_STYLES = [
-  { id: 'streets', name: 'Streets (Google Maps Style)', url: 'mapbox://styles/mapbox/streets-v12' },
-  { id: 'satellite', name: 'Satellite High-Res', url: 'mapbox://styles/mapbox/satellite-streets-v12' },
-  { id: 'dark', name: 'Dark Studio (Architectural)', url: 'mapbox://styles/mapbox/dark-v11' },
-  { id: 'outdoors', name: 'Outdoors & Topo Contours', url: 'mapbox://styles/mapbox/outdoors-v12' }
+  {
+    id: 'satellite',
+    name: '🛰️ Satellite High-Res (Esri)',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    maxZoom: 19,
+    attribution: 'Tiles &copy; Esri'
+  },
+  {
+    id: 'streets',
+    name: '🏢 OpenStreetMap Streets',
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  },
+  {
+    id: 'studio',
+    name: '📐 Architectural Studio (Positron)',
+    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    maxZoom: 19,
+    attribution: '&copy; CARTO &copy; OpenStreetMap'
+  },
+  {
+    id: 'topo',
+    name: '⛰️ Outdoors & Topo Contours',
+    url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    maxZoom: 17,
+    attribution: '&copy; OpenTopoMap'
+  }
 ];
 
 const CATEGORIES: { id: DesignCategory; label: string; icon: string }[] = [
@@ -53,7 +76,7 @@ export default function SiteAnalysis() {
   const [analysisResult, setAnalysisResult] = useState<SiteAnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [currentMapStyle, setCurrentMapStyle] = useState(MAP_STYLES[0].url);
+  const [currentStyleId, setCurrentStyleId] = useState('satellite');
 
   // Authentication & Credits
   const [user, setUser] = useState<ToolUser | null>(null);
@@ -62,11 +85,11 @@ export default function SiteAnalysis() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [showDashboardModal, setShowDashboardModal] = useState(false);
 
-  // Mapbox refs
+  // Map refs
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
-  const markerRef = useRef<mapboxgl.Marker | null>(null);
-  const drawRef = useRef<MapboxDraw | null>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const tileLayerRef = useRef<L.TileLayer | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
 
   // Location & Massing State
   const [pendingCoords, setPendingCoords] = useState<{ lat: number; lon: number; placeName?: string } | null>(null);
@@ -75,7 +98,6 @@ export default function SiteAnalysis() {
 
   // 3D Shadow Simulation state
   const [buildingHeightM, setBuildingHeightM] = useState(12);
-  const [isDrawMode, setIsDrawMode] = useState(false);
 
   // Real-time synchronization for user credit state
   useEffect(() => {
@@ -88,78 +110,41 @@ export default function SiteAnalysis() {
     return () => window.removeEventListener('anvitam-user-updated', handleUserUpdate);
   }, []);
 
-  // CRITICAL: Disable html { zoom: 80% } on this page — CSS zoom breaks Mapbox GL WebGL tile rendering
+  // Initialize Leaflet Map
   useEffect(() => {
-    document.documentElement.classList.add('no-zoom');
-    return () => {
-      document.documentElement.classList.remove('no-zoom');
-    };
-  }, []);
-
-  // Initialize Mapbox 3D Map & Draw Controls
-  useEffect(() => {
-    if (!mapContainerRef.current || !MAPBOX_TOKEN) return;
+    if (!mapContainerRef.current) return;
     if (mapRef.current) return;
 
-    mapboxgl.accessToken = MAPBOX_TOKEN;
+    const initialStyle = MAP_STYLES[0]; // Satellite High-Res
 
-    const map = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: currentMapStyle,
-      center: [73.1812, 22.3072],
-      zoom: 12,
-      pitch: 30,
-      bearing: 0,
-      projection: 'mercator',
+    const map = L.map(mapContainerRef.current, {
+      center: [22.3072, 73.1812],
+      zoom: 13,
+      zoomControl: true,
     });
 
     mapRef.current = map;
 
-    map.on('style.load', () => {
-      try {
-        if (!map.getSource('mapbox-dem')) {
-          map.addSource('mapbox-dem', {
-            type: 'raster-dem',
-            url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-            tileSize: 512,
-            maxzoom: 14
-          });
-        }
-        map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.2 });
-      } catch { /* silent */ }
-    });
+    const tileLayer = L.tileLayer(initialStyle.url, {
+      maxZoom: initialStyle.maxZoom,
+      attribution: initialStyle.attribution,
+      subdomains: 'abc',
+    }).addTo(map);
 
-    const draw = new MapboxDraw({
-      displayControlsDefault: false,
-      controls: { polygon: true, trash: true },
-      defaultMode: 'simple_select'
-    });
-    map.addControl(draw, 'top-right');
-    drawRef.current = draw;
+    tileLayerRef.current = tileLayer;
 
-    map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
-
-    map.on('click', (e) => {
-      const { lng, lat } = e.lngLat;
+    map.on('click', (e: L.LeafletMouseEvent) => {
+      const { lat, lng } = e.latlng;
       positionMarker(lat, lng);
       setPendingCoords({ lat, lon: lng });
       setIsAnalyzed(false);
     });
 
-    map.on('load', () => {
-      map.resize();
-      setTimeout(() => map.resize(), 100);
-      setTimeout(() => map.resize(), 300);
-      setTimeout(() => map.resize(), 800);
-    });
-
-    const handleWindowResize = () => {
-      if (mapRef.current) mapRef.current.resize();
-    };
-    window.addEventListener('resize', handleWindowResize);
+    setTimeout(() => map.invalidateSize(), 100);
+    setTimeout(() => map.invalidateSize(), 300);
+    setTimeout(() => map.invalidateSize(), 800);
 
     return () => {
-      window.removeEventListener('resize', handleWindowResize);
       map.remove();
       mapRef.current = null;
     };
@@ -167,7 +152,7 @@ export default function SiteAnalysis() {
 
   // Handle URL coordinate loading
   useEffect(() => {
-    if (latParam && lonParam && MAPBOX_TOKEN) {
+    if (latParam && lonParam) {
       const lat = parseFloat(latParam);
       const lon = parseFloat(lonParam);
       if (!isNaN(lat) && !isNaN(lon)) {
@@ -177,30 +162,38 @@ export default function SiteAnalysis() {
     }
   }, [latParam, lonParam]);
 
-  const changeMapStyle = (newUrl: string) => {
-    setCurrentMapStyle(newUrl);
-    if (mapRef.current) {
-      mapRef.current.setStyle(newUrl);
+  const changeMapStyle = (styleId: string) => {
+    const selected = MAP_STYLES.find(s => s.id === styleId) || MAP_STYLES[0];
+    setCurrentStyleId(selected.id);
+    if (mapRef.current && tileLayerRef.current) {
+      mapRef.current.removeLayer(tileLayerRef.current);
+      const newLayer = L.tileLayer(selected.url, {
+        maxZoom: selected.maxZoom,
+        attribution: selected.attribution,
+        subdomains: 'abc',
+      }).addTo(mapRef.current);
+      tileLayerRef.current = newLayer;
     }
   };
 
   const positionMarker = (lat: number, lon: number) => {
     if (!mapRef.current) return;
-    const map = mapRef.current;
 
     if (markerRef.current) {
       markerRef.current.remove();
     }
 
-    const el = document.createElement('div');
-    el.className = 'map-pin';
-    el.innerHTML = `<div class="pin-dot"></div><div class="pin-pulse"></div>`;
+    const customPin = L.divIcon({
+      className: 'custom-leaflet-pin',
+      html: `<div class="map-pin"><div class="pin-dot"></div><div class="pin-pulse"></div></div>`,
+      iconSize: [24, 24],
+      iconAnchor: [12, 12]
+    });
 
-    markerRef.current = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
-      .setLngLat([lon, lat])
-      .addTo(map);
+    const marker = L.marker([lat, lon], { icon: customPin }).addTo(mapRef.current);
+    markerRef.current = marker;
 
-    map.flyTo({ center: [lon, lat], zoom: 15, pitch: 50, duration: 1000 });
+    mapRef.current.flyTo([lat, lon], 15, { duration: 1.2 });
   };
 
   const executeSiteAnalysis = async () => {
@@ -242,19 +235,21 @@ export default function SiteAnalysis() {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!searchInput.trim() || !MAPBOX_TOKEN) return;
+    if (!searchInput.trim()) return;
     try {
-      const res = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchInput)}.json?access_token=${MAPBOX_TOKEN}&limit=1`);
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchInput)}&limit=1`);
       const data = await res.json();
-      if (data.features?.[0]) {
-        const feat = data.features[0];
-        const [lon, lat] = feat.center;
+      if (data && data[0]) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
         positionMarker(lat, lon);
-        setPendingCoords({ lat, lon, placeName: feat.place_name });
+        setPendingCoords({ lat, lon, placeName: data[0].display_name });
         setIsAnalyzed(false);
       }
       setSearchInput('');
-    } catch { /* silent */ }
+    } catch (err) {
+      console.warn('Geocoding search failed:', err);
+    }
   };
 
   const handleCategoryChange = (cat: DesignCategory) => {
@@ -273,19 +268,10 @@ export default function SiteAnalysis() {
     });
   };
 
-  const toggleDrawMode = () => {
-    setIsDrawMode(prev => !prev);
-    if (!isDrawMode && drawRef.current) {
-      drawRef.current.changeMode('draw_polygon');
-    }
-  };
-
-  const noMapbox = !MAPBOX_TOKEN;
-
   return (
     <>
       <Helmet>
-        <title>Site Analysis by Anvitam — Interactive 3D Site Intelligence</title>
+        <title>Site Analysis by Anvitam — Interactive Site Intelligence Studio</title>
         <meta name="description" content="Drop a pin anywhere in the world and instantly generate 11+ site analysis diagrams." />
       </Helmet>
 
@@ -330,19 +316,8 @@ export default function SiteAnalysis() {
             ))}
           </div>
 
-          {/* Controls, Credits, Dashboard & Trial Status */}
+          {/* Controls, Credits & User Dashboard */}
           <div className="flex items-center gap-2.5 shrink-0 w-full lg:w-auto justify-end">
-            {/* Draw 3D Polygon Control */}
-            <button
-              onClick={toggleDrawMode}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer border ${
-                isDrawMode
-                  ? 'bg-black text-[#CCFF00] border-black font-bold'
-                  : 'bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200'
-              }`}
-            >
-              <Box size={13} /> Draw 3D
-            </button>
 
             <button
               onClick={() => navigate('/dashboard')}
@@ -394,15 +369,9 @@ export default function SiteAnalysis() {
 
         {/* WORKSPACE LAYOUT */}
         <div className="flex-1 flex flex-col">
-          {/* 3D Map Container */}
+          {/* Map Container */}
           <div className="w-full h-[70vh] min-h-[500px] relative bg-gray-100 border-b border-gray-200">
-            {noMapbox ? (
-              <div className="h-full flex flex-col items-center justify-center text-gray-800">
-                <p className="font-bold text-sm">Mapbox Token Required</p>
-              </div>
-            ) : (
-              <div ref={mapContainerRef} className="w-full h-full" />
-            )}
+            <div ref={mapContainerRef} className="w-full h-full z-0" />
 
             {/* Map Style Selector Overlay */}
             <div className="absolute top-4 left-4 z-20 bg-white/95 text-gray-900 backdrop-blur-md rounded-2xl p-1.5 border border-gray-200 flex items-center gap-1 shadow-md">
@@ -410,12 +379,12 @@ export default function SiteAnalysis() {
                 <Layers size={12} /> Map Style:
               </span>
               <select
-                value={currentMapStyle}
+                value={currentStyleId}
                 onChange={(e) => changeMapStyle(e.target.value)}
                 className="bg-gray-100 text-gray-900 text-xs font-semibold rounded-xl px-2.5 py-1 border border-gray-200 outline-none cursor-pointer hover:bg-gray-200"
               >
                 {MAP_STYLES.map(st => (
-                  <option key={st.id} value={st.url} className="bg-white text-gray-900">
+                  <option key={st.id} value={st.id} className="bg-white text-gray-900">
                     {st.name}
                   </option>
                 ))}
