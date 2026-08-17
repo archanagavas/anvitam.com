@@ -159,14 +159,30 @@ export default function SiteAnalysis() {
           }
         };
 
+        const syncProjectionWithZoom = () => {
+          if (!mapboxRef.current) return;
+          try {
+            const z = mapboxRef.current.getZoom();
+            const proj = mapboxRef.current.getProjection()?.name;
+            if (z < 6 && proj !== 'globe') {
+              mapboxRef.current.setProjection({ name: 'globe' });
+            } else if (z >= 6 && proj !== 'mercator') {
+              mapboxRef.current.setProjection({ name: 'mercator' });
+            }
+          } catch { /* silent fallback */ }
+        };
+
         // Fallback error handler to prevent blank white screen
         map.on('error', (err) => {
           console.warn('Mapbox GL event warning:', err);
           forceResize();
         });
 
+        map.on('zoom', syncProjectionWithZoom);
+
         map.on('style.load', () => {
           forceResize();
+          syncProjectionWithZoom();
 
           // Atmosphere Fog for 3D Globe View
           try {
@@ -333,6 +349,38 @@ export default function SiteAnalysis() {
         subdomains: 'abc',
       }).addTo(leafletRef.current);
       leafletTileLayerRef.current = newLayer;
+    }
+  };
+
+  const flyToGlobeSpaceView = () => {
+    setMapEngine('3d');
+    if (mapboxRef.current) {
+      try {
+        mapboxRef.current.setProjection({ name: 'globe' });
+        mapboxRef.current.flyTo({
+          center: [pendingCoords?.lon ?? 73.1812, pendingCoords?.lat ?? 22.3072],
+          zoom: 1.8,
+          pitch: 0,
+          bearing: 0,
+          duration: 2500
+        });
+      } catch { /* silent */ }
+    }
+  };
+
+  const flyTo3DBuildingSiteView = () => {
+    setMapEngine('3d');
+    if (mapboxRef.current) {
+      try {
+        mapboxRef.current.setProjection({ name: 'mercator' });
+        mapboxRef.current.flyTo({
+          center: [pendingCoords?.lon ?? 73.1812, pendingCoords?.lat ?? 22.3072],
+          zoom: 15.5,
+          pitch: 55,
+          bearing: -15,
+          duration: 2000
+        });
+      } catch { /* silent */ }
     }
   };
 
@@ -596,6 +644,26 @@ export default function SiteAnalysis() {
                   )}
                 </select>
               </div>
+
+              {/* 3D View Camera Shortcuts */}
+              {mapEngine === '3d' && (
+                <div className="flex items-center gap-1 bg-gray-100 p-0.5 rounded-xl border border-gray-200">
+                  <button
+                    onClick={flyToGlobeSpaceView}
+                    className="px-2.5 py-1 rounded-lg text-xs font-semibold text-gray-700 hover:text-black hover:bg-gray-200 transition cursor-pointer flex items-center gap-1"
+                    title="Zoom out to 3D Earth Globe view from space"
+                  >
+                    🚀 Earth Globe
+                  </button>
+                  <button
+                    onClick={flyTo3DBuildingSiteView}
+                    className="px-2.5 py-1 rounded-lg text-xs font-semibold text-gray-700 hover:text-black hover:bg-gray-200 transition cursor-pointer flex items-center gap-1"
+                    title="Zoom in to 3D Extruded Building & Site view"
+                  >
+                    🏢 3D Building Site
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Floating Pin Confirmation CTA Card */}
