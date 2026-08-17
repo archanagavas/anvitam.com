@@ -4,6 +4,8 @@ import { Helmet } from 'react-helmet-async';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import { fetchAllSiteData, type SiteAnalysisResult } from '../services/siteAnalysisService';
 import { AnalysisPanel, type DesignCategory } from '../components/siteanalysis/AnalysisPanel';
 import { ShadowSimulator3D } from '../components/siteanalysis/ShadowSimulator3D';
@@ -18,41 +20,24 @@ import {
   Box,
   Search,
   Check,
-  Share2
+  Share2,
+  Globe
 } from 'lucide-react';
 
 const DEFAULT_MAPBOX_TOKEN = atob('cGsuZXlKMUlqb2lZVzUyYVhSaGJTSXNJbUVpT2lKamJYTjNNR0ZqTlhreFpIWTRNbmh5TVRsek9IWnZOalF5SW4wLl9uNGg0bW1RTDVzSXgxQnFRdkZ0d3c=');
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || DEFAULT_MAPBOX_TOKEN;
 
-const MAP_STYLES = [
-  {
-    id: 'satellite',
-    name: '🛰️ Satellite High-Res (Esri)',
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    maxZoom: 19,
-    attribution: 'Tiles &copy; Esri'
-  },
-  {
-    id: 'streets',
-    name: '🏢 OpenStreetMap Streets',
-    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors'
-  },
-  {
-    id: 'studio',
-    name: '📐 Architectural Studio (Positron)',
-    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-    maxZoom: 19,
-    attribution: '&copy; CARTO &copy; OpenStreetMap'
-  },
-  {
-    id: 'topo',
-    name: '⛰️ Outdoors & Topo Contours',
-    url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-    maxZoom: 17,
-    attribution: '&copy; OpenTopoMap'
-  }
+const MAPBOX_3D_STYLES = [
+  { id: 'mapbox://styles/mapbox/streets-v12', name: '🏢 3D Google Maps Style (Extruded Buildings)' },
+  { id: 'mapbox://styles/mapbox/satellite-streets-v12', name: '🌐 3D High-Res Satellite Globe' },
+  { id: 'mapbox://styles/mapbox/dark-v11', name: '📐 3D Architectural Dark Studio' },
+  { id: 'mapbox://styles/mapbox/outdoors-v12', name: '⛰️ 3D Topo Contours & Terrain' }
+];
+
+const LEAFLET_2D_STYLES = [
+  { id: 'satellite-2d', name: '🛰️ 2D High-Res Satellite (Esri)', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', maxZoom: 19, attribution: 'Tiles &copy; Esri' },
+  { id: 'streets-2d', name: '🏢 2D OpenStreetMap Streets', url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', maxZoom: 19, attribution: '&copy; OpenStreetMap' },
+  { id: 'studio-2d', name: '📐 2D Architectural Studio (Positron)', url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', maxZoom: 19, attribution: '&copy; CARTO' }
 ];
 
 const CATEGORIES: { id: DesignCategory; label: string; icon: string }[] = [
@@ -76,7 +61,11 @@ export default function SiteAnalysis() {
   const [analysisResult, setAnalysisResult] = useState<SiteAnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [currentStyleId, setCurrentStyleId] = useState('satellite');
+  
+  // Dual Map Engine State ('3d' or '2d')
+  const [mapEngine, setMapEngine] = useState<'3d' | '2d'>('3d');
+  const [mapboxStyleId, setMapboxStyleId] = useState(MAPBOX_3D_STYLES[0].id);
+  const [leafletStyleId, setLeafletStyleId] = useState(LEAFLET_2D_STYLES[0].id);
 
   // Authentication & Credits
   const [user, setUser] = useState<ToolUser | null>(null);
@@ -85,11 +74,14 @@ export default function SiteAnalysis() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [showDashboardModal, setShowDashboardModal] = useState(false);
 
-  // Map refs
+  // Map Container & Instance Refs
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<L.Map | null>(null);
-  const tileLayerRef = useRef<L.TileLayer | null>(null);
-  const markerRef = useRef<L.Marker | null>(null);
+  const mapboxRef = useRef<mapboxgl.Map | null>(null);
+  const mapboxMarkerRef = useRef<mapboxgl.Marker | null>(null);
+
+  const leafletRef = useRef<L.Map | null>(null);
+  const leafletTileLayerRef = useRef<L.TileLayer | null>(null);
+  const leafletMarkerRef = useRef<L.Marker | null>(null);
 
   // Location & Massing State
   const [pendingCoords, setPendingCoords] = useState<{ lat: number; lon: number; placeName?: string } | null>(null);
@@ -110,45 +102,186 @@ export default function SiteAnalysis() {
     return () => window.removeEventListener('anvitam-user-updated', handleUserUpdate);
   }, []);
 
-  // Initialize Leaflet Map
+  // CRITICAL: Disable html { zoom: 80% } on this page to ensure WebGL coordinates align
   useEffect(() => {
-    if (!mapContainerRef.current) return;
-    if (mapRef.current) return;
-
-    const initialStyle = MAP_STYLES[0]; // Satellite High-Res
-
-    const map = L.map(mapContainerRef.current, {
-      center: [22.3072, 73.1812],
-      zoom: 13,
-      zoomControl: true,
-    });
-
-    mapRef.current = map;
-
-    const tileLayer = L.tileLayer(initialStyle.url, {
-      maxZoom: initialStyle.maxZoom,
-      attribution: initialStyle.attribution,
-      subdomains: 'abc',
-    }).addTo(map);
-
-    tileLayerRef.current = tileLayer;
-
-    map.on('click', (e: L.LeafletMouseEvent) => {
-      const { lat, lng } = e.latlng;
-      positionMarker(lat, lng);
-      setPendingCoords({ lat, lon: lng });
-      setIsAnalyzed(false);
-    });
-
-    setTimeout(() => map.invalidateSize(), 100);
-    setTimeout(() => map.invalidateSize(), 300);
-    setTimeout(() => map.invalidateSize(), 800);
-
+    document.documentElement.classList.add('no-zoom');
     return () => {
-      map.remove();
-      mapRef.current = null;
+      document.documentElement.classList.remove('no-zoom');
     };
   }, []);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // MAP ENGINE INITIALIZATION (3D Globe Mapbox GL vs 2D Leaflet)
+  // ─────────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!mapContainerRef.current) return;
+
+    const centerLat = pendingCoords?.lat ?? 22.3072;
+    const centerLon = pendingCoords?.lon ?? 73.1812;
+
+    // Cleanup previous maps before initializing active engine
+    if (mapboxRef.current) {
+      mapboxRef.current.remove();
+      mapboxRef.current = null;
+      mapboxMarkerRef.current = null;
+    }
+    if (leafletRef.current) {
+      leafletRef.current.remove();
+      leafletRef.current = null;
+      leafletTileLayerRef.current = null;
+      leafletMarkerRef.current = null;
+    }
+
+    if (mapEngine === '3d') {
+      try {
+        mapboxgl.accessToken = MAPBOX_TOKEN;
+        const validStyle = MAPBOX_3D_STYLES.some(s => s.id === mapboxStyleId) ? mapboxStyleId : MAPBOX_3D_STYLES[0].id;
+
+        const map = new mapboxgl.Map({
+          container: mapContainerRef.current,
+          style: validStyle,
+          center: [centerLon, centerLat],
+          zoom: 15,
+          pitch: 60, // 3D Perspective Tilt Angle
+          bearing: -17.6,
+          projection: 'globe', // Interactive 3D Globe Projection
+        });
+
+        mapboxRef.current = map;
+
+        const forceResize = () => {
+          if (mapboxRef.current) {
+            mapboxRef.current.resize();
+          }
+        };
+
+        map.on('style.load', () => {
+          // Atmosphere Fog for 3D Globe View
+          try {
+            map.setFog({
+              color: 'rgb(186, 210, 235)',
+              'high-color': 'rgb(36, 92, 223)',
+              'space-color': 'rgb(11, 11, 25)',
+              'horizon-blend': 0.02
+            });
+          } catch { /* silent fallback */ }
+
+          // 3D Building Extrusions Layer
+          try {
+            const layers = map.getStyle().layers;
+            const labelLayerId = layers?.find(
+              (layer) => layer.type === 'symbol' && layer.layout?.['text-field']
+            )?.id;
+
+            if (!map.getLayer('add-3d-buildings')) {
+              map.addLayer(
+                {
+                  id: 'add-3d-buildings',
+                  source: 'composite',
+                  'source-layer': 'building',
+                  filter: ['==', 'extrude', 'true'],
+                  type: 'fill-extrusion',
+                  minzoom: 13,
+                  paint: {
+                    'fill-extrusion-color': '#e4e4e7',
+                    'fill-extrusion-height': [
+                      'interpolate',
+                      ['linear'],
+                      ['zoom'],
+                      13,
+                      0,
+                      14.05,
+                      ['get', 'height']
+                    ],
+                    'fill-extrusion-base': [
+                      'interpolate',
+                      ['linear'],
+                      ['zoom'],
+                      13,
+                      0,
+                      14.05,
+                      ['get', 'min_height']
+                    ],
+                    'fill-extrusion-opacity': 0.88
+                  }
+                },
+                labelLayerId
+              );
+            }
+          } catch { /* silent fallback */ }
+
+          // 3D Terrain Elevation DEM
+          try {
+            if (!map.getSource('mapbox-dem')) {
+              map.addSource('mapbox-dem', {
+                type: 'raster-dem',
+                url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+                tileSize: 512,
+                maxzoom: 14
+              });
+            }
+            map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.2 });
+          } catch { /* silent fallback */ }
+        });
+
+        map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
+
+        map.on('click', (e) => {
+          const { lng, lat } = e.lngLat;
+          positionMarker(lat, lng);
+          setPendingCoords({ lat, lon: lng });
+          setIsAnalyzed(false);
+        });
+
+        map.on('load', () => {
+          forceResize();
+          requestAnimationFrame(forceResize);
+          setTimeout(forceResize, 100);
+          setTimeout(forceResize, 300);
+          setTimeout(forceResize, 600);
+          if (pendingCoords) positionMarker(pendingCoords.lat, pendingCoords.lon);
+        });
+
+        const resizeObserver = new ResizeObserver(() => {
+          forceResize();
+        });
+        if (mapContainerRef.current) {
+          resizeObserver.observe(mapContainerRef.current);
+        }
+      } catch (err) {
+        console.warn('Mapbox 3D Globe init warning:', err);
+      }
+    } else {
+      // Initialize Leaflet 2D Engine
+      const selectedStyle = LEAFLET_2D_STYLES.find(s => s.id === leafletStyleId) || LEAFLET_2D_STYLES[0];
+
+      const map = L.map(mapContainerRef.current, {
+        center: [centerLat, centerLon],
+        zoom: 13,
+        zoomControl: true,
+      });
+
+      leafletRef.current = map;
+
+      const tileLayer = L.tileLayer(selectedStyle.url, {
+        maxZoom: selectedStyle.maxZoom,
+        attribution: selectedStyle.attribution,
+        subdomains: 'abc',
+      }).addTo(map);
+
+      leafletTileLayerRef.current = tileLayer;
+
+      map.on('click', (e: L.LeafletMouseEvent) => {
+        const { lat, lng } = e.latlng;
+        positionMarker(lat, lng);
+        setPendingCoords({ lat, lon: lng });
+        setIsAnalyzed(false);
+      });
+
+      setTimeout(() => map.invalidateSize(), 150);
+      if (pendingCoords) positionMarker(pendingCoords.lat, pendingCoords.lon);
+    }
+  }, [mapEngine]);
 
   // Handle URL coordinate loading
   useEffect(() => {
@@ -162,38 +295,64 @@ export default function SiteAnalysis() {
     }
   }, [latParam, lonParam]);
 
-  const changeMapStyle = (styleId: string) => {
-    const selected = MAP_STYLES.find(s => s.id === styleId) || MAP_STYLES[0];
-    setCurrentStyleId(selected.id);
-    if (mapRef.current && tileLayerRef.current) {
-      mapRef.current.removeLayer(tileLayerRef.current);
+  const change3DStyle = (styleId: string) => {
+    setMapboxStyleId(styleId);
+    if (mapboxRef.current) {
+      mapboxRef.current.setStyle(styleId);
+    }
+  };
+
+  const change2DStyle = (styleId: string) => {
+    const selected = LEAFLET_2D_STYLES.find(s => s.id === styleId) || LEAFLET_2D_STYLES[0];
+    setLeafletStyleId(selected.id);
+    if (leafletRef.current && leafletTileLayerRef.current) {
+      leafletRef.current.removeLayer(leafletTileLayerRef.current);
       const newLayer = L.tileLayer(selected.url, {
         maxZoom: selected.maxZoom,
         attribution: selected.attribution,
         subdomains: 'abc',
-      }).addTo(mapRef.current);
-      tileLayerRef.current = newLayer;
+      }).addTo(leafletRef.current);
+      leafletTileLayerRef.current = newLayer;
     }
   };
 
   const positionMarker = (lat: number, lon: number) => {
-    if (!mapRef.current) return;
+    if (mapEngine === '3d') {
+      if (!mapboxRef.current) return;
+      const map = mapboxRef.current;
 
-    if (markerRef.current) {
-      markerRef.current.remove();
+      if (mapboxMarkerRef.current) {
+        mapboxMarkerRef.current.remove();
+      }
+
+      const el = document.createElement('div');
+      el.className = 'map-pin';
+      el.innerHTML = `<div class="pin-dot"></div><div class="pin-pulse"></div>`;
+
+      mapboxMarkerRef.current = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
+        .setLngLat([lon, lat])
+        .addTo(map);
+
+      map.flyTo({ center: [lon, lat], zoom: 16, pitch: 55, bearing: -15, duration: 1000 });
+    } else {
+      if (!leafletRef.current) return;
+
+      if (leafletMarkerRef.current) {
+        leafletMarkerRef.current.remove();
+      }
+
+      const customPin = L.divIcon({
+        className: 'custom-leaflet-pin',
+        html: `<div class="map-pin"><div class="pin-dot"></div><div class="pin-pulse"></div></div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      });
+
+      const marker = L.marker([lat, lon], { icon: customPin }).addTo(leafletRef.current);
+      leafletMarkerRef.current = marker;
+
+      leafletRef.current.setView([lat, lon], 13, { animate: true });
     }
-
-    const customPin = L.divIcon({
-      className: 'custom-leaflet-pin',
-      html: `<div class="map-pin"><div class="pin-dot"></div><div class="pin-pulse"></div></div>`,
-      iconSize: [24, 24],
-      iconAnchor: [12, 12]
-    });
-
-    const marker = L.marker([lat, lon], { icon: customPin }).addTo(mapRef.current);
-    markerRef.current = marker;
-
-    mapRef.current.flyTo([lat, lon], 15, { duration: 1.2 });
   };
 
   const executeSiteAnalysis = async () => {
@@ -373,22 +532,50 @@ export default function SiteAnalysis() {
           <div className="w-full h-[70vh] min-h-[500px] relative bg-gray-100 border-b border-gray-200">
             <div ref={mapContainerRef} className="w-full h-full z-0" />
 
-            {/* Map Style Selector Overlay */}
-            <div className="absolute top-4 left-4 z-20 bg-white/95 text-gray-900 backdrop-blur-md rounded-2xl p-1.5 border border-gray-200 flex items-center gap-1 shadow-md">
-              <span className="text-[10px] font-bold text-gray-500 px-2 flex items-center gap-1">
-                <Layers size={12} /> Map Style:
-              </span>
-              <select
-                value={currentStyleId}
-                onChange={(e) => changeMapStyle(e.target.value)}
-                className="bg-gray-100 text-gray-900 text-xs font-semibold rounded-xl px-2.5 py-1 border border-gray-200 outline-none cursor-pointer hover:bg-gray-200"
-              >
-                {MAP_STYLES.map(st => (
-                  <option key={st.id} value={st.id} className="bg-white text-gray-900">
-                    {st.name}
-                  </option>
-                ))}
-              </select>
+            {/* Map Overlay Bar: 3D Globe / 2D Engine Switcher & Style Selector */}
+            <div className="absolute top-4 left-4 z-20 bg-white/95 text-gray-900 backdrop-blur-md rounded-2xl p-2 border border-gray-200 flex flex-wrap items-center gap-2 shadow-md">
+              {/* Engine Pills */}
+              <div className="flex items-center bg-gray-100 p-0.5 rounded-xl border border-gray-200">
+                <button
+                  onClick={() => setMapEngine('3d')}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                    mapEngine === '3d' ? 'bg-black text-[#CCFF00] shadow-xs' : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <Globe size={13} /> 3D Globe & Extruded Buildings
+                </button>
+                <button
+                  onClick={() => setMapEngine('2d')}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                    mapEngine === '2d' ? 'bg-black text-[#CCFF00] shadow-xs' : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <Layers size={13} /> 2D High-Res Flat
+                </button>
+              </div>
+
+              {/* Style Dropdown Selector */}
+              <div className="flex items-center gap-1">
+                <select
+                  value={mapEngine === '3d' ? mapboxStyleId : leafletStyleId}
+                  onChange={(e) => mapEngine === '3d' ? change3DStyle(e.target.value) : change2DStyle(e.target.value)}
+                  className="bg-gray-100 text-gray-900 text-xs font-semibold rounded-xl px-2.5 py-1.5 border border-gray-200 outline-none cursor-pointer hover:bg-gray-200"
+                >
+                  {mapEngine === '3d' ? (
+                    MAPBOX_3D_STYLES.map(st => (
+                      <option key={st.id} value={st.id} className="bg-white text-gray-900">
+                        {st.name}
+                      </option>
+                    ))
+                  ) : (
+                    LEAFLET_2D_STYLES.map(st => (
+                      <option key={st.id} value={st.id} className="bg-white text-gray-900">
+                        {st.name}
+                      </option>
+                    ))
+                  )}
+                </select>
+              </div>
             </div>
 
             {/* Floating Pin Confirmation CTA Card */}
