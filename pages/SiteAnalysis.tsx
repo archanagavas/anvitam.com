@@ -88,6 +88,14 @@ export default function SiteAnalysis() {
     return () => window.removeEventListener('anvitam-user-updated', handleUserUpdate);
   }, []);
 
+  // CRITICAL: Disable html { zoom: 80% } on this page — CSS zoom breaks Mapbox GL WebGL tile rendering
+  useEffect(() => {
+    document.documentElement.classList.add('no-zoom');
+    return () => {
+      document.documentElement.classList.remove('no-zoom');
+    };
+  }, []);
+
   // Initialize Mapbox 3D Map & Draw Controls
   useEffect(() => {
     if (!mapContainerRef.current || !MAPBOX_TOKEN) return;

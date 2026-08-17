@@ -92,11 +92,17 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
-/* Desktop/PC display zoom preference */
+/* Desktop/PC display zoom preference — applied only to marketing pages */
+/* NOTE: zoom CANNOT be applied on pages with WebGL (Mapbox). Excluded via body class. */
 @media (min-width: 1024px) {
-  html {
+  html:not(.no-zoom) {
     zoom: 80%;
   }
+}
+
+/* Site Analysis canvas must never inherit zoom — breaks Mapbox GL WebGL tile rendering */
+html.no-zoom {
+  zoom: 1 !important;
 }
 
 @media (min-width: 768px) {
