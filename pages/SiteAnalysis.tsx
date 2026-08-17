@@ -119,17 +119,22 @@ export default function SiteAnalysis() {
     const centerLat = pendingCoords?.lat ?? 22.3072;
     const centerLon = pendingCoords?.lon ?? 73.1812;
 
-    // Cleanup existing instances
+    let resizeObserver: ResizeObserver | null = null;
+
+    // Cleanup existing map instances & empty container DOM
     if (mapboxRef.current) {
-      mapboxRef.current.remove();
+      try { mapboxRef.current.remove(); } catch { /* ignore cleanup errors */ }
       mapboxRef.current = null;
       mapboxMarkerRef.current = null;
     }
     if (leafletRef.current) {
-      leafletRef.current.remove();
+      try { leafletRef.current.remove(); } catch { /* ignore cleanup errors */ }
       leafletRef.current = null;
       leafletTileLayerRef.current = null;
       leafletMarkerRef.current = null;
+    }
+    if (mapContainerRef.current) {
+      mapContainerRef.current.innerHTML = '';
     }
 
     if (mapEngine === '3d') {
@@ -151,11 +156,19 @@ export default function SiteAnalysis() {
 
         const forceResize = () => {
           if (mapboxRef.current) {
-            mapboxRef.current.resize();
+            try { mapboxRef.current.resize(); } catch { /* silent */ }
           }
         };
 
+        // Fallback error handler to prevent blank white screen
+        map.on('error', (err) => {
+          console.warn('Mapbox GL event warning:', err);
+          forceResize();
+        });
+
         map.on('style.load', () => {
+          forceResize();
+
           // Atmosphere Fog for 3D Globe View
           try {
             map.setFog({
@@ -168,7 +181,7 @@ export default function SiteAnalysis() {
 
           // 3D Building Extrusions Layer
           try {
-            const layers = map.getStyle().layers;
+            const layers = map.getStyle()?.layers;
             const labelLayerId = layers?.find(
               (layer) => layer.type === 'symbol' && layer.layout?.['text-field']
             )?.id;
@@ -224,7 +237,9 @@ export default function SiteAnalysis() {
           } catch { /* silent fallback */ }
         });
 
-        map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
+        try {
+          map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
+        } catch { /* silent fallback */ }
 
         map.on('click', (e) => {
           const { lng, lat } = e.lngLat;
@@ -242,7 +257,7 @@ export default function SiteAnalysis() {
           if (pendingCoords) positionMarker(pendingCoords.lat, pendingCoords.lon);
         });
 
-        const resizeObserver = new ResizeObserver(() => {
+        resizeObserver = new ResizeObserver(() => {
           forceResize();
         });
         if (mapContainerRef.current) {
@@ -281,6 +296,12 @@ export default function SiteAnalysis() {
       setTimeout(() => map.invalidateSize(), 150);
       if (pendingCoords) positionMarker(pendingCoords.lat, pendingCoords.lon);
     }
+
+    return () => {
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+    };
   }, [mapEngine]);
 
   // Handle URL coordinate loading
@@ -529,8 +550,8 @@ export default function SiteAnalysis() {
         {/* WORKSPACE LAYOUT */}
         <div className="flex-1 flex flex-col">
           {/* Map Container */}
-          <div className="w-full h-[70vh] min-h-[500px] relative bg-gray-100 border-b border-gray-200">
-            <div ref={mapContainerRef} className="w-full h-full z-0" />
+          <div className="w-full h-[70vh] min-h-[500px] relative bg-gray-950 border-b border-gray-800 overflow-hidden">
+            <div ref={mapContainerRef} className="w-full h-full absolute inset-0 z-0" />
 
             {/* Map Overlay Bar: 3D Globe / 2D Engine Switcher & Style Selector */}
             <div className="absolute top-4 left-4 z-20 bg-white/95 text-gray-900 backdrop-blur-md rounded-2xl p-2 border border-gray-200 flex flex-wrap items-center gap-2 shadow-md">
