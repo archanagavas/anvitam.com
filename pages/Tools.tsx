@@ -182,7 +182,7 @@ export default function Tools() {
                       <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs ${tool.iconBg}`}>
                         {tool.iconSvg}
                       </div>
-                      <h3 className="text-base font-extrabold text-gray-900 group-hover:text-black transition">
+                      <h3 className="text-[#111111] font-bold text-base group-hover:text-black transition tracking-tight">
                         {tool.name}
                       </h3>
                     </div>
@@ -193,7 +193,7 @@ export default function Tools() {
 
                     <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100 space-y-1.5 mt-3">
                       {tool.features.slice(0, 2).map((f, idx) => (
-                        <p key={idx} className="text-[11px] text-gray-700 font-semibold flex items-center gap-2">
+                        <p key={idx} className="text-[11px] text-gray-700 font-medium flex items-center gap-2">
                           <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
                           <span className="truncate">{f}</span>
                         </p>
@@ -206,14 +206,14 @@ export default function Tools() {
                   <div className="flex items-center justify-between gap-2">
                     <button
                       onClick={() => setActiveModalTool(tool)}
-                      className="text-xs font-semibold text-gray-500 hover:text-gray-900 transition cursor-pointer underline underline-offset-4"
+                      className="text-xs font-medium text-gray-500 hover:text-gray-900 transition cursor-pointer underline underline-offset-4"
                     >
                       Read Tool Guide
                     </button>
 
                     <button
                       onClick={() => handleLaunchTool(tool)}
-                      className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-extrabold text-xs px-4 py-2.5 rounded-2xl transition shadow-xs flex items-center gap-1 cursor-pointer border border-black/10 hover:scale-[1.02]"
+                      className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-semibold text-xs px-4 py-2 rounded-xl transition shadow-2xs flex items-center gap-1 cursor-pointer border border-black/10 hover:scale-[1.02]"
                     >
                       Open Tool <ChevronRight size={14} />
                     </button>

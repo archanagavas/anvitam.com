@@ -1,12 +1,13 @@
-// pages/UserDashboard.tsx — Unified Architectural & AI Studio Master Dashboard
+// pages/UserDashboard.tsx — Unified Architectural & AI Studio Workspace
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   Zap, Crown, LogOut, Search, Compass, CreditCard, ChevronRight,
   Sparkles, Home, Building, Trees, Wand2, Trash2, MapPin, Mountain,
-  Sliders, CheckCircle2, ArrowUpRight, User, ShieldCheck, X, Filter
+  Sliders, CheckCircle2, ArrowUpRight, User, ShieldCheck, X, Filter,
+  MessageSquare, Send, PanelLeft, Bot
 } from 'lucide-react';
 import { getToolUser, logoutToolUser, type ToolUser } from '../utils/userAuth';
 import { TOOLS_SUITE, type ToolItem } from '../constants/toolsData';
@@ -16,27 +17,26 @@ import { DODO_PRODUCTS } from '../constants/dodoConfig';
 
 export default function UserDashboard() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [user, setUser] = useState<ToolUser | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>('All Tools');
+
+  // Active Tool Selection from URL or default
+  const activeToolParam = searchParams.get('tool') || 'ai-home-design';
+  const [activeToolId, setActiveToolId] = useState<string>(activeToolParam);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const targetToolParam = searchParams.get('tool');
+  // AI Chat Assistant State
+  const [chatInput, setChatInput] = useState('');
+  const [chatMessages, setChatMessages] = useState<Array<{ sender: 'ai' | 'user'; text: string }>>([
+    { sender: 'ai', text: 'Hello! I am your Anvitam AI Architectural & Design Assistant. Ask me anything about solar path, building facade, room restyle, or carbon estimates!' }
+  ]);
+
   const isIndia = user?.country ? user.country === 'IN' : false;
   const topupPrice = isIndia ? DODO_PRODUCTS.topup_10.priceINR : DODO_PRODUCTS.topup_10.priceUSD;
   const monthlyPrice = isIndia ? DODO_PRODUCTS.pro_monthly.priceINR : DODO_PRODUCTS.pro_monthly.priceUSD;
-
-  const categories = [
-    'All Tools',
-    'AI Design Studio',
-    'Sun & Site',
-    '3D & Shadows',
-    'Weather & Wind',
-    'Soil & Water',
-    'Building Cost & Carbon'
-  ];
 
   useEffect(() => {
     const current = getToolUser();
@@ -55,261 +55,332 @@ export default function UserDashboard() {
     return () => window.removeEventListener('anvitam-user-updated', handleUserUpdate);
   }, []);
 
+  useEffect(() => {
+    const param = searchParams.get('tool');
+    if (param) setActiveToolId(param);
+  }, [searchParams]);
+
+  const handleSelectTool = (toolId: string, href: string) => {
+    setActiveToolId(toolId);
+    setSearchParams({ tool: toolId });
+    if (href.startsWith('/site-analysis')) {
+      navigate(href);
+    }
+  };
+
   const handleLogout = () => {
     logoutToolUser();
     navigate('/tools');
   };
 
+  const handleSendChat = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!chatInput.trim()) return;
+
+    const userText = chatInput;
+    setChatInput('');
+    setChatMessages(prev => [...prev, { sender: 'user', text: userText }]);
+
+    // Smart AI Assistant Response
+    setTimeout(() => {
+      let aiResponse = "I can analyze your architectural site data or generate photorealistic AI designs. Which tool would you like to run?";
+      const lower = userText.toLowerCase();
+
+      if (lower.includes('sun') || lower.includes('shadow') || lower.includes('solar')) {
+        aiResponse = "For 3D sun path simulation & hourly shadow analysis, try our 3D Solar Path Tool. Click 'Site Analysis' in the left menu!";
+      } else if (lower.includes('interior') || lower.includes('living room') || lower.includes('bedroom')) {
+        aiResponse = "I recommend our AI Interior Design Studio! You can upload room photos or test 1-click sample styles.";
+      } else if (lower.includes('exterior') || lower.includes('facade') || lower.includes('building')) {
+        aiResponse = "Our AI Exterior Facade Studio can render modern timber, glass, and stone elevation renders instantly.";
+      } else if (lower.includes('garden') || lower.includes('yard') || lower.includes('landscape')) {
+        aiResponse = "For outdoors and terraces, launch the AI Garden Landscape Studio in the sidebar menu.";
+      } else if (lower.includes('cost') || lower.includes('carbon') || lower.includes('price')) {
+        aiResponse = "Check out our Embodied Carbon & Cost Estimator tool under Building Cost & Carbon in the menu.";
+      }
+
+      setChatMessages(prev => [...prev, { sender: 'ai', text: aiResponse }]);
+    }, 600);
+  };
+
   const totalCreditsAllocated = user?.is_subscribed ? 250 : 3;
   const creditsRemaining = user?.credits_remaining ?? 3;
-  const creditsUsed = user?.credits_used ?? 0;
 
-  // Filter tools cleanly
-  const filteredTools = TOOLS_SUITE.filter(t => {
-    const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          t.shortDesc.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          t.category.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    let matchesCat = selectedCategory === 'All Tools';
-    if (selectedCategory === 'AI Design Studio') {
-      matchesCat = t.id.startsWith('ai-');
-    } else if (selectedCategory !== 'All Tools') {
-      matchesCat = t.category === selectedCategory;
-    }
+  // Selected tool item metadata
+  const currentToolObj = TOOLS_SUITE.find(t => t.id === activeToolId) || TOOLS_SUITE[0];
 
-    return matchesSearch && matchesCat;
-  });
+  // Group tools for left sidebar
+  const aiToolsGroup = TOOLS_SUITE.filter(t => t.id.startsWith('ai-'));
+  const siteToolsGroup = TOOLS_SUITE.filter(t => !t.id.startsWith('ai-'));
+
+  const filteredTools = TOOLS_SUITE.filter(t =>
+    t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    t.shortDesc.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <>
       <Helmet>
-        <title>Studio Dashboard | Anvitam Architectural &amp; AI Tools</title>
+        <title>Unified Studio Dashboard | Anvitam Architectural &amp; AI Tools</title>
       </Helmet>
 
-      <div className="bg-[#FAFBFD] text-[#111111] min-h-screen font-sans pt-20 pb-16">
+      <div className="bg-[#FAFBFD] text-[#111111] min-h-screen font-sans antialiased flex flex-col pt-20">
 
-        {/* ── UNIFIED MASTER HEADER ── */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
-          <div className="bg-white rounded-3xl border border-gray-200/80 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
-            
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-[#111111] text-[#CCFF00] font-extrabold flex items-center justify-center text-xl shadow-xs border border-black">
-                A
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">Anvitam Studio Dashboard</h1>
-                  <span className="text-[10px] font-extrabold bg-[#CCFF00] text-black px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-black/10">
-                    21+ Live Tools
-                  </span>
+        <div className="flex-1 flex overflow-hidden">
+
+          {/* ── LEFT SIDEBAR (All Tools Listed for Instant Switching) ── */}
+          <aside className={`bg-white border-r border-gray-200/80 w-64 p-5 shrink-0 flex flex-col justify-between transition-all duration-300 ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0 md:w-16 md:px-2'
+          }`}>
+            <div className="space-y-6">
+              
+              {/* Studio Header */}
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-[#111111] text-[#CCFF00] font-bold flex items-center justify-center text-sm shadow-2xs">
+                  A
                 </div>
-                <p className="text-xs text-gray-500 font-normal mt-0.5">
-                  Welcome back, <strong className="text-gray-900">{user?.name || user?.email?.split('@')[0] || 'Architect'}</strong> ({user?.email})
-                </p>
+                <div className={sidebarOpen ? 'block' : 'hidden md:hidden'}>
+                  <h2 className="text-sm font-semibold text-gray-900 tracking-tight">Anvitam Studio</h2>
+                  <p className="text-[10px] text-gray-500 font-normal">21+ Architectural Tools</p>
+                </div>
               </div>
+
+              {/* Search Bar */}
+              <div className={`relative ${sidebarOpen ? 'block' : 'hidden md:hidden'}`}>
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Filter tools..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-8 pr-3 py-1.5 text-xs text-gray-900 outline-none focus:border-black font-normal"
+                />
+              </div>
+
+              {/* Group 1: AI Design Tools */}
+              <div className="space-y-1">
+                <p className={`text-[10px] font-semibold uppercase tracking-wider text-gray-400 px-3 mb-1.5 ${
+                  sidebarOpen ? 'block' : 'hidden md:hidden'
+                }`}>
+                  Anvitam AI Design Tools
+                </p>
+                {aiToolsGroup.map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => handleSelectTool(t.id, t.href)}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition cursor-pointer ${
+                      activeToolId === t.id
+                        ? 'bg-[#111111] text-[#CCFF00] font-semibold shadow-2xs'
+                        : 'text-gray-700 hover:bg-gray-100 hover:text-black font-medium'
+                    }`}
+                  >
+                    <span className="shrink-0">{t.iconSvg}</span>
+                    <span className={`truncate ${sidebarOpen ? 'block' : 'hidden md:hidden'}`}>{t.name}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Group 2: Site Intelligence Suite */}
+              <div className="space-y-1 pt-2 border-t border-gray-100">
+                <p className={`text-[10px] font-semibold uppercase tracking-wider text-gray-400 px-3 mb-1.5 ${
+                  sidebarOpen ? 'block' : 'hidden md:hidden'
+                }`}>
+                  Architectural Site Suite
+                </p>
+                {siteToolsGroup.slice(0, 8).map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => handleSelectTool(t.id, t.href)}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition cursor-pointer ${
+                      activeToolId === t.id
+                        ? 'bg-[#111111] text-[#CCFF00] font-semibold shadow-2xs'
+                        : 'text-gray-700 hover:bg-gray-100 hover:text-black font-medium'
+                    }`}
+                  >
+                    <span className="shrink-0">{t.iconSvg}</span>
+                    <span className={`truncate ${sidebarOpen ? 'block' : 'hidden md:hidden'}`}>{t.name}</span>
+                  </button>
+                ))}
+              </div>
+
             </div>
 
-            {/* Credit & Plan Indicator */}
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="bg-gray-50 border border-gray-200 px-4 py-2 rounded-2xl flex items-center gap-3">
-                <div className="p-1.5 bg-[#111111] text-[#CCFF00] rounded-xl">
-                  <Zap size={16} />
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold uppercase text-gray-400 block">Metered Credits</span>
-                  <span className="text-xs font-extrabold text-gray-900">
-                    {creditsRemaining} / {totalCreditsAllocated} Available
-                  </span>
-                </div>
-              </div>
-
+            {/* Bottom Upgrade CTA */}
+            <div className="pt-4 border-t border-gray-100 space-y-2">
               <button
                 onClick={() => setShowPaywall(true)}
-                className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-extrabold px-4 py-2.5 rounded-2xl text-xs transition flex items-center gap-1.5 cursor-pointer shadow-xs border border-black/10"
+                className="w-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-semibold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs border border-black/10"
               >
-                <Crown size={15} /> Upgrade to Pro
+                <Crown size={14} />
+                <span className={sidebarOpen ? 'block' : 'hidden md:hidden'}>Upgrade to Pro</span>
               </button>
 
               <button
                 onClick={handleLogout}
-                className="p-2.5 rounded-2xl bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 transition cursor-pointer"
-                title="Sign Out"
+                className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-gray-500 hover:text-red-600 transition cursor-pointer ${
+                  sidebarOpen ? 'justify-start' : 'justify-center'
+                }`}
               >
-                <LogOut size={16} />
+                <LogOut size={15} />
+                <span className={sidebarOpen ? 'block' : 'hidden md:hidden'}>Sign Out</span>
               </button>
             </div>
+          </aside>
 
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-
-          {/* ── SEARCH & CATEGORY BAR ── */}
-          <div className="bg-white rounded-3xl border border-gray-200/80 p-6 shadow-xs space-y-4">
+          {/* ── MAIN STUDIO WORKSPACE CANVAS ── */}
+          <main className="flex-1 bg-[#FAFBFD] p-6 sm:p-8 overflow-y-auto max-w-6xl mx-auto w-full space-y-6">
             
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-lg sm:text-xl font-extrabold text-gray-900 tracking-tight">
-                  Architectural &amp; AI Design Tool Suite ({filteredTools.length} Tools)
-                </h2>
-                <p className="text-xs text-gray-500 font-normal mt-0.5">
-                  Select any tool below to launch in your architectural workspace.
-                </p>
+            {/* Studio Workspace Header Bar */}
+            <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="p-2 rounded-xl text-gray-500 hover:text-black hover:bg-gray-100 transition cursor-pointer"
+                  title="Toggle Sidebar"
+                >
+                  <PanelLeft size={18} />
+                </button>
+
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-lg font-bold text-gray-900 tracking-tight">{currentToolObj.name}</h1>
+                    <span className="text-[10px] font-semibold bg-[#111111] text-[#CCFF00] px-2 py-0.5 rounded-full uppercase">
+                      {currentToolObj.badge}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 font-normal mt-0.5">{currentToolObj.shortDesc}</p>
+                </div>
               </div>
 
-              {/* Search Bar */}
-              <div className="relative w-full md:w-72">
-                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+              {/* Credit Meter & Actions */}
+              <div className="flex items-center gap-3">
+                <div className="bg-gray-50 border border-gray-200 px-3.5 py-1.5 rounded-xl flex items-center gap-2">
+                  <Zap size={14} className="fill-[#CCFF00] text-[#111111]" />
+                  <span className="text-xs font-semibold text-gray-900">{creditsRemaining} Credits</span>
+                </div>
+
+                <button
+                  onClick={() => navigate(currentToolObj.href)}
+                  className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-semibold px-4 py-2 rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer shadow-2xs border border-black/10"
+                >
+                  Launch Interactive Studio <ArrowUpRight size={14} />
+                </button>
+              </div>
+            </div>
+
+            {/* ── AI CHATBOT & PROMPT ASSISTANT BAR ── */}
+            <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-2xs space-y-4">
+              <div className="flex items-center gap-2 pb-3 border-b border-gray-100">
+                <div className="p-1.5 bg-[#111111] text-[#CCFF00] rounded-lg">
+                  <Bot size={16} />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-gray-900">Anvitam AI Chatbot &amp; Studio Assistant</h3>
+                  <p className="text-[10px] text-gray-500">Ask questions about solar angles, interior styles, carbon, or site analysis.</p>
+                </div>
+              </div>
+
+              {/* Chat Messages */}
+              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                {chatMessages.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`max-w-md p-3 rounded-2xl text-xs leading-relaxed ${
+                      msg.sender === 'user'
+                        ? 'bg-[#111111] text-[#CCFF00] font-medium'
+                        : 'bg-gray-100 text-gray-800 font-normal border border-gray-200/60'
+                    }`}>
+                      {msg.text}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Chat Input Form */}
+              <form onSubmit={handleSendChat} className="flex items-center gap-2 pt-2 border-t border-gray-100">
                 <input
                   type="text"
-                  placeholder="Search 21+ tools..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-2xl pl-10 pr-8 py-2.5 text-xs text-gray-900 outline-none focus:border-black font-medium"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  placeholder="Ask Anvitam AI anything about your site, facade, or interior project..."
+                  className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-gray-900 outline-none focus:border-black font-normal"
                 />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black p-1"
-                  >
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Category Pills */}
-            <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-gray-100">
-              {categories.map(cat => (
                 <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
-                    selectedCategory === cat
-                      ? 'bg-[#111111] text-[#CCFF00] shadow-2xs'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200 font-semibold'
-                  }`}
+                  type="submit"
+                  className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-semibold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer border border-black/10 shadow-2xs"
                 >
-                  {cat}
+                  <Send size={14} /> Send
                 </button>
-              ))}
+              </form>
             </div>
 
-          </div>
+            {/* ── ALL 21+ TOOLS CATALOG GRID ── */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-bold text-gray-900 tracking-tight">
+                  All Architectural &amp; AI Tools ({filteredTools.length})
+                </h2>
+                <span className="text-xs text-gray-500 font-normal">Click any tool card to launch</span>
+              </div>
 
-          {/* ── UNIFIED IDENTICAL TOOL GRID FOR ALL TOOLS ── */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTools.map(tool => (
-              <div
-                key={tool.id}
-                className="bg-white rounded-3xl border border-gray-200/80 hover:border-gray-400 overflow-hidden shadow-xs hover:shadow-md transition duration-300 flex flex-col justify-between group"
-              >
-                <div>
-                  
-                  {/* Top Image Preview Banner (For ALL tools) */}
-                  <div className="relative h-48 w-full overflow-hidden bg-gray-100 border-b border-gray-100">
-                    <img
-                      src={tool.previewImage}
-                      alt={tool.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                    />
-                    <div className="absolute top-3 left-3 flex items-center gap-2">
-                      <span className="text-[9px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-[#111111] text-[#CCFF00] shadow-sm border border-black/20">
-                        {tool.badge}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Card Content Body */}
-                  <div className="p-6 space-y-3">
-                    
-                    <div className="flex items-center gap-2.5">
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${tool.iconBg}`}>
-                        {tool.iconSvg}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {filteredTools.map(t => (
+                  <div
+                    key={t.id}
+                    onClick={() => handleSelectTool(t.id, t.href)}
+                    className={`bg-white rounded-2xl border overflow-hidden shadow-2xs hover:shadow-md transition cursor-pointer group flex flex-col justify-between ${
+                      activeToolId === t.id ? 'border-black ring-2 ring-black/10' : 'border-gray-200/80 hover:border-gray-300'
+                    }`}
+                  >
+                    <div>
+                      {/* Top Preview Image */}
+                      <div className="relative h-40 w-full overflow-hidden bg-gray-100 border-b border-gray-100">
+                        <img
+                          src={t.previewImage}
+                          alt={t.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                        />
+                        <span className="absolute top-2.5 left-2.5 text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#111111] text-[#CCFF00] shadow-2xs">
+                          {t.badge}
+                        </span>
                       </div>
-                      <h3 className="text-base font-extrabold text-gray-900 group-hover:text-black transition">
-                        {tool.name}
-                      </h3>
+
+                      {/* Content Body */}
+                      <div className="p-4 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${t.iconBg}`}>
+                            {t.iconSvg}
+                          </div>
+                          <h3 className="text-xs font-bold text-gray-900 group-hover:text-black">
+                            {t.name}
+                          </h3>
+                        </div>
+
+                        <p className="text-xs text-gray-600 font-normal leading-relaxed line-clamp-2">
+                          {t.shortDesc}
+                        </p>
+                      </div>
                     </div>
 
-                    <p className="text-xs text-gray-600 leading-relaxed font-normal line-clamp-2">
-                      {tool.shortDesc}
-                    </p>
-
-                    {/* Features List */}
-                    <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100 space-y-1.5 mt-3">
-                      {tool.features.slice(0, 3).map((f, idx) => (
-                        <p key={idx} className="text-[11px] text-gray-700 font-semibold flex items-center gap-2">
-                          <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
-                          <span className="truncate">{f}</span>
-                        </p>
-                      ))}
+                    <div className="p-4 pt-0">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectTool(t.id, t.href);
+                        }}
+                        className="w-full bg-gray-100 hover:bg-[#CCFF00] hover:text-black text-gray-800 font-semibold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1 cursor-pointer border border-gray-200/80"
+                      >
+                        Select &amp; Run <ChevronRight size={14} />
+                      </button>
                     </div>
 
                   </div>
-                </div>
-
-                {/* Signature Brand Action Button */}
-                <div className="p-6 pt-0">
-                  <button
-                    onClick={() => navigate(tool.href)}
-                    className="w-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-extrabold py-3.5 rounded-2xl text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm border border-black/10 group-hover:scale-[1.01]"
-                  >
-                    Launch Tool <ArrowUpRight size={15} />
-                  </button>
-                </div>
-
-              </div>
-            ))}
-          </div>
-
-          {/* ── BILLING & SUBSCRIPTION SECTION ── */}
-          <div className="bg-white p-8 rounded-3xl border border-gray-200/80 shadow-xs space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-100">
-              <div>
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-black bg-[#CCFF00] px-3 py-1 rounded-full border border-black/10">
-                  CREDIT BALANCE &amp; PLANS
-                </span>
-                <h3 className="text-2xl font-extrabold text-gray-900 mt-2">
-                  {user?.is_subscribed ? 'Pro Monthly Subscription' : 'Starter Pass (3 Free Trial Credits)'}
-                </h3>
-              </div>
-              <div className="text-left sm:text-right">
-                <p className="text-3xl font-extrabold text-gray-900">{creditsRemaining} <span className="text-xs font-normal text-gray-500">Credits Available</span></p>
-                <p className="text-xs text-gray-500 font-normal mt-0.5">{creditsUsed} total site analyses run</p>
+                ))}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200 flex flex-col justify-between space-y-4">
-                <div>
-                  <h4 className="font-extrabold text-sm text-gray-900 mb-1">10 Credits Top-Up Pack</h4>
-                  <p className="text-xs text-gray-500 mb-3 font-normal">Pay once. Credits stay valid for 90 days across all 21+ tools.</p>
-                  <p className="text-2xl font-extrabold text-gray-900">{topupPrice}</p>
-                </div>
-                <button
-                  onClick={() => window.open(DODO_PRODUCTS.topup_10.checkoutUrl, '_blank', 'noopener,noreferrer')}
-                  className="w-full bg-[#111111] text-[#CCFF00] hover:bg-black font-extrabold py-3.5 rounded-2xl text-xs transition cursor-pointer"
-                >
-                  Buy Top-Up Pack ({topupPrice})
-                </button>
-              </div>
-
-              <div className="bg-[#111111] text-white p-6 rounded-2xl border border-black flex flex-col justify-between space-y-4">
-                <div>
-                  <h4 className="font-extrabold text-sm text-[#CCFF00] mb-1">Pro Monthly Subscription</h4>
-                  <p className="text-xs text-gray-300 mb-3 font-normal">250 credits per month refilled automatically for active studios.</p>
-                  <p className="text-2xl font-extrabold text-white">{monthlyPrice}/mo</p>
-                </div>
-                <button
-                  onClick={() => window.open(DODO_PRODUCTS.pro_monthly.checkoutUrl, '_blank', 'noopener,noreferrer')}
-                  className="w-full bg-[#CCFF00] text-black hover:bg-white font-extrabold py-3.5 rounded-2xl text-xs transition cursor-pointer"
-                >
-                  Get Pro Monthly ({monthlyPrice}/mo)
-                </button>
-              </div>
-            </div>
-          </div>
+          </main>
 
         </div>
 
