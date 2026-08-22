@@ -154,6 +154,11 @@ const App: React.FC = () => {
                           <Route path="/contact" element={<Contact />} />
                           <Route path="/tools" element={<Tools />} />
                           <Route path="/tools/ai-home-design" element={<AIHomeDesign />} />
+                          <Route path="/tools/ai-interior" element={<AIHomeDesign />} />
+                          <Route path="/tools/ai-exterior" element={<AIHomeDesign />} />
+                          <Route path="/tools/ai-garden" element={<AIHomeDesign />} />
+                          <Route path="/tools/ai-replace" element={<AIHomeDesign />} />
+                          <Route path="/tools/ai-removal" element={<AIHomeDesign />} />
                           <Route path="/site-analysis" element={<SiteAnalysis />} />
                           <Route path="/dashboard" element={<UserDashboard />} />
                           <Route path="/privacy" element={<Privacy />} />
