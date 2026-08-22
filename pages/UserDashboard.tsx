@@ -63,9 +63,7 @@ export default function UserDashboard() {
   const handleSelectTool = (toolId: string, href: string) => {
     setActiveToolId(toolId);
     setSearchParams({ tool: toolId });
-    if (href.startsWith('/site-analysis')) {
-      navigate(href);
-    }
+    navigate(href);
   };
 
   const handleLogout = () => {

@@ -13,27 +13,17 @@ import { ToolUserDashboardModal } from '../components/tools/ToolUserDashboardMod
 import { ToolsAuthModal } from '../components/tools/ToolsAuthModal';
 import { ToolsPaywallOverlay } from '../components/tools/ToolsPaywallOverlay';
 import { getToolUser, deductUserCredit, type ToolUser } from '../utils/userAuth';
+import { TOOLS_SUITE } from '../constants/toolsData';
 import {
-  MapPin,
-  Layers,
-  Zap,
-  Box,
-  Search,
-  Check,
-  Share2,
-  Globe
+  MapPin, Layers, Zap, Box, Search, Check, Share2, Globe,
+  PanelLeft, ArrowLeft, Home, Building, Trees, Wand2, Trash2, Sliders, LogOut
 } from 'lucide-react';
 
 const DEFAULT_MAPBOX_TOKEN = atob('cGsuZXlKMUlqb2lZVzUyYVhSaGJTSXNJbUVpT2lKamJYTjNNR0ZqTlhreFpIWTRNbmh5TVRsek9IWnZOalF5SW4wLl9uNGg0bW1RTDVzSXgxQnFRdkZ0d3c=');
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || DEFAULT_MAPBOX_TOKEN;
 
-// 100% Free Zero-Dollar 3D Tech Stack (MapLibre GL JS v4+ + OpenFreeMap + AWS Terrain)
+// 100% Fail-proof 3D Tech Stack (Esri High-Res Satellite 3D + CARTO + Demotiles)
 const MAPLIBRE_3D_STYLES = [
-  {
-    id: 'openfreemap-streets',
-    name: '🏢 3D Google Maps Style (OpenFreeMap 3D)',
-    style: 'https://tiles.openfreemap.org/styles/liberty'
-  },
   {
     id: 'satellite-3d',
     name: '🌐 3D Real Satellite Globe (Esri High-Res)',
@@ -65,13 +55,18 @@ const MAPLIBRE_3D_STYLES = [
   },
   {
     id: 'carto-positron-3d',
-    name: '☀️ 3D Architectural Light Studio',
+    name: '☀️ 3D Architectural Light Studio (CARTO)',
     style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
   },
   {
     id: 'carto-dark-3d',
-    name: '📐 3D Architectural Dark Studio',
+    name: '📐 3D Architectural Dark Studio (CARTO)',
     style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
+  },
+  {
+    id: 'openfreemap-streets',
+    name: '🏢 3D Google Maps Style (OpenFreeMap 3D)',
+    style: 'https://demotiles.maplibre.org/style.json'
   }
 ];
 
@@ -109,7 +104,8 @@ export default function SiteAnalysis() {
   const [leafletStyleId, setLeafletStyleId] = useState(LEAFLET_2D_STYLES[0].id);
   const [webglFailed, setWebglFailed] = useState(false);
 
-  // Authentication & Credits
+  // Studio UI Sidebar & Auth State
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [user, setUser] = useState<ToolUser | null>(null);
   const [showAuth, setShowAuth] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
@@ -133,7 +129,7 @@ export default function SiteAnalysis() {
   // 3D Shadow Simulation state
   const [buildingHeightM, setBuildingHeightM] = useState(12);
 
-  // Real-time synchronization for user credit state
+  // User credit listener
   useEffect(() => {
     setUser(getToolUser());
     const handleUserUpdate = (e: Event) => {
@@ -153,7 +149,7 @@ export default function SiteAnalysis() {
   }, []);
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // MAP ENGINE INITIALIZATION (MapLibre GL JS 3D Globe vs Leaflet 2D/3D Fallback)
+  // MAP ENGINE INITIALIZATION (MapLibre GL JS 3D Globe vs Leaflet 2D Fallback)
   // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -163,14 +159,14 @@ export default function SiteAnalysis() {
 
     let resizeObserver: ResizeObserver | null = null;
 
-    // Cleanup existing map instances & empty container DOM
+    // Cleanup existing map instances
     if (maplibreRef.current) {
-      try { maplibreRef.current.remove(); } catch { /* ignore cleanup errors */ }
+      try { maplibreRef.current.remove(); } catch { /* silent */ }
       maplibreRef.current = null;
       maplibreMarkerRef.current = null;
     }
     if (leafletRef.current) {
-      try { leafletRef.current.remove(); } catch { /* ignore cleanup errors */ }
+      try { leafletRef.current.remove(); } catch { /* silent */ }
       leafletRef.current = null;
       leafletTileLayerRef.current = null;
       leafletMarkerRef.current = null;
@@ -199,7 +195,7 @@ export default function SiteAnalysis() {
           style: selectedObj.style as any,
           center: [centerLon, centerLat],
           zoom: 14,
-          pitch: 50, // 3D Perspective Pitch Angle
+          pitch: 50,
           bearing: -15,
         });
 
@@ -212,19 +208,20 @@ export default function SiteAnalysis() {
         };
 
         map.on('error', (err) => {
-          console.warn('MapLibre GL event warning:', err);
+          console.warn('MapLibre GL event fallback warning:', err);
           forceResize();
+          // Fallback to satellite if vector tiles fail to load
+          if (maplibreStyleId !== 'satellite-3d') {
+            setMaplibreStyleId('satellite-3d');
+          }
         });
 
         map.on('style.load', () => {
           forceResize();
-
-          // Native 3D Globe Projection
           try {
             (map as any).setProjection({ type: 'globe' });
-          } catch { /* silent fallback */ }
+          } catch { /* silent */ }
 
-          // AWS Terrain Elevation DEM (100% Free AWS Dataset)
           try {
             if (!map.getSource('aws-terrain-dem')) {
               map.addSource('aws-terrain-dem', {
@@ -236,12 +233,12 @@ export default function SiteAnalysis() {
               });
             }
             map.setTerrain({ source: 'aws-terrain-dem', exaggeration: 1.2 });
-          } catch { /* silent fallback */ }
+          } catch { /* silent */ }
         });
 
         try {
           map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
-        } catch { /* silent fallback */ }
+        } catch { /* silent */ }
 
         map.on('click', (e) => {
           const { lng, lat } = e.lngLat;
@@ -266,11 +263,10 @@ export default function SiteAnalysis() {
           resizeObserver.observe(mapContainerRef.current);
         }
       } catch (err) {
-        console.warn('MapLibre 3D init failed, switching to HTML5 3D engine:', err);
+        console.warn('MapLibre 3D init failed, switching to 2D raster engine:', err);
         setWebglFailed(true);
       }
     } else {
-      // Leaflet High-Performance Raster Engine (2D or 3D Fallback)
       const selectedStyle = LEAFLET_2D_STYLES.find(s => s.id === leafletStyleId) || LEAFLET_2D_STYLES[0];
 
       const map = L.map(mapContainerRef.current, {
@@ -307,7 +303,6 @@ export default function SiteAnalysis() {
     };
   }, [mapEngine, webglFailed, maplibreStyleId, leafletStyleId]);
 
-  // Handle URL coordinate loading
   useEffect(() => {
     if (latParam && lonParam) {
       const lat = parseFloat(latParam);
@@ -485,132 +480,187 @@ export default function SiteAnalysis() {
   return (
     <>
       <Helmet>
-        <title>Site Analysis by Anvitam — Interactive Site Intelligence Studio</title>
-        <meta name="description" content="Drop a pin anywhere in the world and instantly generate 11+ site analysis diagrams." />
+        <title>Site Intelligence Canvas | Anvitam Studio</title>
+        <meta name="description" content="Drop a pin anywhere in the world and generate 3D extruded building models, solar shadow paths, wind rose, and geotech site analysis." />
       </Helmet>
 
-      <div className="site-analysis-page bg-[#F8F9FA] text-[#111111] pt-20 min-h-screen flex flex-col font-sans">
+      <div className="site-analysis-page bg-[#FAFBFD] text-[#111111] pt-20 min-h-screen flex flex-col font-sans antialiased">
         
-        {/* Sleek, Single-Bar Integrated Header */}
-        <div className="sa-topbar bg-white text-gray-900 px-6 py-2.5 border-b border-gray-200/80 shadow-xs flex flex-col lg:flex-row items-center justify-between gap-3 z-20">
-          {/* Brand Logo & Location Search */}
-          <div className="flex items-center gap-4 w-full lg:w-auto justify-between lg:justify-start">
-            <div className="flex items-center gap-2 cursor-pointer shrink-0" onClick={() => navigate('/tools')}>
-              <span className="w-8 h-8 rounded-xl bg-black text-[#CCFF00] font-bold flex items-center justify-center text-xs shadow-xs">SA</span>
-              <div>
-                <h1 className="text-xs sm:text-sm font-bold text-gray-900 leading-none">Site Intelligence Canvas</h1>
-                <p className="text-[10px] text-gray-500 font-medium">by Anvitam</p>
+        <div className="flex-1 flex overflow-hidden">
+
+          {/* ── UNIFIED LEFT STUDIO SIDEBAR ── */}
+          <aside className={`bg-white border-r border-gray-200/80 w-64 p-5 shrink-0 flex flex-col justify-between transition-all duration-300 ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0 md:w-16 md:px-2'
+          }`}>
+            <div className="space-y-6">
+              
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className="flex items-center gap-2 text-xs font-bold text-gray-900 hover:text-black transition cursor-pointer"
+                >
+                  <ArrowLeft size={16} />
+                  <span className={sidebarOpen ? 'block' : 'hidden md:hidden'}>Dashboard</span>
+                </button>
+              </div>
+
+              {/* AI Design Tools */}
+              <div className="space-y-1">
+                <p className={`text-[10px] font-semibold uppercase tracking-wider text-gray-400 px-3 mb-1.5 ${
+                  sidebarOpen ? 'block' : 'hidden md:hidden'
+                }`}>
+                  AI Design Studio
+                </p>
+                {[
+                  { id: 'interior', label: 'Interior Design', icon: <Home size={16} />, href: '/tools/ai-home-design?module=interior' },
+                  { id: 'exterior', label: 'Exterior Design', icon: <Building size={16} />, href: '/tools/ai-home-design?module=exterior' },
+                  { id: 'garden', label: 'Garden Design', icon: <Trees size={16} />, href: '/tools/ai-home-design?module=garden' },
+                  { id: 'replace', label: 'Replace Furniture', icon: <Wand2 size={16} />, href: '/tools/ai-home-design?module=replace' }
+                ].map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => navigate(item.href)}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition cursor-pointer text-gray-700 hover:bg-gray-100 hover:text-black`}
+                  >
+                    {item.icon}
+                    <span className={sidebarOpen ? 'block' : 'hidden md:hidden'}>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Site Intelligence Tools */}
+              <div className="space-y-1 pt-2 border-t border-gray-100">
+                <p className={`text-[10px] font-semibold uppercase tracking-wider text-gray-400 px-3 mb-1.5 ${
+                  sidebarOpen ? 'block' : 'hidden md:hidden'
+                }`}>
+                  Site Intelligence Suite
+                </p>
+                {TOOLS_SUITE.filter(t => !t.id.startsWith('ai-')).slice(0, 8).map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => navigate(`/site-analysis?tool=${item.id}`)}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition cursor-pointer ${
+                      toolParam === item.id || (!toolParam && item.id === 'sun-path-3d')
+                        ? 'bg-[#111111] text-[#CCFF00] font-semibold shadow-2xs'
+                        : 'text-gray-700 hover:bg-gray-100 hover:text-black font-medium'
+                    }`}
+                  >
+                    <span className="shrink-0">{item.iconSvg}</span>
+                    <span className={`truncate ${sidebarOpen ? 'block' : 'hidden md:hidden'}`}>{item.name}</span>
+                  </button>
+                ))}
+              </div>
+
+            </div>
+
+            <div className="pt-4 border-t border-gray-100">
+              <button
+                onClick={() => setShowPaywall(true)}
+                className="w-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-semibold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-2xs border border-black/10"
+              >
+                <Zap size={14} className="fill-black text-black shrink-0" />
+                <span className={sidebarOpen ? 'block' : 'hidden md:hidden'}>Upgrade to Pro</span>
+              </button>
+            </div>
+          </aside>
+
+          {/* ── MAIN STUDIO CANVAS ── */}
+          <div className="flex-1 flex flex-col overflow-y-auto">
+            
+            {/* Topbar inside canvas */}
+            <div className="sa-topbar bg-white text-gray-900 px-6 py-2.5 border-b border-gray-200/80 shadow-2xs flex flex-col lg:flex-row items-center justify-between gap-3 z-20">
+              <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
+                <button
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="p-1.5 rounded-xl text-gray-600 hover:text-black hover:bg-gray-100 transition cursor-pointer"
+                >
+                  <PanelLeft size={18} />
+                </button>
+
+                <div className="flex items-center gap-2 cursor-pointer shrink-0" onClick={() => navigate('/tools')}>
+                  <span className="w-7 h-7 rounded-lg bg-black text-[#CCFF00] font-bold flex items-center justify-center text-xs shadow-2xs">SA</span>
+                  <div>
+                    <h1 className="text-xs sm:text-sm font-bold text-gray-900 leading-none">Site Intelligence Canvas</h1>
+                    <p className="text-[10px] text-gray-500 font-medium">by Anvitam</p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleSearch} className="flex items-center relative flex-1 sm:max-w-xs ml-2">
+                  <input
+                    type="text"
+                    className="bg-gray-100 text-gray-900 placeholder-gray-400 text-xs px-4 py-1.5 rounded-full border border-gray-200 focus:border-black outline-none w-full font-normal"
+                    placeholder="Search location, city, lat/lon…"
+                    value={searchInput}
+                    onChange={e => setSearchInput(e.target.value)}
+                  />
+                </form>
+              </div>
+
+              {/* Category Selector Pills */}
+              <div className="flex items-center gap-1.5 overflow-x-auto w-full lg:w-auto py-1 lg:py-0 no-scrollbar justify-start sm:justify-center">
+                {CATEGORIES.map(cat => (
+                  <button
+                    key={cat.id}
+                    onClick={() => handleCategoryChange(cat.id)}
+                    className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer whitespace-nowrap ${
+                      category === cat.id ? 'bg-black text-[#CCFF00] font-bold shadow-2xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200/80'
+                    }`}
+                  >
+                    <span className="text-xs">{cat.icon}</span>
+                    <span>{cat.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Credit Status Pill */}
+              <div className="flex items-center gap-2.5 shrink-0 w-full lg:w-auto justify-end">
+                {user ? (
+                  <div
+                    onClick={() => navigate('/dashboard')}
+                    className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200/80 border border-gray-200 px-3 py-1 rounded-full cursor-pointer transition"
+                  >
+                    <div className="text-xs font-semibold text-black flex items-center gap-1">
+                      <Zap size={13} className="text-black fill-black" />
+                      <span>{user.is_subscribed ? 'Pro' : `${user.credits_remaining ?? 5} creds`}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    className="bg-black text-[#CCFF00] font-bold text-xs px-3.5 py-1.5 rounded-full hover:scale-105 transition cursor-pointer"
+                    onClick={() => { setAuthMode('login'); setShowAuth(true); }}
+                  >
+                    Sign In
+                  </button>
+                )}
               </div>
             </div>
 
-            <form onSubmit={handleSearch} className="flex items-center relative flex-1 sm:max-w-xs ml-2">
-              <input
-                type="text"
-                className="bg-gray-100 text-gray-900 placeholder-gray-400 text-xs px-4 py-1.5 rounded-full border border-gray-200 focus:border-black outline-none w-full font-normal"
-                placeholder="Search location, city, lat/lon…"
-                value={searchInput}
-                onChange={e => setSearchInput(e.target.value)}
-              />
-            </form>
-          </div>
+            {/* 3D Map Container */}
+            <div className="w-full h-[65vh] min-h-[480px] relative bg-gray-900 border-b border-gray-200 overflow-hidden">
+              <div ref={mapContainerRef} className="w-full h-full absolute inset-0 z-0" />
 
-          {/* Integrated Category Selector Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto w-full lg:w-auto py-1 lg:py-0 no-scrollbar justify-start sm:justify-center">
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => handleCategoryChange(cat.id)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer whitespace-nowrap ${
-                  category === cat.id ? 'bg-black text-[#CCFF00] font-bold shadow-xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200/80'
-                }`}
-              >
-                <span className="text-xs">{cat.icon}</span>
-                <span>{cat.label}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Controls, Credits & User Dashboard */}
-          <div className="flex items-center gap-2.5 shrink-0 w-full lg:w-auto justify-end">
-
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="bg-gray-100 hover:bg-black hover:text-[#CCFF00] text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-full transition border border-gray-200 cursor-pointer hidden sm:inline-flex items-center gap-1"
-            >
-              📊 Dashboard
-            </button>
-
-            {/* Trial Status Chip (if in trial) */}
-            {user && !user.is_subscribed && (user.trial_days_remaining ?? 0) > 0 && (
-              <button
-                onClick={() => setShowPaywall(true)}
-                className="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 transition cursor-pointer"
-                title="Click to upgrade"
-              >
-                <span>🎉</span>
-                <span className="hidden sm:inline">{user.trial_days_remaining}d trial</span>
-                <span className="bg-amber-900 text-amber-100 text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider">Upgrade</span>
-              </button>
-            )}
-
-            {user ? (
-              <div
-                onClick={() => navigate('/dashboard')}
-                className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200/80 border border-gray-200 px-3 py-1 rounded-full cursor-pointer transition"
-              >
-                <div className="text-xs font-bold text-black flex items-center gap-1">
-                  <Zap size={13} className="text-black fill-black" />
-                  <span>{user.is_subscribed ? 'Pro' : `${user.credits_remaining ?? 5} creds`}</span>
+              {/* Map Overlay Controls */}
+              <div className="absolute top-4 left-4 z-20 bg-white/95 text-gray-900 backdrop-blur-md rounded-2xl p-2 border border-gray-200 flex flex-wrap items-center gap-2 shadow-md">
+                <div className="flex items-center bg-gray-100 p-0.5 rounded-xl border border-gray-200">
+                  <button
+                    onClick={() => setMapEngine('3d')}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                      mapEngine === '3d' ? 'bg-black text-[#CCFF00] shadow-2xs' : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <Globe size={13} /> 3D Globe & Extruded Buildings
+                  </button>
+                  <button
+                    onClick={() => setMapEngine('2d')}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                      mapEngine === '2d' ? 'bg-black text-[#CCFF00] shadow-2xs' : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <Layers size={13} /> 2D High-Res Flat
+                  </button>
                 </div>
-                <div className="h-3.5 w-px bg-gray-300" />
-                <div className="flex items-center gap-1.5">
-                  <div className="w-5 h-5 rounded-full bg-black text-[#CCFF00] font-bold text-[10px] flex items-center justify-center">
-                    {user.name?.charAt(0)?.toUpperCase() || user.email.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="text-xs font-semibold text-gray-900 hidden sm:inline">{user.name || user.email.split('@')[0]}</span>
-                </div>
-              </div>
-            ) : (
-              <button
-                className="bg-black text-[#CCFF00] font-bold text-xs px-3.5 py-1.5 rounded-full hover:scale-105 transition cursor-pointer"
-                onClick={() => { setAuthMode('login'); setShowAuth(true); }}
-              >
-                Sign In
-              </button>
-            )}
-          </div>
-        </div>
 
-        {/* WORKSPACE LAYOUT */}
-        <div className="flex-1 flex flex-col">
-          {/* Map Container */}
-          <div className="w-full h-[70vh] min-h-[500px] relative bg-white border-b border-gray-200 overflow-hidden">
-            <div ref={mapContainerRef} className="w-full h-full absolute inset-0 z-0" />
-
-            {/* Map Overlay Bar: 3D Globe / 2D Engine Switcher & Style Selector */}
-            <div className="absolute top-4 left-4 z-20 bg-white/95 text-gray-900 backdrop-blur-md rounded-2xl p-2 border border-gray-200 flex flex-wrap items-center gap-2 shadow-md">
-              {/* Engine Pills */}
-              <div className="flex items-center bg-gray-100 p-0.5 rounded-xl border border-gray-200">
-                <button
-                  onClick={() => setMapEngine('3d')}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                    mapEngine === '3d' ? 'bg-black text-[#CCFF00] shadow-xs' : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  <Globe size={13} /> 3D Globe & Extruded Buildings
-                </button>
-                <button
-                  onClick={() => setMapEngine('2d')}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                    mapEngine === '2d' ? 'bg-black text-[#CCFF00] shadow-xs' : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  <Layers size={13} /> 2D High-Res Flat
-                </button>
-              </div>
-
-              {/* Style Dropdown Selector */}
-              <div className="flex items-center gap-1">
+                {/* Map Style Dropdown */}
                 <select
                   value={mapEngine === '3d' ? maplibreStyleId : leafletStyleId}
                   onChange={(e) => mapEngine === '3d' ? change3DStyle(e.target.value) : change2DStyle(e.target.value)}
@@ -630,78 +680,77 @@ export default function SiteAnalysis() {
                     ))
                   )}
                 </select>
+
+                {mapEngine === '3d' && (
+                  <div className="flex items-center gap-1 bg-gray-100 p-0.5 rounded-xl border border-gray-200">
+                    <button
+                      onClick={flyToGlobeSpaceView}
+                      className="px-2.5 py-1 rounded-lg text-xs font-semibold text-gray-700 hover:text-black hover:bg-gray-200 transition cursor-pointer"
+                    >
+                      🚀 Earth Globe
+                    </button>
+                    <button
+                      onClick={flyTo3DBuildingSiteView}
+                      className="px-2.5 py-1 rounded-lg text-xs font-semibold text-gray-700 hover:text-black hover:bg-gray-200 transition cursor-pointer"
+                    >
+                      🏢 3D Building Site
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {/* 3D View Camera Shortcuts */}
-              {mapEngine === '3d' && (
-                <div className="flex items-center gap-1 bg-gray-100 p-0.5 rounded-xl border border-gray-200">
+              {/* Floating Confirmation Card */}
+              {pendingCoords && (
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 bg-white text-gray-900 p-4 rounded-3xl border border-black shadow-2xl flex flex-col sm:flex-row items-center gap-4 max-w-lg w-11/12">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-black text-[#CCFF00] flex items-center justify-center font-bold shrink-0">
+                      <MapPin size={20} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-gray-900 line-clamp-1">
+                        {pendingCoords.placeName || `Site Lat: ${pendingCoords.lat.toFixed(4)}°, Lon: ${pendingCoords.lon.toFixed(4)}°`}
+                      </p>
+                      <p className="text-[10px] text-gray-500 font-normal">
+                        {isAnalyzed ? '✅ Site analysis report active below' : 'Click below to generate 11+ site diagrams'}
+                      </p>
+                    </div>
+                  </div>
+
                   <button
-                    onClick={flyToGlobeSpaceView}
-                    className="px-2.5 py-1 rounded-lg text-xs font-semibold text-gray-700 hover:text-black hover:bg-gray-200 transition cursor-pointer flex items-center gap-1"
-                    title="Zoom out to 3D Earth Globe view from space"
+                    onClick={executeSiteAnalysis}
+                    disabled={loading}
+                    className="bg-black text-[#CCFF00] hover:bg-gray-800 font-bold text-xs px-5 py-3 rounded-2xl transition shadow-md flex items-center gap-2 shrink-0 cursor-pointer"
                   >
-                    🚀 Earth Globe
-                  </button>
-                  <button
-                    onClick={flyTo3DBuildingSiteView}
-                    className="px-2.5 py-1 rounded-lg text-xs font-semibold text-gray-700 hover:text-black hover:bg-gray-200 transition cursor-pointer flex items-center gap-1"
-                    title="Zoom in to 3D Extruded Building & Site view"
-                  >
-                    🏢 3D Building Site
+                    <Zap size={14} className="fill-[#CCFF00]" />
+                    {loading ? 'Analyzing Site...' : 'Run Analysis (1 Credit)'}
                   </button>
                 </div>
               )}
             </div>
 
-            {/* Floating Pin Confirmation CTA Card */}
-            {pendingCoords && (
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 bg-white text-gray-900 p-4 rounded-3xl border border-black shadow-2xl flex flex-col sm:flex-row items-center gap-4 max-w-lg w-11/12">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-black text-[#CCFF00] flex items-center justify-center font-bold shrink-0">
-                    <MapPin size={20} />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-gray-900 line-clamp-1">
-                      {pendingCoords.placeName || `Site Lat: ${pendingCoords.lat.toFixed(4)}°, Lon: ${pendingCoords.lon.toFixed(4)}°`}
-                    </p>
-                    <p className="text-[10px] text-gray-500 font-normal">
-                      {isAnalyzed ? '✅ Site analysis report active below' : 'Click below to generate 11+ site diagrams'}
-                    </p>
-                  </div>
-                </div>
+            {/* 3D Solar Shadow Simulator */}
+            <div className="bg-gray-50 border-b border-gray-200 px-6 py-6 max-w-7xl mx-auto w-full">
+              <ShadowSimulator3D
+                lat={pendingCoords?.lat ?? 22.3072}
+                lon={pendingCoords?.lon ?? 73.1812}
+                buildingHeightMeters={buildingHeightM}
+              />
+            </div>
 
-                <button
-                  onClick={executeSiteAnalysis}
-                  disabled={loading}
-                  className="bg-black text-[#CCFF00] hover:bg-gray-800 font-bold text-xs px-5 py-3 rounded-2xl transition shadow-md flex items-center gap-2 shrink-0 cursor-pointer"
-                >
-                  <Zap size={14} className="fill-[#CCFF00]" />
-                  {loading ? 'Analyzing Site...' : 'Run Analysis (1 Credit)'}
-                </button>
-              </div>
-            )}
+            {/* Analysis Panel Section */}
+            <div className="bg-[#FAFBFD] flex-1 pb-16">
+              <AnalysisPanel
+                result={analysisResult}
+                loading={loading}
+                category={category}
+                onShare={handleShare}
+                activeToolFilter={toolParam}
+                onSelectPresetLocation={handleSelectPresetLocation}
+              />
+            </div>
+
           </div>
 
-          {/* 3D Solar Shadow Simulator Section */}
-          <div className="bg-gray-50 border-b border-gray-200 px-6 py-6 max-w-7xl mx-auto w-full">
-            <ShadowSimulator3D
-              lat={pendingCoords?.lat ?? 22.3072}
-              lon={pendingCoords?.lon ?? 73.1812}
-              buildingHeightMeters={buildingHeightM}
-            />
-          </div>
-
-          {/* Analysis Panel Section */}
-          <div className="bg-[#F8F9FA] flex-1 pb-16">
-            <AnalysisPanel
-              result={analysisResult}
-              loading={loading}
-              category={category}
-              onShare={handleShare}
-              activeToolFilter={toolParam}
-              onSelectPresetLocation={handleSelectPresetLocation}
-            />
-          </div>
         </div>
 
         {copied && (

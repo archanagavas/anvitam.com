@@ -130,6 +130,18 @@ export default function AIHomeDesign() {
     setShowBriefCard(true);
   };
 
+  // OpenRouter Model Selection (Fast: 1 Credit, FLUX: 2 Credits, GPT-4o: 3 Credits)
+  const [selectedAiModel, setSelectedAiModel] = useState<'fast' | 'flux' | 'claude' | 'gpt4o'>('fast');
+
+  const getModelCreditCost = (model: string) => {
+    switch (model) {
+      case 'gpt4o': return 3;
+      case 'flux': return 2;
+      case 'claude': return 2;
+      default: return 1;
+    }
+  };
+
   const handleGenerate = async () => {
     const currentUser = getToolUser();
     if (!currentUser) {
@@ -137,7 +149,9 @@ export default function AIHomeDesign() {
       return;
     }
 
-    if (currentUser.credits_remaining <= 0) {
+    const creditCost = getModelCreditCost(selectedAiModel);
+
+    if (currentUser.credits_remaining < creditCost) {
       setShowPaywall(true);
       return;
     }
@@ -166,6 +180,7 @@ export default function AIHomeDesign() {
           promptText,
           budget,
           region,
+          modelTier: selectedAiModel,
           email: currentUser.email
         })
       });
@@ -179,8 +194,8 @@ export default function AIHomeDesign() {
       setShowBriefCard(false);
 
       if (currentUser.credits_remaining > 0) {
-        currentUser.credits_remaining -= 1;
-        currentUser.credits_used = (currentUser.credits_used || 0) + 1;
+        currentUser.credits_remaining = Math.max(0, currentUser.credits_remaining - creditCost);
+        currentUser.credits_used = (currentUser.credits_used || 0) + creditCost;
         setUser({ ...currentUser });
       }
 
@@ -409,7 +424,7 @@ export default function AIHomeDesign() {
                   </h1>
 
                   {/* Centered Interactive AI Prompt Box */}
-                  <form onSubmit={handlePromptSubmit} className="relative max-w-xl mx-auto">
+                  <form onSubmit={handlePromptSubmit} className="relative max-w-xl mx-auto space-y-3">
                     <div className="bg-white border border-gray-300 hover:border-gray-900 rounded-3xl p-3 shadow-md flex items-center gap-3 transition">
                       <div className="p-2.5 bg-[#111111] text-[#CCFF00] rounded-2xl shrink-0">
                         <Wand2 size={18} />
@@ -424,12 +439,37 @@ export default function AIHomeDesign() {
                       <div className="flex items-center gap-2 shrink-0">
                         <button
                           type="submit"
-                          className="w-9 h-9 rounded-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black transition flex items-center justify-center font-extrabold cursor-pointer border border-black/10 shadow-2xs"
+                          className="w-9 h-9 rounded-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black transition flex items-center justify-center font-bold cursor-pointer border border-black/10 shadow-2xs"
                           title="Generate Design"
                         >
                           <ChevronRight size={18} />
                         </button>
                       </div>
+                    </div>
+
+                    {/* OpenRouter Model Tier Selection Bar */}
+                    <div className="flex items-center justify-center gap-1.5 flex-wrap pt-1">
+                      <span className="text-[11px] font-semibold text-gray-500 mr-1">AI Model Engine:</span>
+                      {[
+                        { id: 'fast', label: '⚡ Anvitam Fast (1 Cred)', desc: 'Standard Gemini/OpenRouter' },
+                        { id: 'flux', label: '🚀 FLUX.1 Pro (2 Creds)', desc: 'Photorealistic Architectural Elevation' },
+                        { id: 'claude', label: '🏛️ Claude Spec (2 Creds)', desc: 'Spatial Detail Engine' },
+                        { id: 'gpt4o', label: '💎 GPT-4o 4K (3 Creds)', desc: 'Ultra-HD Luxury Render' }
+                      ].map(model => (
+                        <button
+                          key={model.id}
+                          type="button"
+                          onClick={() => setSelectedAiModel(model.id as any)}
+                          className={`px-3 py-1 rounded-full text-[11px] font-semibold transition cursor-pointer ${
+                            selectedAiModel === model.id
+                              ? 'bg-[#111111] text-[#CCFF00] shadow-2xs'
+                              : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'
+                          }`}
+                          title={model.desc}
+                        >
+                          {model.label}
+                        </button>
+                      ))}
                     </div>
                   </form>
 
