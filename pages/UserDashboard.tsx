@@ -139,7 +139,12 @@ export default function UserDashboard() {
               onClick={() => navigate('/tools')}
               role="button"
               tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate('/tools'); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  navigate('/tools');
+                }
+              }}
               aria-label="Navigate to site tools directory"
             >
               <span className="w-7 h-7 rounded-lg bg-black text-[#CCFF00] font-semibold flex items-center justify-center text-xs shadow-2xs">AS</span>

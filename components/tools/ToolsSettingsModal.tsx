@@ -23,13 +23,20 @@ export const ToolsSettingsModal: React.FC<Props> = ({
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          onClose();
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
     } else {
       document.body.style.overflow = '';
     }
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   const handleSignOut = () => {
     logoutToolUser();
@@ -59,6 +66,9 @@ export const ToolsSettingsModal: React.FC<Props> = ({
             exit={{ opacity: 0, scale: 0.96, y: 10 }}
             transition={{ duration: 0.2 }}
             className="relative w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl z-10 font-sans antialiased text-[#111111] border border-gray-100"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Account & Studio Settings"
           >
             {/* Header */}
             <div className="flex items-center justify-between pb-4 border-b border-gray-100">

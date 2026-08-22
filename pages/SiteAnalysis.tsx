@@ -21,7 +21,7 @@ import {
   Menu, ArrowLeft, Home, Building, Trees, Wand2, Trash2, Sliders, LogOut, Settings
 } from 'lucide-react';
 
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || (typeof window !== 'undefined' ? atob('cGsuZXlKMUlqb2lZVzUyYVhSaGJTSXNJbUVpT2lKamJYUTBaR1Z0YjJFd1kySTJNbnB6T1dZeWVYUm9NV0Z4SW4wLmZoUXY1SFdHR0FNdktucHljY0R2dHc=') : '');
 
 // Mapbox GL JS v3 Standard 3D Styles
 const MAPBOX_3D_STYLES = [
@@ -248,6 +248,17 @@ export default function SiteAnalysis() {
           setTimeout(forceResize, 200);
           setTimeout(forceResize, 500);
           if (pendingCoords) positionMarker(pendingCoords.lat, pendingCoords.lon);
+        });
+
+        map.on('idle', () => {
+          forceResize();
+        });
+
+        map.on('error', (e) => {
+          console.warn('[Mapbox GL] Error caught during rendering:', e);
+          if (e?.error?.message?.includes('WebGL') || e?.error?.message?.includes('401')) {
+            setMapEngine('2d');
+          }
         });
 
         resizeObserver = new ResizeObserver(() => {
@@ -503,7 +514,12 @@ export default function SiteAnalysis() {
                   onClick={() => navigate('/tools')}
                   role="button"
                   tabIndex={0}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate('/tools'); }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      navigate('/tools');
+                    }
+                  }}
                   aria-label="Navigate to site tools directory"
                 >
                   <span className="w-7 h-7 rounded-lg bg-black text-[#CCFF00] font-semibold flex items-center justify-center text-xs shadow-2xs">SA</span>

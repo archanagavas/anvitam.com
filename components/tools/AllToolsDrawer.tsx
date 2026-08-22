@@ -19,13 +19,22 @@ export const AllToolsDrawer: React.FC<Props> = ({ isOpen, onClose, activeToolId 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          onClose();
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+      };
     } else {
       document.body.style.overflow = '';
     }
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   const filteredTools = TOOLS_SUITE.filter(tool =>
     tool.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -70,6 +79,7 @@ export const AllToolsDrawer: React.FC<Props> = ({ isOpen, onClose, activeToolId 
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
             className="relative w-full max-w-xl bg-white h-full shadow-2xl flex flex-col z-10 font-sans antialiased text-[#111111]"
             role="dialog"
+            aria-modal="true"
             aria-label="All Studio Tools Navigation"
           >
             {/* Header */}

@@ -8,6 +8,7 @@ export interface ToolUser {
   credits_remaining: number;
   credits_used?: number;
   is_subscribed: boolean;
+  is_guest?: boolean;
   subscription_plan?: 'topup_10' | 'pro_monthly' | 'yearly_pass' | string | null;
   subscription_end?: string | null;
   credit_expiry?: string | null;
@@ -56,6 +57,7 @@ export function getOrCreateDefaultToolUser(): ToolUser | null {
       credits_remaining: 5,
       credits_used: 0,
       is_subscribed: false,
+      is_guest: true,
       trial_days_remaining: 15,
       has_access: true,
     };
@@ -94,21 +96,25 @@ export function updateToolUser(updates: Partial<ToolUser>): ToolUser | null {
 }
 
 export function setToolUser(user: ToolUser, token?: string): ToolUser {
-  inMemoryUser = user;
+  const authenticatedUser: ToolUser = {
+    ...user,
+    is_guest: false
+  };
+  inMemoryUser = authenticatedUser;
   try {
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem(LOGOUT_KEY);
-      localStorage.setItem(USER_KEY, JSON.stringify(user));
+      localStorage.setItem(USER_KEY, JSON.stringify(authenticatedUser));
       if (token) localStorage.setItem(TOKEN_KEY, token);
-      window.dispatchEvent(new CustomEvent('anvitam-user-updated', { detail: user }));
+      window.dispatchEvent(new CustomEvent('anvitam-user-updated', { detail: authenticatedUser }));
     }
   } catch (err) {
     console.warn('[userAuth] Storage set warning:', err);
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('anvitam-user-updated', { detail: user }));
+      window.dispatchEvent(new CustomEvent('anvitam-user-updated', { detail: authenticatedUser }));
     }
   }
-  return user;
+  return authenticatedUser;
 }
 
 export function deductUserCredit(cost: number = 1): { success: boolean; user: ToolUser | null } {

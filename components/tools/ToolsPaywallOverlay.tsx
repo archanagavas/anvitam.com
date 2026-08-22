@@ -43,13 +43,20 @@ export const ToolsPaywallOverlay: React.FC<Props> = ({
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape' && onClose) {
+          onClose();
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
     } else {
       document.body.style.overflow = '';
     }
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   const handleSubscribe = (plan: 'monthly' | 'credits_10') => {
     if (onSubscribe) {
@@ -74,6 +81,9 @@ export const ToolsPaywallOverlay: React.FC<Props> = ({
         >
           <motion.div
             className="paywall-card bg-white text-gray-900 rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-gray-200 shadow-2xl space-y-5 my-auto relative max-h-[92vh] overflow-y-auto"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Unlock Anvitam Architectural Suite"
             initial={{ opacity: 0, y: 20, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.97 }}
