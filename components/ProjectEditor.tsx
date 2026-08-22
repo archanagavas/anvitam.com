@@ -181,37 +181,44 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
 
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      try {
-        const url = await uploadOrProcessImage(file, { maxDim: 2400, quality: 0.92 });
-        setImage(url);
-      } catch (err) {
-        console.error('Error uploading cover image:', err);
-      }
+    if (!file) return;
+    setEditorError(null);
+    try {
+      const url = await uploadOrProcessImage(file, { maxDim: 2400, quality: 0.92 });
+      setImage(url);
+    } catch (err: any) {
+      console.error('[ProjectEditor] Cover upload failed:', err);
+      setEditorError(err.message || 'Cover image upload failed. Please try again.');
+      // Clear the file input so re-selecting the same file works
+      e.target.value = '';
     }
   };
 
   const handleHeroUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      try {
-        const url = await uploadOrProcessImage(file, { maxDim: 2400, quality: 0.92 });
-        setHeroImage(url);
-      } catch (err) {
-        console.error('Error uploading hero image:', err);
-      }
+    if (!file) return;
+    setEditorError(null);
+    try {
+      const url = await uploadOrProcessImage(file, { maxDim: 2400, quality: 0.92 });
+      setHeroImage(url);
+    } catch (err: any) {
+      console.error('[ProjectEditor] Hero upload failed:', err);
+      setEditorError(err.message || 'Hero image upload failed. Please try again.');
+      e.target.value = '';
     }
   };
 
   const handleGalleryItemUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      try {
-        const url = await uploadOrProcessImage(file, { maxDim: 2400, quality: 0.92 });
-        setGallery(prev => prev.map((item, idx) => idx === index ? { ...item, url } : item));
-      } catch (err) {
-        console.error('Error uploading gallery image:', err);
-      }
+    if (!file) return;
+    setEditorError(null);
+    try {
+      const url = await uploadOrProcessImage(file, { maxDim: 2400, quality: 0.92 });
+      setGallery(prev => prev.map((item, idx) => idx === index ? { ...item, url } : item));
+    } catch (err: any) {
+      console.error('[ProjectEditor] Gallery upload failed:', err);
+      setEditorError(err.message || 'Gallery image upload failed. Please try again.');
+      e.target.value = '';
     }
   };
 

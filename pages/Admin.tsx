@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useContent, getAuthToken, setAuthToken, clearAuthToken, authHeaders } from '../context/ContentContext';
 import { generateContentDescription } from '../services/geminiService';
+import { uploadOrProcessImage } from '../utils/imageUploader';
 import DOMPurify from 'dompurify';
 import {
   Trash2, Plus, Sparkles, LogOut, BarChart as ChartIcon, FileText,
@@ -322,24 +323,19 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initial, onSave, onCancel }) =>
     return () => { mounted = false; };
   }, []);
 
-  // ── Image upload: handles files of any size with client-side compression ──────
+  // ── Cover image upload: uploads to Cloudinary CDN, NEVER stores base64 ──
+  // Storing base64 in Firestore blows the 1MB document size limit.
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadError(null);
     try {
-      const compressedDataUrl = await compressImage(file);
-      setImage(compressedDataUrl);
-    } catch (err) {
-      console.error('[BlogEditor] Image upload compression failed:', err);
-      // Fallback to original reader if compression fails
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        if (ev.target?.result) {
-          setImage(ev.target.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
+      const cdnUrl = await uploadOrProcessImage(file, { maxDim: 2400, quality: 0.92 });
+      setImage(cdnUrl);
+    } catch (err: any) {
+      console.error('[BlogEditor] Cover image upload failed:', err);
+      setUploadError(err.message || 'Image upload failed. Please try again or use an image URL instead.');
+      e.target.value = '';
     }
   };
 
@@ -1060,13 +1056,17 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ initial, onSave, onCancel }) =>
                     className="hidden"
                     onChange={async (e) => {
                       const file = e.target.files?.[0];
-                      if (file) {
-                        try {
-                          const base64 = await compressImage(file);
-                          setBodyImageUrl(base64);
-                        } catch (err) {
-                          console.error('Failed to process image upload:', err);
-                        }
+                      if (!file) return;
+                      try {
+                        // Upload to CDN — never put base64 directly into Quill body
+                        // as it will end up stored in the Firestore content field
+                        // and blow the 1MB document size limit.
+                        const cdnUrl = await uploadOrProcessImage(file, { maxDim: 1600, quality: 0.88 });
+                        setBodyImageUrl(cdnUrl);
+                      } catch (err: any) {
+                        console.error('[BlogEditor] Body image upload failed:', err);
+                        setEditorError(err.message || 'Body image upload failed. Use an image URL instead.');
+                        e.target.value = '';
                       }
                     }}
                   />

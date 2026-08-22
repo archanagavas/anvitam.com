@@ -114,13 +114,15 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({ initial, onSave, onCancel
 
   const handleGalleryItemUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      try {
-        const url = await uploadOrProcessImage(file, { maxDim: 2400, quality: 0.92 });
-        setGallery(prev => prev.map((item, idx) => idx === index ? { ...item, url } : item));
-      } catch (err) {
-        console.error('Error uploading gallery image:', err);
-      }
+    if (!file) return;
+    setEditorError(null);
+    try {
+      const url = await uploadOrProcessImage(file, { maxDim: 2400, quality: 0.92 });
+      setGallery(prev => prev.map((item, idx) => idx === index ? { ...item, url } : item));
+    } catch (err: any) {
+      console.error('[ServiceEditor] Gallery upload failed:', err);
+      setEditorError(err.message || 'Gallery image upload failed. Please try again.');
+      e.target.value = '';
     }
   };
 
@@ -137,13 +139,15 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({ initial, onSave, onCancel
 
   const handleHeroUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      try {
-        const url = await uploadOrProcessImage(file, { maxDim: 2400, quality: 0.92 });
-        setHeroImage(url);
-      } catch (err) {
-        console.error('Error uploading service image:', err);
-      }
+    if (!file) return;
+    setEditorError(null);
+    try {
+      const url = await uploadOrProcessImage(file, { maxDim: 2400, quality: 0.92 });
+      setHeroImage(url);
+    } catch (err: any) {
+      console.error('[ServiceEditor] Hero upload failed:', err);
+      setEditorError(err.message || 'Service image upload failed. Please try again.');
+      e.target.value = '';
     }
   };
 
