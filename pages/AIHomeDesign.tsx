@@ -317,33 +317,14 @@ export default function AIHomeDesign() {
             {/* Credit Status Badge Pill */}
             <button
               onClick={() => setShowPaywall(true)}
-              className="px-3 py-1.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 text-xs font-bold flex items-center gap-1.5 hover:bg-purple-100 transition cursor-pointer"
+              className="px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-extrabold flex items-center gap-1.5 hover:bg-black transition cursor-pointer shadow-2xs"
             >
-              <Zap size={14} className="fill-purple-600 text-purple-600" />
-              <span>{user?.credits_remaining ?? 3} Credit</span>
-              <span className="text-[10px] bg-purple-600 text-white font-extrabold px-1.5 py-0.2 rounded-full uppercase ml-0.5">
+              <Zap size={14} className="fill-[#CCFF00] text-[#CCFF00]" />
+              <span>{user?.credits_remaining ?? 3} Credits</span>
+              <span className="text-[10px] bg-[#CCFF00] text-black font-extrabold px-1.5 py-0.2 rounded-full uppercase ml-0.5">
                 Upgrade
               </span>
             </button>
-
-            {/* Market Region */}
-            <div className="hidden sm:flex items-center gap-1 bg-gray-100 p-1 rounded-xl border border-gray-200">
-              {[
-                { id: 'India', flag: '🇮🇳' },
-                { id: 'USA', flag: '🇺🇸' },
-                { id: 'Brazil', flag: '🇧🇷' }
-              ].map(r => (
-                <button
-                  key={r.id}
-                  onClick={() => setRegion(r.id as any)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
-                    region === r.id ? 'bg-white text-black shadow-xs' : 'text-gray-500 hover:text-black'
-                  }`}
-                >
-                  {r.flag} {r.id}
-                </button>
-              ))}
-            </div>
 
             {/* User Account */}
             {user ? (

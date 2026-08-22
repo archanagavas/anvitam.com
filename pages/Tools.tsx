@@ -162,32 +162,48 @@ export default function Tools() {
                 initial={{ opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="bg-white rounded-2xl p-6 border border-gray-200 shadow-xs hover:shadow-md hover:border-gray-300 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
+                className="bg-white rounded-3xl border border-gray-200/80 hover:border-gray-400 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between group"
               >
                 <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 shadow-xs ${tool.iconBg}`}>
-                      {tool.iconSvg}
-                    </div>
-                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
-                      tool.badge.includes('3D')
-                        ? 'bg-[#CCFF00] text-black border-black/20 font-bold'
-                        : 'bg-gray-100 text-gray-700 border-gray-200 font-semibold'
-                    }`}>
+                  {/* Top Image Preview Banner */}
+                  <div className="relative h-44 w-full overflow-hidden bg-gray-100 border-b border-gray-100">
+                    <img
+                      src={tool.previewImage}
+                      alt={tool.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                    />
+                    <span className="absolute top-3 left-3 text-[9px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-[#111111] text-[#CCFF00] shadow-sm border border-black/20">
                       {tool.badge}
                     </span>
                   </div>
 
-                  <h3 className="text-base font-bold text-gray-900 group-hover:text-emerald-700 mb-2 transition-colors">
-                    {tool.name}
-                  </h3>
-                  <p className="text-xs text-gray-600 leading-relaxed line-clamp-3 mb-6 font-normal">
-                    {tool.shortDesc}
-                  </p>
+                  <div className="p-6 space-y-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs ${tool.iconBg}`}>
+                        {tool.iconSvg}
+                      </div>
+                      <h3 className="text-base font-extrabold text-gray-900 group-hover:text-black transition">
+                        {tool.name}
+                      </h3>
+                    </div>
+
+                    <p className="text-xs text-gray-600 leading-relaxed font-normal line-clamp-2">
+                      {tool.shortDesc}
+                    </p>
+
+                    <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100 space-y-1.5 mt-3">
+                      {tool.features.slice(0, 2).map((f, idx) => (
+                        <p key={idx} className="text-[11px] text-gray-700 font-semibold flex items-center gap-2">
+                          <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
+                          <span className="truncate">{f}</span>
+                        </p>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
-                <div className="space-y-3 pt-4 border-t border-gray-100">
-                  <div className="flex items-center justify-between">
+                <div className="p-6 pt-0 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
                     <button
                       onClick={() => setActiveModalTool(tool)}
                       className="text-xs font-semibold text-gray-500 hover:text-gray-900 transition cursor-pointer underline underline-offset-4"
@@ -197,7 +213,7 @@ export default function Tools() {
 
                     <button
                       onClick={() => handleLaunchTool(tool)}
-                      className="bg-[#111111] hover:bg-black text-[#CCFF00] font-bold text-xs px-4 py-2.5 rounded-full transition shadow-xs flex items-center gap-1 cursor-pointer hover:scale-105"
+                      className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-extrabold text-xs px-4 py-2.5 rounded-2xl transition shadow-xs flex items-center gap-1 cursor-pointer border border-black/10 hover:scale-[1.02]"
                     >
                       Open Tool <ChevronRight size={14} />
                     </button>
