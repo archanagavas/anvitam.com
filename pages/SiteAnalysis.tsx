@@ -159,6 +159,12 @@ export default function SiteAnalysis() {
 
     if (mapEngine === '3d') {
       try {
+        if (!mapboxgl.supported()) {
+          console.warn('[Mapbox GL] WebGL context is not supported or disabled on this device/browser. Switching to 2D Leaflet engine.');
+          setMapEngine('2d');
+          return;
+        }
+
         mapboxgl.accessToken = MAPBOX_TOKEN;
         const selectedObj = MAPBOX_3D_STYLES.find(s => s.id === mapboxStyleId) || MAPBOX_3D_STYLES[0];
 
@@ -169,7 +175,7 @@ export default function SiteAnalysis() {
           zoom: 15,
           pitch: 55,
           bearing: -15,
-          projection: 'globe' as any
+          projection: 'mercator'
         });
 
         mapboxRef.current = map;
@@ -182,6 +188,18 @@ export default function SiteAnalysis() {
 
         map.on('style.load', () => {
           forceResize();
+
+          // Set sky/space fog atmosphere to prevent white background rendering
+          try {
+            map.setFog({
+              'range': [0.8, 8],
+              'color': '#dc4c4e',
+              'horizon-blend': 0.05,
+              'high-color': '#245b78',
+              'space-color': '#0b0e14',
+              'star-intensity': 0.15
+            });
+          } catch { /* silent */ }
           
           if (selectedObj.id !== 'standard-3d') {
             // 3D Terrain Elevation DEM
@@ -251,8 +269,9 @@ export default function SiteAnalysis() {
         map.on('load', () => {
           forceResize();
           requestAnimationFrame(forceResize);
-          setTimeout(forceResize, 200);
-          setTimeout(forceResize, 500);
+          setTimeout(forceResize, 100);
+          setTimeout(forceResize, 300);
+          setTimeout(forceResize, 800);
           if (pendingCoords) positionMarker(pendingCoords.lat, pendingCoords.lon);
         });
 
@@ -262,7 +281,7 @@ export default function SiteAnalysis() {
 
         map.on('error', (e) => {
           console.warn('[Mapbox GL] Error caught during rendering:', e);
-          if (e?.error?.message?.includes('WebGL') || e?.error?.message?.includes('401')) {
+          if (e?.error?.message?.includes('WebGL') || e?.error?.message?.includes('401') || e?.error?.message?.includes('failed to fetch')) {
             setMapEngine('2d');
           }
         });
@@ -351,6 +370,9 @@ export default function SiteAnalysis() {
     setMapEngine('3d');
     if (mapboxRef.current) {
       try {
+        if (mapboxRef.current.setProjection) {
+          mapboxRef.current.setProjection('globe');
+        }
         mapboxRef.current.flyTo({
           center: [pendingCoords?.lon ?? 73.1812, pendingCoords?.lat ?? 22.3072],
           zoom: 1.8,
@@ -366,6 +388,9 @@ export default function SiteAnalysis() {
     setMapEngine('3d');
     if (mapboxRef.current) {
       try {
+        if (mapboxRef.current.setProjection) {
+          mapboxRef.current.setProjection('mercator');
+        }
         mapboxRef.current.flyTo({
           center: [pendingCoords?.lon ?? 73.1812, pendingCoords?.lat ?? 22.3072],
           zoom: 16,
