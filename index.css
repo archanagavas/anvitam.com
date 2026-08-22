@@ -60,7 +60,7 @@
   100% { transform: translate3d(0, 0, 0); }
 }
 
-/* MapLibre GL Canvas sizing overrides */
+/* MapLibre GL & Mapbox GL container sizing overrides */
 .maplibregl-map,
 .mapboxgl-map {
   width: 100% !important;
@@ -72,10 +72,11 @@
   bottom: 0 !important;
 }
 
+/* Canvas containers need full size, but NOT the <canvas> element itself.
+   Mapbox GL sets canvas width/height via JS for devicePixelRatio handling.
+   Overriding those breaks WebGL tile rendering (blank white screen). */
 .maplibregl-canvas-container,
-.maplibregl-canvas,
-.mapboxgl-canvas-container,
-.mapboxgl-canvas {
+.mapboxgl-canvas-container {
   width: 100% !important;
   height: 100% !important;
 }
@@ -150,13 +151,14 @@ html {
 /* Desktop/PC display zoom preference — applied only to marketing pages */
 /* NOTE: zoom CANNOT be applied on pages with WebGL (Mapbox). Excluded via body class. */
 @media (min-width: 1024px) {
-  html:not(.no-zoom) {
+  html:not(.no-zoom):not(:has(.site-analysis-page)) {
     zoom: 80%;
   }
 }
 
 /* Site Analysis canvas must never inherit zoom — breaks Mapbox GL WebGL tile rendering */
-html.no-zoom {
+html.no-zoom,
+html:has(.site-analysis-page) {
   zoom: 1 !important;
 }
 
@@ -243,7 +245,6 @@ html.no-zoom {
 }
 
 .mapboxgl-map,
-.mapboxgl-canvas,
 .leaflet-container {
   width: 100% !important;
   height: 100% !important;
