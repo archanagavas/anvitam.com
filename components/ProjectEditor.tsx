@@ -8,6 +8,7 @@ import DOMPurify from 'dompurify';
 import { Project, GalleryItem, ProjectDocument } from '../types';
 import { generateContentDescription } from '../services/geminiService';
 import { getAuthToken } from '../context/ContentContext';
+import { uploadOrProcessImage } from '../utils/imageUploader';
 
 // Quill configuration for rich text sanitisation (OWASP A03)
 const RICH_TEXT_CONFIG = {
@@ -182,8 +183,8 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
     const file = e.target.files?.[0];
     if (file) {
       try {
-        const base64 = await compressImage(file);
-        setImage(base64);
+        const url = await uploadOrProcessImage(file, { maxDim: 2400, quality: 0.92 });
+        setImage(url);
       } catch (err) {
         console.error('Error uploading cover image:', err);
       }
@@ -194,8 +195,8 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
     const file = e.target.files?.[0];
     if (file) {
       try {
-        const base64 = await compressImage(file);
-        setHeroImage(base64);
+        const url = await uploadOrProcessImage(file, { maxDim: 2400, quality: 0.92 });
+        setHeroImage(url);
       } catch (err) {
         console.error('Error uploading hero image:', err);
       }
@@ -206,8 +207,8 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
     const file = e.target.files?.[0];
     if (file) {
       try {
-        const base64 = await compressImage(file);
-        setGallery(prev => prev.map((item, idx) => idx === index ? { ...item, url: base64 } : item));
+        const url = await uploadOrProcessImage(file, { maxDim: 2400, quality: 0.92 });
+        setGallery(prev => prev.map((item, idx) => idx === index ? { ...item, url } : item));
       } catch (err) {
         console.error('Error uploading gallery image:', err);
       }
@@ -264,7 +265,9 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
     return null;
   };
 
-  const handleSubmit = () => {
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSubmit = async () => {
     setEditorError(null);
     if (!title.trim()) { setEditorError('Project Name / Client is required.'); return; }
     
@@ -313,7 +316,15 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
       metaKeywords: metaKeywords.trim(),
       metaRobots: metaRobots.trim() || 'index, follow',
     };
-    onSave(project);
+
+    setIsSaving(true);
+    try {
+      await onSave(project);
+    } catch (err: any) {
+      console.error('Error saving project:', err);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -323,12 +334,14 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
           <ArrowLeft size={16} />
           <span>Back to list</span>
         </button>
+
         <button
           onClick={handleSubmit}
-          className="flex items-center space-x-1.5 bg-black text-white text-sm px-6 py-2 rounded-lg hover:bg-gray-800 transition font-bold"
+          disabled={isSaving}
+          className="flex items-center space-x-1.5 bg-black text-white text-sm px-6 py-2 rounded-lg hover:bg-gray-800 transition font-bold disabled:opacity-50"
         >
           <Save size={14} />
-          <span>Save Case Study</span>
+          <span>{isSaving ? 'Saving...' : 'Save Case Study'}</span>
         </button>
       </div>
 

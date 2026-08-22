@@ -128,6 +128,7 @@ export async function upsertDoc(collection: string, id: string, data: Record<str
   if (!data.created_at) {
     payload.created_at = new Date().toISOString();
   }
+
   await db.collection(collection).doc(id).set(payload, { merge: true });
 }
 

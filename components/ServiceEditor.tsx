@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { Service, ServiceProcess, ServiceFAQ, Project, GalleryItem, ProjectDocument } from '../types';
 import { useContent } from '../context/ContentContext';
+import { uploadOrProcessImage } from '../utils/imageUploader';
 
 // Helper for compressing images client-side
 const compressImage = (file: File): Promise<string> => {
@@ -115,8 +116,8 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({ initial, onSave, onCancel
     const file = e.target.files?.[0];
     if (file) {
       try {
-        const base64 = await compressImage(file);
-        setGallery(prev => prev.map((item, idx) => idx === index ? { ...item, url: base64 } : item));
+        const url = await uploadOrProcessImage(file, { maxDim: 2400, quality: 0.92 });
+        setGallery(prev => prev.map((item, idx) => idx === index ? { ...item, url } : item));
       } catch (err) {
         console.error('Error uploading gallery image:', err);
       }
@@ -138,8 +139,8 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({ initial, onSave, onCancel
     const file = e.target.files?.[0];
     if (file) {
       try {
-        const base64 = await compressImage(file);
-        setHeroImage(base64);
+        const url = await uploadOrProcessImage(file, { maxDim: 2400, quality: 0.92 });
+        setHeroImage(url);
       } catch (err) {
         console.error('Error uploading service image:', err);
       }
