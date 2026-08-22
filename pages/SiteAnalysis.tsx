@@ -488,15 +488,24 @@ export default function SiteAnalysis() {
             <div className="sa-topbar bg-white text-gray-900 px-6 py-3 border-b border-gray-200/80 shadow-2xs flex flex-col lg:flex-row items-center justify-between gap-4 z-20 sticky top-20">
               <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
                 <button
+                  type="button"
                   onClick={() => setShowToolsDrawer(true)}
                   className="px-3 py-2 rounded-xl bg-black text-[#CCFF00] hover:bg-gray-800 transition cursor-pointer flex items-center gap-2 text-xs font-semibold shadow-2xs shrink-0"
                   title="Open All 21+ Tools Drawer"
+                  aria-label="Open All 21+ Tools Drawer"
                 >
                   <Menu size={16} />
                   <span>All Tools</span>
                 </button>
 
-                <div className="flex items-center gap-2 cursor-pointer shrink-0" onClick={() => navigate('/tools')}>
+                <div
+                  className="flex items-center gap-2 cursor-pointer shrink-0"
+                  onClick={() => navigate('/tools')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate('/tools'); }}
+                  aria-label="Navigate to site tools directory"
+                >
                   <span className="w-7 h-7 rounded-lg bg-black text-[#CCFF00] font-semibold flex items-center justify-center text-xs shadow-2xs">SA</span>
                   <div>
                     <h1 className="text-xs sm:text-sm font-semibold text-gray-900 leading-none">Site Intelligence Canvas</h1>
@@ -511,6 +520,7 @@ export default function SiteAnalysis() {
                     placeholder="Search location, city, lat/lon…"
                     value={searchInput}
                     onChange={e => setSearchInput(e.target.value)}
+                    aria-label="Search location, city, latitude or longitude"
                   />
                 </form>
               </div>
@@ -520,7 +530,9 @@ export default function SiteAnalysis() {
                 {CATEGORIES.map(cat => (
                   <button
                     key={cat.id}
+                    type="button"
                     onClick={() => handleCategoryChange(cat.id)}
+                    aria-label={`Select ${cat.label} category`}
                     className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer whitespace-nowrap ${
                       category === cat.id ? 'bg-black text-[#CCFF00] font-semibold shadow-2xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200/80'
                     }`}
@@ -533,32 +545,51 @@ export default function SiteAnalysis() {
 
               {/* Controls: Credit Pill, Settings, Logout */}
               <div className="flex items-center gap-2.5 shrink-0 w-full lg:w-auto justify-end">
-                <button
-                  onClick={() => setShowPaywall(true)}
-                  className="px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-semibold flex items-center gap-1.5 hover:bg-black transition cursor-pointer shadow-2xs"
-                >
-                  <Zap size={14} className="fill-[#CCFF00] text-[#CCFF00]" />
-                  <span>{user?.credits_remaining ?? 5} Credits</span>
-                </button>
+                {user ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowPaywall(true)}
+                    aria-label="View or top up available studio credits"
+                    className="px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-semibold flex items-center gap-1.5 hover:bg-black transition cursor-pointer shadow-2xs"
+                  >
+                    <Zap size={14} className="fill-[#CCFF00] text-[#CCFF00]" />
+                    <span>{user.credits_remaining} Credits</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowAuth(true)}
+                    aria-label="Sign in to Anvitam Studio"
+                    className="px-3.5 py-1.5 rounded-full bg-[#CCFF00] text-black border border-black/10 text-xs font-semibold hover:bg-black hover:text-[#CCFF00] transition cursor-pointer shadow-2xs"
+                  >
+                    Sign In / Register
+                  </button>
+                )}
 
                 <button
+                  type="button"
                   onClick={() => setShowSettingsModal(true)}
                   className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-gray-400 text-gray-700 hover:text-black transition cursor-pointer shadow-2xs"
                   title="Studio & Account Settings"
+                  aria-label="Studio & Account Settings"
                 >
                   <Settings size={17} />
                 </button>
 
-                <button
-                  onClick={() => {
-                    logoutToolUser();
-                    setUser(null);
-                  }}
-                  className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-red-400 text-gray-600 hover:text-red-600 transition cursor-pointer shadow-2xs"
-                  title="Sign Out"
-                >
-                  <LogOut size={17} />
-                </button>
+                {user && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      logoutToolUser();
+                      setUser(null);
+                    }}
+                    className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-red-400 text-gray-600 hover:text-red-600 transition cursor-pointer shadow-2xs"
+                    title="Sign Out"
+                    aria-label="Sign Out"
+                  >
+                    <LogOut size={17} />
+                  </button>
+                )}
               </div>
             </div>
 

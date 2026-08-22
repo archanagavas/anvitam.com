@@ -69,6 +69,8 @@ export const AllToolsDrawer: React.FC<Props> = ({ isOpen, onClose, activeToolId 
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
             className="relative w-full max-w-xl bg-white h-full shadow-2xl flex flex-col z-10 font-sans antialiased text-[#111111]"
+            role="dialog"
+            aria-label="All Studio Tools Navigation"
           >
             {/* Header */}
             <div className="p-6 border-b border-gray-200/80 bg-white flex items-center justify-between gap-4 sticky top-0 z-20">
@@ -78,14 +80,15 @@ export const AllToolsDrawer: React.FC<Props> = ({ isOpen, onClose, activeToolId 
                 </div>
                 <div>
                   <h2 className="text-base font-semibold text-gray-900 leading-tight">Anvitam Studio Tools</h2>
-                  <p className="text-xs text-gray-500 font-medium">All 21+ Architectural AI & Site Intelligence Suite</p>
+                  <p className="text-xs text-gray-500 font-medium">All 21+ Architectural AI &amp; Site Intelligence Suite</p>
                 </div>
               </div>
 
               <button
+                type="button"
                 onClick={onClose}
                 className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-black flex items-center justify-center transition cursor-pointer"
-                aria-label="Close drawer"
+                aria-label="Close tools drawer"
               >
                 <X size={18} />
               </button>
@@ -100,11 +103,14 @@ export const AllToolsDrawer: React.FC<Props> = ({ isOpen, onClose, activeToolId 
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Filter 21+ tools by name, feature or category..."
+                  aria-label="Filter 21+ tools by name, feature or category"
                   className="w-full bg-white border border-gray-200/80 rounded-xl pl-10 pr-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 outline-none focus:border-black focus:ring-1 focus:ring-black font-normal transition"
                 />
                 {search && (
                   <button
+                    type="button"
                     onClick={() => setSearch('')}
+                    aria-label="Clear tool search input"
                     className="absolute right-3 text-xs text-gray-400 hover:text-gray-600 font-medium"
                   >
                     Clear
@@ -114,7 +120,7 @@ export const AllToolsDrawer: React.FC<Props> = ({ isOpen, onClose, activeToolId 
             </div>
 
             {/* Tools List */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-8">
+            <nav className="flex-1 overflow-y-auto p-6 space-y-8" aria-label="Studio Tools List">
               {categories.map(cat => {
                 const categoryTools = filteredTools.filter(t => {
                   if (cat.key === 'ai-design') return t.id.startsWith('ai-');
@@ -137,10 +143,12 @@ export const AllToolsDrawer: React.FC<Props> = ({ isOpen, onClose, activeToolId 
                       {categoryTools.map(tool => {
                         const isActive = activeToolId === tool.id;
                         return (
-                          <div
+                          <button
                             key={tool.id}
+                            type="button"
                             onClick={() => handleLaunch(tool.href)}
-                            className={`group p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                            aria-label={`Launch ${tool.name} tool`}
+                            className={`group p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between gap-3 w-full focus:outline-none focus:ring-2 focus:ring-black ${
                               isActive
                                 ? 'bg-black text-[#CCFF00] border-black shadow-md'
                                 : 'bg-white border-gray-200/80 hover:border-gray-400 hover:bg-gray-50/80 shadow-2xs'
@@ -174,7 +182,7 @@ export const AllToolsDrawer: React.FC<Props> = ({ isOpen, onClose, activeToolId 
                             <ArrowRight size={16} className={`shrink-0 transition-transform group-hover:translate-x-1 ${
                               isActive ? 'text-[#CCFF00]' : 'text-gray-400 group-hover:text-black'
                             }`} />
-                          </div>
+                          </button>
                         );
                       })}
                     </div>
@@ -188,13 +196,15 @@ export const AllToolsDrawer: React.FC<Props> = ({ isOpen, onClose, activeToolId 
                   <p className="text-xs text-gray-400">Try searching for "Interior", "Sun", "Shadow", "Soil", or "Wind"</p>
                 </div>
               )}
-            </div>
+            </nav>
 
             {/* Footer */}
             <div className="p-4 bg-gray-50 border-t border-gray-200/80 flex items-center justify-between text-xs text-gray-500 font-medium">
               <span>21+ Tools Active</span>
               <button
+                type="button"
                 onClick={() => handleLaunch('/dashboard')}
+                aria-label="Navigate to Master Studio Dashboard"
                 className="text-black font-semibold hover:underline flex items-center gap-1 cursor-pointer"
               >
                 Go to Master Dashboard →

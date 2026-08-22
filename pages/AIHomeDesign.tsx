@@ -270,9 +270,11 @@ export default function AIHomeDesign() {
             <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200/80 gap-4 flex-wrap">
               <div className="flex items-center gap-3">
                 <button
+                  type="button"
                   onClick={() => setShowToolsDrawer(true)}
                   className="px-3 py-2 rounded-xl bg-black text-[#CCFF00] hover:bg-gray-800 transition cursor-pointer flex items-center gap-2 text-xs font-semibold shadow-2xs"
                   title="Open All 21+ Tools Drawer"
+                  aria-label="Open All 21+ Tools Drawer"
                 >
                   <Menu size={16} />
                   <span>All Tools</span>
@@ -286,16 +288,31 @@ export default function AIHomeDesign() {
               </div>
 
               <div className="flex items-center gap-2.5">
-                <button
-                  onClick={() => setShowPaywall(true)}
-                  className="px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-semibold flex items-center gap-1.5 hover:bg-black transition cursor-pointer shadow-2xs"
-                >
-                  <Zap size={14} className="fill-[#CCFF00] text-[#CCFF00]" />
-                  <span>{user?.credits_remaining ?? 5} Credits</span>
-                </button>
+                {user ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowPaywall(true)}
+                    aria-label="View or top up available studio credits"
+                    className="px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-semibold flex items-center gap-1.5 hover:bg-black transition cursor-pointer shadow-2xs"
+                  >
+                    <Zap size={14} className="fill-[#CCFF00] text-[#CCFF00]" />
+                    <span>{user.credits_remaining} Credits</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowAuthModal(true)}
+                    aria-label="Sign in to Anvitam Studio"
+                    className="px-3.5 py-1.5 rounded-full bg-[#CCFF00] text-black border border-black/10 text-xs font-semibold hover:bg-black hover:text-[#CCFF00] transition cursor-pointer shadow-2xs"
+                  >
+                    Sign In / Register
+                  </button>
+                )}
 
                 <button
+                  type="button"
                   onClick={() => setShowBriefCard(true)}
+                  aria-label="Open Design Brief parameters"
                   className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-semibold px-3.5 py-2 rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer border border-black/10 shadow-2xs"
                 >
                   <Sliders size={14} />
@@ -304,24 +321,30 @@ export default function AIHomeDesign() {
 
                 {/* Settings Button */}
                 <button
+                  type="button"
                   onClick={() => setShowSettingsModal(true)}
                   className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-gray-400 text-gray-700 hover:text-black transition cursor-pointer shadow-2xs"
                   title="Studio & Account Settings"
+                  aria-label="Studio & Account Settings"
                 >
                   <Settings size={17} />
                 </button>
 
                 {/* Sign Out Button */}
-                <button
-                  onClick={() => {
-                    logoutToolUser();
-                    setUser(null);
-                  }}
-                  className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-red-400 text-gray-600 hover:text-red-600 transition cursor-pointer shadow-2xs"
-                  title="Sign Out"
-                >
-                  <LogOut size={17} />
-                </button>
+                {user && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      logoutToolUser();
+                      setUser(null);
+                    }}
+                    className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-red-400 text-gray-600 hover:text-red-600 transition cursor-pointer shadow-2xs"
+                    title="Sign Out"
+                    aria-label="Sign Out"
+                  >
+                    <LogOut size={17} />
+                  </button>
+                )}
               </div>
             </div>
 
@@ -345,6 +368,7 @@ export default function AIHomeDesign() {
                         value={promptText}
                         onChange={(e) => setPromptText(e.target.value)}
                         placeholder="Ask Anvitam's AI anything (e.g. Modern Scandinavian living room with warm wood)..."
+                        aria-label="Ask Anvitam's AI architectural design prompt"
                         className="w-full bg-transparent border-none text-xs text-gray-900 outline-none placeholder:text-gray-400 font-medium"
                       />
                       <div className="flex items-center gap-2 shrink-0">
@@ -352,6 +376,7 @@ export default function AIHomeDesign() {
                           type="submit"
                           className="w-9 h-9 rounded-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black transition flex items-center justify-center font-bold cursor-pointer border border-black/10 shadow-2xs"
                           title="Generate Design"
+                          aria-label="Submit AI Design prompt to generate image"
                         >
                           <ChevronRight size={18} />
                         </button>

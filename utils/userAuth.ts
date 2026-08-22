@@ -17,18 +17,36 @@ export interface ToolUser {
 
 const USER_KEY = 'anvitam_tool_user';
 const TOKEN_KEY = 'anvitam_tool_token';
+const LOGOUT_KEY = 'anvitam_logged_out';
+
+let inMemoryUser: ToolUser | null = null;
 
 export function getToolUser(): ToolUser | null {
   try {
+    if (typeof window === 'undefined') return inMemoryUser;
+    
+    // Check if explicitly logged out in this session
+    const isLoggedOut = sessionStorage.getItem(LOGOUT_KEY) === 'true';
+    if (isLoggedOut) return null;
+
     const raw = localStorage.getItem(USER_KEY);
-    if (!raw) return null;
+    if (!raw) return inMemoryUser;
     return JSON.parse(raw) as ToolUser;
-  } catch {
-    return null;
+  } catch (err) {
+    console.warn('[userAuth] Storage read warning:', err);
+    return inMemoryUser;
   }
 }
 
-export function getOrCreateDefaultToolUser(): ToolUser {
+export function getOrCreateDefaultToolUser(): ToolUser | null {
+  try {
+    if (typeof window !== 'undefined' && sessionStorage.getItem(LOGOUT_KEY) === 'true') {
+      return null;
+    }
+  } catch {
+    /* safe storage fallback */
+  }
+
   let user = getToolUser();
   if (!user) {
     user = {
@@ -41,8 +59,17 @@ export function getOrCreateDefaultToolUser(): ToolUser {
       trial_days_remaining: 15,
       has_access: true,
     };
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
-    window.dispatchEvent(new CustomEvent('anvitam-user-updated', { detail: user }));
+    inMemoryUser = user;
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(USER_KEY, JSON.stringify(user));
+      }
+    } catch (err) {
+      console.warn('[userAuth] Storage write warning:', err);
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('anvitam-user-updated', { detail: user }));
+    }
   }
   return user;
 }
@@ -51,9 +78,37 @@ export function updateToolUser(updates: Partial<ToolUser>): ToolUser | null {
   const current = getToolUser();
   if (!current) return null;
   const updated = { ...current, ...updates };
-  localStorage.setItem(USER_KEY, JSON.stringify(updated));
-  window.dispatchEvent(new CustomEvent('anvitam-user-updated', { detail: updated }));
+  inMemoryUser = updated;
+  try {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(USER_KEY, JSON.stringify(updated));
+      window.dispatchEvent(new CustomEvent('anvitam-user-updated', { detail: updated }));
+    }
+  } catch (err) {
+    console.warn('[userAuth] Storage update warning:', err);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('anvitam-user-updated', { detail: updated }));
+    }
+  }
   return updated;
+}
+
+export function setToolUser(user: ToolUser, token?: string): ToolUser {
+  inMemoryUser = user;
+  try {
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem(LOGOUT_KEY);
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+      if (token) localStorage.setItem(TOKEN_KEY, token);
+      window.dispatchEvent(new CustomEvent('anvitam-user-updated', { detail: user }));
+    }
+  } catch (err) {
+    console.warn('[userAuth] Storage set warning:', err);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('anvitam-user-updated', { detail: user }));
+    }
+  }
+  return user;
 }
 
 export function deductUserCredit(cost: number = 1): { success: boolean; user: ToolUser | null } {
@@ -83,7 +138,18 @@ export function deductUserCredit(cost: number = 1): { success: boolean; user: To
 }
 
 export function logoutToolUser() {
-  localStorage.removeItem(USER_KEY);
-  localStorage.removeItem(TOKEN_KEY);
-  window.dispatchEvent(new CustomEvent('anvitam-user-updated', { detail: null }));
+  inMemoryUser = null;
+  try {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(LOGOUT_KEY, 'true');
+      localStorage.removeItem(USER_KEY);
+      localStorage.removeItem(TOKEN_KEY);
+      window.dispatchEvent(new CustomEvent('anvitam-user-updated', { detail: null }));
+    }
+  } catch (err) {
+    console.warn('[userAuth] Storage logout warning:', err);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('anvitam-user-updated', { detail: null }));
+    }
+  }
 }

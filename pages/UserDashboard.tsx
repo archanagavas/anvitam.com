@@ -124,15 +124,24 @@ export default function UserDashboard() {
         <div className="bg-white border-b border-gray-200/80 px-6 py-3 sticky top-20 z-20 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
             <button
+              type="button"
               onClick={() => setShowToolsDrawer(true)}
               className="px-3.5 py-2 rounded-xl bg-black text-[#CCFF00] hover:bg-gray-800 transition cursor-pointer flex items-center gap-2 text-xs font-semibold shadow-2xs shrink-0"
               title="Open All 21+ Tools Drawer"
+              aria-label="Open All 21+ Tools Drawer"
             >
               <Menu size={16} />
               <span>All Tools</span>
             </button>
 
-            <div className="flex items-center gap-2 cursor-pointer shrink-0" onClick={() => navigate('/tools')}>
+            <div
+              className="flex items-center gap-2 cursor-pointer shrink-0"
+              onClick={() => navigate('/tools')}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate('/tools'); }}
+              aria-label="Navigate to site tools directory"
+            >
               <span className="w-7 h-7 rounded-lg bg-black text-[#CCFF00] font-semibold flex items-center justify-center text-xs shadow-2xs">AS</span>
               <div>
                 <h1 className="text-xs sm:text-sm font-semibold text-gray-900 leading-none">Studio Dashboard</h1>
@@ -141,41 +150,61 @@ export default function UserDashboard() {
             </div>
 
             <div className="relative flex-1 sm:max-w-xs ml-2">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Search 21+ tools..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Search 21+ studio tools"
                 className="w-full bg-gray-100 border border-gray-200 rounded-full pl-8 pr-3 py-1 text-xs text-gray-900 outline-none focus:border-black font-normal"
               />
             </div>
           </div>
 
           <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto justify-end">
-            <button
-              onClick={() => setShowPaywall(true)}
-              className="px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-semibold flex items-center gap-1.5 hover:bg-black transition cursor-pointer shadow-2xs"
-            >
-              <Zap size={14} className="fill-[#CCFF00] text-[#CCFF00]" />
-              <span>{creditsRemaining} Credits</span>
-            </button>
+            {user ? (
+              <button
+                type="button"
+                onClick={() => setShowPaywall(true)}
+                aria-label="View or top up available studio credits"
+                className="px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-semibold flex items-center gap-1.5 hover:bg-black transition cursor-pointer shadow-2xs"
+              >
+                <Zap size={14} className="fill-[#CCFF00] text-[#CCFF00]" />
+                <span>{user.credits_remaining ?? 5} Credits</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowAuthModal(true)}
+                aria-label="Sign in to Anvitam Studio"
+                className="px-3.5 py-1.5 rounded-full bg-[#CCFF00] text-black border border-black/10 text-xs font-semibold hover:bg-black hover:text-[#CCFF00] transition cursor-pointer shadow-2xs"
+              >
+                Sign In / Register
+              </button>
+            )}
 
             <button
+              type="button"
               onClick={() => setShowSettingsModal(true)}
               className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-gray-400 text-gray-700 hover:text-black transition cursor-pointer shadow-2xs"
               title="Studio & Account Settings"
+              aria-label="Studio & Account Settings"
             >
               <Settings size={17} />
             </button>
 
-            <button
-              onClick={handleLogout}
-              className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-red-400 text-gray-600 hover:text-red-600 transition cursor-pointer shadow-2xs"
-              title="Sign Out"
-            >
-              <LogOut size={17} />
-            </button>
+            {user && (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-red-400 text-gray-600 hover:text-red-600 transition cursor-pointer shadow-2xs"
+                title="Sign Out"
+                aria-label="Sign Out"
+              >
+                <LogOut size={17} />
+              </button>
+            )}
           </div>
         </div>
 
@@ -263,14 +292,16 @@ export default function UserDashboard() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {filteredTools.map(t => (
-                  <div
+                  <button
                     key={t.id}
+                    type="button"
                     onClick={() => handleSelectTool(t.id, t.href)}
-                    className={`bg-white rounded-2xl border overflow-hidden shadow-2xs hover:shadow-md transition cursor-pointer group flex flex-col justify-between ${
+                    aria-label={`Select ${t.name} tool`}
+                    className={`bg-white rounded-2xl border text-left overflow-hidden shadow-2xs hover:shadow-md transition cursor-pointer group flex flex-col justify-between focus:outline-none focus:ring-2 focus:ring-black ${
                       activeToolId === t.id ? 'border-black ring-2 ring-black/10' : 'border-gray-200/80 hover:border-gray-300'
                     }`}
                   >
-                    <div>
+                    <div className="w-full">
                       {/* Top Preview Image */}
                       <div className="relative h-40 w-full overflow-hidden bg-gray-100 border-b border-gray-100">
                         <img
@@ -303,19 +334,15 @@ export default function UserDashboard() {
                       </div>
                     </div>
 
-                    <div className="p-4 pt-0">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectTool(t.id, t.href);
-                        }}
-                        className="w-full bg-gray-100 hover:bg-[#CCFF00] hover:text-black text-gray-800 font-semibold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1 cursor-pointer border border-gray-200/80"
+                    <div className="p-4 pt-0 w-full">
+                      <div
+                        className="w-full bg-gray-100 group-hover:bg-[#CCFF00] group-hover:text-black text-gray-800 font-semibold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1 cursor-pointer border border-gray-200/80"
                       >
                         Select &amp; Run <ChevronRight size={14} />
-                      </button>
+                      </div>
                     </div>
 
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
