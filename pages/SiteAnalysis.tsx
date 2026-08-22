@@ -26,9 +26,9 @@ const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || (typeof window !== 'un
 // Mapbox GL JS v3 Standard 3D Styles
 const MAPBOX_3D_STYLES = [
   {
-    id: 'streets-3d',
-    name: '🏢 3D Google/Mapbox Style (3D Extruded Streets)',
-    style: 'mapbox://styles/mapbox/streets-v12'
+    id: 'standard-3d',
+    name: '🏙️ 3D Photorealistic City (Mapbox Standard)',
+    style: 'mapbox://styles/mapbox/standard'
   },
   {
     id: 'satellite-3d',
@@ -36,9 +36,9 @@ const MAPBOX_3D_STYLES = [
     style: 'mapbox://styles/mapbox/satellite-streets-v12'
   },
   {
-    id: 'standard-3d',
-    name: '🏙️ 3D Photorealistic City (Mapbox Standard)',
-    style: 'mapbox://styles/mapbox/standard'
+    id: 'streets-3d',
+    name: '🏢 3D Google/Mapbox Style (3D Extruded Streets)',
+    style: 'mapbox://styles/mapbox/streets-v12'
   },
   {
     id: 'light-3d',
@@ -165,7 +165,10 @@ export default function SiteAnalysis() {
           return;
         }
 
+        const mb = (mapboxgl as any).default || mapboxgl;
+        if (mb) mb.accessToken = MAPBOX_TOKEN;
         mapboxgl.accessToken = MAPBOX_TOKEN;
+
         const selectedObj = MAPBOX_3D_STYLES.find(s => s.id === mapboxStyleId) || MAPBOX_3D_STYLES[0];
 
         const map = new mapboxgl.Map({
@@ -200,8 +203,14 @@ export default function SiteAnalysis() {
               'star-intensity': 0.15
             });
           } catch { /* silent */ }
-          
-          if (selectedObj.id !== 'standard-3d') {
+
+          // Configure Mapbox Standard 3D features or 3D extrusions
+          if (selectedObj.id === 'standard-3d') {
+            try {
+              (map as any).setConfigProperty('basemap', 'show3dObjects', true);
+              (map as any).setConfigProperty('basemap', 'lightPreset', 'day');
+            } catch { /* silent */ }
+          } else {
             // 3D Terrain Elevation DEM
             try {
               if (!map.getSource('mapbox-dem')) {
