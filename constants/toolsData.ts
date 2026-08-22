@@ -22,6 +22,28 @@ export interface ToolItem {
 }
 
 export const TOOLS_SUITE: ToolItem[] = [
+  {
+    id: 'ai-home-design',
+    name: 'AI Home Design & Restyle Studio',
+    category: 'Sun & Site',
+    shortDesc: '10 master AI prompt modules: interior restyle, exterior facade, garden, replace furniture & shoppable catalog pins.',
+    fullDesc: 'Transform room photos into photorealistic interior, exterior, landscape, flooring, and furniture designs with shoppable catalog product matching across India, USA, and Brazil.',
+    features: [
+      '✨ 10 DecAI-mirrored prompt design modules',
+      '↔️ Draggable before/after visual comparison slider',
+      '🏷️ Interactive element bounding box pins on redesign',
+      '🛒 Shoppable catalog product recommendations',
+      '🇮🇳 Regional pricing for India, USA, and Brazil',
+      '💎 Watermark-free HD export downloads'
+    ],
+    href: '/tools/ai-home-design',
+    status: 'live',
+    badge: 'NEW AI TOOL',
+    iconBg: 'bg-[#CCFF00] text-black',
+    iconColor: 'text-[#CCFF00]',
+    iconSvg: React.createElement(Sparkles, { size: 24 }),
+    previewImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200&auto=format&fit=crop',
+  },
   // Category 1: Sun & Site
   {
     id: 'site-analysis',

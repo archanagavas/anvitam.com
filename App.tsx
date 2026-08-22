@@ -35,6 +35,7 @@ import { ContentProvider } from './context/ContentContext';
 import Tools from './pages/Tools';
 import SiteAnalysis from './pages/SiteAnalysis';
 import UserDashboard from './pages/UserDashboard';
+import AIHomeDesign from './pages/AIHomeDesign';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -152,6 +153,7 @@ const App: React.FC = () => {
                           <Route path="/blog/:id" element={<BlogDetail />} />
                           <Route path="/contact" element={<Contact />} />
                           <Route path="/tools" element={<Tools />} />
+                          <Route path="/tools/ai-home-design" element={<AIHomeDesign />} />
                           <Route path="/site-analysis" element={<SiteAnalysis />} />
                           <Route path="/dashboard" element={<UserDashboard />} />
                           <Route path="/privacy" element={<Privacy />} />

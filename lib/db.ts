@@ -116,6 +116,22 @@ export async function findWhere(collection: string, field: string, value: string
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
+/**
+ * Get all documents from a collection as typed records.
+ * Returns an empty array (not null) on any error so callers
+ * can safely fall back to their in-memory seed data.
+ */
+export async function getAllDocs<T = any>(collection: string): Promise<T[]> {
+  try {
+    const db = getDb();
+    const snap = await db.collection(collection).get();
+    return snap.docs.map(d => ({ id: d.id, ...d.data() } as T));
+  } catch (err) {
+    console.error(`[db] getAllDocs(${collection}) failed:`, err);
+    return [];
+  }
+}
+
 /** Upsert (create or update) a document by ID */
 export async function upsertDoc(collection: string, id: string, data: Record<string, any>): Promise<void> {
   const db = getDb();

@@ -1425,11 +1425,63 @@ const Admin: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const [activeTab, setActiveTab] = useState<'projects' | 'blog' | 'analytics' | 'shop' | 'services' | 'messages' | 'seo' | 'testimonials' | 'partners' | 'estimator' | 'estimator-pricing' | 'workshops' | 'tool-users'>('analytics');
+  const [activeTab, setActiveTab] = useState<'projects' | 'blog' | 'analytics' | 'shop' | 'services' | 'messages' | 'seo' | 'testimonials' | 'partners' | 'estimator' | 'estimator-pricing' | 'workshops' | 'tool-users' | 'catalog-products'>('analytics');
   const [toolUsers, setToolUsers] = useState<any[]>([]);
   const [loadingToolUsers, setLoadingToolUsers] = useState(false);
   const [seoStatus, setSeoStatus] = useState<null | 'generating' | 'done'>(null);
   const [previewFile, setPreviewFile] = useState<{ name: string; content: string } | null>(null);
+
+  // ── Catalog Products State ──────────────────────────────────────────────────
+  const [catalogProducts, setCatalogProducts] = useState<any[]>([]);
+  const [loadingCatalog, setLoadingCatalog] = useState(false);
+  const [catalogSaving, setCatalogSaving] = useState(false);
+  const [editingCatalogProduct, setEditingCatalogProduct] = useState<any | null>(null);
+  const [catalogFormData, setCatalogFormData] = useState({
+    id: '', name: '', category_id: 'cat_furniture', element_type: 'sofa',
+    region: 'India', style_tags: '', price: '', image_url: '', affiliate_link: '',
+    source: 'manual', active: true, room_types: ''
+  });
+
+  const fetchCatalogProducts = React.useCallback(async () => {
+    const token = getAuthToken();
+    if (!token) return;
+    setLoadingCatalog(true);
+    try {
+      const res = await fetch('/api/ai-design?action=catalog', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCatalogProducts(data.products || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch catalog products:', err);
+    } finally {
+      setLoadingCatalog(false);
+    }
+  }, []);
+
+  const saveCatalogProduct = async (product: any) => {
+    const token = getAuthToken();
+    if (!token) return;
+    setCatalogSaving(true);
+    try {
+      const res = await fetch('/api/ai-design?action=admin-product', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ product })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Save failed');
+      showToast('Product saved successfully!');
+      setEditingCatalogProduct(null);
+      fetchCatalogProducts();
+    } catch (err: any) {
+      showToast('Error: ' + (err.message || 'Failed to save product'));
+    } finally {
+      setCatalogSaving(false);
+    }
+  };
 
   // ── IndexNow Integration State ──────────────────────────────────────
   const [indexNowUrls, setIndexNowUrls] = useState('');
@@ -1538,8 +1590,11 @@ const Admin: React.FC = () => {
       if (activeTab === 'tool-users') {
         fetchToolUsers();
       }
+      if (activeTab === 'catalog-products') {
+        fetchCatalogProducts();
+      }
     }
-  }, [isAuthenticated, fetchAnalytics, activeTab, fetchToolUsers]);
+  }, [isAuthenticated, fetchAnalytics, activeTab, fetchToolUsers, fetchCatalogProducts]);
 
   // ── Check existing JWT session on mount ───────────────────────────
   useEffect(() => {
@@ -1973,6 +2028,7 @@ const Admin: React.FC = () => {
           <NavButton id="testimonials" icon={MessageCircle} label="Testimonials" />
           <NavButton id="partners" icon={Building2} label="Partner Brands" />
           <NavButton id="tool-users" icon={Shield} label="Tool Users & Credits" />
+          <NavButton id="catalog-products" icon={ShoppingBag} label="AI Design Catalog" />
           <NavButton id="seo" icon={Globe} label="SEO Files" />
         </nav>
         <div className="p-3 border-t border-gray-100 space-y-1">
@@ -3515,6 +3571,249 @@ const Admin: React.FC = () => {
                           </td>
                           <td className="py-4 px-5 text-gray-400 text-[11px]">
                             {u.created_at ? new Date(u.created_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── CATALOG PRODUCTS TAB ─────────────────────────────────── */}
+        {activeTab === 'catalog-products' && (
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-extrabold text-gray-900">🛒 Catalog Products</h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Add / edit shoppable products for the AI Home Design recommendation layer.
+                  Each product needs a region, element_type, style_tags, and a working affiliate link.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  const newId = `prod_${Date.now()}`;
+                  setCatalogFormData({
+                    id: newId, name: '', category_id: 'cat_furniture', element_type: 'sofa',
+                    region: 'India', style_tags: 'Modern, Minimalist', price: '', image_url: '',
+                    affiliate_link: '', source: 'manual', active: true, room_types: 'Living Room'
+                  });
+                  setEditingCatalogProduct({ id: newId, _isNew: true });
+                }}
+                className="flex items-center gap-2 bg-black text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-gray-800 transition"
+              >
+                + Add Product
+              </button>
+            </div>
+
+            {/* ADD / EDIT FORM */}
+            {editingCatalogProduct && (
+              <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-4">
+                <h3 className="font-bold text-gray-800 text-base">
+                  {editingCatalogProduct._isNew ? 'New Product' : `Edit: ${editingCatalogProduct.name}`}
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 block mb-1">Product ID (auto)</label>
+                    <input value={catalogFormData.id} readOnly className="w-full border rounded-lg px-3 py-2 text-xs font-mono bg-gray-50" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 block mb-1">Name *</label>
+                    <input
+                      value={catalogFormData.name}
+                      onChange={e => setCatalogFormData(f => ({ ...f, name: e.target.value }))}
+                      placeholder="e.g. Urban Ladder 3-Seater Sofa"
+                      className="w-full border rounded-lg px-3 py-2 text-xs outline-none focus:border-black"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 block mb-1">Region *</label>
+                    <select
+                      value={catalogFormData.region}
+                      onChange={e => setCatalogFormData(f => ({ ...f, region: e.target.value }))}
+                      className="w-full border rounded-lg px-3 py-2 text-xs outline-none focus:border-black"
+                    >
+                      {['India', 'USA', 'Brazil', 'Global'].map(r => <option key={r}>{r}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 block mb-1">Element Type *</label>
+                    <select
+                      value={catalogFormData.element_type}
+                      onChange={e => setCatalogFormData(f => ({ ...f, element_type: e.target.value }))}
+                      className="w-full border rounded-lg px-3 py-2 text-xs outline-none focus:border-black"
+                    >
+                      {['sofa','chair','dining_table','bed','coffee_table','cabinet',
+                        'pendant_light','floor_lamp','table_lamp','chandelier',
+                        'rug','curtains','cushions','throws',
+                        'wall_paint','wallpaper','wall_art','wall_panel',
+                        'hardwood','flooring','tile','laminate',
+                        'decor_accent','mirror','indoor_plant','vase'].map(t => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 block mb-1">Price (display string)</label>
+                    <input
+                      value={catalogFormData.price}
+                      onChange={e => setCatalogFormData(f => ({ ...f, price: e.target.value }))}
+                      placeholder="e.g. ₹34,999 or $299"
+                      className="w-full border rounded-lg px-3 py-2 text-xs outline-none focus:border-black"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 block mb-1">Style Tags (comma-separated)</label>
+                    <input
+                      value={catalogFormData.style_tags}
+                      onChange={e => setCatalogFormData(f => ({ ...f, style_tags: e.target.value }))}
+                      placeholder="Modern, Minimalist, Japandi"
+                      className="w-full border rounded-lg px-3 py-2 text-xs outline-none focus:border-black"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="text-xs font-bold text-gray-600 block mb-1">Image URL *</label>
+                    <input
+                      value={catalogFormData.image_url}
+                      onChange={e => setCatalogFormData(f => ({ ...f, image_url: e.target.value }))}
+                      placeholder="https://..."
+                      className="w-full border rounded-lg px-3 py-2 text-xs outline-none focus:border-black"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="text-xs font-bold text-gray-600 block mb-1">Affiliate Link * (goes through /api/go redirect)</label>
+                    <input
+                      value={catalogFormData.affiliate_link}
+                      onChange={e => setCatalogFormData(f => ({ ...f, affiliate_link: e.target.value }))}
+                      placeholder="https://amazon.in/dp/... or https://..."
+                      className="w-full border rounded-lg px-3 py-2 text-xs outline-none focus:border-black"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 block mb-1">Source</label>
+                    <select
+                      value={catalogFormData.source}
+                      onChange={e => setCatalogFormData(f => ({ ...f, source: e.target.value }))}
+                      className="w-full border rounded-lg px-3 py-2 text-xs outline-none focus:border-black"
+                    >
+                      {['manual','amazon_in','skimlinks','mercadolivre','paapi'].map(s => <option key={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-3 pt-4">
+                    <input
+                      type="checkbox"
+                      id="catalog-active"
+                      checked={catalogFormData.active}
+                      onChange={e => setCatalogFormData(f => ({ ...f, active: e.target.checked }))}
+                      className="w-4 h-4 accent-black"
+                    />
+                    <label htmlFor="catalog-active" className="text-xs font-bold text-gray-700">Active (shown to AI)</label>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 pt-2 border-t">
+                  <button
+                    onClick={() => setEditingCatalogProduct(null)}
+                    className="px-4 py-2 text-xs font-bold border rounded-xl text-gray-600 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!catalogFormData.name.trim() || !catalogFormData.affiliate_link.trim()) {
+                        showToast('Name and Affiliate Link are required.');
+                        return;
+                      }
+                      saveCatalogProduct({
+                        ...catalogFormData,
+                        style_tags: catalogFormData.style_tags.split(',').map((s: string) => s.trim()).filter(Boolean),
+                        room_types: catalogFormData.room_types.split(',').map((s: string) => s.trim()).filter(Boolean),
+                        active: catalogFormData.active,
+                        category_id: catalogFormData.category_id,
+                      });
+                    }}
+                    disabled={catalogSaving}
+                    className="px-5 py-2 text-xs font-bold bg-black text-white rounded-xl hover:bg-gray-800 transition disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {catalogSaving ? 'Saving...' : 'Save Product'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* PRODUCT TABLE */}
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xs">
+              {loadingCatalog ? (
+                <div className="p-12 text-center text-sm text-gray-400">Loading catalog...</div>
+              ) : catalogProducts.length === 0 ? (
+                <div className="p-12 text-center text-sm text-gray-400">
+                  No products yet. Click &quot;Add Product&quot; above to create the first one.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-gray-50 border-b border-gray-200 text-gray-500 font-extrabold uppercase tracking-wider">
+                      <tr>
+                        <th className="py-3.5 px-4">Product</th>
+                        <th className="py-3.5 px-4">Element Type</th>
+                        <th className="py-3.5 px-4">Region</th>
+                        <th className="py-3.5 px-4">Price</th>
+                        <th className="py-3.5 px-4">Source</th>
+                        <th className="py-3.5 px-4">Active</th>
+                        <th className="py-3.5 px-4">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {catalogProducts.map(p => (
+                        <tr key={p.id} className="hover:bg-gray-50 transition">
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-3">
+                              {p.image_url && (
+                                <img src={p.image_url} alt={p.name} className="w-10 h-10 rounded-lg object-cover shrink-0 border border-gray-100" />
+                              )}
+                              <div>
+                                <div className="font-bold text-gray-800">{p.name}</div>
+                                <div className="text-[10px] text-gray-400 font-mono truncate max-w-[200px]">{p.id}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <span className="px-2 py-1 rounded-lg bg-gray-100 text-gray-700 font-bold text-[10px]">{p.element_type}</span>
+                          </td>
+                          <td className="py-3.5 px-4 font-semibold text-gray-700">
+                            {p.region === 'India' ? '🇮🇳' : p.region === 'USA' ? '🇺🇸' : p.region === 'Brazil' ? '🇧🇷' : '🌐'} {p.region}
+                          </td>
+                          <td className="py-3.5 px-4 font-mono font-bold text-gray-800">{p.price}</td>
+                          <td className="py-3.5 px-4">
+                            <span className="px-2 py-1 rounded-lg text-[10px] font-bold bg-blue-50 text-blue-700">{p.source}</span>
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <span className={`px-2 py-1 rounded-lg text-[10px] font-bold ${
+                              p.active !== false ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'
+                            }`}>
+                              {p.active !== false ? 'Active' : 'Hidden'}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <button
+                              onClick={() => {
+                                setCatalogFormData({
+                                  id: p.id, name: p.name, category_id: p.category_id || 'cat_furniture',
+                                  element_type: p.element_type, region: p.region,
+                                  style_tags: Array.isArray(p.style_tags) ? p.style_tags.join(', ') : (p.style_tags || ''),
+                                  price: p.price, image_url: p.image_url, affiliate_link: p.affiliate_link,
+                                  source: p.source || 'manual', active: p.active !== false,
+                                  room_types: Array.isArray(p.room_types) ? p.room_types.join(', ') : (p.room_types || '')
+                                });
+                                setEditingCatalogProduct(p);
+                              }}
+                              className="text-xs font-bold text-gray-600 hover:text-black underline"
+                            >
+                              Edit
+                            </button>
                           </td>
                         </tr>
                       ))}
