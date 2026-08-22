@@ -122,7 +122,13 @@ export default function SiteAnalysis() {
     return () => window.removeEventListener('anvitam-user-updated', handleUserUpdate);
   }, []);
 
-
+  // Disable CSS zoom on this page — zoom: 80% breaks Mapbox GL WebGL canvas rendering
+  useEffect(() => {
+    document.documentElement.classList.add('no-zoom');
+    return () => {
+      document.documentElement.classList.remove('no-zoom');
+    };
+  }, []);
 
   // ─────────────────────────────────────────────────────────────────────────────
   // MAP ENGINE INITIALIZATION (Mapbox GL JS v3 3D Globe vs Leaflet 2D Fallback)
