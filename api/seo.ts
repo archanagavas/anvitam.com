@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { isDbConfigured, getCollection } from '../lib/db.js';
 import { INITIAL_BLOGS, INITIAL_PROJECTS, SERVICES } from '../constants.js';
+import { TOOLS_SUITE } from '../constants/toolsData.js';
 import { extractToken, verifyAdminToken } from '../lib/auth.js';
 
 function stripHtml(html: string): string {
@@ -151,8 +152,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       { loc: 'https://www.anvitam.com/seo/permaculture', priority: '0.8', changefreq: 'monthly', lastmod: defaultDate },
       { loc: 'https://www.anvitam.com/seo/terrace-garden', priority: '0.7', changefreq: 'monthly', lastmod: defaultDate },
       { loc: 'https://www.anvitam.com/seo/yard-landscape', priority: '0.7', changefreq: 'monthly', lastmod: defaultDate },
-      { loc: 'https://www.anvitam.com/seo/community-centre', priority: '0.7', changefreq: 'monthly', lastmod: defaultDate }
     ];
+    const toolUrls = TOOLS_SUITE.map(t => ({
+      loc: `https://www.anvitam.com${t.href.startsWith('/') ? t.href : '/' + t.href}`,
+      priority: '0.9',
+      changefreq: 'weekly',
+      lastmod: defaultDate
+    }));
     const serviceUrls = services.map(s => ({
       loc: `https://www.anvitam.com/services/${s.id}`,
       priority: '0.8',
@@ -171,7 +177,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       else if (b.date && /^\d{4}-\d{2}-\d{2}$/.test(b.date)) { blogMod = b.date; }
       return { loc: `https://www.anvitam.com/blog/${b.slug || b.id}`, priority: '0.9', changefreq: 'weekly', lastmod: blogMod };
     });
-    const allUrls = [...staticUrls, ...serviceUrls, ...projectUrls, ...blogUrls];
+    const allUrls = [...staticUrls, ...toolUrls, ...serviceUrls, ...projectUrls, ...blogUrls];
     const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
       allUrls.map(u => `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${u.lastmod}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>`).join('\n') +
       `\n</urlset>`;
@@ -189,6 +195,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 - **Sitemap**: https://www.anvitam.com/sitemap.xml
 - **Full LLM Context**: https://www.anvitam.com/llms-full.txt
+
+## Site Intelligence & AI Tools Suite (16+ Automated Tools)
+
+${TOOLS_SUITE.map(t => `- [${t.name}](https://www.anvitam.com${t.href.startsWith('/') ? t.href : '/' + t.href}) — ${t.shortDesc}`).join('\n')}
 
 ## Use Cases
 

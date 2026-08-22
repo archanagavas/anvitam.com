@@ -3556,7 +3556,7 @@ const Admin: React.FC = () => {
                           </td>
                           <td className="py-4 px-5">
                             <span className="font-extrabold text-green-700 bg-green-50 px-2.5 py-1 rounded-full border border-green-200">
-                              ⚡ {u.credits_remaining ?? u.credits ?? 5} credits
+                              ⚡ {u.credits_remaining ?? u.credits ?? 3} credits
                             </span>
                           </td>
                           <td className="py-4 px-5 text-gray-500 font-bold">

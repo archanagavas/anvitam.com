@@ -117,14 +117,14 @@ export const ToolUserDashboardModal: React.FC<ToolUserDashboardModalProps> = ({
                     <Zap size={15} className="text-[#CCFF00]" /> Credit Balance
                   </span>
                   <span className="text-sm font-extrabold text-[#CCFF00] font-mono">
-                    {user.is_subscribed ? '250 Credits / mo (Pro)' : `${user.credits_remaining ?? 5} / 5 Credits Left`}
+                    {user.is_subscribed ? '250 Credits / mo (Pro)' : `${user.credits_remaining ?? 3} / 3 Free Credits Left`}
                   </span>
                 </div>
 
                 <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
                   <div
                     className="bg-[#CCFF00] h-full transition-all duration-500"
-                    style={{ width: `${user.is_subscribed ? 100 : Math.min(100, ((user.credits_remaining ?? 5) / 5) * 100)}%` }}
+                    style={{ width: `${user.is_subscribed ? 100 : Math.min(100, ((user.credits_remaining ?? 3) / 3) * 100)}%` }}
                   />
                 </div>
 

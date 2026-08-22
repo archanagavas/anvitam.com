@@ -39,7 +39,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         password_hash,
         name: name || '',
         country: userCountry,
-        credits_remaining: 5,
+        credits_remaining: 3,
         credits_used: 0,
         trial_started_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
@@ -160,17 +160,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
       }
 
-      const currentCredits = user.credits_remaining ?? 5;
-      if (currentCredits <= 0 && !user.is_subscribed) {
+      const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body ?? {});
+      const modelTier = (body.modelTier || body.modelChoice || 'fast').toLowerCase();
+      const amountToDeduct = (modelTier === 'pro' || modelTier === 'openai/gpt-4o' || modelTier === 'claude-3.5-sonnet') ? 2 : 1;
+
+      const currentCredits = user.credits_remaining ?? 3;
+      if (currentCredits < amountToDeduct && !user.is_subscribed) {
         return res.status(402).json({
-          error: 'Credit balance exhausted. Please top up 10 credits or upgrade to a monthly plan.',
-          credits_remaining: 0,
+          error: `Credit balance low (${currentCredits} remaining, ${amountToDeduct} required for ${modelTier}). Please top up 10 credits or upgrade to Pro.`,
+          credits_remaining: currentCredits,
           requires_upgrade: true,
         });
       }
 
-      const newRemaining = Math.max(0, currentCredits - 1);
-      const newUsed = (user.credits_used ?? 0) + 1;
+      const newRemaining = user.is_subscribed ? currentCredits : Math.max(0, currentCredits - amountToDeduct);
+      const newUsed = (user.credits_used ?? 0) + amountToDeduct;
 
       await upsertDoc('tool_users', user.id, {
         ...user,

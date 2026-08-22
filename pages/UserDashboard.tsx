@@ -89,8 +89,8 @@ export default function UserDashboard() {
   });
 
   const totalCreditsAllocated = Math.max(
-    user?.is_subscribed ? 250 : 5,
-    (user?.credits_remaining ?? 5) + (user?.credits_used ?? 0)
+    user?.is_subscribed ? 250 : 3,
+    (user?.credits_remaining ?? 3) + (user?.credits_used ?? 0)
   );
 
   return (
@@ -408,7 +408,7 @@ export default function UserDashboard() {
                     </h3>
                   </div>
                   <div className="text-left sm:text-right">
-                    <p className="text-3xl font-bold text-gray-900">{user?.credits_remaining ?? 5} <span className="text-sm font-normal text-gray-500">Credits Remaining</span></p>
+                    <p className="text-3xl font-bold text-gray-900">{user?.credits_remaining ?? 3} <span className="text-sm font-normal text-gray-500">Credits Remaining</span></p>
                     <p className="text-xs text-gray-500 font-normal mt-1">{user?.credits_used ?? 0} credits consumed so far</p>
                   </div>
                 </div>

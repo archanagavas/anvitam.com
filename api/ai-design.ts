@@ -194,17 +194,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const isSubscribed: boolean = userDoc?.is_subscribed ?? false;
-    const creditsRemaining: number = userDoc?.credits_remaining ?? 5; // 5 trial credits if unknown
+    const creditsRemaining: number = userDoc?.credits_remaining ?? 3; // 3 trial credits default
 
-    if (userDoc && !isSubscribed && creditsRemaining <= 0) {
+    const body = parseBody(req);
+    const modelTier = (body.modelTier || body.modelChoice || 'fast').toLowerCase();
+    const creditCost = (modelTier === 'pro' || modelTier === 'openai/gpt-4o' || modelTier === 'claude-3.5-sonnet') ? 2 : 1;
+
+    if (userDoc && !isSubscribed && creditsRemaining < creditCost) {
       return res.status(402).json({
-        error: 'Your credit balance is exhausted. Please upgrade to Pro or purchase credits to continue.',
-        credits_remaining: 0,
+        error: `Insufficient credits. This operation requires ${creditCost} credit(s), but you have ${creditsRemaining} remaining. Please upgrade to Pro or top up to run high-performance AI models.`,
+        credits_remaining: creditsRemaining,
         requires_upgrade: true,
       });
     }
-
-    const body = parseBody(req);
 
     // ── Idempotency key — prevents double-deduction on client retries ──
     const generationId: string | undefined =
@@ -388,8 +390,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       // ── Deduct credit & store idempotency record atomically ──────────
       if (userDoc) {
-        const newRemaining = Math.max(0, creditsRemaining - 1);
-        const newUsed = (userDoc.credits_used ?? 0) + 1;
+        const newRemaining = isSubscribed ? creditsRemaining : Math.max(0, creditsRemaining - creditCost);
+        const newUsed = (userDoc.credits_used ?? 0) + creditCost;
         // Write updated user doc
         await upsertDoc('tool_users', userDoc.id, {
           ...userDoc,
@@ -424,7 +426,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         generatedImage: generatedImageB64 || sourceImage,
         description: textDescription,
         is_watermarked: true, // unauthenticated — always watermarked
-        credits_remaining: 4, // trial display value
+        credits_remaining: 2, // trial display value
       });
 
     } catch (err: any) {

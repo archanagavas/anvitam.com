@@ -37,7 +37,7 @@ export function updateToolUser(updates: Partial<ToolUser>): ToolUser | null {
   return updated;
 }
 
-export function deductUserCredit(): { success: boolean; user: ToolUser | null } {
+export function deductUserCredit(cost: number = 1): { success: boolean; user: ToolUser | null } {
   const current = getToolUser();
   if (!current) return { success: false, user: null };
 
@@ -49,13 +49,13 @@ export function deductUserCredit(): { success: boolean; user: ToolUser | null } 
     }
   }
 
-  // Deduct 1 credit per tool run if credits available
-  if (current.credits_remaining <= 0 && !current.is_subscribed) {
+  // Deduct credits per tool run if available
+  if (current.credits_remaining < cost && !current.is_subscribed) {
     return { success: false, user: current };
   }
 
-  const newCredits = Math.max(0, current.credits_remaining - 1);
-  const newUsed = (current.credits_used ?? 0) + 1;
+  const newCredits = current.is_subscribed ? current.credits_remaining : Math.max(0, current.credits_remaining - cost);
+  const newUsed = (current.credits_used ?? 0) + cost;
   const updated = updateToolUser({
     credits_remaining: newCredits,
     credits_used: newUsed
