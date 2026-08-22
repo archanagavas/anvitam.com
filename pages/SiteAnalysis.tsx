@@ -12,11 +12,13 @@ import { ShadowSimulator3D } from '../components/siteanalysis/ShadowSimulator3D'
 import { ToolUserDashboardModal } from '../components/tools/ToolUserDashboardModal';
 import { ToolsAuthModal } from '../components/tools/ToolsAuthModal';
 import { ToolsPaywallOverlay } from '../components/tools/ToolsPaywallOverlay';
-import { getToolUser, deductUserCredit, type ToolUser } from '../utils/userAuth';
+import { AllToolsDrawer } from '../components/tools/AllToolsDrawer';
+import { ToolsSettingsModal } from '../components/tools/ToolsSettingsModal';
+import { getToolUser, getOrCreateDefaultToolUser, logoutToolUser, deductUserCredit, type ToolUser } from '../utils/userAuth';
 import { TOOLS_SUITE } from '../constants/toolsData';
 import {
   MapPin, Layers, Zap, Box, Search, Check, Share2, Globe,
-  PanelLeft, ArrowLeft, Home, Building, Trees, Wand2, Trash2, Sliders, LogOut
+  Menu, ArrowLeft, Home, Building, Trees, Wand2, Trash2, Sliders, LogOut, Settings
 } from 'lucide-react';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
@@ -78,8 +80,9 @@ export default function SiteAnalysis() {
   const [mapboxStyleId, setMapboxStyleId] = useState(MAPBOX_3D_STYLES[0].id);
   const [leafletStyleId, setLeafletStyleId] = useState(LEAFLET_2D_STYLES[0].id);
 
-  // Studio UI Sidebar & Auth State
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // Studio UI Navigation & Auth State
+  const [showToolsDrawer, setShowToolsDrawer] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [user, setUser] = useState<ToolUser | null>(null);
   const [showAuth, setShowAuth] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
@@ -105,7 +108,7 @@ export default function SiteAnalysis() {
 
   // User credit listener
   useEffect(() => {
-    setUser(getToolUser());
+    setUser(getOrCreateDefaultToolUser());
     const handleUserUpdate = (e: Event) => {
       const customEvent = e as CustomEvent<ToolUser | null>;
       setUser(customEvent.detail);
@@ -475,104 +478,28 @@ export default function SiteAnalysis() {
 
       <div className="site-analysis-page bg-[#FAFBFD] text-[#111111] pt-20 min-h-screen flex flex-col font-sans antialiased">
         
-        <div className="flex-1 flex overflow-visible">
-
-          {/* ── STICKY PINNED LEFT STUDIO SIDEBAR (Zero Scroll Needed to Access Hamburger) ── */}
-          <aside className={`bg-white border-r border-gray-200/80 w-64 p-5 shrink-0 flex flex-col justify-between sticky top-20 h-[calc(100vh-5rem)] overflow-y-auto z-30 transition-all duration-300 ${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0 md:w-16 md:px-2'
-          }`}>
-            <div className="space-y-6">
-              
-              <div className="flex items-center justify-between">
-                <button
-                  onClick={() => navigate('/dashboard')}
-                  className="flex items-center gap-2 text-xs font-bold text-gray-900 hover:text-black transition cursor-pointer"
-                >
-                  <ArrowLeft size={16} />
-                  <span className={sidebarOpen ? 'block' : 'hidden md:hidden'}>Dashboard</span>
-                </button>
-              </div>
-
-              {/* AI Design Tools */}
-              <div className="space-y-1">
-                <p className={`text-[10px] font-semibold uppercase tracking-wider text-gray-400 px-3 mb-1.5 ${
-                  sidebarOpen ? 'block' : 'hidden md:hidden'
-                }`}>
-                  AI Design Studio
-                </p>
-                {[
-                  { id: 'interior', label: 'Interior Design', icon: <Home size={16} />, href: '/tools/ai-home-design?module=interior' },
-                  { id: 'exterior', label: 'Exterior Design', icon: <Building size={16} />, href: '/tools/ai-home-design?module=exterior' },
-                  { id: 'garden', label: 'Garden Design', icon: <Trees size={16} />, href: '/tools/ai-home-design?module=garden' },
-                  { id: 'replace', label: 'Replace Furniture', icon: <Wand2 size={16} />, href: '/tools/ai-home-design?module=replace' }
-                ].map(item => (
-                  <button
-                    key={item.id}
-                    onClick={() => navigate(item.href)}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition cursor-pointer text-gray-700 hover:bg-gray-100 hover:text-black`}
-                  >
-                    {item.icon}
-                    <span className={sidebarOpen ? 'block' : 'hidden md:hidden'}>{item.label}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Site Intelligence Tools */}
-              <div className="space-y-1 pt-2 border-t border-gray-100">
-                <p className={`text-[10px] font-semibold uppercase tracking-wider text-gray-400 px-3 mb-1.5 ${
-                  sidebarOpen ? 'block' : 'hidden md:hidden'
-                }`}>
-                  Site Intelligence Suite
-                </p>
-                {TOOLS_SUITE.filter(t => !t.id.startsWith('ai-')).slice(0, 8).map(item => (
-                  <button
-                    key={item.id}
-                    onClick={() => navigate(`/site-analysis?tool=${item.id}`)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition cursor-pointer ${
-                      toolParam === item.id || (!toolParam && item.id === 'sun-path-3d')
-                        ? 'bg-[#111111] text-[#CCFF00] font-semibold shadow-2xs'
-                        : 'text-gray-700 hover:bg-gray-100 hover:text-black font-medium'
-                    }`}
-                  >
-                    <span className="shrink-0">{item.iconSvg}</span>
-                    <span className={`truncate ${sidebarOpen ? 'block' : 'hidden md:hidden'}`}>{item.name}</span>
-                  </button>
-                ))}
-              </div>
-
-            </div>
-
-            <div className="pt-4 border-t border-gray-100">
-              <button
-                onClick={() => setShowPaywall(true)}
-                className="w-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-semibold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-2xs border border-black/10"
-              >
-                <Zap size={14} className="fill-black text-black shrink-0" />
-                <span className={sidebarOpen ? 'block' : 'hidden md:hidden'}>Upgrade to Pro</span>
-              </button>
-            </div>
-          </aside>
+        <div className="flex-1 flex flex-col overflow-visible">
 
           {/* ── MAIN STUDIO CANVAS ── */}
           <div className="flex-1 flex flex-col min-w-0">
             
-            {/* Topbar inside canvas */}
-            <div className="sa-topbar bg-white text-gray-900 px-6 py-2.5 border-b border-gray-200/80 shadow-2xs flex flex-col lg:flex-row items-center justify-between gap-3 z-20 sticky top-20">
+            {/* Unified Topbar inside canvas with Hamburger, Search, Settings & Logout */}
+            <div className="sa-topbar bg-white text-gray-900 px-6 py-3 border-b border-gray-200/80 shadow-2xs flex flex-col lg:flex-row items-center justify-between gap-4 z-20 sticky top-20">
               <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
                 <button
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="p-1.5 rounded-xl text-gray-600 hover:text-black hover:bg-gray-100 transition cursor-pointer flex items-center gap-1.5"
-                  title="Toggle Sidebar Menu"
+                  onClick={() => setShowToolsDrawer(true)}
+                  className="px-3 py-2 rounded-xl bg-black text-[#CCFF00] hover:bg-gray-800 transition cursor-pointer flex items-center gap-2 text-xs font-semibold shadow-2xs shrink-0"
+                  title="Open All 21+ Tools Drawer"
                 >
-                  <PanelLeft size={18} />
-                  <span className="text-xs font-bold sm:hidden">Menu</span>
+                  <Menu size={16} />
+                  <span>All Tools</span>
                 </button>
 
                 <div className="flex items-center gap-2 cursor-pointer shrink-0" onClick={() => navigate('/tools')}>
-                  <span className="w-7 h-7 rounded-lg bg-black text-[#CCFF00] font-bold flex items-center justify-center text-xs shadow-2xs">SA</span>
+                  <span className="w-7 h-7 rounded-lg bg-black text-[#CCFF00] font-semibold flex items-center justify-center text-xs shadow-2xs">SA</span>
                   <div>
-                    <h1 className="text-xs sm:text-sm font-bold text-gray-900 leading-none">Site Intelligence Canvas</h1>
-                    <p className="text-[10px] text-gray-500 font-medium">by Anvitam</p>
+                    <h1 className="text-xs sm:text-sm font-semibold text-gray-900 leading-none">Site Intelligence Canvas</h1>
+                    <p className="text-[10px] text-gray-500 font-medium">Anvitam Studio</p>
                   </div>
                 </div>
 
@@ -594,7 +521,7 @@ export default function SiteAnalysis() {
                     key={cat.id}
                     onClick={() => handleCategoryChange(cat.id)}
                     className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer whitespace-nowrap ${
-                      category === cat.id ? 'bg-black text-[#CCFF00] font-bold shadow-2xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200/80'
+                      category === cat.id ? 'bg-black text-[#CCFF00] font-semibold shadow-2xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200/80'
                     }`}
                   >
                     <span className="text-xs">{cat.icon}</span>
@@ -603,26 +530,34 @@ export default function SiteAnalysis() {
                 ))}
               </div>
 
-              {/* Credit Status Pill */}
+              {/* Controls: Credit Pill, Settings, Logout */}
               <div className="flex items-center gap-2.5 shrink-0 w-full lg:w-auto justify-end">
-                {user ? (
-                  <div
-                    onClick={() => navigate('/dashboard')}
-                    className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200/80 border border-gray-200 px-3 py-1 rounded-full cursor-pointer transition"
-                  >
-                    <div className="text-xs font-semibold text-black flex items-center gap-1">
-                      <Zap size={13} className="text-black fill-black" />
-                      <span>{user.is_subscribed ? 'Pro' : `${user.credits_remaining ?? 5} creds`}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    className="bg-black text-[#CCFF00] font-bold text-xs px-3.5 py-1.5 rounded-full hover:scale-105 transition cursor-pointer"
-                    onClick={() => { setAuthMode('login'); setShowAuth(true); }}
-                  >
-                    Sign In
-                  </button>
-                )}
+                <button
+                  onClick={() => setShowPaywall(true)}
+                  className="px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-semibold flex items-center gap-1.5 hover:bg-black transition cursor-pointer shadow-2xs"
+                >
+                  <Zap size={14} className="fill-[#CCFF00] text-[#CCFF00]" />
+                  <span>{user?.credits_remaining ?? 5} Credits</span>
+                </button>
+
+                <button
+                  onClick={() => setShowSettingsModal(true)}
+                  className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-gray-400 text-gray-700 hover:text-black transition cursor-pointer shadow-2xs"
+                  title="Studio & Account Settings"
+                >
+                  <Settings size={17} />
+                </button>
+
+                <button
+                  onClick={() => {
+                    logoutToolUser();
+                    setUser(null);
+                  }}
+                  className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-red-400 text-gray-600 hover:text-red-600 transition cursor-pointer shadow-2xs"
+                  title="Sign Out"
+                >
+                  <LogOut size={17} />
+                </button>
               </div>
             </div>
 
@@ -763,6 +698,23 @@ export default function SiteAnalysis() {
             setShowDashboardModal(false);
             setShowPaywall(true);
           }}
+        />
+
+        <AllToolsDrawer
+          isOpen={showToolsDrawer}
+          onClose={() => setShowToolsDrawer(false)}
+          activeToolId={toolParam || 'site-analysis'}
+        />
+
+        <ToolsSettingsModal
+          isOpen={showSettingsModal}
+          onClose={() => setShowSettingsModal(false)}
+          user={user}
+          onLogout={() => {
+            logoutToolUser();
+            setUser(null);
+          }}
+          onUpgrade={() => setShowPaywall(true)}
         />
 
         <ToolsAuthModal

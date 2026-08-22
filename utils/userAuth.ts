@@ -28,6 +28,25 @@ export function getToolUser(): ToolUser | null {
   }
 }
 
+export function getOrCreateDefaultToolUser(): ToolUser {
+  let user = getToolUser();
+  if (!user) {
+    user = {
+      id: `guest_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      email: 'guest@anvitam.com',
+      name: 'Guest Designer',
+      credits_remaining: 5,
+      credits_used: 0,
+      is_subscribed: false,
+      trial_days_remaining: 15,
+      has_access: true,
+    };
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    window.dispatchEvent(new CustomEvent('anvitam-user-updated', { detail: user }));
+  }
+  return user;
+}
+
 export function updateToolUser(updates: Partial<ToolUser>): ToolUser | null {
   const current = getToolUser();
   if (!current) return null;

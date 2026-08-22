@@ -15,11 +15,14 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Sparkles, Upload, Wand2, ArrowLeft, Download, RefreshCw, Image as ImageIcon,
   Check, ChevronRight, Sliders, ShieldCheck, Crown, ShoppingBag, MapPin, ExternalLink,
-  Layers, Home, Building, Trees, Trash2, Paintbrush, LayoutGrid, Zap, PanelLeft, X, AlertCircle
+  Layers, Home, Building, Trees, Trash2, Paintbrush, LayoutGrid, Zap, Menu, X, AlertCircle,
+  Settings, LogOut
 } from 'lucide-react';
-import { getToolUser, type ToolUser } from '../utils/userAuth';
+import { getToolUser, getOrCreateDefaultToolUser, logoutToolUser, type ToolUser } from '../utils/userAuth';
 import { ToolsAuthModal } from '../components/tools/ToolsAuthModal';
 import { ToolsPaywallOverlay } from '../components/tools/ToolsPaywallOverlay';
+import { AllToolsDrawer } from '../components/tools/AllToolsDrawer';
+import { ToolsSettingsModal } from '../components/tools/ToolsSettingsModal';
 
 // Preset visual styles for design brief drawer
 const STYLE_OPTIONS = [
@@ -51,9 +54,10 @@ export default function AIHomeDesign() {
   const [user, setUser] = useState<ToolUser | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showToolsDrawer, setShowToolsDrawer] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   // UI Drawer & Sidebar States
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showBriefCard, setShowBriefCard] = useState(false);
 
   // Form State
@@ -80,7 +84,7 @@ export default function AIHomeDesign() {
   const sliderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setUser(getToolUser());
+    setUser(getOrCreateDefaultToolUser());
     const handleUserUpdate = (e: Event) => {
       const customEvent = e as CustomEvent<ToolUser | null>;
       setUser(customEvent.detail);
@@ -258,158 +262,69 @@ export default function AIHomeDesign() {
         <meta name="description" content="Photorealistic AI Studio for interior design, exterior facade, garden landscape, room restyle, and furniture replacement." />
       </Helmet>
 
-      {/* Main Studio Wrapper (Gaps under main float header) */}
+      {/* Main Studio Wrapper */}
       <div className="w-full bg-[#FAFBFD] text-[#111111] min-h-screen font-sans flex flex-col pt-20">
 
-        <div className="flex-1 flex overflow-hidden">
-
-          {/* ── LEFT STUDIO SIDEBAR (Sticky Pinned, Zero Scroll Needed) ── */}
-          <aside className={`bg-white border-r border-gray-200/80 w-64 p-5 shrink-0 flex flex-col justify-between sticky top-20 h-[calc(100vh-5rem)] overflow-y-auto z-30 transition-all duration-300 ${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0 md:w-16 md:px-2'
-          }`}>
-            <div className="space-y-6">
-              
-              {/* Home / Studio Title */}
-              <div className="flex items-center justify-between">
-                <button
-                  onClick={() => navigate('/dashboard')}
-                  className="flex items-center gap-2 text-xs font-extrabold text-gray-900 hover:text-black transition cursor-pointer"
-                >
-                  <ArrowLeft size={16} />
-                  <span className={sidebarOpen ? 'block' : 'hidden md:hidden'}>Studio Dashboard</span>
-                </button>
-              </div>
-
-              {/* Design Space Category */}
-              <div className="space-y-1">
-                <p className={`text-[10px] font-extrabold uppercase tracking-wider text-gray-400 px-3 mb-2 ${
-                  sidebarOpen ? 'block' : 'hidden md:hidden'
-                }`}>
-                  Design Space
-                </p>
-                {[
-                  { id: 'interior', label: 'Interior Design', icon: <Home size={16} /> },
-                  { id: 'exterior', label: 'Exterior Design', icon: <Building size={16} /> },
-                  { id: 'garden', label: 'Garden Design', icon: <Trees size={16} /> }
-                ].map(item => (
-                  <button
-                    key={item.id}
-                    onClick={() => handleSelectModule(item.id)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-semibold transition cursor-pointer ${
-                      selectedModule === item.id
-                        ? 'bg-[#111111] text-[#CCFF00] font-extrabold shadow-xs'
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-black'
-                    }`}
-                  >
-                    {item.icon}
-                    <span className={sidebarOpen ? 'block' : 'hidden md:hidden'}>{item.label}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Edit & Replace Category */}
-              <div className="space-y-1">
-                <p className={`text-[10px] font-extrabold uppercase tracking-wider text-gray-400 px-3 mb-2 ${
-                  sidebarOpen ? 'block' : 'hidden md:hidden'
-                }`}>
-                  Edit &amp; Replace
-                </p>
-                {[
-                  { id: 'replace', label: 'Replace & Add Furniture', icon: <Wand2 size={16} /> },
-                  { id: 'remove', label: 'Furniture Removal', icon: <Trash2 size={16} /> },
-                  { id: 'declutter', label: 'Room Declutter', icon: <Layers size={16} /> },
-                  { id: 'style-transfer', label: 'Style Transfer', icon: <Paintbrush size={16} /> }
-                ].map(item => (
-                  <button
-                    key={item.id}
-                    onClick={() => handleSelectModule(item.id)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-semibold transition cursor-pointer ${
-                      selectedModule === item.id
-                        ? 'bg-[#111111] text-[#CCFF00] font-extrabold shadow-xs'
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-black'
-                    }`}
-                  >
-                    {item.icon}
-                    <span className={sidebarOpen ? 'block' : 'hidden md:hidden'}>{item.label}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Structure & Surface Category */}
-              <div className="space-y-1">
-                <p className={`text-[10px] font-extrabold uppercase tracking-wider text-gray-400 px-3 mb-2 ${
-                  sidebarOpen ? 'block' : 'hidden md:hidden'
-                }`}>
-                  Structure &amp; Surface
-                </p>
-                {[
-                  { id: 'walls', label: 'New Walls', icon: <LayoutGrid size={16} /> },
-                  { id: 'flooring', label: 'New Flooring', icon: <Sliders size={16} /> }
-                ].map(item => (
-                  <button
-                    key={item.id}
-                    onClick={() => handleSelectModule(item.id)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-semibold transition cursor-pointer ${
-                      selectedModule === item.id
-                        ? 'bg-[#111111] text-[#CCFF00] font-extrabold shadow-xs'
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-black'
-                    }`}
-                  >
-                    {item.icon}
-                    <span className={sidebarOpen ? 'block' : 'hidden md:hidden'}>{item.label}</span>
-                  </button>
-                ))}
-              </div>
-
-            </div>
-
-            {/* Pro Upgrade CTA */}
-            <div className="pt-4 border-t border-gray-100">
-              <button
-                onClick={() => setShowPaywall(true)}
-                className="w-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-extrabold py-3 rounded-2xl text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-xs border border-black/10"
-              >
-                <Zap size={16} className="fill-black text-black shrink-0" />
-                <span className={sidebarOpen ? 'block' : 'hidden md:hidden'}>Upgrade to Pro</span>
-              </button>
-            </div>
-          </aside>
+        <div className="flex-1 flex flex-col overflow-hidden">
 
           {/* ── MAIN WORKSPACE CANVAS ── */}
           <main className="flex-1 bg-[#FAFBFD] p-6 sm:p-10 overflow-y-auto max-w-6xl mx-auto w-full">
             
-            {/* Top Workspace Toolbar */}
-            <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200/80">
+            {/* Top Workspace Toolbar (Unified Header with Hamburger, Settings & Logout) */}
+            <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200/80 gap-4 flex-wrap">
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="p-2 rounded-xl text-gray-600 hover:text-black hover:bg-gray-200 transition cursor-pointer"
-                  title="Toggle Sidebar"
+                  onClick={() => setShowToolsDrawer(true)}
+                  className="px-3 py-2 rounded-xl bg-black text-[#CCFF00] hover:bg-gray-800 transition cursor-pointer flex items-center gap-2 text-xs font-semibold shadow-2xs"
+                  title="Open All 21+ Tools Drawer"
                 >
-                  <PanelLeft size={18} />
+                  <Menu size={16} />
+                  <span>All Tools</span>
                 </button>
 
-                <div className="flex items-center gap-2 text-xs text-gray-500 font-semibold">
-                  <span className="text-gray-900 font-extrabold">Anvitam's AI Studio</span>
+                <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
+                  <span className="text-gray-900 font-semibold">Anvitam Studio</span>
                   <span>/</span>
-                  <span className="text-black font-extrabold capitalize">{selectedModule.replace('-', ' ')}</span>
+                  <span className="text-black font-semibold capitalize">{selectedModule.replace('-', ' ')}</span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <button
                   onClick={() => setShowPaywall(true)}
-                  className="px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-extrabold flex items-center gap-1.5 hover:bg-black transition cursor-pointer shadow-2xs"
+                  className="px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-semibold flex items-center gap-1.5 hover:bg-black transition cursor-pointer shadow-2xs"
                 >
                   <Zap size={14} className="fill-[#CCFF00] text-[#CCFF00]" />
-                  <span>{user?.credits_remaining ?? 3} Credits</span>
+                  <span>{user?.credits_remaining ?? 5} Credits</span>
                 </button>
 
                 <button
                   onClick={() => setShowBriefCard(true)}
-                  className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-extrabold px-4 py-2 rounded-2xl text-xs transition flex items-center gap-1.5 cursor-pointer border border-black/10 shadow-2xs"
+                  className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-semibold px-3.5 py-2 rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer border border-black/10 shadow-2xs"
                 >
-                  <Sliders size={14} /> Open Design Brief
+                  <Sliders size={14} />
+                  <span>Design Brief</span>
+                </button>
+
+                {/* Settings Button */}
+                <button
+                  onClick={() => setShowSettingsModal(true)}
+                  className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-gray-400 text-gray-700 hover:text-black transition cursor-pointer shadow-2xs"
+                  title="Studio & Account Settings"
+                >
+                  <Settings size={17} />
+                </button>
+
+                {/* Sign Out Button */}
+                <button
+                  onClick={() => {
+                    logoutToolUser();
+                    setUser(null);
+                  }}
+                  className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-red-400 text-gray-600 hover:text-red-600 transition cursor-pointer shadow-2xs"
+                  title="Sign Out"
+                >
+                  <LogOut size={17} />
                 </button>
               </div>
             </div>
@@ -419,7 +334,7 @@ export default function AIHomeDesign() {
               <div className="space-y-10 my-4">
                 
                 <div className="text-center space-y-5 max-w-2xl mx-auto">
-                  <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+                  <h1 className="text-3xl sm:text-4xl font-semibold text-gray-900 tracking-tight">
                     Hello, how may I help you?
                   </h1>
 
@@ -475,7 +390,7 @@ export default function AIHomeDesign() {
 
                   {/* 1-Click Sample Photo Testing Chips */}
                   <div className="space-y-2 pt-2">
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-gray-600 block">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 block">
                       Or click a sample photo to test rendering in 1-click:
                     </span>
                     <div className="flex items-center justify-center flex-wrap gap-2">
@@ -483,7 +398,7 @@ export default function AIHomeDesign() {
                         <button
                           key={sample.id}
                           onClick={() => handleSelectSamplePhoto(sample.url, sample.module)}
-                          className="bg-white border border-gray-300 hover:border-black text-gray-800 text-xs font-extrabold px-3 py-1.5 rounded-full transition flex items-center gap-2 cursor-pointer shadow-2xs hover:scale-105"
+                          className="bg-white border border-gray-300 hover:border-black text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-full transition flex items-center gap-2 cursor-pointer shadow-2xs hover:scale-105"
                         >
                           <img src={sample.url} alt={sample.label} className="w-5 h-5 rounded-full object-cover" />
                           {sample.label}
@@ -496,7 +411,7 @@ export default function AIHomeDesign() {
                 {/* EXPLORE AI TOOLS CARDS */}
                 <div className="space-y-4 pt-6">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
+                    <h2 className="text-lg font-semibold text-gray-900 tracking-tight flex items-center gap-2">
                       <span className="w-2 h-5 bg-[#CCFF00] rounded-full inline-block border border-black/20" />
                       Explore AI tools for your design workflow
                     </h2>
@@ -559,7 +474,7 @@ export default function AIHomeDesign() {
                         </div>
 
                         <div className="p-3.5 space-y-1">
-                          <h3 className="text-xs font-extrabold text-gray-900 group-hover:text-black">
+                          <h3 className="text-xs font-semibold text-gray-900 group-hover:text-black">
                             {card.title}
                           </h3>
                           <p className="text-[10px] text-gray-500 line-clamp-2 leading-snug">
@@ -580,12 +495,12 @@ export default function AIHomeDesign() {
                 
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-xl font-extrabold text-gray-900">Your AI Design Render</h2>
+                    <h2 className="text-xl font-semibold text-gray-900">Your AI Design Render</h2>
                     <p className="text-xs text-gray-500">Drag the slider to compare original photo vs AI render.</p>
                   </div>
                   <button
                     onClick={() => setShowBriefCard(true)}
-                    className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-extrabold text-xs px-4 py-2 rounded-2xl transition cursor-pointer border border-black/10 flex items-center gap-1.5"
+                    className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-semibold text-xs px-4 py-2 rounded-2xl transition cursor-pointer border border-black/10 flex items-center gap-1.5"
                   >
                     <Wand2 size={14} /> Adjust Settings &amp; Re-Render
                   </button>
@@ -614,15 +529,15 @@ export default function AIHomeDesign() {
                     className="absolute top-0 bottom-0 w-1 bg-[#CCFF00] shadow-md flex items-center justify-center pointer-events-none"
                     style={{ left: `${sliderPos}%` }}
                   >
-                    <div className="w-8 h-8 rounded-full bg-black text-[#CCFF00] font-extrabold flex items-center justify-center text-xs shadow-lg border border-[#CCFF00]">
+                    <div className="w-8 h-8 rounded-full bg-black text-[#CCFF00] font-semibold flex items-center justify-center text-xs shadow-lg border border-[#CCFF00]">
                       ↔
                     </div>
                   </div>
 
-                  <span className="absolute bottom-4 left-4 text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-black/80 text-white backdrop-blur-md">
+                  <span className="absolute bottom-4 left-4 text-[10px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-black/80 text-white backdrop-blur-md">
                     Original Photo
                   </span>
-                  <span className="absolute bottom-4 right-4 text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-[#CCFF00] text-black shadow-md font-bold">
+                  <span className="absolute bottom-4 right-4 text-[10px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-[#CCFF00] text-black shadow-md font-bold">
                     Anvitam AI Render
                   </span>
                 </div>
@@ -635,7 +550,7 @@ export default function AIHomeDesign() {
                   <a
                     href={generatedImage}
                     download="anvitam-ai-design.jpg"
-                    className="bg-[#111111] hover:bg-black text-[#CCFF00] font-extrabold text-xs px-5 py-2.5 rounded-2xl transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+                    className="bg-[#111111] hover:bg-black text-[#CCFF00] font-semibold text-xs px-5 py-2.5 rounded-2xl transition flex items-center gap-1.5 shadow-xs cursor-pointer"
                   >
                     <Download size={14} /> Export HD Design
                   </a>
@@ -664,7 +579,7 @@ export default function AIHomeDesign() {
                   {/* Drawer Header */}
                   <div className="flex items-center justify-between pb-4 border-b border-gray-100">
                     <div>
-                      <h2 className="text-lg font-extrabold text-gray-900">Design Brief Settings</h2>
+                      <h2 className="text-lg font-semibold text-gray-900">Design Brief Settings</h2>
                       <p className="text-xs text-gray-500 capitalize">Mode: {selectedModule.replace('-', ' ')}</p>
                     </div>
                     <button
@@ -678,8 +593,8 @@ export default function AIHomeDesign() {
                   {/* Step 1: Upload or Choose Photo */}
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-[#111111] text-[#CCFF00] font-extrabold text-[10px] flex items-center justify-center">1</span>
-                      <h3 className="text-xs font-extrabold text-gray-900">Upload or Select Room Photo</h3>
+                      <span className="w-5 h-5 rounded-full bg-[#111111] text-[#CCFF00] font-semibold text-[10px] flex items-center justify-center">1</span>
+                      <h3 className="text-xs font-semibold text-gray-900">Upload or Select Room Photo</h3>
                     </div>
 
                     <input
@@ -695,7 +610,7 @@ export default function AIHomeDesign() {
                         <img src={sourceImage} alt="Uploaded" className="w-full h-full object-cover" />
                         <button
                           onClick={() => fileInputRef.current?.click()}
-                          className="absolute bottom-3 right-3 bg-black/80 hover:bg-black text-white text-[10px] font-extrabold px-3 py-1.5 rounded-xl transition cursor-pointer"
+                          className="absolute bottom-3 right-3 bg-black/80 hover:bg-black text-white text-[10px] font-semibold px-3 py-1.5 rounded-xl transition cursor-pointer"
                         >
                           Change Photo
                         </button>
@@ -706,14 +621,14 @@ export default function AIHomeDesign() {
                         className="border-2 border-dashed border-gray-300 hover:border-gray-900 bg-gray-50 p-6 rounded-2xl text-center cursor-pointer transition space-y-2"
                       >
                         <Upload size={24} className="mx-auto text-gray-400" />
-                        <p className="text-xs font-extrabold text-gray-800">Click to upload your room photo</p>
+                        <p className="text-xs font-semibold text-gray-800">Click to upload your room photo</p>
                         <p className="text-[10px] text-gray-400">Supports JPG, PNG, WEBP up to 10MB</p>
                       </div>
                     )}
 
                     {/* Quick Sample Photos */}
                     <div className="space-y-1.5 pt-1">
-                      <span className="text-[10px] font-extrabold text-gray-400 uppercase">Or select sample photo:</span>
+                      <span className="text-[10px] font-semibold text-gray-400 uppercase">Or select sample photo:</span>
                       <div className="grid grid-cols-2 gap-2">
                         {SAMPLE_PHOTOS.map(s => (
                           <button
@@ -733,8 +648,8 @@ export default function AIHomeDesign() {
                   {/* Step 2: Room Type */}
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-[#111111] text-[#CCFF00] font-extrabold text-[10px] flex items-center justify-center">2</span>
-                      <h3 className="text-xs font-extrabold text-gray-900">Room or Area Type</h3>
+                      <span className="w-5 h-5 rounded-full bg-[#111111] text-[#CCFF00] font-semibold text-[10px] flex items-center justify-center">2</span>
+                      <h3 className="text-xs font-semibold text-gray-900">Room or Area Type</h3>
                     </div>
 
                     <div className="flex flex-wrap gap-1.5">
@@ -758,8 +673,8 @@ export default function AIHomeDesign() {
                   {/* Step 3: Style Selection */}
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-[#111111] text-[#CCFF00] font-extrabold text-[10px] flex items-center justify-center">3</span>
-                      <h3 className="text-xs font-extrabold text-gray-900">Architectural Style</h3>
+                      <span className="w-5 h-5 rounded-full bg-[#111111] text-[#CCFF00] font-semibold text-[10px] flex items-center justify-center">3</span>
+                      <h3 className="text-xs font-semibold text-gray-900">Architectural Style</h3>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
@@ -770,12 +685,12 @@ export default function AIHomeDesign() {
                           onClick={() => setSelectedStyle(st.id)}
                           className={`p-2 rounded-xl border text-left flex items-center gap-2 transition cursor-pointer ${
                             selectedStyle === st.id
-                              ? 'border-black bg-gray-100 font-extrabold ring-1 ring-black'
+                              ? 'border-black bg-gray-100 font-semibold ring-1 ring-black'
                               : 'border-gray-200 hover:border-gray-400 bg-white'
                           }`}
                         >
                           <img src={st.img} alt={st.name} className="w-8 h-8 rounded-lg object-cover" />
-                          <span className="text-[11px] font-extrabold text-gray-800 truncate">{st.name}</span>
+                          <span className="text-[11px] font-semibold text-gray-800 truncate">{st.name}</span>
                         </button>
                       ))}
                     </div>
@@ -784,8 +699,8 @@ export default function AIHomeDesign() {
                   {/* Step 4: Market Region & Catalog */}
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-[#111111] text-[#CCFF00] font-extrabold text-[10px] flex items-center justify-center">4</span>
-                      <h3 className="text-xs font-extrabold text-gray-900">Shoppable Catalog Region</h3>
+                      <span className="w-5 h-5 rounded-full bg-[#111111] text-[#CCFF00] font-semibold text-[10px] flex items-center justify-center">4</span>
+                      <h3 className="text-xs font-semibold text-gray-900">Shoppable Catalog Region</h3>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -824,7 +739,7 @@ export default function AIHomeDesign() {
                   <button
                     onClick={handleGenerate}
                     disabled={isGenerating}
-                    className="w-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-extrabold py-3.5 rounded-2xl text-xs transition shadow-md flex items-center justify-center gap-2 cursor-pointer border border-black/10"
+                    className="w-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-semibold py-3.5 rounded-2xl text-xs transition shadow-md flex items-center justify-center gap-2 cursor-pointer border border-black/10"
                   >
                     {isGenerating ? (
                       <>
@@ -844,6 +759,23 @@ export default function AIHomeDesign() {
         </AnimatePresence>
 
       </div>
+
+      <AllToolsDrawer
+        isOpen={showToolsDrawer}
+        onClose={() => setShowToolsDrawer(false)}
+        activeToolId="ai-home-design"
+      />
+
+      <ToolsSettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        user={user}
+        onLogout={() => {
+          logoutToolUser();
+          setUser(null);
+        }}
+        onUpgrade={() => setShowPaywall(true)}
+      />
 
       <ToolsAuthModal
         isOpen={showAuthModal}

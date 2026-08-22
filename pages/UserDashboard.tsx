@@ -7,12 +7,14 @@ import {
   Zap, Crown, LogOut, Search, Compass, CreditCard, ChevronRight,
   Sparkles, Home, Building, Trees, Wand2, Trash2, MapPin, Mountain,
   Sliders, CheckCircle2, ArrowUpRight, User, ShieldCheck, X, Filter,
-  MessageSquare, Send, PanelLeft, Bot
+  MessageSquare, Send, Bot, Menu, Settings
 } from 'lucide-react';
-import { getToolUser, logoutToolUser, type ToolUser } from '../utils/userAuth';
+import { getToolUser, getOrCreateDefaultToolUser, logoutToolUser, type ToolUser } from '../utils/userAuth';
 import { TOOLS_SUITE, type ToolItem } from '../constants/toolsData';
 import { ToolsAuthModal } from '../components/tools/ToolsAuthModal';
 import { ToolsPaywallOverlay } from '../components/tools/ToolsPaywallOverlay';
+import { AllToolsDrawer } from '../components/tools/AllToolsDrawer';
+import { ToolsSettingsModal } from '../components/tools/ToolsSettingsModal';
 import { DODO_PRODUCTS } from '../constants/dodoConfig';
 
 export default function UserDashboard() {
@@ -21,11 +23,12 @@ export default function UserDashboard() {
   const [user, setUser] = useState<ToolUser | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showToolsDrawer, setShowToolsDrawer] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   // Active Tool Selection from URL or default
   const activeToolParam = searchParams.get('tool') || 'ai-home-design';
   const [activeToolId, setActiveToolId] = useState<string>(activeToolParam);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
   // AI Chat Assistant State
@@ -39,13 +42,7 @@ export default function UserDashboard() {
   const monthlyPrice = isIndia ? DODO_PRODUCTS.pro_monthly.priceINR : DODO_PRODUCTS.pro_monthly.priceUSD;
 
   useEffect(() => {
-    const current = getToolUser();
-    if (current) {
-      setUser(current);
-    } else {
-      setShowAuthModal(true);
-    }
-
+    setUser(getOrCreateDefaultToolUser());
     const handleUserUpdate = (e: Event) => {
       const customEvent = e as CustomEvent<ToolUser | null>;
       setUser(customEvent.detail);
@@ -123,146 +120,88 @@ export default function UserDashboard() {
 
       <div className="bg-[#FAFBFD] text-[#111111] min-h-screen font-sans antialiased flex flex-col pt-20">
 
+        {/* ── UNIFIED TOP BAR NAVIGATION ── */}
+        <div className="bg-white border-b border-gray-200/80 px-6 py-3 sticky top-20 z-20 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+            <button
+              onClick={() => setShowToolsDrawer(true)}
+              className="px-3.5 py-2 rounded-xl bg-black text-[#CCFF00] hover:bg-gray-800 transition cursor-pointer flex items-center gap-2 text-xs font-semibold shadow-2xs shrink-0"
+              title="Open All 21+ Tools Drawer"
+            >
+              <Menu size={16} />
+              <span>All Tools</span>
+            </button>
+
+            <div className="flex items-center gap-2 cursor-pointer shrink-0" onClick={() => navigate('/tools')}>
+              <span className="w-7 h-7 rounded-lg bg-black text-[#CCFF00] font-semibold flex items-center justify-center text-xs shadow-2xs">AS</span>
+              <div>
+                <h1 className="text-xs sm:text-sm font-semibold text-gray-900 leading-none">Studio Dashboard</h1>
+                <p className="text-[10px] text-gray-500 font-medium">Anvitam Architectural Suite</p>
+              </div>
+            </div>
+
+            <div className="relative flex-1 sm:max-w-xs ml-2">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search 21+ tools..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-gray-100 border border-gray-200 rounded-full pl-8 pr-3 py-1 text-xs text-gray-900 outline-none focus:border-black font-normal"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto justify-end">
+            <button
+              onClick={() => setShowPaywall(true)}
+              className="px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-semibold flex items-center gap-1.5 hover:bg-black transition cursor-pointer shadow-2xs"
+            >
+              <Zap size={14} className="fill-[#CCFF00] text-[#CCFF00]" />
+              <span>{creditsRemaining} Credits</span>
+            </button>
+
+            <button
+              onClick={() => setShowSettingsModal(true)}
+              className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-gray-400 text-gray-700 hover:text-black transition cursor-pointer shadow-2xs"
+              title="Studio & Account Settings"
+            >
+              <Settings size={17} />
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-red-400 text-gray-600 hover:text-red-600 transition cursor-pointer shadow-2xs"
+              title="Sign Out"
+            >
+              <LogOut size={17} />
+            </button>
+          </div>
+        </div>
+
         <div className="flex-1 flex overflow-hidden">
-
-          {/* ── LEFT SIDEBAR (All Tools Listed for Instant Switching) ── */}
-          <aside className={`bg-white border-r border-gray-200/80 w-64 p-5 shrink-0 flex flex-col justify-between sticky top-20 h-[calc(100vh-5rem)] overflow-y-auto z-30 transition-all duration-300 ${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0 md:w-16 md:px-2'
-          }`}>
-            <div className="space-y-6">
-              
-              {/* Studio Header */}
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-[#111111] text-[#CCFF00] font-bold flex items-center justify-center text-sm shadow-2xs">
-                  A
-                </div>
-                <div className={sidebarOpen ? 'block' : 'hidden md:hidden'}>
-                  <h2 className="text-sm font-semibold text-gray-900 tracking-tight">Anvitam Studio</h2>
-                  <p className="text-[10px] text-gray-500 font-normal">21+ Architectural Tools</p>
-                </div>
-              </div>
-
-              {/* Search Bar */}
-              <div className={`relative ${sidebarOpen ? 'block' : 'hidden md:hidden'}`}>
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Filter tools..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-8 pr-3 py-1.5 text-xs text-gray-900 outline-none focus:border-black font-normal"
-                />
-              </div>
-
-              {/* Group 1: AI Design Tools */}
-              <div className="space-y-1">
-                <p className={`text-[10px] font-semibold uppercase tracking-wider text-gray-400 px-3 mb-1.5 ${
-                  sidebarOpen ? 'block' : 'hidden md:hidden'
-                }`}>
-                  Anvitam AI Design Tools
-                </p>
-                {aiToolsGroup.map(t => (
-                  <button
-                    key={t.id}
-                    onClick={() => handleSelectTool(t.id, t.href)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition cursor-pointer ${
-                      activeToolId === t.id
-                        ? 'bg-[#111111] text-[#CCFF00] font-semibold shadow-2xs'
-                        : 'text-gray-700 hover:bg-gray-100 hover:text-black font-medium'
-                    }`}
-                  >
-                    <span className="shrink-0">{t.iconSvg}</span>
-                    <span className={`truncate ${sidebarOpen ? 'block' : 'hidden md:hidden'}`}>{t.name}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Group 2: Site Intelligence Suite */}
-              <div className="space-y-1 pt-2 border-t border-gray-100">
-                <p className={`text-[10px] font-semibold uppercase tracking-wider text-gray-400 px-3 mb-1.5 ${
-                  sidebarOpen ? 'block' : 'hidden md:hidden'
-                }`}>
-                  Architectural Site Suite
-                </p>
-                {siteToolsGroup.slice(0, 8).map(t => (
-                  <button
-                    key={t.id}
-                    onClick={() => handleSelectTool(t.id, t.href)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition cursor-pointer ${
-                      activeToolId === t.id
-                        ? 'bg-[#111111] text-[#CCFF00] font-semibold shadow-2xs'
-                        : 'text-gray-700 hover:bg-gray-100 hover:text-black font-medium'
-                    }`}
-                  >
-                    <span className="shrink-0">{t.iconSvg}</span>
-                    <span className={`truncate ${sidebarOpen ? 'block' : 'hidden md:hidden'}`}>{t.name}</span>
-                  </button>
-                ))}
-              </div>
-
-            </div>
-
-            {/* Bottom Upgrade CTA */}
-            <div className="pt-4 border-t border-gray-100 space-y-2">
-              <button
-                onClick={() => setShowPaywall(true)}
-                className="w-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-semibold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs border border-black/10"
-              >
-                <Crown size={14} />
-                <span className={sidebarOpen ? 'block' : 'hidden md:hidden'}>Upgrade to Pro</span>
-              </button>
-
-              <button
-                onClick={handleLogout}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-gray-500 hover:text-red-600 transition cursor-pointer ${
-                  sidebarOpen ? 'justify-start' : 'justify-center'
-                }`}
-              >
-                <LogOut size={15} />
-                <span className={sidebarOpen ? 'block' : 'hidden md:hidden'}>Sign Out</span>
-              </button>
-            </div>
-          </aside>
 
           {/* ── MAIN STUDIO WORKSPACE CANVAS ── */}
           <main className="flex-1 bg-[#FAFBFD] p-6 sm:p-8 overflow-y-auto max-w-6xl mx-auto w-full space-y-6">
             
-            {/* Studio Workspace Header Bar */}
+            {/* Active Selected Tool Overview Card */}
             <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="p-2 rounded-xl text-gray-500 hover:text-black hover:bg-gray-100 transition cursor-pointer"
-                  title="Toggle Sidebar"
-                >
-                  <PanelLeft size={18} />
-                </button>
-
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h1 className="text-lg font-bold text-gray-900 tracking-tight">{currentToolObj.name}</h1>
-                    <span className="text-[10px] font-semibold bg-[#111111] text-[#CCFF00] px-2 py-0.5 rounded-full uppercase">
-                      {currentToolObj.badge}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-500 font-normal mt-0.5">{currentToolObj.shortDesc}</p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-semibold text-gray-900 tracking-tight">{currentToolObj.name}</h2>
+                  <span className="text-[10px] font-semibold bg-[#111111] text-[#CCFF00] px-2 py-0.5 rounded-full uppercase">
+                    {currentToolObj.badge}
+                  </span>
                 </div>
+                <p className="text-xs text-gray-500 font-normal mt-0.5">{currentToolObj.shortDesc}</p>
               </div>
 
-              {/* Credit Meter & Actions */}
-              <div className="flex items-center gap-3">
-                <div className="bg-gray-50 border border-gray-200 px-3.5 py-1.5 rounded-xl flex items-center gap-2">
-                  <Zap size={14} className="fill-[#CCFF00] text-[#111111]" />
-                  <span className="text-xs font-semibold text-gray-900">{creditsRemaining} Credits</span>
-                </div>
-
-                <button
-                  onClick={() => navigate(currentToolObj.href)}
-                  className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-semibold px-4 py-2 rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer shadow-2xs border border-black/10"
-                >
-                  Launch Interactive Studio <ArrowUpRight size={14} />
-                </button>
-              </div>
+              <button
+                onClick={() => navigate(currentToolObj.href)}
+                className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-semibold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer shadow-2xs border border-black/10 shrink-0"
+              >
+                Launch Interactive Studio <ArrowUpRight size={14} />
+              </button>
             </div>
 
             {/* ── AI CHATBOT & PROMPT ASSISTANT BAR ── */}
@@ -383,6 +322,20 @@ export default function UserDashboard() {
         </div>
 
       </div>
+
+      <AllToolsDrawer
+        isOpen={showToolsDrawer}
+        onClose={() => setShowToolsDrawer(false)}
+        activeToolId={activeToolId}
+      />
+
+      <ToolsSettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        user={user}
+        onLogout={handleLogout}
+        onUpgrade={() => setShowPaywall(true)}
+      />
 
       <ToolsAuthModal
         isOpen={showAuthModal}
