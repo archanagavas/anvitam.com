@@ -101,11 +101,16 @@
         -webkit-text-size-adjust: 100%;
       }
 
-      /* Desktop/PC display zoom preference */
+      /* Desktop/PC display zoom preference — excluded on WebGL canvas pages */
       @media (min-width: 1024px) {
-        html {
+        html:not(.no-zoom):not(:has(.site-analysis-page)) {
           zoom: 80%;
         }
+      }
+
+      html.no-zoom,
+      html:has(.site-analysis-page) {
+        zoom: 1 !important;
       }
 
       @media (min-width: 768px) {
