@@ -159,19 +159,20 @@ export default function SiteAnalysis() {
 
     if (mapEngine === '3d') {
       try {
-        if (!mapboxgl.supported()) {
+        const mb = (mapboxgl as any).default || mapboxgl;
+        if (mb && mb.supported && !mb.supported()) {
           console.warn('[Mapbox GL] WebGL context is not supported or disabled on this device/browser. Switching to 2D Leaflet engine.');
           setMapEngine('2d');
           return;
         }
 
-        const mb = (mapboxgl as any).default || mapboxgl;
         if (mb) mb.accessToken = MAPBOX_TOKEN;
         mapboxgl.accessToken = MAPBOX_TOKEN;
 
         const selectedObj = MAPBOX_3D_STYLES.find(s => s.id === mapboxStyleId) || MAPBOX_3D_STYLES[0];
 
-        const map = new mapboxgl.Map({
+        const MapConstructor = mb.Map || mapboxgl.Map;
+        const map = new MapConstructor({
           container: mapContainerRef.current,
           style: selectedObj.style,
           center: [centerLon, centerLat],
@@ -265,7 +266,8 @@ export default function SiteAnalysis() {
         });
 
         try {
-          map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
+          const NavControl = mb.NavigationControl || mapboxgl.NavigationControl;
+          map.addControl(new NavControl({ visualizePitch: true }), 'top-right');
         } catch { /* silent */ }
 
         map.on('click', (e) => {
@@ -423,7 +425,9 @@ export default function SiteAnalysis() {
       el.className = 'map-pin';
       el.innerHTML = `<div class="pin-dot"></div><div class="pin-pulse"></div>`;
 
-      mapboxMarkerRef.current = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
+      const mb = (mapboxgl as any).default || mapboxgl;
+      const MarkerConstructor = mb.Marker || mapboxgl.Marker;
+      mapboxMarkerRef.current = new MarkerConstructor({ element: el, anchor: 'bottom' })
         .setLngLat([lon, lat])
         .addTo(map);
 
@@ -457,6 +461,9 @@ export default function SiteAnalysis() {
     if (!deduction.success) {
       setShowPaywall(true);
       return;
+    }
+    if (deduction.user) {
+      setUser(deduction.user);
     }
 
     setLoading(true);
