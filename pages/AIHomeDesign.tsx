@@ -176,7 +176,7 @@ export default function AIHomeDesign() {
         body: JSON.stringify({
           action: 'generate',
           module: selectedModule,
-          image: sourceImage,
+          sourceImage: sourceImage,
           designMode,
           roomType,
           style: selectedStyle,
