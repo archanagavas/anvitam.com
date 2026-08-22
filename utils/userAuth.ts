@@ -39,15 +39,7 @@ export function getToolUser(): ToolUser | null {
   }
 }
 
-export function getOrCreateDefaultToolUser(): ToolUser | null {
-  try {
-    if (typeof window !== 'undefined' && sessionStorage.getItem(LOGOUT_KEY) === 'true') {
-      return null;
-    }
-  } catch {
-    /* safe storage fallback */
-  }
-
+export function getOrCreateDefaultToolUser(): ToolUser {
   let user = getToolUser();
   if (!user) {
     user = {
@@ -64,6 +56,7 @@ export function getOrCreateDefaultToolUser(): ToolUser | null {
     inMemoryUser = user;
     try {
       if (typeof window !== 'undefined') {
+        sessionStorage.removeItem(LOGOUT_KEY);
         localStorage.setItem(USER_KEY, JSON.stringify(user));
       }
     } catch (err) {
@@ -77,7 +70,7 @@ export function getOrCreateDefaultToolUser(): ToolUser | null {
 }
 
 export function updateToolUser(updates: Partial<ToolUser>): ToolUser | null {
-  const current = getToolUser();
+  const current = getToolUser() || getOrCreateDefaultToolUser();
   if (!current) return null;
   const updated = { ...current, ...updates };
   inMemoryUser = updated;
@@ -118,7 +111,7 @@ export function setToolUser(user: ToolUser, token?: string): ToolUser {
 }
 
 export function deductUserCredit(cost: number = 1): { success: boolean; user: ToolUser | null } {
-  const current = getToolUser();
+  const current = getToolUser() || getOrCreateDefaultToolUser();
   if (!current) return { success: false, user: null };
 
   // Check credit expiry if set

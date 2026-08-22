@@ -147,7 +147,7 @@ export default function AIHomeDesign() {
   };
 
   const handleGenerate = async () => {
-    const currentUser = getToolUser();
+    const currentUser = getToolUser() || getOrCreateDefaultToolUser();
     if (!currentUser) {
       setShowAuthModal(true);
       return;

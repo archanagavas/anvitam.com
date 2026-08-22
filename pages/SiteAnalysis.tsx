@@ -306,7 +306,7 @@ export default function SiteAnalysis() {
         resizeObserver.disconnect();
       }
     };
-  }, [mapEngine, mapboxStyleId, leafletStyleId]);
+  }, [mapEngine]);
 
   useEffect(() => {
     if (latParam && lonParam) {
