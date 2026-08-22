@@ -2,7 +2,7 @@
  * utils/aiDesignPrompts.ts
  * 
  * Master Prompt Library for AI Home Design Tool Suite.
- * Mirrors DecAI module structure (Interior, Exterior, Garden, Replace & Add,
+ * Mirrors Anvitam AI module structure (Interior, Exterior, Garden, Replace & Add,
  * Removal, Declutter, Style Transfer, New Walls, New Flooring) + Catalog Recommendation & Pins.
  */
 

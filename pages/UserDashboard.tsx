@@ -1,4 +1,4 @@
-// pages/UserDashboard.tsx — Ultra-Clean Architectural & DecAI SaaS Dashboard
+// pages/UserDashboard.tsx — Ultra-Clean Architectural & Anvitam's AI SaaS Dashboard
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -146,7 +146,7 @@ export default function UserDashboard() {
                 <div className="flex items-center gap-2">
                   <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">Studio Dashboard</h1>
                   <span className="text-[10px] font-extrabold bg-gray-100 text-gray-700 px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-gray-200">
-                    DecAI v2.0
+                    Anvitam AI v2.0
                   </span>
                 </div>
                 <p className="text-xs text-gray-500 font-normal mt-0.5">
@@ -193,7 +193,7 @@ export default function UserDashboard() {
           {/* ── TAB NAVIGATION ── */}
           <div className="flex items-center gap-2 mb-8 border-b border-gray-200 pb-4 overflow-x-auto">
             {[
-              { id: 'ai-studio', label: 'DecAI Design Studio (5 AI Tools)', icon: <Sparkles size={16} /> },
+              { id: 'ai-studio', label: "Anvitam's AI Design Studio (5 AI Tools)", icon: <Sparkles size={16} /> },
               { id: 'site-intelligence', label: `Site Intelligence Suite (${TOOLS_SUITE.length} Tools)`, icon: <Compass size={16} /> },
               { id: 'billing', label: 'Billing & Metered Credits', icon: <CreditCard size={16} /> }
             ].map(tab => (
@@ -218,14 +218,14 @@ export default function UserDashboard() {
               
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-extrabold text-gray-900 tracking-tight">DecAI Design Tools Suite</h2>
+                  <h2 className="text-xl font-extrabold text-gray-900 tracking-tight">Anvitam's AI Design Tools Suite</h2>
                   <p className="text-xs text-gray-500 mt-0.5">Photorealistic interior, exterior facade, garden, and furniture AI tools.</p>
                 </div>
                 <button
                   onClick={() => navigate('/tools/ai-home-design')}
                   className="bg-[#CCFF00] text-black font-extrabold px-4 py-2 rounded-2xl text-xs hover:bg-black hover:text-[#CCFF00] transition cursor-pointer flex items-center gap-1 shadow-2xs"
                 >
-                  Launch Full DecAI Studio →
+                  Launch Full Anvitam's AI Studio →
                 </button>
               </div>
 

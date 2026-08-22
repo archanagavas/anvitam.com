@@ -1,8 +1,8 @@
 /**
- * pages/AIHomeDesign.tsx — DecAI Studio Interface & AI Home Design Master Studio
+ * pages/AIHomeDesign.tsx — Anvitam's AI Studio Interface & AI Home Design Master Studio
  * 
  * Features:
- * 1. DecAI-Mirrored Layout (Left Sidebar, Top Controls, Hero Prompt Bar, Brief Card Drawer, Split Preview Cards)
+ * 1. Anvitam's AI Studio Layout (Left Sidebar, Top Controls, Hero Prompt Bar, Brief Card Drawer, Split Preview Cards)
  * 2. Distinct tools for Interior Design, Exterior Facade, Garden/Yard, Replace, Remove, Declutter, Style Transfer, Walls, Flooring
  * 3. Draggable Before/After Split-View Canvas Slider
  * 4. Interactive Element Bounding Box Pins with Regional Shoppable Catalog (India, USA, Brazil)
@@ -287,13 +287,13 @@ export default function AIHomeDesign() {
   return (
     <>
       <Helmet>
-        <title>DecAI Studio | AI Interior &amp; Exterior Design | Anvitam</title>
-        <meta name="description" content="DecAI-inspired AI Studio for interior design, exterior facade, garden landscape, room restyle, and furniture replacement." />
+        <title>Anvitam's AI Studio | AI Interior &amp; Exterior Design</title>
+        <meta name="description" content="Anvitam's AI Studio for interior design, exterior facade, garden landscape, room restyle, and furniture replacement." />
       </Helmet>
 
       <div className="w-full bg-[#FFFFFF] text-[#111111] min-h-screen font-sans flex flex-col pt-16">
 
-        {/* ── TOP APP BAR HEADER (DecAI Style) ── */}
+        {/* ── TOP APP BAR HEADER (Anvitam's AI Style) ── */}
         <header className="h-16 bg-white border-b border-gray-200/80 px-4 sm:px-6 flex items-center justify-between z-30 sticky top-16">
           <div className="flex items-center gap-3">
             <button
@@ -308,7 +308,7 @@ export default function AIHomeDesign() {
                 A
               </div>
               <span className="font-extrabold text-base tracking-tight text-gray-900">
-                DecAI<span className="text-xs align-super text-gray-400 font-normal">™</span>
+                Anvitam's AI<span className="text-xs align-super text-gray-400 font-normal">™</span>
               </span>
             </div>
           </div>
@@ -368,7 +368,7 @@ export default function AIHomeDesign() {
 
         <div className="flex-1 flex overflow-hidden">
 
-          {/* ── LEFT STUDIO SIDEBAR (DecAI Layout) ── */}
+          {/* ── LEFT STUDIO SIDEBAR (Anvitam's AI Layout) ── */}
           <aside className={`bg-[#FAFBFD] border-r border-gray-200/80 w-64 p-5 shrink-0 flex flex-col justify-between transition-all duration-300 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0 md:w-16 md:px-2'
           }`}>
@@ -504,7 +504,7 @@ export default function AIHomeDesign() {
                         type="text"
                         value={promptText}
                         onChange={(e) => setPromptText(e.target.value)}
-                        placeholder="Ask DecAI anything..."
+                        placeholder="Ask Anvitam's AI anything..."
                         className="w-full bg-transparent border-none text-xs text-gray-800 outline-none placeholder:text-gray-400 font-medium"
                       />
                       <div className="flex items-center gap-2 shrink-0">
@@ -674,7 +674,7 @@ export default function AIHomeDesign() {
                   </span>
                   <a
                     href={generatedImage}
-                    download="anvitam-decai-design.jpg"
+                    download="anvitam-ai-design.jpg"
                     className="bg-black hover:bg-gray-800 text-white font-bold text-xs px-5 py-2.5 rounded-2xl transition flex items-center gap-1.5 shadow-sm"
                   >
                     <Download size={14} /> Export HD Design
@@ -903,7 +903,7 @@ export default function AIHomeDesign() {
 
                 </div>
 
-                {/* Bottom Action Button (DecAI Style) */}
+                {/* Bottom Action Button (Anvitam's AI Style) */}
                 <div className="pt-4 border-t border-gray-100">
                   <button
                     onClick={handleGenerate}
