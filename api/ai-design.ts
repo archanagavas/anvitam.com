@@ -34,6 +34,8 @@ import { INITIAL_CATALOG_PRODUCTS, type CatalogProduct } from '../constants/cata
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
+
 const GEMINI_API_KEY =
   process.env.GEMINI_API_KEY ||
   process.env.VITE_GEMINI_API_KEY ||
@@ -287,60 +289,102 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const timeoutId = setTimeout(() => controller.abort(), 50_000);
 
     try {
-      const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-
-      const parts: any[] = [
-        { text: fullPrompt },
-        { inline_data: { mime_type: mimeType, data: cleanBase64 } },
-      ];
-
-      if (referenceImage && typeof referenceImage === 'string' && module === 'style-transfer') {
-        const cleanRef = referenceImage.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, '');
-        parts.push({ inline_data: { mime_type: 'image/jpeg', data: cleanRef } });
-      }
-
-      const geminiRes = await fetch(geminiEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ role: 'user', parts }],
-          generationConfig: {
-            temperature: 0.4,
-            topK: 32,
-            topP: 0.95,
-            maxOutputTokens: 2048,
-          },
-        }),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!geminiRes.ok) {
-        const errText = await geminiRes.text();
-        console.error('[ai-design/generate] Gemini API error:', geminiRes.status, errText.substring(0, 300));
-        throw new Error(
-          geminiRes.status === 429
-            ? 'AI service is busy right now. Please wait a few seconds and try again.'
-            : `AI service error (${geminiRes.status}). Please try again shortly.`
-        );
-      }
-
-      const responseData = await geminiRes.json();
-      const candidate = responseData.candidates?.[0];
-
       let generatedImageB64 = '';
       let textDescription = '';
 
-      if (candidate?.content?.parts) {
-        for (const part of candidate.content.parts) {
-          if (part.inline_data?.data) {
-            generatedImageB64 = `data:${part.inline_data.mime_type || 'image/jpeg'};base64,${part.inline_data.data}`;
-          } else if (part.text) {
-            textDescription += part.text;
+      // 1. Try OpenRouter multimodal (GPT-4o) if key is provided
+      if (OPENROUTER_API_KEY) {
+        try {
+          const contentParts: any[] = [
+            { type: 'text', text: fullPrompt },
+            { type: 'image_url', image_url: { url: `data:${mimeType};base64,${cleanBase64}` } }
+          ];
+          if (referenceImage && typeof referenceImage === 'string' && module === 'style-transfer') {
+            const cleanRef = referenceImage.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, '');
+            contentParts.push({ type: 'image_url', image_url: { url: `data:image/jpeg;base64,${cleanRef}` } });
+          }
+
+          const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+              'HTTP-Referer': 'https://anvitam.com',
+              'X-Title': 'Anvitam'
+            },
+            body: JSON.stringify({
+              model: 'openai/gpt-4o',
+              messages: [{ role: 'user', content: contentParts }],
+              temperature: 0.4,
+              max_tokens: 2048
+            }),
+            signal: controller.signal
+          });
+          if (orRes.ok) {
+            const orJson = await orRes.json();
+            textDescription = orJson.choices?.[0]?.message?.content || '';
+          } else {
+            console.warn(`[ai-design/generate] OpenRouter returned status ${orRes.status}`);
+          }
+        } catch (orErr) {
+          console.warn('[ai-design/generate] OpenRouter request failed:', orErr);
+        }
+      }
+
+      // 2. Fall back to Gemini if OpenRouter didn't yield result
+      if (!textDescription && GEMINI_API_KEY) {
+        const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const parts: any[] = [
+          { text: fullPrompt },
+          { inline_data: { mime_type: mimeType, data: cleanBase64 } },
+        ];
+
+        if (referenceImage && typeof referenceImage === 'string' && module === 'style-transfer') {
+          const cleanRef = referenceImage.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, '');
+          parts.push({ inline_data: { mime_type: 'image/jpeg', data: cleanRef } });
+        }
+
+        const geminiRes = await fetch(geminiEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts }],
+            generationConfig: {
+              temperature: 0.4,
+              topK: 32,
+              topP: 0.95,
+              maxOutputTokens: 2048,
+            },
+          }),
+          signal: controller.signal,
+        });
+
+        if (!geminiRes.ok) {
+          const errText = await geminiRes.text();
+          console.error('[ai-design/generate] Gemini API error:', geminiRes.status, errText.substring(0, 300));
+          if (!textDescription) {
+            throw new Error(
+              geminiRes.status === 429
+                ? 'AI service is busy right now. Please wait a few seconds and try again.'
+                : `AI service error (${geminiRes.status}). Please try again shortly.`
+            );
+          }
+        } else {
+          const responseData = await geminiRes.json();
+          const candidate = responseData.candidates?.[0];
+          if (candidate?.content?.parts) {
+            for (const part of candidate.content.parts) {
+              if (part.inline_data?.data) {
+                generatedImageB64 = `data:${part.inline_data.mime_type || 'image/jpeg'};base64,${part.inline_data.data}`;
+              } else if (part.text) {
+                textDescription += part.text;
+              }
+            }
           }
         }
       }
+
+      clearTimeout(timeoutId);
 
       // ── Deduct credit & store idempotency record atomically ──────────
       if (userDoc) {
@@ -459,32 +503,62 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15_000);
 
-      const geminiRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ role: 'user', parts: [{ text: promptText }] }],
-            generationConfig: { responseMimeType: 'application/json', temperature: 0.2 },
-          }),
-          signal: controller.signal,
+      let rawText = '[]';
+
+      // 1. Try OpenRouter if available
+      if (OPENROUTER_API_KEY) {
+        try {
+          const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+              'HTTP-Referer': 'https://anvitam.com',
+              'X-Title': 'Anvitam'
+            },
+            body: JSON.stringify({
+              model: 'openai/gpt-4o',
+              messages: [{ role: 'user', content: promptText }],
+            }),
+            signal: controller.signal,
+          });
+          if (orRes.ok) {
+            const orJson = await orRes.json();
+            rawText = orJson.choices?.[0]?.message?.content || '[]';
+          }
+        } catch (orErr) {
+          console.warn('[ai-design/recommend] OpenRouter attempt failed:', orErr);
         }
-      );
+      }
+
+      // 2. Fall back to Gemini if OpenRouter was skipped or returned empty
+      if ((!rawText || rawText === '[]') && GEMINI_API_KEY) {
+        const geminiRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ role: 'user', parts: [{ text: promptText }] }],
+              generationConfig: { responseMimeType: 'application/json', temperature: 0.2 },
+            }),
+            signal: controller.signal,
+          }
+        );
+        if (geminiRes.ok) {
+          const resJson = await geminiRes.json();
+          rawText = resJson.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
+        }
+      }
 
       clearTimeout(timeoutId);
 
-      if (!geminiRes.ok) {
-        throw new Error(`Gemini recommend returned ${geminiRes.status}`);
-      }
-
-      const resJson = await geminiRes.json();
-      const rawText: string = resJson.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
       let recommendations: any[];
       try {
-        recommendations = JSON.parse(rawText);
+        const cleanJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+        recommendations = JSON.parse(cleanJson);
       } catch {
-        console.warn('[ai-design/recommend] Failed to parse Gemini JSON response — using fallback');
+        console.warn('[ai-design/recommend] Failed to parse JSON response — using fallback');
         recommendations = [];
       }
 
@@ -523,7 +597,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       { label: 'Wall Finish', element_type: 'wall_paint', x_percent: 20, y_percent: 35, width_percent: 25, height_percent: 30 },
     ];
 
-    if (!image || typeof image !== 'string' || !GEMINI_API_KEY) {
+    if (!image || typeof image !== 'string' || (!OPENROUTER_API_KEY && !GEMINI_API_KEY)) {
       return res.status(200).json({ success: true, pins: FALLBACK_PINS });
     }
 
@@ -538,38 +612,76 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15_000);
 
-      const resDetect = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [
-              {
-                role: 'user',
-                parts: [
-                  { text: ELEMENT_DETECTION_PROMPT },
-                  { inline_data: { mime_type: mimeType, data: cleanBase64 } },
-                ],
-              },
-            ],
-            generationConfig: { responseMimeType: 'application/json', temperature: 0.1 },
-          }),
-          signal: controller.signal,
+      let rawText = '[]';
+
+      // 1. Try OpenRouter multimodal (GPT-4o) if available
+      if (OPENROUTER_API_KEY) {
+        try {
+          const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+              'HTTP-Referer': 'https://anvitam.com',
+              'X-Title': 'Anvitam'
+            },
+            body: JSON.stringify({
+              model: 'openai/gpt-4o',
+              messages: [
+                {
+                  role: 'user',
+                  content: [
+                    { type: 'text', text: ELEMENT_DETECTION_PROMPT },
+                    { type: 'image_url', image_url: { url: `data:${mimeType};base64,${cleanBase64}` } }
+                  ]
+                }
+              ]
+            }),
+            signal: controller.signal
+          });
+          if (orRes.ok) {
+            const orJson = await orRes.json();
+            rawText = orJson.choices?.[0]?.message?.content || '[]';
+          }
+        } catch (orErr) {
+          console.warn('[ai-design/detect-elements] OpenRouter attempt failed:', orErr);
         }
-      );
+      }
+
+      // 2. Fall back to Gemini if OpenRouter skipped or failed
+      if ((!rawText || rawText === '[]') && GEMINI_API_KEY) {
+        const resDetect = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [
+                {
+                  role: 'user',
+                  parts: [
+                    { text: ELEMENT_DETECTION_PROMPT },
+                    { inline_data: { mime_type: mimeType, data: cleanBase64 } },
+                  ],
+                },
+              ],
+              generationConfig: { responseMimeType: 'application/json', temperature: 0.1 },
+            }),
+            signal: controller.signal,
+          }
+        );
+        if (resDetect.ok) {
+          const jsonRes = await resDetect.json();
+          rawText = jsonRes.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
+        }
+      }
 
       clearTimeout(timeoutId);
 
-      if (!resDetect.ok) {
-        throw new Error(`Element detection returned ${resDetect.status}`);
-      }
-
-      const jsonRes = await resDetect.json();
-      const rawText: string = jsonRes.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
       let pins: any[];
       try {
-        pins = JSON.parse(rawText);
+        const cleanJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+        pins = JSON.parse(cleanJson);
       } catch {
         pins = FALLBACK_PINS;
       }

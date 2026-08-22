@@ -133,30 +133,63 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (typeof topic !== 'string' || topic.length > 200) {
       return res.status(400).json({ error: 'Topic must be a string under 200 characters.' });
     }
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      console.error('[api/generate] GEMINI_API_KEY environment variable is not set.');
+    const openrouterKey = process.env.OPENROUTER_API_KEY;
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (!openrouterKey && !geminiKey) {
+      console.error('[api/generate] Neither OPENROUTER_API_KEY nor GEMINI_API_KEY is set.');
       return res.status(500).json({ error: 'AI service is not configured on the server.' });
     }
     const prompt = type === 'project'
       ? `Write a sophisticated, professional architectural project description for: "${topic}". Focus on materials, light, space, and context. Under 100 words. Tone: Minimalist, Artistic.`
       : `Write an engaging intro paragraph for an architecture blog about: "${topic}". Focus on design philosophy. Under 150 words. Tone: Thoughtful, Insightful.`;
+    
     try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+      // 1. Try OpenRouter API if available
+      if (openrouterKey) {
+        try {
+          const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${openrouterKey}`,
+              'HTTP-Referer': 'https://anvitam.com',
+              'X-Title': 'Anvitam'
+            },
+            body: JSON.stringify({
+              model: 'openai/gpt-4o',
+              messages: [{ role: 'user', content: prompt }],
+            }),
+          });
+          if (response.ok) {
+            const data = await response.json();
+            const text = data?.choices?.[0]?.message?.content ?? 'No content generated.';
+            return res.status(200).json({ text });
+          }
+          console.warn(`[api/generate] OpenRouter returned status ${response.status}. Attempting Gemini fallback.`);
+        } catch (orErr) {
+          console.warn('[api/generate] OpenRouter request failed:', orErr);
         }
-      );
-      if (!response.ok) {
-        console.error(`[api/generate] Gemini API responded with ${response.status}`);
-        return res.status(502).json({ error: 'Upstream AI service error.' });
       }
-      const data = await response.json();
-      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? 'No content generated.';
-      return res.status(200).json({ text });
+
+      // 2. Try Gemini API fallback
+      if (geminiKey) {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+          }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? 'No content generated.';
+          return res.status(200).json({ text });
+        }
+        console.error(`[api/generate] Gemini API responded with ${response.status}`);
+      }
+
+      return res.status(502).json({ error: 'Upstream AI service error.' });
     } catch (err) {
       console.error('[api/generate] Unexpected error:', err);
       return res.status(500).json({ error: 'Content generation failed. Please try again.' });
