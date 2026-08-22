@@ -269,7 +269,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!['interior', 'exterior', 'garden', 'replace', 'remove', 'declutter', 'style-transfer', 'walls', 'flooring'].includes(module)) {
       return res.status(400).json({ error: `Unknown design module: ${module}` });
     }
-    if (!GEMINI_API_KEY) {
+    const hasAIConfigured = Boolean(OPENROUTER_API_KEY || GEMINI_API_KEY || process.env.NVIDIA_API_KEY || process.env.VITE_NVIDIA_API_KEY);
+    if (!hasAIConfigured) {
       return res.status(500).json({
         error: 'AI service is not configured on this server. Please contact support.',
       });
@@ -314,7 +315,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             contentParts.push({ type: 'image_url', image_url: { url: `data:image/jpeg;base64,${cleanRef}` } });
           }
 
-          const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          let orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -323,7 +324,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               'X-Title': 'Anvitam'
             },
             body: JSON.stringify({
-              model: 'openai/gpt-4o',
+              model: 'openai/gpt-4o-mini',
               messages: [{ role: 'user', content: contentParts }],
               temperature: 0.4,
               max_tokens: 2048

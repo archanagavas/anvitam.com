@@ -23,6 +23,7 @@ import { ToolsAuthModal } from '../components/tools/ToolsAuthModal';
 import { ToolsPaywallOverlay } from '../components/tools/ToolsPaywallOverlay';
 import { AllToolsDrawer } from '../components/tools/AllToolsDrawer';
 import { ToolsSettingsModal } from '../components/tools/ToolsSettingsModal';
+import { INITIAL_CATALOG_PRODUCTS, CATALOG_CATEGORIES, type CatalogProduct } from '../constants/catalogData';
 
 // Preset visual styles for design brief drawer
 const STYLE_OPTIONS = [
@@ -75,7 +76,8 @@ export default function AIHomeDesign() {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [sliderPos, setSliderPos] = useState<number>(50);
   const [recommendations, setRecommendations] = useState<any[]>([]);
-  const [catalog, setCatalog] = useState<any[]>([]);
+  const [catalog, setCatalog] = useState<CatalogProduct[]>(INITIAL_CATALOG_PRODUCTS);
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
   const [pins, setPins] = useState<any[]>([]);
   const [activePin, setActivePin] = useState<any | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -576,6 +578,119 @@ export default function AIHomeDesign() {
 
               </div>
             )}
+
+            {/* SHOPPABLE AFFILIATE RECOMMENDATION ENGINE LAYER */}
+            <div className="mt-12 pt-8 border-t border-gray-200/80 space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <ShoppingBag className="w-5 h-5 text-amber-500" />
+                    <h3 className="text-lg font-bold text-gray-900">Shoppable Design Catalog &amp; AI Product Recommendations</h3>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Curated product matches for your {selectedStyle} {selectedModule} space. Buy directly from verified partner stores.
+                  </p>
+                </div>
+
+                {/* Regional Market Selector */}
+                <div className="flex items-center gap-1.5 bg-gray-100 p-1 rounded-full border border-gray-200 text-xs font-semibold">
+                  {(['India', 'USA', 'Brazil'] as const).map(reg => (
+                    <button
+                      key={reg}
+                      type="button"
+                      onClick={() => setRegion(reg)}
+                      className={`px-3 py-1 rounded-full transition cursor-pointer ${
+                        region === reg ? 'bg-black text-[#CCFF00] shadow-xs' : 'text-gray-600 hover:text-black'
+                      }`}
+                    >
+                      {reg === 'India' ? '🇮🇳 India' : reg === 'USA' ? '🇺🇸 USA' : '🇧🇷 Brazil'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Category Filter Pills */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategoryFilter('all')}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
+                    selectedCategoryFilter === 'all'
+                      ? 'bg-[#111111] text-[#CCFF00]'
+                      : 'bg-white border border-gray-200 text-gray-700 hover:border-black'
+                  }`}
+                >
+                  All Categories
+                </button>
+                {CATALOG_CATEGORIES.map(cat => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setSelectedCategoryFilter(cat.id)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
+                      selectedCategoryFilter === cat.id
+                        ? 'bg-[#111111] text-[#CCFF00]'
+                        : 'bg-white border border-gray-200 text-gray-700 hover:border-black'
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+
+              {/* Products Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {catalog
+                  .filter(p => (p.region === region || p.region === 'Global') && (selectedCategoryFilter === 'all' || p.category_id === selectedCategoryFilter))
+                  .map(product => (
+                    <div
+                      key={product.id}
+                      className="bg-white rounded-2xl border border-gray-200/80 overflow-hidden shadow-xs hover:shadow-lg transition group flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="relative h-44 w-full overflow-hidden bg-gray-100">
+                          <img
+                            src={product.image_url}
+                            alt={product.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                          />
+                          <span className="absolute top-3 left-3 bg-black/80 text-[#CCFF00] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider backdrop-blur-xs">
+                            {product.element_type.replace('_', ' ')}
+                          </span>
+                          <span className="absolute top-3 right-3 bg-white/90 text-gray-900 text-xs font-black px-2.5 py-1 rounded-full shadow-xs border border-gray-200">
+                            {product.price}
+                          </span>
+                        </div>
+
+                        <div className="p-4 space-y-2">
+                          <h4 className="text-xs font-bold text-gray-900 leading-snug group-hover:text-black line-clamp-2">
+                            {product.name}
+                          </h4>
+                          <div className="flex flex-wrap gap-1">
+                            {product.style_tags.map((tag, idx) => (
+                              <span key={idx} className="bg-gray-100 text-gray-600 text-[10px] font-medium px-2 py-0.5 rounded-md">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-4 pt-0">
+                        <a
+                          href={`/api/ai-design?action=go&id=${product.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full bg-[#111111] hover:bg-black text-[#CCFF00] font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow-xs"
+                        >
+                          <span>Buy Product</span>
+                          <ExternalLink size={13} />
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
 
           </main>
 
