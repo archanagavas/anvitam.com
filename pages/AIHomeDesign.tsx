@@ -170,7 +170,7 @@ export default function AIHomeDesign() {
     setErrorMsg(null);
 
     try {
-      const res = await fetch('/api/ai-design', {
+      const res = await fetch('/api/ai-design?action=generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -183,7 +183,6 @@ export default function AIHomeDesign() {
           colorPalette,
           promptText,
           budget,
-          region,
           modelTier: selectedAiModel,
           email: currentUser.email
         })
@@ -202,9 +201,6 @@ export default function AIHomeDesign() {
         currentUser.credits_used = (currentUser.credits_used || 0) + creditCost;
         setUser({ ...currentUser });
       }
-
-      fetchRecommendations(roomType, selectedStyle);
-      fetchElementPins(data.generatedImage);
 
     } catch (err: any) {
       console.error('[AI Design Error]', err);
@@ -542,11 +538,8 @@ export default function AIHomeDesign() {
                   </span>
                 </div>
 
-                {/* Export & Catalog Link Footer */}
-                <div className="flex items-center justify-between pt-2">
-                  <span className="text-xs text-gray-500">
-                    💡 Click any pin on the image to view shoppable catalog items for {region}.
-                  </span>
+                {/* Export Action Footer */}
+                <div className="flex items-center justify-end pt-2">
                   <a
                     href={generatedImage}
                     download="anvitam-ai-design.jpg"
@@ -696,34 +689,7 @@ export default function AIHomeDesign() {
                     </div>
                   </div>
 
-                  {/* Step 4: Market Region & Catalog */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-[#111111] text-[#CCFF00] font-semibold text-[10px] flex items-center justify-center">4</span>
-                      <h3 className="text-xs font-semibold text-gray-900">Shoppable Catalog Region</h3>
-                    </div>
 
-                    <div className="flex items-center gap-2">
-                      {[
-                        { id: 'India', flag: '🇮🇳 India' },
-                        { id: 'USA', flag: '🇺🇸 USA' },
-                        { id: 'Brazil', flag: '🇧🇷 Brazil' }
-                      ].map(reg => (
-                        <button
-                          key={reg.id}
-                          type="button"
-                          onClick={() => setRegion(reg.id as any)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
-                            region === reg.id
-                              ? 'bg-[#111111] text-[#CCFF00]'
-                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                          }`}
-                        >
-                          {reg.flag}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
 
                   {errorMsg && (
                     <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">

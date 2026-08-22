@@ -276,6 +276,9 @@ export default function UserDashboard() {
                         <img
                           src={t.previewImage}
                           alt={t.name}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200&auto=format&fit=crop';
+                          }}
                           className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                         />
                         <span className="absolute top-2.5 left-2.5 text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#111111] text-[#CCFF00] shadow-2xs">

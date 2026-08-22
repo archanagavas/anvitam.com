@@ -54,7 +54,15 @@ const MAX_IMAGE_B64_CHARS = 14_000_000; // ~10.5 MB raw when decoded
 function resolveAction(req: VercelRequest): string {
   const urlPath = (req.url || '').split('?')[0];
   const q = req.query.action || req.query.path;
-  return (Array.isArray(q) ? q[0] : q) || urlPath.split('/').pop() || '';
+  const rawAction = (Array.isArray(q) ? q[0] : q) || '';
+  if (rawAction) return rawAction;
+  
+  const body = parseBody(req);
+  if (body?.action) return body.action;
+
+  const pathLast = urlPath.split('/').pop() || '';
+  if (pathLast === 'ai-design' && req.method === 'POST') return 'generate';
+  return pathLast;
 }
 
 function validateJWT(req: VercelRequest): { userId: string } | null {

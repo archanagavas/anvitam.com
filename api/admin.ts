@@ -68,8 +68,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ valid: true, email: payload.email });
   }
 
-  // 3. Admin Login (POST)
-  if (action === 'login' || req.method === 'POST') {
+  // 3. Admin Login (POST /api/admin?action=login)
+  if (action === 'login') {
     const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0] ?? 'unknown';
     const now = Date.now();
 

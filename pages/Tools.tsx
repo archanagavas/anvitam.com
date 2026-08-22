@@ -170,6 +170,9 @@ export default function Tools() {
                     <img
                       src={tool.previewImage}
                       alt={tool.name}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200&auto=format&fit=crop';
+                      }}
                       className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                     />
                     <span className="absolute top-3 left-3 text-[9px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-[#111111] text-[#CCFF00] shadow-sm border border-black/20">

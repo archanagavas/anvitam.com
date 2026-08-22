@@ -26,14 +26,19 @@ const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
 // Mapbox GL JS v3 Standard 3D Styles
 const MAPBOX_3D_STYLES = [
   {
-    id: 'mapbox-standard',
-    name: '🏢 3D Google/Mapbox Style (Standard 3D)',
-    style: 'mapbox://styles/mapbox/standard'
+    id: 'streets-3d',
+    name: '🏢 3D Google/Mapbox Style (3D Extruded Streets)',
+    style: 'mapbox://styles/mapbox/streets-v12'
   },
   {
     id: 'satellite-3d',
     name: '🌐 3D High-Res Satellite Globe (Mapbox Satellite)',
     style: 'mapbox://styles/mapbox/satellite-streets-v12'
+  },
+  {
+    id: 'standard-3d',
+    name: '🏙️ 3D Photorealistic City (Mapbox Standard)',
+    style: 'mapbox://styles/mapbox/standard'
   },
   {
     id: 'light-3d',
@@ -117,13 +122,7 @@ export default function SiteAnalysis() {
     return () => window.removeEventListener('anvitam-user-updated', handleUserUpdate);
   }, []);
 
-  // Disable html { zoom: 80% } on this page to ensure WebGL/DOM coordinates align
-  useEffect(() => {
-    document.documentElement.classList.add('no-zoom');
-    return () => {
-      document.documentElement.classList.remove('no-zoom');
-    };
-  }, []);
+
 
   // ─────────────────────────────────────────────────────────────────────────────
   // MAP ENGINE INITIALIZATION (Mapbox GL JS v3 3D Globe vs Leaflet 2D Fallback)
@@ -178,56 +177,58 @@ export default function SiteAnalysis() {
         map.on('style.load', () => {
           forceResize();
           
-          // 3D Terrain Elevation DEM
-          try {
-            if (!map.getSource('mapbox-dem')) {
-              map.addSource('mapbox-dem', {
-                type: 'raster-dem',
-                url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-                tileSize: 512,
-                maxzoom: 14
-              });
-            }
-            map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
-          } catch { /* silent */ }
+          if (selectedObj.id !== 'standard-3d') {
+            // 3D Terrain Elevation DEM
+            try {
+              if (!map.getSource('mapbox-dem')) {
+                map.addSource('mapbox-dem', {
+                  type: 'raster-dem',
+                  url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+                  tileSize: 512,
+                  maxzoom: 14
+                });
+              }
+              map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
+            } catch { /* silent */ }
 
-          // 3D Extruded Building Layer
-          try {
-            if (!map.getLayer('3d-buildings')) {
-              const layers = map.getStyle()?.layers;
-              let labelLayerId: string | undefined;
-              if (layers) {
-                for (let i = 0; i < layers.length; i++) {
-                  if (layers[i].type === 'symbol' && (layers[i] as any).layout?.['text-field']) {
-                    labelLayerId = layers[i].id;
-                    break;
+            // 3D Extruded Building Layer
+            try {
+              if (!map.getLayer('3d-buildings')) {
+                const layers = map.getStyle()?.layers;
+                let labelLayerId: string | undefined;
+                if (layers) {
+                  for (let i = 0; i < layers.length; i++) {
+                    if (layers[i].type === 'symbol' && (layers[i] as any).layout?.['text-field']) {
+                      labelLayerId = layers[i].id;
+                      break;
+                    }
                   }
                 }
+                map.addLayer({
+                  'id': '3d-buildings',
+                  'source': 'composite',
+                  'source-layer': 'building',
+                  'filter': ['==', 'extrude', 'true'],
+                  'type': 'fill-extrusion',
+                  'minzoom': 13,
+                  'paint': {
+                    'fill-extrusion-color': '#aaa',
+                    'fill-extrusion-height': [
+                      'interpolate', ['linear'], ['zoom'],
+                      13, 0,
+                      13.05, ['get', 'height']
+                    ],
+                    'fill-extrusion-base': [
+                      'interpolate', ['linear'], ['zoom'],
+                      13, 0,
+                      13.05, ['get', 'min_height']
+                    ],
+                    'fill-extrusion-opacity': 0.8
+                  }
+                }, labelLayerId);
               }
-              map.addLayer({
-                'id': '3d-buildings',
-                'source': 'composite',
-                'source-layer': 'building',
-                'filter': ['==', 'extrude', 'true'],
-                'type': 'fill-extrusion',
-                'minzoom': 13,
-                'paint': {
-                  'fill-extrusion-color': '#aaa',
-                  'fill-extrusion-height': [
-                    'interpolate', ['linear'], ['zoom'],
-                    13, 0,
-                    13.05, ['get', 'height']
-                  ],
-                  'fill-extrusion-base': [
-                    'interpolate', ['linear'], ['zoom'],
-                    13, 0,
-                    13.05, ['get', 'min_height']
-                  ],
-                  'fill-extrusion-opacity': 0.8
-                }
-              }, labelLayerId);
-            }
-          } catch { /* silent */ }
+            } catch { /* silent */ }
+          }
         });
 
         try {
