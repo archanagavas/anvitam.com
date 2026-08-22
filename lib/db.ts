@@ -102,18 +102,18 @@ export async function getCollection(name: string, orderDir: 'asc' | 'desc' = 'de
 }
 
 /** Get a single document by its Firestore document ID */
-export async function getDoc(collection: string, id: string): Promise<any | null> {
+export async function getDoc<T = any>(collection: string, id: string): Promise<T | null> {
   const db = getDb();
   const doc = await db.collection(collection).doc(id).get();
   if (!doc.exists) return null;
-  return { id: doc.id, ...doc.data() };
+  return { id: doc.id, ...doc.data() } as T;
 }
 
 /** Find document(s) where a field equals a value */
-export async function findWhere(collection: string, field: string, value: string): Promise<any[]> {
+export async function findWhere<T = any>(collection: string, field: string, value: string): Promise<T[]> {
   const db = getDb();
   const snap = await db.collection(collection).where(field, '==', value).limit(5).get();
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() } as T));
 }
 
 /**

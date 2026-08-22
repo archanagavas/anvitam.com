@@ -1,11 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { isDbConfigured, getCollection, getDoc, upsertDoc, deleteDoc } from '../lib/db.js';
 import { verifyAdminToken, extractToken } from '../lib/auth.js';
-import { INITIAL_PARTNERS, INITIAL_TESTIMONIALS, INITIAL_ESTIMATOR_SERVICES } from '../constants.js';
+import { INITIAL_PARTNERS, INITIAL_TESTIMONIALS, INITIAL_ESTIMATOR_SERVICES, INITIAL_WORKSHOPS } from '../constants.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const resource = (req.query.resource as string) || 'partners';
-  const ALLOWED_RESOURCES = ['partners', 'testimonials', 'estimator-services'];
+  const ALLOWED_RESOURCES = ['partners', 'testimonials', 'estimator-services', 'workshops'];
   if (!ALLOWED_RESOURCES.includes(resource)) return res.status(400).json({ error: `Unsupported resource: ${resource}` });
 
   const ALLOWED_METHODS = ['GET', 'POST', 'PUT', 'DELETE'];
@@ -14,7 +14,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const urlParts = (req.url || '').split('?')[0].split('/');
   const lastPart = urlParts[urlParts.length - 1];
   const id = (req.query.id as string | undefined) ||
-    (lastPart && !['partners', 'testimonials', 'estimator-services', 'meta', 'meta.ts', 'meta.js'].includes(lastPart) ? lastPart : undefined);
+    (lastPart && !['partners', 'testimonials', 'estimator-services', 'workshops', 'meta', 'meta.ts', 'meta.js'].includes(lastPart) ? lastPart : undefined);
 
   // Map resource name to Firestore collection name
   const collectionName = resource === 'estimator-services' ? 'estimator_services' : resource;
@@ -24,6 +24,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     partners: INITIAL_PARTNERS,
     testimonials: INITIAL_TESTIMONIALS,
     'estimator-services': INITIAL_ESTIMATOR_SERVICES,
+    workshops: INITIAL_WORKSHOPS,
   };
   const fallbackData = fallbackMap[resource] || [];
 
@@ -119,6 +120,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       catch (err) { console.warn('[meta/estimator] upsert failed:', err); }
       return res.status(201).json({ success: true, id: targetId });
     }
+
+    if (resource === 'workshops') {
+      const { title } = b;
+      if (!title?.trim()) return res.status(400).json({ error: 'Missing required field: title' });
+      targetId = targetId || b.id || `workshop-${Date.now()}`;
+      try { await upsertDoc('workshops', targetId, { id: targetId, ...b }); }
+      catch (err) { console.warn('[meta/workshops] upsert failed:', err); }
+      return res.status(201).json({ success: true, id: targetId });
+    }
   }
 
   // ── PUT ──────────────────────────────────────────────────────────────────
@@ -149,6 +159,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       try { await upsertDoc('estimator_services', id, { title: title.trim(), icon: icon || '🌿', desc: desc || '', subs: subs || [], baseINR: baseINR || [] }); }
       catch (err) { console.warn('[meta/estimator] update failed:', err); }
       return res.status(200).json({ success: true, id });
+    }
+
+    if (resource === 'workshops') {
+      const { title } = b;
+      if (!title?.trim()) return res.status(400).json({ error: 'Missing required field: title' });
+      try { await upsertDoc('workshops', targetId, { id: targetId, ...b }); }
+      catch (err) { console.warn('[meta/workshops] update failed:', err); }
+      return res.status(200).json({ success: true, id: targetId });
     }
   }
 

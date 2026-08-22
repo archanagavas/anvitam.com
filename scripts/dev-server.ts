@@ -16,8 +16,6 @@ import messagesHandler from '../api/messages';
 import servicesHandler from '../api/services';
 import productsHandler from '../api/products';
 import metaHandler from '../api/meta';
-import workshopsHandler from '../api/workshops';
-import analyticsHandler from '../api/analytics';
 import seoHandler from '../api/seo';
 import toolsHandler from '../api/tools';
 
@@ -85,10 +83,8 @@ const server = createServer(async (req, res) => {
     const partnersIdMatch = pathname.match(/^\/api\/partners\/([^/]+)$/);
     const estimatorIdMatch = pathname.match(/^\/api\/estimator-services\/([^/]+)$/);
 
-    if (pathname.startsWith('/api/admin') || pathname === '/api/db-init' || pathname === '/api/upload') {
+    if (pathname.startsWith('/api/admin') || pathname === '/api/db-init' || pathname === '/api/upload' || pathname === '/api/analytics') {
       await adminHandler(vercelReq, vercelRes);
-    } else if (pathname === '/api/analytics') {
-      await analyticsHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/blogs' || pathname === '/api/blogs/') {
       await blogsHandler(vercelReq, vercelRes);
     } else if (blogsIdMatch) {
@@ -115,10 +111,12 @@ const server = createServer(async (req, res) => {
       vercelReq.query.id = productsIdMatch[1];
       await productsHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/workshops' || pathname === '/api/workshops/') {
-      await workshopsHandler(vercelReq, vercelRes);
+      vercelReq.query.resource = 'workshops';
+      await metaHandler(vercelReq, vercelRes);
     } else if (workshopsIdMatch) {
+      vercelReq.query.resource = 'workshops';
       vercelReq.query.id = workshopsIdMatch[1];
-      await workshopsHandler(vercelReq, vercelRes);
+      await metaHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/testimonials' || pathname === '/api/testimonials/') {
       vercelReq.query.resource = 'testimonials';
       await metaHandler(vercelReq, vercelRes);
