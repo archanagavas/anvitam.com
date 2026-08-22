@@ -5,6 +5,7 @@
  *
  * Actions:
  *  GET  ?action=catalog           – Fetch active catalog products
+ *  GET  ?action=go&id={id}        – Affiliate redirect + click logging (merged from api/go.ts)
  *  POST ?action=generate          – Run AI visual redesign (credit-gated, idempotent)
  *  POST ?action=recommend         – Shoppable catalog recommendation pass (text-only)
  *  POST ?action=detect-elements   – Visual element bounding-box pin detection
@@ -39,7 +40,9 @@ const GEMINI_API_KEY =
   process.env.GOOGLE_AI_KEY ||
   '';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'anvitam_prod_secure_jwt_secret_2026';
+// JWT secret MUST be set in the environment — no insecure fallback in production.
+// If missing, the admin-product endpoint will reject all requests with 401.
+const JWT_SECRET = process.env.JWT_SECRET || '';
 
 /** ~10 MB base64 string limit — rejects obviously oversized payloads before base64 decoding */
 const MAX_IMAGE_B64_CHARS = 14_000_000; // ~10.5 MB raw when decoded
@@ -94,6 +97,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     } catch (err) {
       console.error('[ai-design/catalog]', err);
       return res.status(200).json({ success: true, products: INITIAL_CATALOG_PRODUCTS });
+    }
+  }
+
+  // ── 1b. AFFILIATE REDIRECT (merged from api/go.ts) ───────────────────
+  // GET /api/ai-design?action=go&id={product_id}
+  // Also handles legacy /api/go?id={product_id} route via vercel.json rewrite.
+  if (action === 'go') {
+    if (req.method !== 'GET') return res.status(405).send('Method not allowed');
+    const productId = Array.isArray(req.query.id) ? req.query.id[0] : req.query.id;
+    if (!productId) return res.redirect(302, 'https://amazon.in');
+
+    try {
+      let product: CatalogProduct | null = null;
+      const dbDoc = await getDoc<CatalogProduct>('catalog_products', productId);
+      if (dbDoc?.affiliate_link) {
+        product = dbDoc;
+      } else {
+        product = INITIAL_CATALOG_PRODUCTS.find(p => p.id === productId) ?? null;
+      }
+
+      if (!product?.affiliate_link) return res.redirect(302, 'https://amazon.in');
+
+      // Log click asynchronously — never block the redirect
+      const clickLogId = `click_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+      upsertDoc('affiliate_clicks', clickLogId, {
+        product_id: product.id,
+        product_name: product.name,
+        region: product.region,
+        source: product.source,
+        clicked_at: new Date().toISOString(),
+        user_agent: req.headers['user-agent'] || '',
+        referer: req.headers['referer'] || '',
+      }).catch(err => console.error('[ai-design/go click-log-failed]', err));
+
+      return res.redirect(302, product.affiliate_link);
+    } catch (err) {
+      console.error('[ai-design/go]', err);
+      return res.redirect(302, 'https://amazon.in');
     }
   }
 

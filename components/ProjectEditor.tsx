@@ -328,7 +328,12 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
     try {
       await onSave(project);
     } catch (err: any) {
-      console.error('Error saving project:', err);
+      console.error('[ProjectEditor] Save failed:', err);
+      setEditorError(
+        err.message?.includes('1,048,576')
+          ? 'Save failed: document is too large (Firestore 1MB limit). Remove some gallery images or use image URLs instead of uploads.'
+          : err.message || 'Failed to save project. Please try again.'
+      );
     } finally {
       setIsSaving(false);
     }

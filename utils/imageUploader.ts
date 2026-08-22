@@ -14,11 +14,23 @@ interface UploadOptions {
   maxDim?: number;
   /** JPEG/WebP quality 0–1. Default 0.92 */
   quality?: number;
+  /**
+   * Output format for the compressed image.
+   * 'webp' — best compression, modern browsers only (default).
+   * 'jpeg' — universal compatibility.
+   * 'png'  — lossless, use only for images that need transparency.
+   */
+  format?: 'webp' | 'jpeg' | 'png';
 }
+
+/** How long to wait for the server-side CDN upload before aborting. */
+const UPLOAD_TIMEOUT_MS = 30_000; // 30 seconds
 
 /**
  * Compress + resize a file client-side before uploading.
- * Targets WebP at high quality; falls back to JPEG.
+ * Honours the `format` option — defaults to WebP with JPEG fallback
+ * only when format is not explicitly specified.
+ *
  * ONLY call this to pre-process before CDN upload — never store the result
  * in Firestore directly.
  */
@@ -26,7 +38,7 @@ export function processHighResImage(
   file: File,
   options: UploadOptions = {}
 ): Promise<string> {
-  const { maxDim = 2400, quality = 0.92 } = options;
+  const { maxDim = 2400, quality = 0.92, format } = options;
 
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -61,10 +73,20 @@ export function processHighResImage(
         ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, width, height);
 
-        let resultUrl = canvas.toDataURL('image/webp', quality);
-        if (!resultUrl.startsWith('data:image/webp')) {
+        let resultUrl: string;
+        if (format === 'jpeg') {
           resultUrl = canvas.toDataURL('image/jpeg', quality);
+        } else if (format === 'png') {
+          // PNG is lossless — quality param is ignored by the browser
+          resultUrl = canvas.toDataURL('image/png');
+        } else {
+          // Default: prefer WebP, fall back to JPEG if browser doesn't support it
+          resultUrl = canvas.toDataURL('image/webp', quality);
+          if (!resultUrl.startsWith('data:image/webp')) {
+            resultUrl = canvas.toDataURL('image/jpeg', quality);
+          }
         }
+
         resolve(resultUrl);
       };
       img.onerror = () => resolve(src);
@@ -83,6 +105,10 @@ export function processHighResImage(
  * THROWS if the upload fails — do NOT catch silently and fall back to base64.
  * Storing base64 in Firestore will blow the 1 MB document size limit and
  * corrupt the database record.
+ *
+ * The upload request is bounded to UPLOAD_TIMEOUT_MS (30s) — if the server
+ * doesn't respond in time, an error is thrown so the admin isn't left waiting
+ * indefinitely with no feedback.
  */
 export async function uploadOrProcessImage(
   file: File,
@@ -105,6 +131,11 @@ export async function uploadOrProcessImage(
   }
 
   // Step 2: upload to Cloudinary via our secure server endpoint
+  // Bound the request duration so serverless cold-start timeouts don't
+  // leave the admin staring at a spinner forever.
+  const controller = new AbortController();
+  const timeoutHandle = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
+
   let res: Response;
   try {
     res = await fetch('/api/admin?path=upload', {
@@ -114,11 +145,20 @@ export async function uploadOrProcessImage(
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ image: base64 }),
+      signal: controller.signal,
     });
   } catch (networkErr: any) {
+    if (networkErr.name === 'AbortError') {
+      throw new Error(
+        `Upload timed out after ${UPLOAD_TIMEOUT_MS / 1000}s. ` +
+        'The server may be cold-starting. Please try again in a few seconds.'
+      );
+    }
     throw new Error(
       'Network error while uploading image. Check your internet connection and try again.'
     );
+  } finally {
+    clearTimeout(timeoutHandle);
   }
 
   if (!res.ok) {

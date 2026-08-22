@@ -111,6 +111,7 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({ initial, onSave, onCancel
   const [documents, setDocuments] = useState<ProjectDocument[]>(initial?.documents || []);
 
   const [editorError, setEditorError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleGalleryItemUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -191,7 +192,7 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({ initial, onSave, onCancel
     return null;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setEditorError(null);
     if (!title.trim()) { setEditorError('Service Title is required.'); return; }
     if (!description.trim()) { setEditorError('A brief description is required.'); return; }
@@ -219,7 +220,19 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({ initial, onSave, onCancel
       metaKeywords: metaKeywords.trim(),
       metaRobots: metaRobots.trim(),
     };
-    onSave(service);
+    setIsSaving(true);
+    try {
+      await onSave(service);
+    } catch (err: any) {
+      console.error('[ServiceEditor] Save failed:', err);
+      setEditorError(
+        err.message?.includes('1,048,576')
+          ? 'Save failed: document is too large (Firestore 1MB limit). Remove some gallery images or use image URLs instead of uploads.'
+          : err.message || 'Failed to save service. Please try again.'
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -231,10 +244,11 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({ initial, onSave, onCancel
         </button>
         <button
           onClick={handleSubmit}
-          className="flex items-center space-x-1.5 bg-black text-white text-sm px-6 py-2 rounded-lg hover:bg-gray-800 transition font-bold"
+          disabled={isSaving}
+          className="flex items-center space-x-1.5 bg-black text-white text-sm px-6 py-2 rounded-lg hover:bg-gray-800 transition font-bold disabled:opacity-50"
         >
           <Save size={14} />
-          <span>Save Service</span>
+          <span>{isSaving ? 'Saving...' : 'Save Service'}</span>
         </button>
       </div>
 
