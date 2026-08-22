@@ -126,7 +126,7 @@ export default function UserDashboard() {
         <div className="flex-1 flex overflow-hidden">
 
           {/* ── LEFT SIDEBAR (All Tools Listed for Instant Switching) ── */}
-          <aside className={`bg-white border-r border-gray-200/80 w-64 p-5 shrink-0 flex flex-col justify-between transition-all duration-300 ${
+          <aside className={`bg-white border-r border-gray-200/80 w-64 p-5 shrink-0 flex flex-col justify-between sticky top-20 h-[calc(100vh-5rem)] overflow-y-auto z-30 transition-all duration-300 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0 md:w-16 md:px-2'
           }`}>
             <div className="space-y-6">
