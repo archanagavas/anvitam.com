@@ -1,128 +1,86 @@
 /**
- * pages/AIHomeDesign.tsx — Anvitam's AI Studio Interface & AI Home Design Master Studio
+ * pages/AIHomeDesign.tsx — Anvitam's AI Studio Master Interface
  * 
  * Features:
- * 1. Anvitam's AI Studio Layout (Left Sidebar, Top Controls, Hero Prompt Bar, Brief Card Drawer, Split Preview Cards)
- * 2. Distinct tools for Interior Design, Exterior Facade, Garden/Yard, Replace, Remove, Declutter, Style Transfer, Walls, Flooring
- * 3. Draggable Before/After Split-View Canvas Slider
- * 4. Interactive Element Bounding Box Pins with Regional Shoppable Catalog (India, USA, Brazil)
- * 5. 3-Credit Enforcement & Dynamic Upgrade Paywalls
+ * 1. Seamless Single Navbar Layout (Unified with Anvitam Header)
+ * 2. Dedicated Tools for Interior, Exterior Facade, Garden, Replace, Removal, Declutter, Style Transfer, Walls, Flooring
+ * 3. 100% Interactive Prompt Bar & 1-Click Sample Photo Selector
+ * 4. Interactive Before/After Split Canvas & Shoppable Regional Pins (India 🇮🇳, USA 🇺🇸, Brazil 🇧🇷)
  */
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  Sparkles, Upload, Image as ImageIcon, Sliders, RefreshCw, ShoppingBag,
-  ExternalLink, Layers, CheckCircle2, ChevronRight, AlertCircle, Zap,
-  Download, Eye, Lock, ArrowLeftRight, Check, X, Tag, Info, Palette,
-  Home, Building, Trees, Wand2, Trash2, LayoutGrid, Paintbrush, PanelLeft,
-  ChevronDown, Crown, Search, User, Globe
+  Sparkles, Upload, Wand2, ArrowLeft, Download, RefreshCw, Image as ImageIcon,
+  Check, ChevronRight, Sliders, ShieldCheck, Crown, ShoppingBag, MapPin, ExternalLink,
+  Layers, Home, Building, Trees, Trash2, Paintbrush, LayoutGrid, Zap, PanelLeft, X, AlertCircle
 } from 'lucide-react';
-import { getToolUser, logoutToolUser, type ToolUser } from '../utils/userAuth';
-import { CATALOG_CATEGORIES, INITIAL_CATALOG_PRODUCTS, type CatalogProduct } from '../constants/catalogData';
+import { getToolUser, type ToolUser } from '../utils/userAuth';
 import { ToolsAuthModal } from '../components/tools/ToolsAuthModal';
 import { ToolsPaywallOverlay } from '../components/tools/ToolsPaywallOverlay';
 
-export interface VisualPin {
-  label: string;
-  element_type: string;
-  x_percent: number;
-  y_percent: number;
-  width_percent?: number;
-  height_percent?: number;
-}
-
-export interface RecommendationItem {
-  product_id: string;
-  category: string;
-  reason: string;
-  alternate_ids: string[];
-}
-
-// Preset visual styles for Step 3 in Brief Card Modal
+// Preset visual styles for design brief drawer
 const STYLE_OPTIONS = [
-  { id: 'Modern', name: 'Modern', image: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=400&auto=format&fit=crop' },
-  { id: 'Cozy', name: 'Cozy', image: 'https://images.unsplash.com/photo-1540518614846-7ede433c5172?q=80&w=400&auto=format&fit=crop' },
-  { id: 'Minimalist', name: 'Minimalist', image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=400&auto=format&fit=crop' },
-  { id: 'Scandinavian', name: 'Scandinavian', image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=400&auto=format&fit=crop' },
-  { id: 'Luxury', name: 'Luxury', badge: 'PLUS', image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=400&auto=format&fit=crop' },
-  { id: 'Farmhouse', name: 'Farmhouse', badge: 'PLUS', image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=400&auto=format&fit=crop' },
-  { id: 'Mid Century', name: 'Mid Century', badge: 'PLUS', image: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=400&auto=format&fit=crop' },
-  { id: 'Mediterranean', name: 'Mediterranean', badge: 'PLUS', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=400&auto=format&fit=crop' },
-  { id: 'Cyberpunk', name: 'Cyberpunk', badge: 'PRO', image: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=400&auto=format&fit=crop' },
-  { id: 'Gothic', name: 'Gothic', badge: 'PRO', image: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?q=80&w=400&auto=format&fit=crop' },
-  { id: 'Techno', name: 'Techno', badge: 'PRO', image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=400&auto=format&fit=crop' },
-  { id: 'Japanese', name: 'Japanese / Japandi', badge: 'PRO', image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=400&auto=format&fit=crop' }
+  { id: 'modern', name: 'Modern Minimalist', img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=300&auto=format&fit=crop' },
+  { id: 'cozy', name: 'Warm Cozy', img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=300&auto=format&fit=crop' },
+  { id: 'scandinavian', name: 'Scandinavian', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=300&auto=format&fit=crop' },
+  { id: 'luxury', name: 'High-End Luxury', img: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=300&auto=format&fit=crop' },
+  { id: 'farmhouse', name: 'Modern Farmhouse', img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=300&auto=format&fit=crop' },
+  { id: 'japandi', name: 'Japandi Zen', img: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?q=80&w=300&auto=format&fit=crop' }
+];
+
+// Quick Sample Photos for 1-Click Testing
+const SAMPLE_PHOTOS = [
+  { id: 'living', label: '🛋️ Living Room', url: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=800&auto=format&fit=crop', module: 'interior' },
+  { id: 'exterior', label: '🏡 House Exterior', url: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?q=80&w=800&auto=format&fit=crop', module: 'exterior' },
+  { id: 'garden', label: '🌿 Yard & Lawn', url: 'https://images.unsplash.com/photo-1558904541-efa843a96f01?q=80&w=800&auto=format&fit=crop', module: 'garden' },
+  { id: 'sofa', label: '🪑 Sofa Lounge', url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=800&auto=format&fit=crop', module: 'replace' }
 ];
 
 export default function AIHomeDesign() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+
+  // Active module from URL (interior, exterior, garden, replace, remove, declutter, style-transfer, walls, flooring)
+  const initialModule = searchParams.get('module') || 'interior';
+  const [selectedModule, setSelectedModule] = useState<string>(initialModule);
+
+  // User & Auth State
   const [user, setUser] = useState<ToolUser | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
 
-  // Region State (India, USA, Brazil)
-  const [region, setRegion] = useState<'India' | 'USA' | 'Brazil'>('India');
-  const [budget, setBudget] = useState<string>('');
+  // UI Drawer & Sidebar States
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showBriefCard, setShowBriefCard] = useState(false);
 
-  // Module Selection
-  const [selectedModule, setSelectedModule] = useState<string>('interior');
-  const [designMode, setDesignMode] = useState<'Furnish Empty Room' | 'Room Restyle' | 'Room Renovation'>('Room Restyle');
-  const [roomType, setRoomType] = useState<string>('Living Room');
-  const [customRoomType, setCustomRoomType] = useState<string>('');
-  const [style, setStyle] = useState<string>('Modern');
-  const [customStyle, setCustomStyle] = useState<string>('');
-  const [colorPalette, setColorPalette] = useState<string>('Surprise Me');
-  const [customColorPalette, setCustomColorPalette] = useState<string>('');
-
-  const [spaceType, setSpaceType] = useState<string>('Backyard');
-  const [target, setTarget] = useState<string>('');
-  const [itemType, setItemType] = useState<string>('Sofa');
-  const [newFinish, setNewFinish] = useState<string>('Sage Green Matte Paint');
-  const [floorMaterial, setFloorMaterial] = useState<string>('Light Oak Hardwood');
-
-  // Prompt Box State
-  const [promptText, setPromptText] = useState<string>('');
-
-  // Images
+  // Form State
   const [sourceImage, setSourceImage] = useState<string | null>(null);
-  const [referenceImage, setReferenceImage] = useState<string | null>(null);
+  const [designMode, setDesignMode] = useState<'empty' | 'restyle'>('restyle');
+  const [roomType, setRoomType] = useState<string>('Living Room');
+  const [selectedStyle, setSelectedStyle] = useState<string>('modern');
+  const [colorPalette, setColorPalette] = useState<string>('Surprise Me');
+  const [promptText, setPromptText] = useState<string>('');
+  const [budget, setBudget] = useState<string>('Mid-Range');
+  const [region, setRegion] = useState<'India' | 'USA' | 'Brazil'>('India');
+
+  // Generation & Output State
+  const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-
-  // API State
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [pins, setPins] = useState<VisualPin[]>([]);
-  const [recommendations, setRecommendations] = useState<RecommendationItem[]>([]);
-  const [catalog, setCatalog] = useState<CatalogProduct[]>(INITIAL_CATALOG_PRODUCTS);
-  const [selectedPin, setSelectedPin] = useState<VisualPin | null>(null);
-  const [showSwapDrawer, setShowSwapDrawer] = useState<boolean>(false);
-
-  // Brief Card Drawer Modal
-  const [showBriefCard, setShowBriefCard] = useState<boolean>(false);
-
-  // Auth & Paywall Modals
-  const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
-  const [showPaywall, setShowPaywall] = useState<boolean>(false);
-
-  // Sidebar Collapse
-  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
-
-  // Slider Drag
   const [sliderPos, setSliderPos] = useState<number>(50);
-  const [isDraggingSlider, setIsDraggingSlider] = useState<boolean>(false);
+  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [catalog, setCatalog] = useState<any[]>([]);
+  const [pins, setPins] = useState<any[]>([]);
+  const [activePin, setActivePin] = useState<any | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const currentUser = getToolUser();
-    if (currentUser) {
-      setUser(currentUser);
-      if (currentUser.country === 'IN') setRegion('India');
-      else if (currentUser.country === 'BR') setRegion('Brazil');
-      else setRegion('USA');
-    }
-
+    setUser(getToolUser());
     const handleUserUpdate = (e: Event) => {
       const customEvent = e as CustomEvent<ToolUser | null>;
       setUser(customEvent.detail);
@@ -131,53 +89,61 @@ export default function AIHomeDesign() {
     return () => window.removeEventListener('anvitam-user-updated', handleUserUpdate);
   }, []);
 
-  // Sync module with URL search parameter
   useEffect(() => {
-    const modParam = searchParams.get('module');
-    if (modParam) {
-      setSelectedModule(modParam);
-    }
+    const mod = searchParams.get('module');
+    if (mod) setSelectedModule(mod);
   }, [searchParams]);
 
-  // Handle Upload
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, isRef = false) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleSelectModule = (modId: string) => {
+    setSelectedModule(modId);
+    setSearchParams({ module: modId });
+    setShowBriefCard(true);
+  };
 
+  const handleImageUpload = (file: File) => {
     if (file.size > 10 * 1024 * 1024) {
-      setErrorMsg('Image file size must be less than 10 MB.');
+      setErrorMsg('Image size exceeds 10MB limit. Please select a smaller photo.');
       return;
     }
-
+    setErrorMsg(null);
     const reader = new FileReader();
-    reader.onload = (evt) => {
-      const base64 = evt.target?.result as string;
-      if (isRef) {
-        setReferenceImage(base64);
-      } else {
-        setSourceImage(base64);
-        setGeneratedImage(null);
-        setPins([]);
-        setRecommendations([]);
-      }
+    reader.onload = (e) => {
+      setSourceImage(e.target?.result as string);
+      setShowBriefCard(true);
     };
     reader.readAsDataURL(file);
   };
 
-  // Generate AI Design
+  const handleSelectSamplePhoto = (sampleUrl: string, sampleMod: string) => {
+    setSelectedModule(sampleMod);
+    setSearchParams({ module: sampleMod });
+    setSourceImage(sampleUrl);
+    setShowBriefCard(true);
+  };
+
+  const handlePromptSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!getToolUser()) {
+      setShowAuthModal(true);
+      return;
+    }
+    setShowBriefCard(true);
+  };
+
   const handleGenerate = async () => {
-    if (!user) {
+    const currentUser = getToolUser();
+    if (!currentUser) {
       setShowAuthModal(true);
       return;
     }
 
-    if ((user.credits_remaining ?? 0) <= 0) {
+    if (currentUser.credits_remaining <= 0) {
       setShowPaywall(true);
       return;
     }
 
     if (!sourceImage) {
-      setErrorMsg('Please upload a room or building photo first.');
+      setErrorMsg('Please upload a room photo or choose a sample image to render your AI design.');
       setShowBriefCard(true);
       return;
     }
@@ -185,54 +151,45 @@ export default function AIHomeDesign() {
     setIsGenerating(true);
     setErrorMsg(null);
 
-    const generationId = `gen_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-
     try {
-      const token = localStorage.getItem('anvitam_tool_token');
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
-      const activeRoom = customRoomType.trim() || roomType;
-      const activeStyle = customStyle.trim() || style;
-      const activePalette = customColorPalette.trim() || colorPalette;
-
-      const res = await fetch('/api/ai-design?action=generate', {
+      const res = await fetch('/api/ai-design', {
         method: 'POST',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          sourceImage,
-          referenceImage,
+          action: 'generate',
           module: selectedModule,
+          image: sourceImage,
           designMode,
-          roomType: activeRoom,
-          style: activeStyle,
-          colorPalette: activePalette,
+          roomType,
+          style: selectedStyle,
+          colorPalette,
           promptText,
+          budget,
           region,
-          spaceType,
-          target,
-          itemType,
-          newFinish,
-          floorMaterial,
-          generation_id: generationId,
+          email: currentUser.email
         })
       });
 
       const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to generate design');
+      if (!data.success) {
+        throw new Error(data.error || 'Design generation failed.');
       }
 
       setGeneratedImage(data.generatedImage);
       setShowBriefCard(false);
 
-      // Trigger Shoppable recommendations & element pins
-      fetchRecommendations(activeRoom, activeStyle);
-      fetchElementPins(data.generatedImage || sourceImage);
+      if (currentUser.credits_remaining > 0) {
+        currentUser.credits_remaining -= 1;
+        currentUser.credits_used = (currentUser.credits_used || 0) + 1;
+        setUser({ ...currentUser });
+      }
+
+      fetchRecommendations(roomType, selectedStyle);
+      fetchElementPins(data.generatedImage);
 
     } catch (err: any) {
-      console.error('[AIHomeDesign/generate error]', err);
-      setErrorMsg(err.message || 'Error executing AI design model.');
+      console.error('[AI Design Error]', err);
+      setErrorMsg(err.message || 'Unable to generate design. Please try again.');
     } finally {
       setIsGenerating(false);
     }
@@ -279,90 +236,32 @@ export default function AIHomeDesign() {
     setSliderPos(pct);
   };
 
-  const handleSelectToolCard = (modId: string) => {
-    setSelectedModule(modId);
-    setShowBriefCard(true);
-  };
-
   return (
     <>
       <Helmet>
         <title>Anvitam's AI Studio | AI Interior &amp; Exterior Design</title>
-        <meta name="description" content="Anvitam's AI Studio for interior design, exterior facade, garden landscape, room restyle, and furniture replacement." />
+        <meta name="description" content="Photorealistic AI Studio for interior design, exterior facade, garden landscape, room restyle, and furniture replacement." />
       </Helmet>
 
-      <div className="w-full bg-[#FFFFFF] text-[#111111] min-h-screen font-sans flex flex-col pt-16">
-
-        {/* ── TOP APP BAR HEADER (Anvitam's AI Style) ── */}
-        <header className="h-16 bg-white border-b border-gray-200/80 px-4 sm:px-6 flex items-center justify-between z-30 sticky top-16">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-xl text-gray-500 hover:text-black hover:bg-gray-100 transition cursor-pointer"
-            >
-              <PanelLeft size={18} />
-            </button>
-
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-              <div className="w-8 h-8 rounded-lg bg-black text-[#CCFF00] font-extrabold flex items-center justify-center text-sm shadow-xs">
-                A
-              </div>
-              <span className="font-extrabold text-base tracking-tight text-gray-900">
-                Anvitam's AI<span className="text-xs align-super text-gray-400 font-normal">™</span>
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 sm:gap-4">
-            {/* Credit Status Badge Pill */}
-            <button
-              onClick={() => setShowPaywall(true)}
-              className="px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-extrabold flex items-center gap-1.5 hover:bg-black transition cursor-pointer shadow-2xs"
-            >
-              <Zap size={14} className="fill-[#CCFF00] text-[#CCFF00]" />
-              <span>{user?.credits_remaining ?? 3} Credits</span>
-              <span className="text-[10px] bg-[#CCFF00] text-black font-extrabold px-1.5 py-0.2 rounded-full uppercase ml-0.5">
-                Upgrade
-              </span>
-            </button>
-
-            {/* User Account */}
-            {user ? (
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-black text-white font-bold text-xs flex items-center justify-center shadow-xs">
-                  {user.email?.charAt(0).toUpperCase()}
-                </div>
-                <span className="text-xs font-semibold text-gray-700 hidden md:inline truncate max-w-[120px]">
-                  {user.name || user.email?.split('@')[0]}
-                </span>
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowAuthModal(true)}
-                className="px-4 py-1.5 rounded-xl bg-black text-white font-bold text-xs hover:bg-gray-800 transition cursor-pointer"
-              >
-                Sign In
-              </button>
-            )}
-          </div>
-        </header>
+      {/* Main Studio Wrapper (Gaps under main float header) */}
+      <div className="w-full bg-[#FAFBFD] text-[#111111] min-h-screen font-sans flex flex-col pt-20">
 
         <div className="flex-1 flex overflow-hidden">
 
-          {/* ── LEFT STUDIO SIDEBAR (Anvitam's AI Layout) ── */}
-          <aside className={`bg-[#FAFBFD] border-r border-gray-200/80 w-64 p-5 shrink-0 flex flex-col justify-between transition-all duration-300 ${
+          {/* ── LEFT STUDIO SIDEBAR ── */}
+          <aside className={`bg-white border-r border-gray-200/80 w-64 p-5 shrink-0 flex flex-col justify-between transition-all duration-300 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0 md:w-16 md:px-2'
           }`}>
             <div className="space-y-6">
               
-              {/* Home */}
-              <div>
+              {/* Home / Studio Title */}
+              <div className="flex items-center justify-between">
                 <button
-                  onClick={() => { setSelectedModule('interior'); setGeneratedImage(null); }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-gray-900 hover:bg-gray-200/70 transition cursor-pointer"
+                  onClick={() => navigate('/dashboard')}
+                  className="flex items-center gap-2 text-xs font-extrabold text-gray-900 hover:text-black transition cursor-pointer"
                 >
-                  <Home size={17} className="text-gray-700" />
-                  <span className={sidebarOpen ? 'block' : 'hidden md:hidden'}>Home</span>
+                  <ArrowLeft size={16} />
+                  <span className={sidebarOpen ? 'block' : 'hidden md:hidden'}>Studio Dashboard</span>
                 </button>
               </div>
 
@@ -380,10 +279,10 @@ export default function AIHomeDesign() {
                 ].map(item => (
                   <button
                     key={item.id}
-                    onClick={() => { setSelectedModule(item.id); setShowBriefCard(true); }}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    onClick={() => handleSelectModule(item.id)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-semibold transition cursor-pointer ${
                       selectedModule === item.id
-                        ? 'bg-gray-200 text-black font-extrabold shadow-2xs'
+                        ? 'bg-[#111111] text-[#CCFF00] font-extrabold shadow-xs'
                         : 'text-gray-600 hover:bg-gray-100 hover:text-black'
                     }`}
                   >
@@ -408,10 +307,10 @@ export default function AIHomeDesign() {
                 ].map(item => (
                   <button
                     key={item.id}
-                    onClick={() => { setSelectedModule(item.id); setShowBriefCard(true); }}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    onClick={() => handleSelectModule(item.id)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-semibold transition cursor-pointer ${
                       selectedModule === item.id
-                        ? 'bg-gray-200 text-black font-extrabold shadow-2xs'
+                        ? 'bg-[#111111] text-[#CCFF00] font-extrabold shadow-xs'
                         : 'text-gray-600 hover:bg-gray-100 hover:text-black'
                     }`}
                   >
@@ -434,10 +333,10 @@ export default function AIHomeDesign() {
                 ].map(item => (
                   <button
                     key={item.id}
-                    onClick={() => { setSelectedModule(item.id); setShowBriefCard(true); }}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    onClick={() => handleSelectModule(item.id)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-semibold transition cursor-pointer ${
                       selectedModule === item.id
-                        ? 'bg-gray-200 text-black font-extrabold shadow-2xs'
+                        ? 'bg-[#111111] text-[#CCFF00] font-extrabold shadow-xs'
                         : 'text-gray-600 hover:bg-gray-100 hover:text-black'
                     }`}
                   >
@@ -449,64 +348,116 @@ export default function AIHomeDesign() {
 
             </div>
 
-            {/* Bottom Upgrade Button */}
-            <div className="pt-4 border-t border-gray-200/80">
+            {/* Pro Upgrade CTA */}
+            <div className="pt-4 border-t border-gray-100">
               <button
                 onClick={() => setShowPaywall(true)}
-                className={`w-full bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-800 hover:to-indigo-800 text-white font-extrabold py-3 px-3 rounded-2xl text-xs transition shadow-md flex items-center justify-center gap-2 cursor-pointer ${
-                  sidebarOpen ? '' : 'justify-center p-2'
-                }`}
+                className="w-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-extrabold py-3 rounded-2xl text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-xs border border-black/10"
               >
-                <Zap size={16} className="fill-yellow-300 text-yellow-300 shrink-0" />
-                <span className={sidebarOpen ? 'block' : 'hidden md:hidden'}>⚡ Upgrade Pro</span>
+                <Zap size={16} className="fill-black text-black shrink-0" />
+                <span className={sidebarOpen ? 'block' : 'hidden md:hidden'}>Upgrade to Pro</span>
               </button>
             </div>
           </aside>
 
           {/* ── MAIN WORKSPACE CANVAS ── */}
-          <main className="flex-1 bg-white p-6 sm:p-10 overflow-y-auto max-w-6xl mx-auto w-full">
+          <main className="flex-1 bg-[#FAFBFD] p-6 sm:p-10 overflow-y-auto max-w-6xl mx-auto w-full">
             
-            {/* HERO GREETING SECTION (Matching Image 4) */}
+            {/* Top Workspace Toolbar */}
+            <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200/80">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="p-2 rounded-xl text-gray-600 hover:text-black hover:bg-gray-200 transition cursor-pointer"
+                  title="Toggle Sidebar"
+                >
+                  <PanelLeft size={18} />
+                </button>
+
+                <div className="flex items-center gap-2 text-xs text-gray-500 font-semibold">
+                  <span className="text-gray-900 font-extrabold">Anvitam's AI Studio</span>
+                  <span>/</span>
+                  <span className="text-black font-extrabold capitalize">{selectedModule.replace('-', ' ')}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowPaywall(true)}
+                  className="px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-extrabold flex items-center gap-1.5 hover:bg-black transition cursor-pointer shadow-2xs"
+                >
+                  <Zap size={14} className="fill-[#CCFF00] text-[#CCFF00]" />
+                  <span>{user?.credits_remaining ?? 3} Credits</span>
+                </button>
+
+                <button
+                  onClick={() => setShowBriefCard(true)}
+                  className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-extrabold px-4 py-2 rounded-2xl text-xs transition flex items-center gap-1.5 cursor-pointer border border-black/10 shadow-2xs"
+                >
+                  <Sliders size={14} /> Open Design Brief
+                </button>
+              </div>
+            </div>
+
+            {/* HERO GREETING SECTION */}
             {!generatedImage && (
               <div className="space-y-10 my-4">
                 
-                <div className="text-center space-y-4 max-w-2xl mx-auto">
+                <div className="text-center space-y-5 max-w-2xl mx-auto">
                   <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
                     Hello, how may I help you?
                   </h1>
 
-                  {/* Centered AI Prompt Box (Image 4) */}
-                  <div className="relative max-w-xl mx-auto">
-                    <div className="bg-white border border-gray-200/90 hover:border-gray-300 rounded-3xl p-3 shadow-md flex items-center gap-3 transition">
-                      <div className="p-2 bg-gray-100 rounded-2xl text-gray-600 shrink-0">
+                  {/* Centered Interactive AI Prompt Box */}
+                  <form onSubmit={handlePromptSubmit} className="relative max-w-xl mx-auto">
+                    <div className="bg-white border border-gray-300 hover:border-gray-900 rounded-3xl p-3 shadow-md flex items-center gap-3 transition">
+                      <div className="p-2.5 bg-[#111111] text-[#CCFF00] rounded-2xl shrink-0">
                         <Wand2 size={18} />
                       </div>
                       <input
                         type="text"
                         value={promptText}
                         onChange={(e) => setPromptText(e.target.value)}
-                        placeholder="Ask Anvitam's AI anything..."
-                        className="w-full bg-transparent border-none text-xs text-gray-800 outline-none placeholder:text-gray-400 font-medium"
+                        placeholder="Ask Anvitam's AI anything (e.g. Modern Scandinavian living room with warm wood)..."
+                        className="w-full bg-transparent border-none text-xs text-gray-900 outline-none placeholder:text-gray-400 font-medium"
                       />
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                        <span className="text-[10px] text-gray-400 font-mono font-medium">0/500</span>
                         <button
-                          onClick={() => setShowBriefCard(true)}
-                          className="w-8 h-8 rounded-full bg-gray-200 hover:bg-black hover:text-white transition flex items-center justify-center text-gray-700 cursor-pointer"
+                          type="submit"
+                          className="w-9 h-9 rounded-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black transition flex items-center justify-center font-extrabold cursor-pointer border border-black/10 shadow-2xs"
+                          title="Generate Design"
                         >
-                          <ChevronRight size={16} />
+                          <ChevronRight size={18} />
                         </button>
                       </div>
+                    </div>
+                  </form>
+
+                  {/* 1-Click Sample Photo Testing Chips */}
+                  <div className="space-y-2 pt-2">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-gray-600 block">
+                      Or click a sample photo to test rendering in 1-click:
+                    </span>
+                    <div className="flex items-center justify-center flex-wrap gap-2">
+                      {SAMPLE_PHOTOS.map(sample => (
+                        <button
+                          key={sample.id}
+                          onClick={() => handleSelectSamplePhoto(sample.url, sample.module)}
+                          className="bg-white border border-gray-300 hover:border-black text-gray-800 text-xs font-extrabold px-3 py-1.5 rounded-full transition flex items-center gap-2 cursor-pointer shadow-2xs hover:scale-105"
+                        >
+                          <img src={sample.url} alt={sample.label} className="w-5 h-5 rounded-full object-cover" />
+                          {sample.label}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
 
-                {/* EXPLORE AI TOOLS CARDS (Matching Image 4 Grid) */}
-                <div className="space-y-4 pt-4">
+                {/* EXPLORE AI TOOLS CARDS */}
+                <div className="space-y-4 pt-6">
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
-                      <span className="w-1.5 h-4 bg-[#CCFF00] rounded-full inline-block" />
+                      <span className="w-2 h-5 bg-[#CCFF00] rounded-full inline-block border border-black/20" />
                       Explore AI tools for your design workflow
                     </h2>
                   </div>
@@ -551,23 +502,29 @@ export default function AIHomeDesign() {
                     ].map(card => (
                       <div
                         key={card.id}
-                        onClick={() => handleSelectToolCard(card.id)}
-                        className="bg-white rounded-2xl border border-gray-200/80 hover:border-gray-400 overflow-hidden shadow-xs hover:shadow-md transition cursor-pointer group flex flex-col justify-between"
+                        onClick={() => handleSelectModule(card.id)}
+                        className={`bg-white rounded-2xl border transition cursor-pointer group flex flex-col justify-between overflow-hidden shadow-xs hover:shadow-md ${
+                          selectedModule === card.id ? 'border-black ring-2 ring-black/10' : 'border-gray-200/80 hover:border-gray-400'
+                        }`}
                       >
                         <div className="relative h-32 w-full overflow-hidden bg-gray-100">
-                          {/* Split image preview */}
                           <div className="absolute inset-0 flex">
-                            <div className="w-1/2 h-full overflow-hidden border-r border-white/80">
-                              <img src={card.imageBefore} alt="Before" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                            <div className="w-1/2 h-full overflow-hidden border-r border-white">
+                              <img src={card.imageBefore} alt="Before" className="w-full h-full object-cover" />
                             </div>
                             <div className="w-1/2 h-full overflow-hidden">
-                              <img src={card.imageAfter} alt="After" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                              <img src={card.imageAfter} alt="After" className="w-full h-full object-cover" />
                             </div>
                           </div>
                         </div>
+
                         <div className="p-3.5 space-y-1">
-                          <h3 className="text-xs font-bold text-gray-900 group-hover:text-purple-700 transition">{card.title}</h3>
-                          <p className="text-[10px] text-gray-500 leading-snug font-normal">{card.desc}</p>
+                          <h3 className="text-xs font-extrabold text-gray-900 group-hover:text-black">
+                            {card.title}
+                          </h3>
+                          <p className="text-[10px] text-gray-500 line-clamp-2 leading-snug">
+                            {card.desc}
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -577,90 +534,73 @@ export default function AIHomeDesign() {
               </div>
             )}
 
-            {/* CANVAS DISPLAY & BEFORE/AFTER COMPARISON */}
+            {/* GENERATED DESIGN OUTPUT CANVAS */}
             {generatedImage && (
               <div className="space-y-6">
-                <div className="flex items-center justify-between pb-3 border-b border-gray-200">
+                
+                <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-lg font-extrabold text-gray-900">Rendered AI Design Result</h2>
-                    <p className="text-xs text-gray-500">Drag the center handle left/right to compare before and after.</p>
+                    <h2 className="text-xl font-extrabold text-gray-900">Your AI Design Render</h2>
+                    <p className="text-xs text-gray-500">Drag the slider to compare original photo vs AI render.</p>
                   </div>
                   <button
-                    onClick={() => setGeneratedImage(null)}
-                    className="px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-xs font-bold text-gray-700 transition cursor-pointer"
+                    onClick={() => setShowBriefCard(true)}
+                    className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-extrabold text-xs px-4 py-2 rounded-2xl transition cursor-pointer border border-black/10 flex items-center gap-1.5"
                   >
-                    ← Back to Studio
+                    <Wand2 size={14} /> Adjust Settings &amp; Re-Render
                   </button>
                 </div>
 
+                {/* Interactive Before / After Split Slider Canvas */}
                 <div
                   ref={sliderRef}
-                  onMouseDown={() => setIsDraggingSlider(true)}
-                  onMouseUp={() => setIsDraggingSlider(false)}
-                  onMouseLeave={() => setIsDraggingSlider(false)}
-                  onMouseMove={(e) => isDraggingSlider && handleSliderMove(e.clientX)}
-                  onTouchMove={(e) => e.touches[0] && handleSliderMove(e.touches[0].clientX)}
-                  className="relative w-full h-[450px] sm:h-[520px] rounded-3xl overflow-hidden bg-black border border-gray-200 select-none cursor-ew-resize shadow-xl"
+                  onMouseMove={(e) => handleSliderMove(e.clientX)}
+                  onTouchMove={(e) => handleSliderMove(e.touches[0].clientX)}
+                  className="relative h-[480px] sm:h-[550px] w-full rounded-3xl overflow-hidden border border-gray-300 shadow-lg select-none cursor-ew-resize bg-black"
                 >
-                  {/* After Image */}
-                  <img src={generatedImage} alt="Rendered" className="absolute inset-0 w-full h-full object-cover pointer-events-none" />
+                  <img src={generatedImage} alt="After" className="absolute inset-0 w-full h-full object-cover" />
 
-                  {/* Before Image Slice */}
-                  <div
-                    className="absolute top-0 left-0 bottom-0 overflow-hidden pointer-events-none"
-                    style={{ width: `${sliderPos}%` }}
-                  >
-                    <img
-                      src={sourceImage!}
-                      alt="Original"
-                      className="absolute top-0 left-0 h-full max-w-none object-cover"
-                      style={{ width: sliderRef.current ? `${sliderRef.current.offsetWidth}px` : '100vw' }}
-                    />
-                    <span className="absolute top-4 left-4 bg-black/80 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                      Original
-                    </span>
-                  </div>
+                  {sourceImage && (
+                    <div
+                      className="absolute top-0 left-0 bottom-0 overflow-hidden border-r-2 border-[#CCFF00]"
+                      style={{ width: `${sliderPos}%` }}
+                    >
+                      <img src={sourceImage} alt="Before" className="w-full h-full object-cover max-w-none" />
+                    </div>
+                  )}
 
-                  {/* Handle Divider */}
+                  {/* Slider Handle Divider */}
                   <div
-                    className="absolute top-0 bottom-0 w-1 bg-white shadow-2xl z-20 pointer-events-none"
+                    className="absolute top-0 bottom-0 w-1 bg-[#CCFF00] shadow-md flex items-center justify-center pointer-events-none"
                     style={{ left: `${sliderPos}%` }}
                   >
-                    <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-9 h-9 rounded-full bg-white text-black flex items-center justify-center shadow-lg font-bold">
-                      <ArrowLeftRight size={14} />
+                    <div className="w-8 h-8 rounded-full bg-black text-[#CCFF00] font-extrabold flex items-center justify-center text-xs shadow-lg border border-[#CCFF00]">
+                      ↔
                     </div>
                   </div>
 
-                  {/* Furnishing Pins */}
-                  {pins.map((pin, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => { setSelectedPin(pin); setShowSwapDrawer(true); }}
-                      style={{ top: `${pin.y_percent}%`, left: `${pin.x_percent}%` }}
-                      className="absolute z-30 -translate-x-1/2 -translate-y-1/2 group cursor-pointer transition-transform hover:scale-125"
-                    >
-                      <div className="relative">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
-                        <div className="relative w-7 h-7 rounded-full bg-black text-[#CCFF00] border-2 border-[#CCFF00] flex items-center justify-center font-bold text-[10px] shadow-lg">
-                          <Tag size={12} />
-                        </div>
-                      </div>
-                    </button>
-                  ))}
+                  <span className="absolute bottom-4 left-4 text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-black/80 text-white backdrop-blur-md">
+                    Original Photo
+                  </span>
+                  <span className="absolute bottom-4 right-4 text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-[#CCFF00] text-black shadow-md font-bold">
+                    Anvitam AI Render
+                  </span>
                 </div>
 
+                {/* Export & Catalog Link Footer */}
                 <div className="flex items-center justify-between pt-2">
                   <span className="text-xs text-gray-500">
-                    💡 Click any pin on the image to view catalog shop links for {region}.
+                    💡 Click any pin on the image to view shoppable catalog items for {region}.
                   </span>
                   <a
                     href={generatedImage}
                     download="anvitam-ai-design.jpg"
-                    className="bg-black hover:bg-gray-800 text-white font-bold text-xs px-5 py-2.5 rounded-2xl transition flex items-center gap-1.5 shadow-sm"
+                    className="bg-[#111111] hover:bg-black text-[#CCFF00] font-extrabold text-xs px-5 py-2.5 rounded-2xl transition flex items-center gap-1.5 shadow-xs cursor-pointer"
                   >
                     <Download size={14} /> Export HD Design
                   </a>
                 </div>
+
               </div>
             )}
 
@@ -668,228 +608,183 @@ export default function AIHomeDesign() {
 
         </div>
 
-        {/* ── RIGHT BRIEF CARD DRAWER / MODAL (Images 1, 2, 3) ── */}
+        {/* ── DESIGN BRIEF CARD SLIDE-IN DRAWER ── */}
         <AnimatePresence>
           {showBriefCard && (
-            <div className="fixed inset-0 z-[999] flex justify-end bg-black/40 backdrop-blur-2xs">
+            <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-xs">
               <motion.div
                 initial={{ x: '100%' }}
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                className="w-full max-w-md bg-white min-h-full h-full border-l border-gray-200/80 shadow-2xl p-6 overflow-y-auto flex flex-col justify-between text-gray-900"
+                className="w-full max-w-md bg-white h-full shadow-2xl p-6 overflow-y-auto flex flex-col justify-between border-l border-gray-200"
               >
-                <div>
+                <div className="space-y-6">
                   
-                  {/* Brief Header */}
-                  <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
-                    <h2 className="text-lg font-extrabold text-gray-900 tracking-tight">Design Brief Card</h2>
+                  {/* Drawer Header */}
+                  <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+                    <div>
+                      <h2 className="text-lg font-extrabold text-gray-900">Design Brief Settings</h2>
+                      <p className="text-xs text-gray-500 capitalize">Mode: {selectedModule.replace('-', ' ')}</p>
+                    </div>
                     <button
                       onClick={() => setShowBriefCard(false)}
-                      className="p-1.5 rounded-full hover:bg-gray-100 text-gray-500 transition cursor-pointer"
+                      className="p-2 rounded-xl text-gray-400 hover:text-black hover:bg-gray-100 transition cursor-pointer"
                     >
                       <X size={18} />
                     </button>
                   </div>
 
-                  {/* Photo Upload Box */}
-                  <div className="mb-6 space-y-2">
-                    <label className="text-xs font-bold text-gray-700 block">1. Upload Space Photo</label>
-                    <div className="relative border-2 border-dashed border-gray-300 hover:border-black rounded-2xl p-4 text-center transition bg-gray-50 group">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleImageUpload(e, false)}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                      />
-                      {sourceImage ? (
-                        <div className="relative h-32 w-full rounded-xl overflow-hidden">
-                          <img src={sourceImage} alt="Source upload" className="w-full h-full object-cover" />
-                        </div>
-                      ) : (
-                        <div className="py-4 space-y-1">
-                          <Upload size={24} className="mx-auto text-gray-400 group-hover:text-black transition" />
-                          <p className="text-xs font-bold text-gray-700">Upload Room or Facade Photo</p>
-                          <p className="text-[10px] text-gray-400">PNG, JPG or WebP</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Step 1: Design mode (Image 1) */}
-                  <div className="mb-6 space-y-3">
+                  {/* Step 1: Upload or Choose Photo */}
+                  <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-yellow-400 text-black font-extrabold text-[10px] flex items-center justify-center">1</span>
-                      <h3 className="text-xs font-extrabold text-gray-900">Design mode</h3>
+                      <span className="w-5 h-5 rounded-full bg-[#111111] text-[#CCFF00] font-extrabold text-[10px] flex items-center justify-center">1</span>
+                      <h3 className="text-xs font-extrabold text-gray-900">Upload or Select Room Photo</h3>
                     </div>
 
-                    <div className="space-y-2">
-                      {[
-                        { id: 'Furnish Empty Room', title: 'Furnish Empty Room', sub: 'Transform. Enjoy greater freedom to redesign your space.' },
-                        { id: 'Room Restyle', title: 'Room Restyle', sub: 'Follow the existing layout of your room closely.' }
-                      ].map(mode => (
-                        <div
-                          key={mode.id}
-                          onClick={() => setDesignMode(mode.id as any)}
-                          className={`p-3.5 rounded-2xl border transition cursor-pointer flex items-start gap-3 ${
-                            designMode === mode.id
-                              ? 'border-gray-900 bg-gray-50 ring-1 ring-gray-900'
-                              : 'border-gray-200 bg-white hover:border-gray-300'
-                          }`}
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
+                      accept="image/*"
+                      className="hidden"
+                    />
+
+                    {sourceImage ? (
+                      <div className="relative h-40 rounded-2xl overflow-hidden border border-gray-300">
+                        <img src={sourceImage} alt="Uploaded" className="w-full h-full object-cover" />
+                        <button
+                          onClick={() => fileInputRef.current?.click()}
+                          className="absolute bottom-3 right-3 bg-black/80 hover:bg-black text-white text-[10px] font-extrabold px-3 py-1.5 rounded-xl transition cursor-pointer"
                         >
-                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center mt-0.5 ${
-                            designMode === mode.id ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-300'
-                          }`}>
-                            {designMode === mode.id && <Check size={10} />}
-                          </div>
-                          <div>
-                            <h4 className="text-xs font-bold text-gray-900">{mode.title}</h4>
-                            <p className="text-[10px] text-gray-500 leading-snug">{mode.sub}</p>
-                          </div>
-                        </div>
-                      ))}
+                          Change Photo
+                        </button>
+                      </div>
+                    ) : (
+                      <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="border-2 border-dashed border-gray-300 hover:border-gray-900 bg-gray-50 p-6 rounded-2xl text-center cursor-pointer transition space-y-2"
+                      >
+                        <Upload size={24} className="mx-auto text-gray-400" />
+                        <p className="text-xs font-extrabold text-gray-800">Click to upload your room photo</p>
+                        <p className="text-[10px] text-gray-400">Supports JPG, PNG, WEBP up to 10MB</p>
+                      </div>
+                    )}
+
+                    {/* Quick Sample Photos */}
+                    <div className="space-y-1.5 pt-1">
+                      <span className="text-[10px] font-extrabold text-gray-400 uppercase">Or select sample photo:</span>
+                      <div className="grid grid-cols-2 gap-2">
+                        {SAMPLE_PHOTOS.map(s => (
+                          <button
+                            key={s.id}
+                            type="button"
+                            onClick={() => handleSelectSamplePhoto(s.url, s.module)}
+                            className="p-2 rounded-xl border border-gray-200 hover:border-black bg-gray-50 flex items-center gap-2 cursor-pointer transition text-left"
+                          >
+                            <img src={s.url} alt={s.label} className="w-7 h-7 rounded-lg object-cover" />
+                            <span className="text-[11px] font-bold text-gray-800 truncate">{s.label}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Step 2: Room Type (Images 1 & 3) */}
-                  <div className="mb-6 space-y-3">
+                  {/* Step 2: Room Type */}
+                  <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-yellow-400 text-black font-extrabold text-[10px] flex items-center justify-center">2</span>
-                      <h3 className="text-xs font-extrabold text-gray-900">Select the room type</h3>
+                      <span className="w-5 h-5 rounded-full bg-[#111111] text-[#CCFF00] font-extrabold text-[10px] flex items-center justify-center">2</span>
+                      <h3 className="text-xs font-extrabold text-gray-900">Room or Area Type</h3>
                     </div>
 
                     <div className="flex flex-wrap gap-1.5">
-                      {[
-                        { name: 'Living Room' },
-                        { name: 'Bedroom' },
-                        { name: 'Kitchen' },
-                        { name: 'Bathroom' },
-                        { name: 'Dining Room', badge: 'PLUS' },
-                        { name: 'Entryway', badge: 'PLUS' },
-                        { name: 'Office', badge: 'PLUS' },
-                        { name: 'Home Office', badge: 'PLUS' },
-                        { name: 'Study Room', badge: 'PRO' },
-                        { name: 'Gaming Room', badge: 'PRO' },
-                        { name: 'Building Facade', badge: 'PRO' },
-                        { name: 'Garden / Yard', badge: 'PRO' }
-                      ].map(r => (
+                      {['Living Room', 'Bedroom', 'Kitchen', 'Exterior Facade', 'Backyard Garden', 'Bathroom', 'Office Lounge'].map(r => (
                         <button
-                          key={r.name}
-                          onClick={() => setRoomType(r.name)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-1 border ${
-                            roomType === r.name
-                              ? 'bg-amber-100 text-amber-900 border-amber-300 font-extrabold'
-                              : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
+                          key={r}
+                          type="button"
+                          onClick={() => setRoomType(r)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                            roomType === r
+                              ? 'bg-[#111111] text-[#CCFF00] shadow-2xs'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                           }`}
                         >
-                          <span>{r.name}</span>
-                          {r.badge && (
-                            <span className={`text-[8px] font-extrabold px-1 rounded-md text-white uppercase ${
-                              r.badge === 'PRO' ? 'bg-purple-600' : 'bg-indigo-600'
-                            }`}>
-                              {r.badge}
-                            </span>
-                          )}
+                          {r}
                         </button>
                       ))}
                     </div>
-
-                    <input
-                      type="text"
-                      value={customRoomType}
-                      onChange={(e) => setCustomRoomType(e.target.value)}
-                      placeholder="(Optional) No matching room type - input manually."
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-800 outline-none focus:border-black"
-                    />
                   </div>
 
-                  {/* Step 3: Select a Style (Images 2 & 3) */}
-                  <div className="mb-6 space-y-3">
+                  {/* Step 3: Style Selection */}
+                  <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-yellow-400 text-black font-extrabold text-[10px] flex items-center justify-center">3</span>
-                      <h3 className="text-xs font-extrabold text-gray-900">Select a style</h3>
+                      <span className="w-5 h-5 rounded-full bg-[#111111] text-[#CCFF00] font-extrabold text-[10px] flex items-center justify-center">3</span>
+                      <h3 className="text-xs font-extrabold text-gray-900">Architectural Style</h3>
                     </div>
 
-                    <div className="grid grid-cols-4 gap-2">
-                      {STYLE_OPTIONS.map(s => (
-                        <div
-                          key={s.id}
-                          onClick={() => setStyle(s.id)}
-                          className={`relative rounded-xl overflow-hidden border cursor-pointer group h-16 ${
-                            style === s.id ? 'border-2 border-amber-500 ring-2 ring-amber-200' : 'border-gray-200'
+                    <div className="grid grid-cols-2 gap-2">
+                      {STYLE_OPTIONS.map(st => (
+                        <button
+                          key={st.id}
+                          type="button"
+                          onClick={() => setSelectedStyle(st.id)}
+                          className={`p-2 rounded-xl border text-left flex items-center gap-2 transition cursor-pointer ${
+                            selectedStyle === st.id
+                              ? 'border-black bg-gray-100 font-extrabold ring-1 ring-black'
+                              : 'border-gray-200 hover:border-gray-400 bg-white'
                           }`}
                         >
-                          <img src={s.image} alt={s.name} className="w-full h-full object-cover" />
-                          <div className="absolute inset-0 bg-black/40 flex items-end p-1">
-                            <span className="text-[9px] font-bold text-white leading-none truncate">{s.name}</span>
-                          </div>
-                          {s.badge && (
-                            <span className={`absolute top-1 right-1 text-[7px] font-extrabold px-1 rounded text-white ${
-                              s.badge === 'PRO' ? 'bg-purple-600' : 'bg-indigo-600'
-                            }`}>
-                              {s.badge}
-                            </span>
-                          )}
-                        </div>
+                          <img src={st.img} alt={st.name} className="w-8 h-8 rounded-lg object-cover" />
+                          <span className="text-[11px] font-extrabold text-gray-800 truncate">{st.name}</span>
+                        </button>
                       ))}
                     </div>
-
-                    <input
-                      type="text"
-                      value={customStyle}
-                      onChange={(e) => setCustomStyle(e.target.value)}
-                      placeholder="(Optional) Preferred style not found - input manually."
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-800 outline-none focus:border-black"
-                    />
                   </div>
 
-                  {/* Step 4: Select Color Palette (Image 2) */}
-                  <div className="mb-6 space-y-3">
+                  {/* Step 4: Market Region & Catalog */}
+                  <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-yellow-400 text-black font-extrabold text-[10px] flex items-center justify-center">4</span>
-                      <h3 className="text-xs font-extrabold text-gray-900">Select a color palette <span className="text-[10px] text-gray-400 font-normal">(Optional)</span></h3>
+                      <span className="w-5 h-5 rounded-full bg-[#111111] text-[#CCFF00] font-extrabold text-[10px] flex items-center justify-center">4</span>
+                      <h3 className="text-xs font-extrabold text-gray-900">Shoppable Catalog Region</h3>
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
                       {[
-                        { id: 'Surprise Me', name: 'Surprise Me', dots: ['bg-red-400', 'bg-yellow-400', 'bg-blue-400'] },
-                        { id: 'High-Contrast Neutrals', name: 'High-Contrast Neutrals', dots: ['bg-black', 'bg-gray-400', 'bg-white'] },
-                        { id: 'Warm Earth Tones', name: 'Warm Earth Tones', dots: ['bg-amber-800', 'bg-amber-600', 'bg-orange-300'] },
-                        { id: 'Laid-Back Blues', name: 'Laid-Back Blues', dots: ['bg-blue-800', 'bg-blue-500', 'bg-blue-200'] },
-                        { id: 'Forest-Inspired', name: 'Forest-Inspired', dots: ['bg-emerald-900', 'bg-emerald-600', 'bg-amber-700'] }
-                      ].map(p => (
-                        <div
-                          key={p.id}
-                          onClick={() => setColorPalette(p.id)}
-                          className={`p-2.5 rounded-xl border transition cursor-pointer flex items-center gap-3 ${
-                            colorPalette === p.id ? 'border-gray-900 bg-gray-50 font-bold' : 'border-gray-200 hover:border-gray-300'
+                        { id: 'India', flag: '🇮🇳 India' },
+                        { id: 'USA', flag: '🇺🇸 USA' },
+                        { id: 'Brazil', flag: '🇧🇷 Brazil' }
+                      ].map(reg => (
+                        <button
+                          key={reg.id}
+                          type="button"
+                          onClick={() => setRegion(reg.id as any)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                            region === reg.id
+                              ? 'bg-[#111111] text-[#CCFF00]'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                           }`}
                         >
-                          <div className="flex items-center gap-1">
-                            {p.dots.map((d, i) => (
-                              <span key={i} className={`w-3 h-3 rounded-full ${d} border border-gray-300`} />
-                            ))}
-                          </div>
-                          <span className="text-xs text-gray-800">{p.name}</span>
-                        </div>
+                          {reg.flag}
+                        </button>
                       ))}
                     </div>
                   </div>
 
                   {errorMsg && (
-                    <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs mb-4">
-                      {errorMsg}
+                    <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+                      <AlertCircle size={15} className="shrink-0" />
+                      <span>{errorMsg}</span>
                     </div>
                   )}
 
                 </div>
 
-                {/* Bottom Action Button (Anvitam's AI Style) */}
+                {/* Drawer Footer Action */}
                 <div className="pt-4 border-t border-gray-100">
                   <button
                     onClick={handleGenerate}
                     disabled={isGenerating}
-                    className="w-full bg-[#111111] hover:bg-black text-white font-extrabold py-3.5 rounded-2xl text-xs transition shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-extrabold py-3.5 rounded-2xl text-xs transition shadow-md flex items-center justify-center gap-2 cursor-pointer border border-black/10"
                   >
                     {isGenerating ? (
                       <>
@@ -897,7 +792,7 @@ export default function AIHomeDesign() {
                       </>
                     ) : (
                       <>
-                        <Wand2 size={15} /> Customize for Me (1 Credit)
+                        <Wand2 size={15} /> Render AI Design (1 Credit)
                       </>
                     )}
                   </button>
