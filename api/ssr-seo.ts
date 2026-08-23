@@ -1293,9 +1293,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (isDbConfigured && (!section || section === 'projects' || section === 'services' || section === 'blog')) {
     try {
-      allProjects = await getCollection('projects', 'desc');
-      allServices = await getCollection('services', 'asc');
-      allBlogs = await getCollection('blogs', 'desc');
+      const rawProjects = await getCollection('projects', 'desc');
+      const rawServices = await getCollection('services', 'asc');
+      const rawBlogs = await getCollection('blogs', 'desc');
+      // Homepage: limit to display-needed items to reduce payload size and Firestore read cost
+      if (!section) {
+        allProjects = rawProjects.slice(0, 6);
+        allServices = rawServices.slice(0, 6);
+        allBlogs = rawBlogs.filter((b: any) => b.status !== 'draft').slice(0, 4);
+      } else {
+        allProjects = rawProjects;
+        allServices = rawServices;
+        allBlogs = rawBlogs;
+      }
     } catch (e) {}
   }
 
@@ -1663,10 +1673,62 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     `<div id="root">${ssrHtml}</div>`
   );
 
-  // Enable instant updates on deployment while allowing client revalidation
-  res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=0, must-revalidate');
+  // ──────────────────────────────────────────────────────────────────────────
+  // Route-aware CDN caching (Vercel Edge + Cloudflare).
+  //
+  // WHY: s-maxage=0 was causing every bot/user request to hit the serverless
+  // function with no caching, burning 417K ISR writes and 10GB Fast Origin
+  // Transfer per month. Most pages are public marketing content that changes
+  // rarely — they are safe to cache at the CDN edge.
+  //
+  // SECURITY: Authenticated routes (/api/admin, /api/messages, etc.) are
+  // handled by separate API functions with no-cache headers. This function
+  // only serves public marketing HTML — never private user data.
+  // ──────────────────────────────────────────────────────────────────────────
+  let cacheControl: string;
+
+  if (section === 'blog' && idOrSlug) {
+    // Individual blog posts: 30 min cache, serve stale 12h while revalidating
+    cacheControl = 'public, max-age=0, s-maxage=1800, stale-while-revalidate=43200';
+  } else if (section === 'projects' && idOrSlug) {
+    // Individual project pages: 1h cache, serve stale 24h
+    cacheControl = 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400';
+  } else if (section === 'workshops' && idOrSlug) {
+    // Individual workshop pages: 1h cache, serve stale 24h
+    cacheControl = 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400';
+  } else if (section === 'blog' || section === 'workshops') {
+    // Blog/workshop listing pages: 30 min cache (new content appears here)
+    cacheControl = 'public, max-age=0, s-maxage=1800, stale-while-revalidate=43200';
+  } else if (
+    !section ||
+    section === 'why' ||
+    section === 'about' ||
+    section === 'team' ||
+    section === 'contact' ||
+    section === 'shop' ||
+    section === 'process' ||
+    section === 'seo' ||
+    section === 'privacy' ||
+    section === 'terms'
+  ) {
+    // Static marketing pages: 2h cache, serve stale 24h
+    cacheControl = 'public, max-age=0, s-maxage=7200, stale-while-revalidate=86400';
+  } else if (section === 'services' || section === 'projects') {
+    // Listing pages: 1h cache
+    cacheControl = 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400';
+  } else {
+    // Fallback for any other public section: 1h cache
+    cacheControl = 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400';
+  }
+
+  res.setHeader('Cache-Control', cacheControl);
   res.setHeader('Vary', 'Accept-Encoding');
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('X-Robots-Tag', robots);
+  // Diagnostic headers — safe to expose, no private data.
+  // Check these in Cloudflare Ray ID logs or browser DevTools > Network
+  // to identify which routes generate the largest payloads (FOT source).
+  res.setHeader('X-Route-Section', section || 'home');
+  res.setHeader('X-Response-Bytes', Buffer.byteLength(template, 'utf8').toString());
   return res.status(200).send(template);
 }

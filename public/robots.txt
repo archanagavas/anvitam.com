@@ -1,44 +1,88 @@
-# Allow Google's AI & Search (Gemini/Search)
+# ─── Trusted Search & AI Crawlers ─────────────────────────────────────────────
+
+# Google Search
 User-agent: Googlebot
 Allow: /
 Disallow: /admin
 Disallow: /api/
+Crawl-delay: 2
 
-# Allow Google's Training (needed for long-term Gemini knowledge)
+# Google AI Training
 User-agent: Google-Extended
 Allow: /
 Disallow: /admin
 Disallow: /api/
 
-# Allow OpenAI Search (ChatGPT Search)
+# ChatGPT Search
 User-agent: OAI-SearchBot
 Allow: /
 Disallow: /admin
 Disallow: /api/
 
-# Allow OpenAI Training (helps ChatGPT "know" you long-term)
+# ChatGPT Training
 User-agent: GPTBot
 Allow: /
 Disallow: /admin
 Disallow: /api/
+Crawl-delay: 5
 
-# Allow Anthropic (Claude)
+# Claude (Anthropic)
 User-agent: ClaudeBot
 Allow: /
 Disallow: /admin
 Disallow: /api/
+Crawl-delay: 5
 
-# Allow Perplexity AI
+# Perplexity AI
 User-agent: PerplexityBot
 Allow: /
 Disallow: /admin
 Disallow: /api/
+Crawl-delay: 5
 
-# General Fallback
+# Bing Search
+User-agent: bingbot
+Allow: /
+Disallow: /admin
+Disallow: /api/
+Crawl-delay: 5
+
+# ─── High-Volume Scrapers — Throttled ─────────────────────────────────────────
+# These crawlers generate significant Vercel FOT without meaningful SEO benefit.
+
+User-agent: AhrefsBot
+Crawl-delay: 10
+Disallow: /api/
+Disallow: /admin
+
+User-agent: SemrushBot
+Crawl-delay: 10
+Disallow: /api/
+Disallow: /admin
+
+User-agent: MJ12bot
+Crawl-delay: 30
+Disallow: /
+
+User-agent: DotBot
+Crawl-delay: 30
+Disallow: /
+
+# ─── Aggressive AI Scrapers — Disallowed ──────────────────────────────────────
+# ByteDance (TikTok) crawler — known for high-volume aggressive crawling
+User-agent: Bytespider
+Disallow: /
+
+# PetalBot (Huawei) — high volume, limited SEO value for this site
+User-agent: PetalBot
+Disallow: /
+
+# ─── General fallback ─────────────────────────────────────────────────────────
 User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /api/
+Crawl-delay: 5
 
-# Sitemap references (all major engines read this)
+# ─── Sitemap ──────────────────────────────────────────────────────────────────
 Sitemap: https://www.anvitam.com/sitemap.xml
