@@ -16,7 +16,7 @@ import { DODO_PRODUCTS } from '../constants/dodoConfig';
 export default function Tools() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('All Tools');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All Studios');
   const [activeModalTool, setActiveModalTool] = useState<ToolItem | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [pendingToolRedirect, setPendingToolRedirect] = useState<string | null>(null);

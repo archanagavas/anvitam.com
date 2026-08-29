@@ -589,7 +589,7 @@ export default function SiteAnalysis() {
         <meta name="description" content="Drop a pin anywhere in the world and generate 3D extruded building models, solar shadow paths, wind rose, and geotech site analysis." />
       </Helmet>
 
-      <div className="site-analysis-page bg-[#FAFBFD] text-[#111111] pt-20 min-h-screen flex flex-col font-sans antialiased">
+      <div className="site-analysis-page bg-white text-[#111111] pt-20 min-h-screen flex flex-col font-sans antialiased">
         
         <div className="flex-1 flex flex-col overflow-visible">
 

@@ -25,31 +25,44 @@ import { AllToolsDrawer } from '../components/tools/AllToolsDrawer';
 import { ToolsSettingsModal } from '../components/tools/ToolsSettingsModal';
 import { INITIAL_CATALOG_PRODUCTS, CATALOG_CATEGORIES, type CatalogProduct } from '../constants/catalogData';
 
-// Preset visual styles for design brief drawer
+// Preset visual styles for design brief drawer (24+ Curated Interior Styles)
 const STYLE_OPTIONS = [
   { id: 'modern', name: 'Modern Minimalist', img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=300&auto=format&fit=crop' },
-  { id: 'cozy', name: 'Warm Cozy', img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=300&auto=format&fit=crop' },
   { id: 'scandinavian', name: 'Scandinavian', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=300&auto=format&fit=crop' },
+  { id: 'japandi', name: 'Japandi Zen', img: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?q=80&w=300&auto=format&fit=crop' },
   { id: 'luxury', name: 'High-End Luxury', img: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=300&auto=format&fit=crop' },
+  { id: 'coastal', name: 'Coastal Breeze', img: 'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?q=80&w=300&auto=format&fit=crop' },
+  { id: 'industrial', name: 'Urban Industrial', img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=300&auto=format&fit=crop' },
   { id: 'farmhouse', name: 'Modern Farmhouse', img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=300&auto=format&fit=crop' },
-  { id: 'japandi', name: 'Japandi Zen', img: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?q=80&w=300&auto=format&fit=crop' }
+  { id: 'boho', name: 'Modern Boho-Chic', img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=300&auto=format&fit=crop' },
+  { id: 'neoclassic', name: 'French Neoclassic', img: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=300&auto=format&fit=crop' },
+  { id: 'biophilic', name: 'Biophilic Eco', img: 'https://images.unsplash.com/photo-1540518614846-7eded433c457?q=80&w=300&auto=format&fit=crop' },
+  { id: 'cyberpunk', name: 'Cyberpunk Neon', img: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=300&auto=format&fit=crop' },
+  { id: 'zen', name: 'Japanese Zen', img: 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=300&auto=format&fit=crop' },
+  { id: 'artdeco', name: '1920s Art Deco', img: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=300&auto=format&fit=crop' },
+  { id: 'tropical', name: 'Bali Tropical', img: 'https://images.unsplash.com/photo-1512915922686-57c11dde9b6b?q=80&w=300&auto=format&fit=crop' },
+  { id: 'midcentury', name: 'Mid-Century Modern', img: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=300&auto=format&fit=crop' },
+  { id: 'mediterranean', name: 'Mediterranean', img: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=300&auto=format&fit=crop' }
 ];
 
 // Quick Sample Photos for 1-Click Testing
 const SAMPLE_PHOTOS = [
   { id: 'living', label: '🛋️ Living Room', url: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=800&auto=format&fit=crop', module: 'interior' },
+  { id: 'sketch', label: '✏️ SketchUp / Wireframe', url: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=800&auto=format&fit=crop', module: 'sketch2image' },
+  { id: 'empty', label: '🏗️ Raw Construction Room', url: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=800&auto=format&fit=crop', module: 'virtual-staging' },
   { id: 'exterior', label: '🏡 House Exterior', url: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?q=80&w=800&auto=format&fit=crop', module: 'exterior' },
-  { id: 'garden', label: '🌿 Yard & Lawn', url: 'https://images.unsplash.com/photo-1558904541-efa843a96f01?q=80&w=800&auto=format&fit=crop', module: 'garden' },
-  { id: 'sofa', label: '🪑 Sofa Lounge', url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=800&auto=format&fit=crop', module: 'replace' }
+  { id: 'garden', label: '🌿 Yard & Lawn', url: 'https://images.unsplash.com/photo-1558904541-efa843a96f01?q=80&w=800&auto=format&fit=crop', module: 'garden' }
 ];
 
 // Preset AI Studio modules for topbar navigation
 const AI_MODULES = [
-  { id: 'interior', label: 'Interior', icon: '🛋️' },
+  { id: 'interior', label: 'Interior AI', icon: '🛋️' },
+  { id: 'sketch2image', label: 'Sketch2Image™', icon: '✏️' },
+  { id: 'virtual-staging', label: 'Virtual Staging AI', icon: '🏗️' },
   { id: 'exterior', label: 'Exterior Facade', icon: '🏡' },
   { id: 'garden', label: 'Yard & Landscape', icon: '🌿' },
   { id: 'replace', label: 'Object Swap', icon: '🪑' },
-  { id: 'remove', label: 'Object Removal', icon: '🧹' }
+  { id: 'remove', label: 'Furniture Removal', icon: '🧹' }
 ];
 
 export default function AIHomeDesign() {
@@ -278,7 +291,7 @@ export default function AIHomeDesign() {
       </Helmet>
 
       {/* Main Studio Wrapper */}
-      <div className="w-full bg-[#FAFBFD] text-[#111111] min-h-screen font-sans flex flex-col pt-20">
+      <div className="w-full bg-white text-[#111111] min-h-screen font-sans flex flex-col pt-20">
 
         <div className="flex-1 flex flex-col overflow-visible">
 

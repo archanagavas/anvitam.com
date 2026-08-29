@@ -38,17 +38,17 @@ export const DODO_PRODUCTS: Record<'topup_10' | 'pro_monthly', DodoProductConfig
   },
   pro_monthly: {
     id: 'pro_monthly',
-    name: 'Anvitam Studio — Pro Monthly',
+    name: 'Anvitam Studio — Pro Monthly Pass',
     taxCategory: 'SaaS Subscription',
     pricingType: 'monthly_subscription',
     productId: 'pdt_0NlZ5wDhqx68MxeHE06JE',
     checkoutUrl: 'https://checkout.dodopayments.com/buy/pdt_0NlZ5wDhqx68MxeHE06JE?quantity=1',
     creditsGrant: 250,
     creditExpiryDays: 30,
-    priceINR: '₹299',
-    priceUSD: '$5.00',
-    popularBadge: 'MOST POPULAR',
-    description: '250 Studio Credits per month automatically refilled for active studios & solar designers.',
+    priceINR: '₹799',
+    priceUSD: '$10.00',
+    popularBadge: 'BEST VALUE',
+    description: '250 Studio Credits per month automatically refilled for active architects, planners & design studios.',
   },
 };
 
