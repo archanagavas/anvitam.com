@@ -24,6 +24,7 @@ import { ToolsPaywallOverlay } from '../components/tools/ToolsPaywallOverlay';
 import { AllToolsDrawer } from '../components/tools/AllToolsDrawer';
 import { ToolsSettingsModal } from '../components/tools/ToolsSettingsModal';
 import { INITIAL_CATALOG_PRODUCTS, CATALOG_CATEGORIES, type CatalogProduct } from '../constants/catalogData';
+import Room3DViewer from '../components/tools/Room3DViewer';
 
 // Preset visual styles for design brief drawer (55 Curated Anvitam Interior Styles)
 const STYLE_OPTIONS = [
@@ -162,6 +163,8 @@ export default function AIHomeDesign() {
   const [pins, setPins] = useState<any[]>([]);
   const [activePin, setActivePin] = useState<any | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  // 3D Viewer State
+  const [show3DViewer, setShow3DViewer] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -677,7 +680,14 @@ export default function AIHomeDesign() {
                 </div>
 
                 {/* Export Action Footer */}
-                <div className="flex items-center justify-end pt-2">
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  {/* 3D Walkthrough Button */}
+                  <button
+                    onClick={() => setShow3DViewer(true)}
+                    className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold text-xs px-5 py-2.5 rounded-2xl transition flex items-center gap-1.5 shadow-md cursor-pointer"
+                  >
+                    🏠 3D Walkthrough
+                  </button>
                   <a
                     href={generatedImage}
                     download="anvitam-ai-design.jpg"
@@ -689,6 +699,15 @@ export default function AIHomeDesign() {
 
               </div>
             )}
+
+            {/* Room 3D Viewer Overlay */}
+            {show3DViewer && generatedImage && (
+              <Room3DViewer
+                imageUrl={generatedImage}
+                onClose={() => setShow3DViewer(false)}
+              />
+            )}
+
 
             {/* SHOPPABLE AFFILIATE RECOMMENDATION ENGINE LAYER */}
             <div className="mt-12 pt-8 border-t border-gray-200/80 space-y-6">

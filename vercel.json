@@ -102,6 +102,7 @@
     { "source": "/api/go", "destination": "/api/ai-design.ts?action=go" },
     { "source": "/api/go/:id", "destination": "/api/ai-design.ts?action=go&id=:id" },
     { "source": "/api/hf-image-gen", "destination": "/api/hf-image-gen.ts" },
+    { "source": "/api/hf-depth", "destination": "/api/hf-depth.ts" },
     { "source": "/sitemap.xml", "destination": "/api/seo.ts?action=sitemap" },
     { "source": "/api/sitemap.xml", "destination": "/api/seo.ts?action=sitemap" },
     { "source": "/api/sitemap", "destination": "/api/seo.ts?action=sitemap" },
