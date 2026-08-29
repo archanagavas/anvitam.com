@@ -43,6 +43,15 @@ const SAMPLE_PHOTOS = [
   { id: 'sofa', label: '🪑 Sofa Lounge', url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=800&auto=format&fit=crop', module: 'replace' }
 ];
 
+// Preset AI Studio modules for topbar navigation
+const AI_MODULES = [
+  { id: 'interior', label: 'Interior', icon: '🛋️' },
+  { id: 'exterior', label: 'Exterior Facade', icon: '🏡' },
+  { id: 'garden', label: 'Yard & Landscape', icon: '🌿' },
+  { id: 'replace', label: 'Object Swap', icon: '🪑' },
+  { id: 'remove', label: 'Object Removal', icon: '🧹' }
+];
+
 export default function AIHomeDesign() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -50,6 +59,11 @@ export default function AIHomeDesign() {
   // Active module from URL (interior, exterior, garden, replace, remove, declutter, style-transfer, walls, flooring)
   const initialModule = searchParams.get('module') || 'interior';
   const [selectedModule, setSelectedModule] = useState<string>(initialModule);
+
+  const handleModuleChange = (modId: string) => {
+    setSelectedModule(modId);
+    setSearchParams({ module: modId }, { replace: true });
+  };
 
   // User & Auth State
   const [user, setUser] = useState<ToolUser | null>(null);
@@ -266,92 +280,125 @@ export default function AIHomeDesign() {
       {/* Main Studio Wrapper */}
       <div className="w-full bg-[#FAFBFD] text-[#111111] min-h-screen font-sans flex flex-col pt-20">
 
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-visible">
+
+          {/* Unified Topbar inside canvas with Hamburger, Module Selector, Settings & Logout */}
+          <div className="sa-topbar bg-white text-gray-900 px-6 py-3 border-b border-gray-200/80 shadow-2xs flex flex-col lg:flex-row items-center justify-between gap-4 z-20 sticky top-20">
+            <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
+              <button
+                type="button"
+                onClick={() => setShowToolsDrawer(true)}
+                className="px-3 py-2 rounded-xl bg-black text-[#CCFF00] hover:bg-gray-800 transition cursor-pointer flex items-center gap-2 text-xs font-semibold shadow-2xs shrink-0"
+                title="Open All 21+ Tools Drawer"
+                aria-label="Open All 21+ Tools Drawer"
+              >
+                <Menu size={16} />
+                <span>All Tools</span>
+              </button>
+
+              <div
+                className="flex items-center gap-2 cursor-pointer shrink-0"
+                onClick={() => navigate('/tools')}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate('/tools');
+                  }
+                }}
+                aria-label="Navigate to site tools directory"
+              >
+                <span className="w-7 h-7 rounded-lg bg-black text-[#CCFF00] font-semibold flex items-center justify-center text-xs shadow-2xs">AI</span>
+                <div>
+                  <h1 className="text-xs sm:text-sm font-semibold text-gray-900 leading-none">AI Space &amp; Home Studio</h1>
+                  <p className="text-[10px] text-gray-500 font-medium">Anvitam Studio</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Category / Module Selector Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto w-full lg:w-auto py-1 lg:py-0 no-scrollbar justify-start sm:justify-center">
+              {AI_MODULES.map(mod => (
+                <button
+                  key={mod.id}
+                  type="button"
+                  onClick={() => handleModuleChange(mod.id)}
+                  aria-label={`Select ${mod.label} module`}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer whitespace-nowrap ${
+                    selectedModule === mod.id ? 'bg-black text-[#CCFF00] font-semibold shadow-2xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200/80'
+                  }`}
+                >
+                  <span className="text-xs">{mod.icon}</span>
+                  <span>{mod.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Controls: Credit Pill, Design Brief, Settings, Logout */}
+            <div className="flex items-center gap-2.5 shrink-0 w-full lg:w-auto justify-end">
+              {user ? (
+                <button
+                  type="button"
+                  onClick={() => setShowPaywall(true)}
+                  aria-label="View or top up available studio credits"
+                  className="px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-semibold flex items-center gap-1.5 hover:bg-black transition cursor-pointer shadow-2xs"
+                >
+                  <Zap size={14} className="fill-[#CCFF00] text-[#CCFF00]" />
+                  <span>{user.credits_remaining} Credits</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowAuthModal(true)}
+                  aria-label="Sign in to Anvitam Studio"
+                  className="px-3.5 py-1.5 rounded-full bg-[#CCFF00] text-black border border-black/10 text-xs font-semibold hover:bg-black hover:text-[#CCFF00] transition cursor-pointer shadow-2xs"
+                >
+                  Sign In / Register
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setShowBriefCard(true)}
+                aria-label="Open Design Brief parameters"
+                className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-semibold px-3.5 py-2 rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer border border-black/10 shadow-2xs"
+              >
+                <Sliders size={14} />
+                <span>Design Brief</span>
+              </button>
+
+              {/* Settings Button */}
+              <button
+                type="button"
+                onClick={() => setShowSettingsModal(true)}
+                className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-gray-400 text-gray-700 hover:text-black transition cursor-pointer shadow-2xs"
+                title="Studio & Account Settings"
+                aria-label="Studio & Account Settings"
+              >
+                <Settings size={17} />
+              </button>
+
+              {/* Sign Out Button */}
+              {user && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    logoutToolUser();
+                    setUser(null);
+                  }}
+                  className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-red-400 text-gray-600 hover:text-red-600 transition cursor-pointer shadow-2xs"
+                  title="Sign Out"
+                  aria-label="Sign Out"
+                >
+                  <LogOut size={17} />
+                </button>
+              )}
+            </div>
+          </div>
 
           {/* ── MAIN WORKSPACE CANVAS ── */}
           <main className="flex-1 bg-[#FAFBFD] p-6 sm:p-10 overflow-y-auto max-w-6xl mx-auto w-full">
-            
-            {/* Top Workspace Toolbar (Unified Header with Hamburger, Settings & Logout) */}
-            <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200/80 gap-4 flex-wrap">
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowToolsDrawer(true)}
-                  className="px-3 py-2 rounded-xl bg-black text-[#CCFF00] hover:bg-gray-800 transition cursor-pointer flex items-center gap-2 text-xs font-semibold shadow-2xs"
-                  title="Open All 21+ Tools Drawer"
-                  aria-label="Open All 21+ Tools Drawer"
-                >
-                  <Menu size={16} />
-                  <span>All Tools</span>
-                </button>
-
-                <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
-                  <span className="text-gray-900 font-semibold">Anvitam Studio</span>
-                  <span>/</span>
-                  <span className="text-black font-semibold capitalize">{selectedModule.replace('-', ' ')}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2.5">
-                {user ? (
-                  <button
-                    type="button"
-                    onClick={() => setShowPaywall(true)}
-                    aria-label="View or top up available studio credits"
-                    className="px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-semibold flex items-center gap-1.5 hover:bg-black transition cursor-pointer shadow-2xs"
-                  >
-                    <Zap size={14} className="fill-[#CCFF00] text-[#CCFF00]" />
-                    <span>{user.credits_remaining} Credits</span>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setShowAuthModal(true)}
-                    aria-label="Sign in to Anvitam Studio"
-                    className="px-3.5 py-1.5 rounded-full bg-[#CCFF00] text-black border border-black/10 text-xs font-semibold hover:bg-black hover:text-[#CCFF00] transition cursor-pointer shadow-2xs"
-                  >
-                    Sign In / Register
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => setShowBriefCard(true)}
-                  aria-label="Open Design Brief parameters"
-                  className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-semibold px-3.5 py-2 rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer border border-black/10 shadow-2xs"
-                >
-                  <Sliders size={14} />
-                  <span>Design Brief</span>
-                </button>
-
-                {/* Settings Button */}
-                <button
-                  type="button"
-                  onClick={() => setShowSettingsModal(true)}
-                  className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-gray-400 text-gray-700 hover:text-black transition cursor-pointer shadow-2xs"
-                  title="Studio & Account Settings"
-                  aria-label="Studio & Account Settings"
-                >
-                  <Settings size={17} />
-                </button>
-
-                {/* Sign Out Button */}
-                {user && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      logoutToolUser();
-                      setUser(null);
-                    }}
-                    className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-red-400 text-gray-600 hover:text-red-600 transition cursor-pointer shadow-2xs"
-                    title="Sign Out"
-                    aria-label="Sign Out"
-                  >
-                    <LogOut size={17} />
-                  </button>
-                )}
-              </div>
-            </div>
 
             {/* HERO GREETING SECTION */}
             {!generatedImage && (

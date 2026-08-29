@@ -564,6 +564,10 @@ export default function SiteAnalysis() {
 
   const handleCategoryChange = (cat: DesignCategory) => {
     setCategory(cat);
+    if (cat === 'interior') {
+      navigate('/tools/ai-home-design?module=interior');
+      return;
+    }
     setSearchParams(prev => {
       const p = new URLSearchParams(prev);
       p.set('category', cat);
