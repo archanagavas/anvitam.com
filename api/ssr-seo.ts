@@ -1725,6 +1725,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Vary', 'Accept-Encoding');
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('X-Robots-Tag', robots);
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://platform.twitter.com https://cdn.tailwindcss.com https://api.mapbox.com https://*.mapbox.com https://www.googletagmanager.com https://analytics.ahrefs.com https://cloud.umami.is https://www.clarity.ms https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://api.mapbox.com https://*.mapbox.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; frame-src https://www.youtube.com https://www.instagram.com; worker-src 'self' blob:; child-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com https://res.cloudinary.com https://*.mapbox.com https://api.mapbox.com https://events.mapbox.com;"
+  );
   // Diagnostic headers — safe to expose, no private data.
   // Check these in Cloudflare Ray ID logs or browser DevTools > Network
   // to identify which routes generate the largest payloads (FOT source).
