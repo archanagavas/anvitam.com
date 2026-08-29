@@ -39,17 +39,9 @@ export const AllToolsDrawer: React.FC<Props> = ({ isOpen, onClose, activeToolId 
   const filteredTools = TOOLS_SUITE.filter(tool =>
     tool.name.toLowerCase().includes(search.toLowerCase()) ||
     tool.shortDesc.toLowerCase().includes(search.toLowerCase()) ||
-    tool.category.toLowerCase().includes(search.toLowerCase())
+    tool.category.toLowerCase().includes(search.toLowerCase()) ||
+    (tool.subModules && tool.subModules.some(s => s.name.toLowerCase().includes(search.toLowerCase()) || s.description.toLowerCase().includes(search.toLowerCase())))
   );
-
-  const categories = [
-    { key: 'ai-design', title: 'AI Design Studio', subtitle: 'Generative AI Interior, Exterior & Yard Tools' },
-    { key: 'Sun & Site', title: 'Sun & Site Analysis', subtitle: 'Site selection, heights, slopes & roads' },
-    { key: '3D & Shadows', title: '3D & Shadow Simulation', subtitle: 'Solar path, heatmaps & facade exposure' },
-    { key: 'Weather & Wind', title: 'Weather & Wind Vectors', subtitle: 'Wind direction, climate & solar angles' },
-    { key: 'Soil & Water', title: 'Soil, Water & Solar Energy', subtitle: 'SoilGrids, rainwater & PV potential' },
-    { key: 'Building Cost & Carbon', title: 'Embodied Carbon & Cost', subtitle: 'Green materials & cost estimation' },
-  ];
 
   const handleLaunch = (href: string) => {
     onClose();
@@ -85,12 +77,12 @@ export const AllToolsDrawer: React.FC<Props> = ({ isOpen, onClose, activeToolId 
             {/* Header */}
             <div className="p-6 border-b border-gray-200/80 bg-white flex items-center justify-between gap-4 sticky top-0 z-20">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-black text-[#CCFF00] flex items-center justify-center font-semibold text-sm shadow-2xs">
+                <div className="w-9 h-9 rounded-xl bg-black text-[#CCFF00] flex items-center justify-center font-bold text-sm shadow-2xs">
                   A
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold text-gray-900 leading-tight">Anvitam Studio Tools</h2>
-                  <p className="text-xs text-gray-500 font-medium">All 21+ Architectural AI &amp; Site Intelligence Suite</p>
+                  <h2 className="text-base font-bold text-gray-900 leading-tight">Anvitam Flagship Studios</h2>
+                  <p className="text-xs text-gray-500 font-medium">2 Consolidated Architectural Workspace Canvases</p>
                 </div>
               </div>
 
@@ -112,8 +104,8 @@ export const AllToolsDrawer: React.FC<Props> = ({ isOpen, onClose, activeToolId 
                   type="text"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  placeholder="Filter 21+ tools by name, feature or category..."
-                  aria-label="Filter 21+ tools by name, feature or category"
+                  placeholder="Filter studios & modules (e.g. Interior, Shadow, Wind, Soil)..."
+                  aria-label="Filter studios by name or feature"
                   className="w-full bg-white border border-gray-200/80 rounded-xl pl-10 pr-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 outline-none focus:border-black focus:ring-1 focus:ring-black font-normal transition"
                 />
                 {search && (
@@ -131,86 +123,86 @@ export const AllToolsDrawer: React.FC<Props> = ({ isOpen, onClose, activeToolId 
 
             {/* Tools List */}
             <nav className="flex-1 overflow-y-auto p-6 space-y-8" aria-label="Studio Tools List">
-              {categories.map(cat => {
-                const categoryTools = filteredTools.filter(t => {
-                  if (cat.key === 'ai-design') return t.id.startsWith('ai-');
-                  return t.category === cat.key;
-                });
-
-                if (categoryTools.length === 0) return null;
-
+              {filteredTools.map(tool => {
+                const isActive = activeToolId === tool.id;
                 return (
-                  <div key={cat.key} className="space-y-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-[#CCFF00] border border-black/20" />
-                        <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-900">{cat.title}</h3>
+                  <div key={tool.id} className="space-y-3 bg-gray-50/50 p-4 rounded-2xl border border-gray-200/70">
+                    <button
+                      type="button"
+                      onClick={() => handleLaunch(tool.href)}
+                      className={`group p-4 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between gap-3 w-full focus:outline-none ${
+                        isActive
+                          ? 'bg-black text-[#CCFF00] border-black shadow-md'
+                          : 'bg-white border-gray-200 hover:border-black hover:bg-white shadow-2xs'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                          isActive ? 'bg-[#CCFF00] text-black' : 'bg-gray-100 text-gray-900 group-hover:bg-black group-hover:text-[#CCFF00]'
+                        } transition-colors`}>
+                          {tool.iconSvg}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h4 className={`text-sm font-bold truncate ${isActive ? 'text-[#CCFF00]' : 'text-gray-900'}`}>
+                              {tool.name}
+                            </h4>
+                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                              isActive ? 'bg-white/10 text-white' : 'bg-[#CCFF00] text-black border border-black/10'
+                            }`}>
+                              {tool.badge}
+                            </span>
+                          </div>
+                          <p className={`text-xs line-clamp-1 mt-0.5 font-normal ${
+                            isActive ? 'text-gray-300' : 'text-gray-500'
+                          }`}>
+                            {tool.shortDesc}
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-[11px] text-gray-500 font-medium pl-4">{cat.subtitle}</p>
-                    </div>
 
-                    <div className="grid grid-cols-1 gap-2.5 pl-1">
-                      {categoryTools.map(tool => {
-                        const isActive = activeToolId === tool.id;
-                        return (
-                          <button
-                            key={tool.id}
-                            type="button"
-                            onClick={() => handleLaunch(tool.href)}
-                            aria-label={`Launch ${tool.name} tool`}
-                            className={`group p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between gap-3 w-full focus:outline-none focus:ring-2 focus:ring-black ${
-                              isActive
-                                ? 'bg-black text-[#CCFF00] border-black shadow-md'
-                                : 'bg-white border-gray-200/80 hover:border-gray-400 hover:bg-gray-50/80 shadow-2xs'
-                            }`}
-                          >
-                            <div className="flex items-center gap-3.5 min-w-0">
-                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                                isActive ? 'bg-[#CCFF00] text-black' : 'bg-gray-100 text-gray-900 group-hover:bg-black group-hover:text-[#CCFF00]'
-                              } transition-colors`}>
-                                {tool.iconSvg}
-                              </div>
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <h4 className={`text-xs font-semibold truncate ${isActive ? 'text-[#CCFF00]' : 'text-gray-900'}`}>
-                                    {tool.name}
-                                  </h4>
-                                  <span className={`text-[9px] font-medium px-2 py-0.5 rounded-full shrink-0 ${
-                                    isActive ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-600'
-                                  }`}>
-                                    {tool.badge}
-                                  </span>
-                                </div>
-                                <p className={`text-[11px] line-clamp-1 mt-0.5 font-normal ${
-                                  isActive ? 'text-gray-300' : 'text-gray-500'
-                                }`}>
-                                  {tool.shortDesc}
-                                </p>
-                              </div>
-                            </div>
+                      <ArrowRight size={16} className={`shrink-0 transition-transform group-hover:translate-x-1 ${
+                        isActive ? 'text-[#CCFF00]' : 'text-gray-400 group-hover:text-black'
+                      }`} />
+                    </button>
 
-                            <ArrowRight size={16} className={`shrink-0 transition-transform group-hover:translate-x-1 ${
-                              isActive ? 'text-[#CCFF00]' : 'text-gray-400 group-hover:text-black'
-                            }`} />
-                          </button>
-                        );
-                      })}
-                    </div>
+                    {/* Sub-module buttons list inside drawer */}
+                    {tool.subModules && tool.subModules.length > 0 && (
+                      <div className="pt-2 pl-2 space-y-1.5 border-t border-gray-200/60">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Included Modules:</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                          {tool.subModules.map(sub => (
+                            <button
+                              key={sub.id}
+                              type="button"
+                              onClick={() => handleLaunch(sub.href)}
+                              className="p-2 rounded-lg bg-white hover:bg-black hover:text-[#CCFF00] text-gray-700 text-xs font-medium border border-gray-200/70 transition flex items-center justify-between text-left group/sub cursor-pointer"
+                            >
+                              <span className="flex items-center gap-1.5 truncate">
+                                <span>{sub.icon}</span>
+                                <span className="truncate">{sub.name}</span>
+                              </span>
+                              <ChevronRight size={12} className="text-gray-400 group-hover/sub:text-[#CCFF00] shrink-0" />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}
 
               {filteredTools.length === 0 && (
                 <div className="text-center py-12 text-gray-500 space-y-2">
-                  <p className="text-sm font-semibold">No tools found matching "{search}"</p>
-                  <p className="text-xs text-gray-400">Try searching for "Interior", "Sun", "Shadow", "Soil", or "Wind"</p>
+                  <p className="text-sm font-semibold">No studios found matching "{search}"</p>
+                  <p className="text-xs text-gray-400">Try searching for "Interior", "3D", "Sun", "Shadow", "Soil", or "Wind"</p>
                 </div>
               )}
             </nav>
 
             {/* Footer */}
             <div className="p-4 bg-gray-50 border-t border-gray-200/80 flex items-center justify-between text-xs text-gray-500 font-medium">
-              <span>21+ Tools Active</span>
+              <span>2 Flagship Studios Active</span>
               <button
                 type="button"
                 onClick={() => handleLaunch('/dashboard')}

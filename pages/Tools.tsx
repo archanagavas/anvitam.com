@@ -38,31 +38,31 @@ export default function Tools() {
   const topupPrice = isIndia ? DODO_PRODUCTS.topup_10.priceINR : DODO_PRODUCTS.topup_10.priceUSD;
   const monthlyPrice = isIndia ? DODO_PRODUCTS.pro_monthly.priceINR : DODO_PRODUCTS.pro_monthly.priceUSD;
 
-  const categories = ['All Tools', 'Sun & Site', '3D & Shadows', 'Weather & Wind', 'Soil & Water', 'Building Cost & Carbon'];
+  const categories = ['All Studios', 'Generative AI Studios', 'Site & Environmental Studios'];
 
   const filteredTools = TOOLS_SUITE.filter(tool => {
     const matchesSearch = tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           tool.shortDesc.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           tool.category.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'All Tools' || tool.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'All Studios' || tool.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
   const handleLaunchTool = (tool: ToolItem) => {
     const user = getToolUser();
     if (!user) {
-      setPendingToolRedirect(`/dashboard?tool=${tool.id}`);
+      setPendingToolRedirect(tool.href);
       setShowAuthModal(true);
     } else {
-      navigate(`/dashboard?tool=${tool.id}`);
+      navigate(tool.href);
     }
   };
 
   return (
     <>
       <Helmet>
-        <title>Site Intelligence Suite | 16+ Architectural Tools | Anvitam</title>
-        <meta name="description" content="Get instant sun path, wind patterns, soil reports, and 3D shadows for any building location in the world with Anvitam site tools." />
+        <title>Flagship Studio Suite | Anvitam Architectural Platforms</title>
+        <meta name="description" content="Access Anvitam's AI Space & Home Studio and 3D Site Intelligence Canvas for photorealistic renders and environmental site reports." />
       </Helmet>
 
       <div className="w-full bg-white text-[#111111] min-h-screen font-sans overflow-hidden">
@@ -78,7 +78,7 @@ export default function Tools() {
               transition={{ duration: 0.4 }}
               className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#CCFF00] text-[#111] text-[11px] font-bold uppercase tracking-wider mb-4 shadow-sm border border-black/10"
             >
-              <Sparkles size={13} /> 16 Easy Site Analysis Tools
+              <Sparkles size={13} /> 2 Flagship Architectural Studios
             </motion.div>
 
             {/* Main Headline */}
@@ -88,17 +88,17 @@ export default function Tools() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.18] mb-4 text-gray-900"
             >
-              Get Smart Site Reports <span className="bg-[#CCFF00] px-3 py-0.5 rounded-xl border border-black/10">in Seconds</span>
+              Architectural Powerhouse <span className="bg-[#CCFF00] px-3 py-0.5 rounded-xl border border-black/10">Studios</span>
             </motion.h1>
 
-            {/* Subtitle in 6th-grade English */}
+            {/* Subtitle */}
             <motion.p
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto mb-8 leading-relaxed font-normal"
             >
-              Easy tools for architects, builders, and students. Get instant sun paths, wind direction, soil health reports, and 3D shadow tests for any location. Save hours of manual work in 1 click.
+              Everything you need in 2 streamlined workspace canvases. Generate photorealistic interiors, house elevations, 3D sun shadow simulations, wind vectors, and soil reports in seconds.
             </motion.p>
 
             {/* Search & Category Filter Bar */}
@@ -107,7 +107,7 @@ export default function Tools() {
                 <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search tools like sun path, wind, soil, 3D shadows, or rain..."
+                  placeholder="Search features like Interior, Facade, 3D Shadows, Wind, Soil, or Rain..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-white border border-gray-300 rounded-full pl-11 pr-10 py-3.5 text-xs md:text-sm font-normal text-gray-900 placeholder-gray-400 outline-none focus:border-black shadow-xs transition-all focus:ring-2 focus:ring-black/5"
@@ -143,30 +143,30 @@ export default function Tools() {
           </div>
         </section>
 
-        {/* ── 16+ TOOLS GRID ── */}
+        {/* ── 2 FLAGSHIP STUDIOS GRID ── */}
         <section className="py-12 md:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
               <Sliders size={18} className="text-gray-700" />
-              {selectedCategory === 'All Tools' ? 'All 16 Site Analysis Tools' : `${selectedCategory} Tools`}
+              {selectedCategory === 'All Studios' ? 'Our Flagship Powerhouse Studios' : `${selectedCategory}`}
             </h2>
             <span className="text-xs font-semibold text-gray-600 bg-gray-50 px-3 py-1 rounded-full border border-gray-200">
-              Showing {filteredTools.length} of {TOOLS_SUITE.length} Tools
+              Showing {filteredTools.length} Studio Platforms
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {filteredTools.map((tool) => (
               <motion.div
                 key={tool.id}
                 initial={{ opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="bg-white rounded-3xl border border-gray-200/80 hover:border-gray-400 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between group"
+                className="bg-white rounded-3xl border border-gray-200/80 hover:border-black overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
               >
                 <div>
                   {/* Top Image Preview Banner */}
-                  <div className="relative h-44 w-full overflow-hidden bg-gray-100 border-b border-gray-100">
+                  <div className="relative h-56 w-full overflow-hidden bg-gray-100 border-b border-gray-100">
                     <img
                       src={tool.previewImage}
                       alt={tool.name}
@@ -175,50 +175,72 @@ export default function Tools() {
                       }}
                       className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                     />
-                    <span className="absolute top-3 left-3 text-[9px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-[#111111] text-[#CCFF00] shadow-sm border border-black/20">
+                    <span className="absolute top-3 left-3 text-[10px] font-extrabold uppercase tracking-wider px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] shadow-sm border border-black/20">
                       {tool.badge}
                     </span>
                   </div>
 
-                  <div className="p-6 space-y-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs ${tool.iconBg}`}>
+                  <div className="p-6 sm:p-8 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-2xs ${tool.iconBg}`}>
                         {tool.iconSvg}
                       </div>
-                      <h3 className="text-[#111111] font-bold text-base group-hover:text-black transition tracking-tight">
-                        {tool.name}
-                      </h3>
+                      <div>
+                        <h3 className="text-[#111111] font-bold text-xl group-hover:text-black transition tracking-tight">
+                          {tool.name}
+                        </h3>
+                        <span className="text-[11px] text-gray-500 font-medium">{tool.category}</span>
+                      </div>
                     </div>
 
-                    <p className="text-xs text-gray-600 leading-relaxed font-normal line-clamp-2">
+                    <p className="text-xs sm:text-sm text-gray-600 leading-relaxed font-normal">
                       {tool.shortDesc}
                     </p>
 
-                    <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100 space-y-1.5 mt-3">
-                      {tool.features.slice(0, 2).map((f, idx) => (
-                        <p key={idx} className="text-[11px] text-gray-700 font-medium flex items-center gap-2">
-                          <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
-                          <span className="truncate">{f}</span>
+                    {/* Sub-Modules Quick Tags */}
+                    {tool.subModules && tool.subModules.length > 0 && (
+                      <div className="pt-1 space-y-2">
+                        <p className="text-xs font-semibold text-gray-900">Included Workspace Modules:</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {tool.subModules.map((sub) => (
+                            <button
+                              key={sub.id}
+                              onClick={() => navigate(sub.href)}
+                              className="px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-black hover:text-[#CCFF00] text-gray-800 text-[11px] font-medium transition cursor-pointer flex items-center gap-1.5 border border-gray-200/80"
+                            >
+                              <span>{sub.icon}</span>
+                              <span>{sub.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 space-y-2 mt-4">
+                      {tool.features.map((f, idx) => (
+                        <p key={idx} className="text-xs text-gray-700 font-medium flex items-center gap-2">
+                          <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                          <span>{f}</span>
                         </p>
                       ))}
                     </div>
                   </div>
                 </div>
 
-                <div className="p-6 pt-0 space-y-3">
-                  <div className="flex items-center justify-between gap-2">
+                <div className="p-6 sm:p-8 pt-0 space-y-3">
+                  <div className="flex items-center justify-between gap-3 pt-4 border-t border-gray-100">
                     <button
                       onClick={() => setActiveModalTool(tool)}
                       className="text-xs font-medium text-gray-500 hover:text-gray-900 transition cursor-pointer underline underline-offset-4"
                     >
-                      Read Tool Guide
+                      View Studio Specs
                     </button>
 
                     <button
                       onClick={() => handleLaunchTool(tool)}
-                      className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-semibold text-xs px-4 py-2 rounded-xl transition shadow-2xs flex items-center gap-1 cursor-pointer border border-black/10 hover:scale-[1.02]"
+                      className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-bold text-xs sm:text-sm px-6 py-3 rounded-xl transition shadow-sm flex items-center gap-2 cursor-pointer border border-black/10 hover:scale-[1.02]"
                     >
-                      Open Tool <ChevronRight size={14} />
+                      Launch Workspace Studio <ChevronRight size={16} />
                     </button>
                   </div>
                 </div>

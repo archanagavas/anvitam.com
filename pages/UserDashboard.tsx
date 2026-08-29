@@ -286,29 +286,29 @@ export default function UserDashboard() {
               </form>
             </div>
 
-            {/* ── ALL 21+ TOOLS CATALOG GRID ── */}
+            {/* ── FLAGSHIP STUDIOS CATALOG GRID ── */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-base font-bold text-gray-900 tracking-tight">
-                  All Architectural &amp; AI Tools ({filteredTools.length})
+                  Flagship Architectural Studios ({filteredTools.length})
                 </h2>
-                <span className="text-xs text-gray-500 font-normal">Click any tool card to launch</span>
+                <span className="text-xs text-gray-500 font-normal">Click any studio workspace to launch</span>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {filteredTools.map(t => (
                   <button
                     key={t.id}
                     type="button"
                     onClick={() => handleSelectTool(t.id, t.href)}
-                    aria-label={`Select ${t.name} tool`}
-                    className={`bg-white rounded-2xl border text-left overflow-hidden shadow-2xs hover:shadow-md transition cursor-pointer group flex flex-col justify-between focus:outline-none focus:ring-2 focus:ring-black ${
+                    aria-label={`Select ${t.name} studio`}
+                    className={`bg-white rounded-3xl border text-left overflow-hidden shadow-2xs hover:shadow-md transition cursor-pointer group flex flex-col justify-between focus:outline-none focus:ring-2 focus:ring-black ${
                       activeToolId === t.id ? 'border-black ring-2 ring-black/10' : 'border-gray-200/80 hover:border-gray-300'
                     }`}
                   >
                     <div className="w-full">
                       {/* Top Preview Image */}
-                      <div className="relative h-40 w-full overflow-hidden bg-gray-100 border-b border-gray-100">
+                      <div className="relative h-48 w-full overflow-hidden bg-gray-100 border-b border-gray-100">
                         <img
                           src={t.previewImage}
                           alt={t.name}
@@ -317,33 +317,53 @@ export default function UserDashboard() {
                           }}
                           className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                         />
-                        <span className="absolute top-2.5 left-2.5 text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#111111] text-[#CCFF00] shadow-2xs">
+                        <span className="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#111111] text-[#CCFF00] shadow-2xs">
                           {t.badge}
                         </span>
                       </div>
 
                       {/* Content Body */}
-                      <div className="p-4 space-y-2">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${t.iconBg}`}>
+                      <div className="p-5 space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${t.iconBg}`}>
                             {t.iconSvg}
                           </div>
-                          <h3 className="text-xs font-bold text-gray-900 group-hover:text-black">
-                            {t.name}
-                          </h3>
+                          <div>
+                            <h3 className="text-sm font-bold text-gray-900 group-hover:text-black">
+                              {t.name}
+                            </h3>
+                            <span className="text-[10px] text-gray-500 font-medium">{t.category}</span>
+                          </div>
                         </div>
 
                         <p className="text-xs text-gray-600 font-normal leading-relaxed line-clamp-2">
                           {t.shortDesc}
                         </p>
+
+                        {/* Sub-modules list */}
+                        {t.subModules && t.subModules.length > 0 && (
+                          <div className="pt-2 space-y-1.5 border-t border-gray-100">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Included Modules:</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {t.subModules.map(sub => (
+                                <span
+                                  key={sub.id}
+                                  className="px-2 py-0.5 rounded-md bg-gray-100 text-gray-800 text-[10px] font-medium border border-gray-200/60"
+                                >
+                                  {sub.icon} {sub.name}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
 
-                    <div className="p-4 pt-0 w-full">
+                    <div className="p-5 pt-0 w-full">
                       <div
-                        className="w-full bg-gray-100 group-hover:bg-[#CCFF00] group-hover:text-black text-gray-800 font-semibold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1 cursor-pointer border border-gray-200/80"
+                        className="w-full bg-gray-100 group-hover:bg-[#CCFF00] group-hover:text-black text-gray-900 font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-1.5 cursor-pointer border border-gray-200/80 shadow-2xs"
                       >
-                        Select &amp; Run <ChevronRight size={14} />
+                        Launch Studio Workspace <ChevronRight size={14} />
                       </div>
                     </div>
 
