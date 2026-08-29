@@ -25,24 +25,78 @@ import { AllToolsDrawer } from '../components/tools/AllToolsDrawer';
 import { ToolsSettingsModal } from '../components/tools/ToolsSettingsModal';
 import { INITIAL_CATALOG_PRODUCTS, CATALOG_CATEGORIES, type CatalogProduct } from '../constants/catalogData';
 
-// Preset visual styles for design brief drawer (24+ Curated Interior Styles)
+// Preset visual styles for design brief drawer (55 Curated Anvitam Interior Styles)
 const STYLE_OPTIONS = [
-  { id: 'modern', name: 'Modern Minimalist', img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=300&auto=format&fit=crop' },
-  { id: 'scandinavian', name: 'Scandinavian', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=300&auto=format&fit=crop' },
-  { id: 'japandi', name: 'Japandi Zen', img: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?q=80&w=300&auto=format&fit=crop' },
-  { id: 'luxury', name: 'High-End Luxury', img: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=300&auto=format&fit=crop' },
-  { id: 'coastal', name: 'Coastal Breeze', img: 'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?q=80&w=300&auto=format&fit=crop' },
-  { id: 'industrial', name: 'Urban Industrial', img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=300&auto=format&fit=crop' },
-  { id: 'farmhouse', name: 'Modern Farmhouse', img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=300&auto=format&fit=crop' },
-  { id: 'boho', name: 'Modern Boho-Chic', img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=300&auto=format&fit=crop' },
-  { id: 'neoclassic', name: 'French Neoclassic', img: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=300&auto=format&fit=crop' },
-  { id: 'biophilic', name: 'Biophilic Eco', img: 'https://images.unsplash.com/photo-1540518614846-7eded433c457?q=80&w=300&auto=format&fit=crop' },
-  { id: 'cyberpunk', name: 'Cyberpunk Neon', img: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=300&auto=format&fit=crop' },
-  { id: 'zen', name: 'Japanese Zen', img: 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=300&auto=format&fit=crop' },
-  { id: 'artdeco', name: '1920s Art Deco', img: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=300&auto=format&fit=crop' },
-  { id: 'tropical', name: 'Bali Tropical', img: 'https://images.unsplash.com/photo-1512915922686-57c11dde9b6b?q=80&w=300&auto=format&fit=crop' },
-  { id: 'midcentury', name: 'Mid-Century Modern', img: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=300&auto=format&fit=crop' },
-  { id: 'mediterranean', name: 'Mediterranean', img: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=300&auto=format&fit=crop' }
+  // ── CLEAN & CONTEMPORARY ──
+  { id: 'modern', name: '🏠 Pure Modern', desc: 'Clean lines, neutral tones, function over decoration', img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=300&auto=format&fit=crop' },
+  { id: 'minimalist', name: '⬜ Anvitam Minimalist', desc: 'Extreme simplicity, clutter-free, monochromatic calm', img: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=300&auto=format&fit=crop' },
+  { id: 'scandinavian', name: '🌲 Nordic Hygge', desc: 'Functionality, natural light, muted Scandi palette', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=300&auto=format&fit=crop' },
+  { id: 'contemporary', name: '✨ Studio Contemporary', desc: 'Current trends, subtle sophistication, clean lines', img: 'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?q=80&w=300&auto=format&fit=crop' },
+  { id: 'simple', name: '◻️ Honest Simple', desc: 'Pure functionality, zero excess, breathable open space', img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=300&auto=format&fit=crop' },
+  // ── JAPANESE & ZEN ──
+  { id: 'japandi', name: '🎋 Japandi Harmony', desc: 'Japanese-Scandi fusion — wabi-sabi meets Nordic calm', img: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?q=80&w=300&auto=format&fit=crop' },
+  { id: 'zen', name: '☮️ Tokyo Zen', desc: 'Tranquility, natural materials, traditional Japanese flow', img: 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=300&auto=format&fit=crop' },
+  { id: 'japanese', name: '⛩️ Kyoto Design', desc: 'Minimalism, shoji screens, low furniture, tatami spirit', img: 'https://images.unsplash.com/photo-1580130775562-0ef92da028de?q=80&w=300&auto=format&fit=crop' },
+  // ── LUXURY & FORMAL ──
+  { id: 'luxury', name: '💎 Grand Luxury', desc: 'High-end materials, gold accents, opulent atmosphere', img: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=300&auto=format&fit=crop' },
+  { id: 'neoclassic', name: '🏛️ Neoclassical Revival', desc: 'Grand columns, ornate mouldings, timeless elegance', img: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=300&auto=format&fit=crop' },
+  { id: 'artdeco', name: '🔶 Art Deco Glamour', desc: 'Bold geometry, rich colors, 1920s sophistication', img: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=300&auto=format&fit=crop' },
+  { id: 'baroque', name: '👑 Baroque Grandeur', desc: 'Opulent drama, gilded details, 17th-century magnificence', img: 'https://images.unsplash.com/photo-1600121848594-d8644e57abab?q=80&w=300&auto=format&fit=crop' },
+  { id: 'hollywood', name: '🌟 Hollywood Regency', desc: 'Bold colors, shiny finishes, vintage Hollywood drama', img: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=300&auto=format&fit=crop' },
+  // ── NATURAL & ORGANIC ──
+  { id: 'biophilic', name: '🌿 Biophilic Living', desc: 'Nature-integrated, indoor greenery, natural light wells', img: 'https://images.unsplash.com/photo-1540518614846-7eded433c457?q=80&w=300&auto=format&fit=crop' },
+  { id: 'rustic', name: '🪵 Raw Rustic', desc: 'Natural wood, stone, earthy textures, organic warmth', img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=300&auto=format&fit=crop' },
+  { id: 'eco', name: '♻️ Eco-Conscious', desc: 'Sustainable materials, energy-efficient, low-impact beauty', img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=300&auto=format&fit=crop' },
+  { id: 'bali', name: '🌴 Bali Resort', desc: 'Rattan, bamboo, tropical greenery, Balinese calm', img: 'https://images.unsplash.com/photo-1512915922686-57c11dde9b6b?q=80&w=300&auto=format&fit=crop' },
+  { id: 'tropical', name: '🌺 Tropical Paradise', desc: 'Lush greenery, bright colors, natural materials', img: 'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?q=80&w=300&auto=format&fit=crop' },
+  // ── COASTAL & RELAXED ──
+  { id: 'coastal', name: '🌊 Coastal Breeze', desc: 'Shoreline palette, driftwood, sea glass, airy textures', img: 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=300&auto=format&fit=crop' },
+  { id: 'nautical', name: '⚓ Nautical Captain', desc: 'Navy blue, white, maritime accessories, rope textures', img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=300&auto=format&fit=crop' },
+  { id: 'surf', name: '🏄 Surf Shack', desc: 'Weathered wood, surfboard art, laid-back ocean culture', img: 'https://images.unsplash.com/photo-1545558014-8692077e9b5c?q=80&w=300&auto=format&fit=crop' },
+  { id: 'ski', name: '❄️ Alpine Chalet', desc: 'Cozy mountain warmth, rustic wood, fireplace, plaid', img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=300&auto=format&fit=crop' },
+  // ── BOHEMIAN & ECLECTIC ──
+  { id: 'boho', name: '🔮 Free Spirit Boho', desc: 'Layered textiles, global patterns, eclectic freedom', img: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=300&auto=format&fit=crop' },
+  { id: 'modern_boho', name: '🌸 Modern Boho', desc: 'Relaxed eclectic decor with contemporary touches', img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=300&auto=format&fit=crop' },
+  { id: 'bohochic', name: '🦚 Boho-Chic Edit', desc: 'Fashionable bohemian — patterns mixed with refinement', img: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=300&auto=format&fit=crop' },
+  { id: 'eclectic', name: '🎨 Eclectic Collector', desc: 'Curated mix of eras, textures, colors for unique personality', img: 'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?q=80&w=300&auto=format&fit=crop' },
+  { id: 'tribal', name: '🪶 Global Tribal', desc: 'Indigenous patterns, earthy warmth, cultural heritage art', img: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=300&auto=format&fit=crop' },
+  { id: 'maximalist', name: '🎭 Bold Maximalist', desc: 'More is more — layered textures, vibrant colors, rich patterns', img: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=300&auto=format&fit=crop' },
+  // ── INDUSTRIAL & URBAN ──
+  { id: 'industrial', name: '🏭 Raw Industrial', desc: 'Exposed brick, concrete, steel, warehouse aesthetic', img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=300&auto=format&fit=crop' },
+  { id: 'loft', name: '🧱 Urban Loft', desc: 'Open-plan concrete, ductwork exposed, city edge energy', img: 'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?q=80&w=300&auto=format&fit=crop' },
+  // ── FUTURISTIC & TECH ──
+  { id: 'cyberpunk', name: '🟣 Cyberpunk Forge', desc: 'Neon lights, high-tech dystopia, gritty futurism', img: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=300&auto=format&fit=crop' },
+  { id: 'futuristic', name: '🚀 Space Age', desc: 'Sleek innovation, advanced tech surfaces, forward-thinking', img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=300&auto=format&fit=crop' },
+  { id: 'vaporwave', name: '🌐 Vaporwave Retro', desc: 'Pastel neons, 80s-90s digital nostalgia, cyber motifs', img: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=300&auto=format&fit=crop' },
+  { id: 'gaming', name: '🎮 Gaming Den', desc: 'Multiple screens, LED strips, ergonomic setup, gamer soul', img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=300&auto=format&fit=crop' },
+  { id: 'retro_future', name: '🤖 Retro-Futurist', desc: 'The future as imagined in the past — atomic age meets tomorrow', img: 'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?q=80&w=300&auto=format&fit=crop' },
+  // ── VINTAGE & HISTORICAL ──
+  { id: 'midcentury', name: '🕰️ Mid-Century Studio', desc: 'Sleek lines, organic shapes, 1950s-60s functional design', img: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=300&auto=format&fit=crop' },
+  { id: 'vintage', name: '📻 Vintage Collector', desc: 'Curated pieces with history, nostalgic textures and patina', img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=300&auto=format&fit=crop' },
+  { id: 'retro', name: '🕹️ Retro Revival', desc: '50s-70s revival — nostalgia meets modern function', img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=300&auto=format&fit=crop' },
+  { id: 'art_nouveau', name: '🌸 Art Nouveau Flow', desc: 'Flowing organic lines, floral motifs, nature-inspired craft', img: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=300&auto=format&fit=crop' },
+  { id: 'medieval', name: '⚔️ Medieval Keep', desc: 'Heavy wood, stone walls, wrought iron, fortress warmth', img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=300&auto=format&fit=crop' },
+  { id: 'gothic', name: '🦇 Gothic Revival', desc: 'Dark drama, rich jewel tones, ornate gothic elegance', img: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=300&auto=format&fit=crop' },
+  // ── EUROPEAN REGIONAL ──
+  { id: 'mediterranean', name: '🌞 Mediterranean Sun', desc: 'Terra cotta, arches, warm plaster, Aegean palette', img: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=300&auto=format&fit=crop' },
+  { id: 'parisian', name: '🗼 Parisian Atelier', desc: 'Haussmann elegance, herringbone floors, refined French taste', img: 'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?q=80&w=300&auto=format&fit=crop' },
+  { id: 'french_country', name: '🥐 French Countryside', desc: 'Soft colors, floral motifs, natural materials, provincial charm', img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=300&auto=format&fit=crop' },
+  { id: 'traditional', name: '🕯️ Heritage Traditional', desc: 'Classic details, sumptuous furnishings, historical reverence', img: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=300&auto=format&fit=crop' },
+  // ── RURAL & COUNTRY ──
+  { id: 'farmhouse', name: '🐄 Modern Farmhouse', desc: 'Rustic warmth, shiplap, barn doors, country simplicity', img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=300&auto=format&fit=crop' },
+  { id: 'cottagecore', name: '🌷 Cottagecore Dream', desc: 'Rural nostalgia, floral patterns, handmade coziness', img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=300&auto=format&fit=crop' },
+  { id: 'shabby_chic', name: '🌹 Shabby Chic', desc: 'Vintage elegance, distressed finishes, romantic comfort', img: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=300&auto=format&fit=crop' },
+  // ── FESTIVE & SEASONAL ──
+  { id: 'christmas', name: '🎄 Festive Christmas', desc: 'Red, green, gold — holiday warmth and celebration', img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=300&auto=format&fit=crop' },
+  { id: 'halloween', name: '🎃 Dark Halloween', desc: 'Spooky gothic, orange and black, dramatic seasonal decor', img: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=300&auto=format&fit=crop' },
+  { id: 'cny', name: '🏮 Lunar New Year', desc: 'Red and gold, lanterns, prosperity symbols, festive energy', img: 'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?q=80&w=300&auto=format&fit=crop' },
+  { id: 'easter', name: '🐣 Spring Easter', desc: 'Pastel palette, floral accents, fresh seasonal lightness', img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=300&auto=format&fit=crop' },
+  // ── SPECIALTY ──
+  { id: 'hot_pink', name: '💗 Hot Pink Statement', desc: 'Bold and vibrant — hot pink as the dominant hero color', img: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=300&auto=format&fit=crop' },
+  { id: 'airbnb', name: '🏡 Airbnb-Ready', desc: 'Welcoming, versatile, comfortable for all guests', img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=300&auto=format&fit=crop' },
+  { id: 'post_apocalyptic', name: '💀 Post-Apocalyptic', desc: 'Weathered survival aesthetic, distressed industrial grit', img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=300&auto=format&fit=crop' },
+  { id: 'soviet', name: '⚒️ Soviet Brutalist', desc: 'Utilitarian concrete, monumental scale, austere dignity', img: 'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?q=80&w=300&auto=format&fit=crop' },
+  { id: 'sketch', name: '✏️ Architectural Sketch', desc: 'Unfinished hand-drawn quality, outlines, raw creative draft', img: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=300&auto=format&fit=crop' },
 ];
 
 // Quick Sample Photos for 1-Click Testing
