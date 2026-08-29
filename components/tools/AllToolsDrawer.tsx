@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Search, Sparkles, MapPin, ArrowRight, Zap } from 'lucide-react';
+import { X, Search, Sparkles, MapPin, ArrowRight, Zap, ChevronRight } from 'lucide-react';
 import { TOOLS_SUITE, ToolItem } from '../../constants/toolsData';
 
 interface Props {

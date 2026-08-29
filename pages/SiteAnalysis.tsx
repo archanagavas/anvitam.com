@@ -111,6 +111,48 @@ export default function SiteAnalysis() {
   const [pendingCoords, setPendingCoords] = useState<{ lat: number; lon: number; placeName?: string } | null>(null);
   const [isAnalyzed, setIsAnalyzed] = useState(false);
   const [searchInput, setSearchInput] = useState('');
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [isSearchingSuggestions, setIsSearchingSuggestions] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchFormRef = useRef<HTMLFormElement>(null);
+
+  // Live location autocomplete debouncer
+  useEffect(() => {
+    if (!searchInput.trim() || searchInput.length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearchingSuggestions(true);
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchInput)}&limit=5`);
+        if (res.ok) {
+          const data = await res.json();
+          setSuggestions(data || []);
+          setShowSuggestions(true);
+        }
+      } catch (err) {
+        console.warn('[Geocoding error]', err);
+      } finally {
+        setIsSearchingSuggestions(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  // Click outside to close search dropdown
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchFormRef.current && !searchFormRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // 3D Shadow Simulation state
   const [buildingHeightM, setBuildingHeightM] = useState(12);
@@ -630,15 +672,59 @@ export default function SiteAnalysis() {
                   </div>
                 </div>
 
-                <form onSubmit={handleSearch} className="flex items-center relative flex-1 sm:max-w-xs ml-2">
-                  <input
-                    type="text"
-                    className="bg-gray-100 text-gray-900 placeholder-gray-400 text-xs px-4 py-1.5 rounded-full border border-gray-200 focus:border-black outline-none w-full font-normal"
-                    placeholder="Search location, city, lat/lon…"
-                    value={searchInput}
-                    onChange={e => setSearchInput(e.target.value)}
-                    aria-label="Search location, city, latitude or longitude"
-                  />
+                <form ref={searchFormRef} onSubmit={handleSearch} className="flex items-center relative flex-1 sm:max-w-xs ml-2">
+                  <div className="relative w-full flex items-center">
+                    <input
+                      type="text"
+                      className="bg-gray-100 text-gray-900 placeholder-gray-400 text-xs pl-4 pr-9 py-1.5 rounded-full border border-gray-200 focus:border-black focus:bg-white outline-none w-full font-normal transition"
+                      placeholder="Search location, city, lat/lon…"
+                      value={searchInput}
+                      onChange={e => setSearchInput(e.target.value)}
+                      onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+                      aria-label="Search location, city, latitude or longitude"
+                    />
+                    <button
+                      type="submit"
+                      aria-label="Execute search"
+                      className="absolute right-1 p-1 bg-black text-[#CCFF00] hover:bg-gray-800 rounded-full transition cursor-pointer flex items-center justify-center"
+                    >
+                      <Search size={12} />
+                    </button>
+                  </div>
+
+                  {/* Location Autocomplete Suggestions Dropdown */}
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden text-left max-h-60 overflow-y-auto">
+                      <div className="px-3 py-1.5 bg-gray-50 border-b border-gray-100 text-[10px] font-semibold text-gray-400 uppercase tracking-wider flex items-center justify-between">
+                        <span>Matching Locations</span>
+                        {isSearchingSuggestions && <span className="animate-pulse text-amber-500">Searching…</span>}
+                      </div>
+                      {suggestions.map((item, idx) => {
+                        const lat = parseFloat(item.lat);
+                        const lon = parseFloat(item.lon);
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => {
+                              positionMarker(lat, lon);
+                              setPendingCoords({ lat, lon, placeName: item.display_name });
+                              setIsAnalyzed(false);
+                              setSearchInput(item.display_name.split(',')[0]);
+                              setShowSuggestions(false);
+                            }}
+                            className="w-full text-left px-3 py-2 text-xs text-gray-800 hover:bg-gray-100 flex items-start gap-2 border-b border-gray-100 last:border-0 transition"
+                          >
+                            <MapPin size={14} className="text-emerald-600 shrink-0 mt-0.5" />
+                            <div className="truncate">
+                              <p className="font-semibold truncate text-gray-900">{item.display_name.split(',')[0]}</p>
+                              <p className="text-[10px] text-gray-500 truncate">{item.display_name}</p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </form>
               </div>
 
