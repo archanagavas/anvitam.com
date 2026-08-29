@@ -39,6 +39,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const HF_API_KEY = process.env.HUGGINGFACE_API_KEY || '';
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN || '';
+const WORLD_LABS_API_KEY = process.env.WORLD_LABS_API_KEY || '';
 
 const HF_MODELS = {
   /** FLUX.1-schnell: Best quality, fastest, 0 cost on HF free tier */
