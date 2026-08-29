@@ -6,6 +6,10 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import MapboxWorker from 'mapbox-gl/dist/mapbox-gl-csp-worker?worker';
+
+(mapboxgl as any).workerClass = MapboxWorker;
+
 import { fetchAllSiteData, type SiteAnalysisResult } from '../services/siteAnalysisService';
 import { AnalysisPanel, type DesignCategory } from '../components/siteanalysis/AnalysisPanel';
 import { ShadowSimulator3D } from '../components/siteanalysis/ShadowSimulator3D';
@@ -21,7 +25,10 @@ import {
   Menu, ArrowLeft, Home, Building, Trees, Wand2, Trash2, Sliders, LogOut, Settings
 } from 'lucide-react';
 
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || (typeof window !== 'undefined' ? atob('cGsuZXlKMUlqb2lZVzUyYVhSaGJTSXNJbUVpT2lKamJYUTBaR1Z0YjJFd1kySTJNbnB6T1dZeWVYUm9NV0Z4SW4wLmZoUXY1SFdHR0FNdktucHljY0R2dHc=') : '');
+const FALLBACK_MAPBOX_TOKEN = typeof window !== 'undefined' ? atob('cGsuZXlKMUlqb2lZVzUyYVhSaGJTSXNJbUVpT2lKamJYUTBaR1Z0YjJFd1kySTJNbnB6T1dZeWVYUm9NV0Z4SW4wLmZoUXY1SFdHR0FNdktucHljY0R2dHc=') : '';
+const MAPBOX_TOKEN = (import.meta.env.VITE_MAPBOX_TOKEN && import.meta.env.VITE_MAPBOX_TOKEN.trim().length > 10)
+  ? import.meta.env.VITE_MAPBOX_TOKEN.trim()
+  : FALLBACK_MAPBOX_TOKEN;
 
 // Mapbox GL JS v3 Standard 3D Styles
 const MAPBOX_3D_STYLES = [
@@ -290,9 +297,12 @@ export default function SiteAnalysis() {
           forceResize();
         });
 
-        map.on('error', (e) => {
+        map.on('error', (e: any) => {
           console.warn('[Mapbox GL] Error caught during rendering:', e);
-          if (e?.error?.message?.includes('WebGL') || e?.error?.message?.includes('401') || e?.error?.message?.includes('failed to fetch')) {
+          const errMsg = String(e?.error?.message || e?.error || '');
+          const status = e?.error?.status || e?.status;
+          if (status === 401 || status === 403 || errMsg.includes('WebGL') || errMsg.includes('401') || errMsg.includes('403') || errMsg.includes('failed to fetch') || errMsg.includes('Forbidden') || errMsg.includes('Unauthorized')) {
+            console.warn('[Mapbox GL] WebGL context or tile access error. Fallback to 2D map engine.');
             setMapEngine('2d');
           }
         });
