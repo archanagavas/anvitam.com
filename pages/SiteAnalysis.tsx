@@ -280,7 +280,12 @@ export default function SiteAnalysis() {
           setIsAnalyzed(false);
         });
 
+        let isMapLoaded = false;
+        let tokenRetryAttempted = false;
+        let styleFallbackAttempted = false;
+
         map.on('load', () => {
+          isMapLoaded = true;
           forceResize();
           requestAnimationFrame(forceResize);
           setTimeout(forceResize, 100);
@@ -290,10 +295,10 @@ export default function SiteAnalysis() {
         });
 
         map.on('idle', () => {
+          isMapLoaded = true;
           forceResize();
         });
 
-        let tokenRetryAttempted = false;
         map.on('error', (e: any) => {
           console.warn('[Mapbox GL] Error caught during rendering:', e);
           const errMsg = String(e?.error?.message || e?.error || '');
@@ -302,7 +307,7 @@ export default function SiteAnalysis() {
           // Token auto-recovery: If Vercel environment variable token returned 401/403, retry with fallback token
           if (!tokenRetryAttempted && (status === 401 || status === 403 || errMsg.includes('401') || errMsg.includes('403') || errMsg.includes('Forbidden') || errMsg.includes('Unauthorized'))) {
             tokenRetryAttempted = true;
-            console.warn('[Mapbox GL] Vercel environment token failed authorization. Retrying with production fallback token...');
+            console.warn('[Mapbox GL] Authorization error. Retrying with production fallback token...');
             if (mb) mb.accessToken = FALLBACK_MAPBOX_TOKEN;
             mapboxgl.accessToken = FALLBACK_MAPBOX_TOKEN;
             try {
@@ -313,11 +318,30 @@ export default function SiteAnalysis() {
             return;
           }
 
-          if (status === 401 || status === 403 || errMsg.includes('WebGL') || errMsg.includes('failed to fetch')) {
-            console.warn('[Mapbox GL] WebGL context or tile access error. Fallback to 2D map engine.');
+          // Style fallback: If Mapbox Standard fails to load, try streets-v12
+          if (!styleFallbackAttempted && selectedObj.id === 'standard-3d') {
+            styleFallbackAttempted = true;
+            console.warn('[Mapbox GL] Standard 3D engine failed. Switching to 3D Streets fallback style...');
+            try {
+              map.setStyle('mapbox://styles/mapbox/streets-v12');
+              return;
+            } catch { /* proceed to 2d */ }
+          }
+
+          // Complete safety fallback to 2D engine if Mapbox 3D cannot render
+          if (!isMapLoaded) {
+            console.warn('[Mapbox GL] Map rendering encountered unrecoverable issue. Seamlessly switching to 2D engine.');
             setMapEngine('2d');
           }
         });
+
+        // 4-second safety guard: If Mapbox GL fails to load tiles within 4 seconds, activate 2D engine
+        const loadSafetyTimer = setTimeout(() => {
+          if (!isMapLoaded && mapEngine === '3d') {
+            console.warn('[Mapbox GL] Map load timed out after 4s. Activating 2D map engine fallback.');
+            setMapEngine('2d');
+          }
+        }, 4000);
 
         resizeObserver = new ResizeObserver(() => {
           forceResize();
@@ -325,6 +349,10 @@ export default function SiteAnalysis() {
         if (mapContainerRef.current) {
           resizeObserver.observe(mapContainerRef.current);
         }
+
+        return () => {
+          clearTimeout(loadSafetyTimer);
+        };
       } catch (err) {
         console.warn('Mapbox 3D init failed, switching to Leaflet raster engine:', err);
         setMapEngine('2d');
