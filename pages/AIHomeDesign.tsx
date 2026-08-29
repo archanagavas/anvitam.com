@@ -721,22 +721,6 @@ export default function AIHomeDesign() {
                     Curated product matches for your {selectedStyle} {selectedModule} space. Buy directly from verified partner stores.
                   </p>
                 </div>
-
-                {/* Regional Market Selector */}
-                <div className="flex items-center gap-1.5 bg-gray-100 p-1 rounded-full border border-gray-200 text-xs font-semibold">
-                  {(['India', 'USA', 'Brazil'] as const).map(reg => (
-                    <button
-                      key={reg}
-                      type="button"
-                      onClick={() => setRegion(reg)}
-                      className={`px-3 py-1 rounded-full transition cursor-pointer ${
-                        region === reg ? 'bg-black text-[#CCFF00] shadow-xs' : 'text-gray-600 hover:text-black'
-                      }`}
-                    >
-                      {reg === 'India' ? '🇮🇳 India' : reg === 'USA' ? '🇺🇸 USA' : '🇧🇷 Brazil'}
-                    </button>
-                  ))}
-                </div>
               </div>
 
               {/* Category Filter Pills */}
@@ -771,7 +755,7 @@ export default function AIHomeDesign() {
               {/* Products Cards Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {catalog
-                  .filter(p => (p.region === region || p.region === 'Global') && (selectedCategoryFilter === 'all' || p.category_id === selectedCategoryFilter))
+                  .filter(p => selectedCategoryFilter === 'all' || p.category_id === selectedCategoryFilter)
                   .map(product => (
                     <div
                       key={product.id}

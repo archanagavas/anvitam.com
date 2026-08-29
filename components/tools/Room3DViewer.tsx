@@ -13,27 +13,20 @@
  */
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 interface Room3DViewerProps {
   imageUrl: string;          // Generated render (base64 or Cloudinary URL)
   onClose: () => void;
 }
 
-type ThreeModule = typeof import('three');
-type OrbitControlsConstructor = any;
-
-declare global {
-  interface Window {
-    THREE: ThreeModule;
-  }
-}
-
 const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
   const mountRef = useRef<HTMLDivElement>(null);
-  const rendererRef = useRef<any>(null);
-  const sceneRef = useRef<any>(null);
-  const cameraRef = useRef<any>(null);
-  const controlsRef = useRef<any>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const controlsRef = useRef<OrbitControls | null>(null);
   const animFrameRef = useRef<number>(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
@@ -42,34 +35,11 @@ const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [depthLoaded, setDepthLoaded] = useState(false);
 
-  // ── Load Three.js from CDN ────────────────────────────────────────────────
-  const loadThreeJS = useCallback(async (): Promise<ThreeModule> => {
-    if (window.THREE) return window.THREE;
-
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.min.js';
-      script.onload = () => resolve(window.THREE);
-      script.onerror = () => reject(new Error('Failed to load Three.js'));
-      document.head.appendChild(script);
-    });
-  }, []);
-
-  const loadOrbitControls = useCallback(async (): Promise<OrbitControlsConstructor> => {
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/js/controls/OrbitControls.js';
-      script.onload = () => resolve((window as any).THREE.OrbitControls);
-      script.onerror = () => reject(new Error('Failed to load OrbitControls'));
-      document.head.appendChild(script);
-    });
-  }, []);
-
   // ── Fetch depth map from HF API ───────────────────────────────────────────
   const fetchDepthMap = useCallback(async (): Promise<string | null> => {
     try {
       setStatus('generating-depth');
-      const res = await fetch('/api/hf-depth', {
+      const res = await fetch('/api/hf-image-gen?action=depth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: imageUrl }),
@@ -88,8 +58,6 @@ const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
 
     const init = async () => {
       try {
-        const THREE = await loadThreeJS();
-        await loadOrbitControls();
         if (!isMounted || !mountRef.current) return;
 
         // ── Fetch Depth Map ────────────────────────────────────────────────
@@ -98,8 +66,8 @@ const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
 
         // ── Scene Setup ────────────────────────────────────────────────────
         const container = mountRef.current;
-        const W = container.clientWidth;
-        const H = container.clientHeight;
+        const W = container.clientWidth || window.innerWidth;
+        const H = container.clientHeight || window.innerHeight;
 
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x0a0a0f);
@@ -116,16 +84,13 @@ const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
         rendererRef.current = renderer;
 
         // ── OrbitControls ──────────────────────────────────────────────────
-        const OrbitControls = (window as any).THREE.OrbitControls;
-        if (OrbitControls) {
-          const controls = new OrbitControls(camera, renderer.domElement);
-          controls.enableDamping = true;
-          controls.dampingFactor = 0.08;
-          controls.minDistance = 0.5;
-          controls.maxDistance = 8;
-          controls.maxPolarAngle = Math.PI * 0.85;
-          controlsRef.current = controls;
-        }
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.08;
+        controls.minDistance = 0.5;
+        controls.maxDistance = 8;
+        controls.maxPolarAngle = Math.PI * 0.85;
+        controlsRef.current = controls;
 
         // ── Lighting ───────────────────────────────────────────────────────
         const ambient = new THREE.AmbientLight(0xffffff, 0.6);
@@ -211,7 +176,7 @@ const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
         rendererRef.current.dispose();
       }
     };
-  }, [imageUrl, loadThreeJS, loadOrbitControls, fetchDepthMap]);
+  }, [imageUrl, fetchDepthMap]);
 
   // ── Video Recording (MediaRecorder API — browser-side only) ───────────────
   const startVideoFlythrough = useCallback(() => {

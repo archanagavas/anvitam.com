@@ -46,11 +46,13 @@
     "react-use-measure": "^2.1.7",
     "recharts": "^3.5.1",
     "suncalc": "^2.0.1",
+    "three": "^0.169.0",
     "tsx": "^4.22.4"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^22.14.0",
+    "@types/three": "^0.169.0",
     "@vercel/node": "^5.8.17",
     "@vitejs/plugin-react": "^5.0.0",
     "playwright": "^1.62.1",

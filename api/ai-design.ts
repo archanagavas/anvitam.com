@@ -31,6 +31,13 @@ import {
   type GenerateBriefParams,
 } from '../utils/aiDesignPrompts.js';
 import { INITIAL_CATALOG_PRODUCTS, type CatalogProduct } from '../constants/catalogData.js';
+import {
+  buildHFPrompt,
+  generateWithHuggingFace,
+  generateWithCloudflare,
+  generateWithReplicate,
+  HF_MODELS,
+} from './hf-image-gen.js';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -396,6 +403,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       clearTimeout(timeoutId);
+
+      // ── Zero-Cost Image Cascade Fallback (HuggingFace -> Cloudflare -> Replicate) ──
+      if (!generatedImageB64) {
+        try {
+          const promptConfig = {
+            module: String(module || 'interior'),
+            style: String(style || 'modern'),
+            roomType: String(roomType || 'living room'),
+            budget: String(budget || 'Mid-Range'),
+            promptText: promptText ? String(promptText) : textDescription,
+          };
+          const { positive } = buildHFPrompt(promptConfig);
+          generatedImageB64 =
+            (await generateWithHuggingFace(positive, HF_MODELS.flux_schnell)) ||
+            (await generateWithCloudflare(positive)) ||
+            (await generateWithReplicate(positive)) ||
+            '';
+        } catch (imgErr) {
+          console.error('[ai-design/generate] HF image cascade error:', imgErr);
+        }
+      }
 
       // ── Deduct credit & store idempotency record atomically ──────────
       if (userDoc) {

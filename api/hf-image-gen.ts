@@ -43,7 +43,7 @@ const WORLD_LABS_API_KEY = process.env.WORLD_LABS_API_KEY || '';
 const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID || '';
 const CLOUDFLARE_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN || '';
 
-const HF_MODELS = {
+export const HF_MODELS = {
   /** FLUX.1-schnell: Best quality, fastest, 0 cost on HF free tier */
   flux_schnell: 'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell',
   /** SDXL: Reliable fallback, free tier */
@@ -56,7 +56,7 @@ const REPLICATE_FLUX_SCHNELL = 'black-forest-labs/flux-schnell';
 
 // ── Prompt Builder ────────────────────────────────────────────────────────────
 
-interface PromptConfig {
+export interface PromptConfig {
   module: string;
   style: string;
   roomType: string;
@@ -65,7 +65,7 @@ interface PromptConfig {
   designMode?: string;
 }
 
-function buildHFPrompt(config: PromptConfig): { positive: string; negative: string } {
+export function buildHFPrompt(config: PromptConfig): { positive: string; negative: string } {
   const { module, style, roomType, budget, promptText } = config;
 
   const styleMap: Record<string, string> = {
@@ -157,7 +157,7 @@ function buildHFPrompt(config: PromptConfig): { positive: string; negative: stri
 
 // ── HuggingFace Inference ─────────────────────────────────────────────────────
 
-async function generateWithHuggingFace(prompt: string, model: string): Promise<string | null> {
+export async function generateWithHuggingFace(prompt: string, model: string): Promise<string | null> {
   if (!HF_API_KEY) return null;
 
   const controller = new AbortController();
@@ -209,7 +209,7 @@ async function generateWithHuggingFace(prompt: string, model: string): Promise<s
 
 // ── Cloudflare Workers AI Inference (Free Tier 10,000 Neurons/Day) ───────────────
 
-async function generateWithCloudflare(prompt: string): Promise<string | null> {
+export async function generateWithCloudflare(prompt: string): Promise<string | null> {
   if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_API_TOKEN) return null;
 
   try {
@@ -244,7 +244,7 @@ async function generateWithCloudflare(prompt: string): Promise<string | null> {
 
 // ── Replicate Fallback ────────────────────────────────────────────────────────
 
-async function generateWithReplicate(prompt: string): Promise<string | null> {
+export async function generateWithReplicate(prompt: string): Promise<string | null> {
   if (!REPLICATE_API_TOKEN) return null;
 
   try {
