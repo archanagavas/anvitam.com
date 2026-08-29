@@ -40,6 +40,8 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 const HF_API_KEY = process.env.HUGGINGFACE_API_KEY || '';
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN || '';
 const WORLD_LABS_API_KEY = process.env.WORLD_LABS_API_KEY || '';
+const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID || '';
+const CLOUDFLARE_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN || '';
 
 const HF_MODELS = {
   /** FLUX.1-schnell: Best quality, fastest, 0 cost on HF free tier */
@@ -205,6 +207,41 @@ async function generateWithHuggingFace(prompt: string, model: string): Promise<s
   }
 }
 
+// ── Cloudflare Workers AI Inference (Free Tier 10,000 Neurons/Day) ───────────────
+
+async function generateWithCloudflare(prompt: string): Promise<string | null> {
+  if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_API_TOKEN) return null;
+
+  try {
+    const url = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/black-forest-labs/flux-1-schnell`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${CLOUDFLARE_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt,
+        num_steps: 4,
+      }),
+    });
+
+    if (!res.ok) {
+      console.warn(`[hf-image-gen] Cloudflare Workers AI status: ${res.status}`);
+      return null;
+    }
+
+    const data = await res.json();
+    if (data.result?.image) {
+      return `data:image/jpeg;base64,${data.result.image}`;
+    }
+    return null;
+  } catch (err) {
+    console.error('[hf-image-gen] Cloudflare error:', err);
+    return null;
+  }
+}
+
 // ── Replicate Fallback ────────────────────────────────────────────────────────
 
 async function generateWithReplicate(prompt: string): Promise<string | null> {
@@ -279,9 +316,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: `Unknown module: ${module}` });
   }
 
-  if (!HF_API_KEY && !REPLICATE_API_TOKEN) {
+  if (!HF_API_KEY && !REPLICATE_API_TOKEN && (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_API_TOKEN)) {
     return res.status(503).json({
-      error: 'AI image generation service not configured. Add HUGGINGFACE_API_KEY or REPLICATE_API_TOKEN to environment variables.',
+      error: 'AI image generation service not configured. Add HUGGINGFACE_API_KEY, CLOUDFLARE_API_TOKEN, or REPLICATE_API_TOKEN to environment variables.',
       setup_guide: 'Visit https://huggingface.co/settings/tokens to get a free HuggingFace API key — no credit card needed.',
     });
   }
@@ -296,15 +333,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // 1. Try HuggingFace FLUX.1-schnell (free)
   let imageB64 = await generateWithHuggingFace(positivePrompt, selectedModel);
 
-  // 2. If FLUX fails (model loading / rate limit), try SDXL
+  // 2. If HF FLUX fails (model loading / rate limit), try Cloudflare Workers AI (10,000 neurons free/day)
+  if (!imageB64 && CLOUDFLARE_ACCOUNT_ID && CLOUDFLARE_API_TOKEN) {
+    console.log('[hf-image-gen] HF failed, trying Cloudflare Workers AI (FLUX) fallback...');
+    imageB64 = await generateWithCloudflare(positivePrompt);
+  }
+
+  // 3. If Cloudflare fails, try HF SDXL
   if (!imageB64 && modelTier === 'flux') {
-    console.log('[hf-image-gen] FLUX failed, trying SDXL fallback...');
+    console.log('[hf-image-gen] Cloudflare failed, trying SDXL fallback...');
     imageB64 = await generateWithHuggingFace(positivePrompt, HF_MODELS.sdxl);
   }
 
-  // 3. Final fallback: Replicate
+  // 4. Final fallback: Replicate
   if (!imageB64 && REPLICATE_API_TOKEN) {
-    console.log('[hf-image-gen] HF failed, trying Replicate FLUX fallback...');
+    console.log('[hf-image-gen] HF/Cloudflare failed, trying Replicate FLUX fallback...');
     imageB64 = await generateWithReplicate(positivePrompt);
   }
 
