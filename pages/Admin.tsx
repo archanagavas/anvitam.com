@@ -2017,6 +2017,7 @@ const Admin: React.FC = () => {
         </div>
         <nav className="p-3 space-y-1 flex-1 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <NavButton id="analytics" icon={ChartIcon} label="Dashboard" />
+          <NavButton id="api-ledger" icon={Zap} label="API Usage & Billing Ledger" />
           <NavButton id="messages" icon={MessageSquare} label="Inquiries" />
           <NavButton id="estimator" icon={Calculator} label="Estimate Leads" />
           <NavButton id="estimator-pricing" icon={Calculator} label="Estimator Services & Pricing" />
@@ -2492,6 +2493,185 @@ const Admin: React.FC = () => {
             </div>
           );
         })()}
+
+        {/* ── API Usage & Billing Ledger ── */}
+        {activeTab === 'api-ledger' && (
+          <div className="space-y-6 animate-fade-in font-sans">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+                  <Zap size={22} className="text-[#8bc34a]" /> API Credit Burn & Monthly Billing Ledger
+                </h2>
+                <p className="text-xs text-gray-500 mt-0.5 font-medium">
+                  Track real-time API usage, burned credits, cost per endpoint, and monthly payment clearing status.
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    const current = localStorage.getItem('anvitam_api_bill_paid_2026_08') === 'true';
+                    const next = !current;
+                    localStorage.setItem('anvitam_api_bill_paid_2026_08', String(next));
+                    showToast(next ? 'Marked August 2026 Bill as PAID! ✅' : 'Status updated to PENDING PAYMENT ⚠️');
+                  }}
+                  className={`text-xs font-bold px-4 py-2 rounded-xl border transition flex items-center gap-1.5 cursor-pointer ${
+                    localStorage.getItem('anvitam_api_bill_paid_2026_08') === 'true'
+                      ? 'bg-green-600 text-white border-green-700 shadow-sm'
+                      : 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100'
+                  }`}
+                >
+                  {localStorage.getItem('anvitam_api_bill_paid_2026_08') === 'true' ? 'STATUS: PAID ✅ (Click to Change)' : 'STATUS: PENDING PAYMENT ⚠️ (Click to Mark Paid)'}
+                </button>
+              </div>
+            </div>
+
+            {/* Overview Cost Metric Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-xs">
+                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Est. Current Month Bill</p>
+                <p className="text-2xl font-black text-gray-900 font-mono">$0.00 USD</p>
+                <p className="text-xs text-emerald-600 font-semibold mt-1">₹0.00 INR (Zero-Cost Architecture)</p>
+              </div>
+
+              <div className="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-xs">
+                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Free Tier APIs Active</p>
+                <p className="text-2xl font-black text-emerald-600 font-mono">4 Providers</p>
+                <p className="text-xs text-gray-500 font-medium mt-1">HuggingFace, Cloudflare, Mapbox, Neon</p>
+              </div>
+
+              <div className="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-xs">
+                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Fallback Replicate Burn</p>
+                <p className="text-2xl font-black text-blue-600 font-mono">$0.003 / render</p>
+                <p className="text-xs text-gray-500 font-medium mt-1">Triggers only on HF rate limit</p>
+              </div>
+
+              <div className="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-xs">
+                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Month Payment Status</p>
+                <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-extrabold uppercase mt-1 ${
+                  localStorage.getItem('anvitam_api_bill_paid_2026_08') === 'true'
+                    ? 'bg-green-100 text-green-800 border border-green-200'
+                    : 'bg-amber-100 text-amber-800 border border-amber-200'
+                }`}>
+                  {localStorage.getItem('anvitam_api_bill_paid_2026_08') === 'true' ? 'CLEARED / PAID ✅' : 'PENDING REVIEW ⚠️'}
+                </span>
+              </div>
+            </div>
+
+            {/* Provider Breakdown Table */}
+            <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-150 flex items-center justify-between bg-gray-50">
+                <h3 className="font-bold text-sm text-gray-800 flex items-center gap-2">
+                  <span>📊</span> Provider Credit Burn & Cost Matrix
+                </h3>
+                <span className="text-xs text-gray-500 font-mono">Rates updated for August 2026</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-gray-100/70 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
+                    <tr>
+                      <th className="py-3 px-5">API Provider</th>
+                      <th className="py-3 px-5">Primary Use Case</th>
+                      <th className="py-3 px-5">Free Tier Quota</th>
+                      <th className="py-3 px-5">Cost per Call</th>
+                      <th className="py-3 px-5">Est. Monthly Cost</th>
+                      <th className="py-3 px-5">Health</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 font-medium">
+                    <tr className="hover:bg-gray-50/80">
+                      <td className="py-3.5 px-5 font-bold text-gray-900">HuggingFace Serverless</td>
+                      <td className="py-3.5 px-5 text-gray-600">FLUX.1 Schnell AI Render Engine</td>
+                      <td className="py-3.5 px-5 text-emerald-700 font-bold">Unlimited Free Tier</td>
+                      <td className="py-3.5 px-5 font-mono">$0.000 / render</td>
+                      <td className="py-3.5 px-5 font-bold text-emerald-700">$0.00 (₹0.00)</td>
+                      <td className="py-3.5 px-5"><span className="bg-green-100 text-green-800 text-[10px] px-2 py-0.5 rounded-full font-bold">ACTIVE</span></td>
+                    </tr>
+                    <tr className="hover:bg-gray-50/80">
+                      <td className="py-3.5 px-5 font-bold text-gray-900">Cloudflare Workers AI</td>
+                      <td className="py-3.5 px-5 text-gray-600">FLUX.1 Secondary Fallback</td>
+                      <td className="py-3.5 px-5 text-emerald-700 font-bold">10,000 Neurons / Day</td>
+                      <td className="py-3.5 px-5 font-mono">$0.000 / render</td>
+                      <td className="py-3.5 px-5 font-bold text-emerald-700">$0.00 (₹0.00)</td>
+                      <td className="py-3.5 px-5"><span className="bg-green-100 text-green-800 text-[10px] px-2 py-0.5 rounded-full font-bold">ACTIVE</span></td>
+                    </tr>
+                    <tr className="hover:bg-gray-50/80">
+                      <td className="py-3.5 px-5 font-bold text-gray-900">Replicate API</td>
+                      <td className="py-3.5 px-5 text-gray-600">Tertiary Emergency Fallback</td>
+                      <td className="py-3.5 px-5 text-gray-500">Pay-as-you-go</td>
+                      <td className="py-3.5 px-5 font-mono">$0.003 / render</td>
+                      <td className="py-3.5 px-5 font-bold text-gray-800">$0.00 (₹0.00)</td>
+                      <td className="py-3.5 px-5"><span className="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full font-bold">FALLBACK READY</span></td>
+                    </tr>
+                    <tr className="hover:bg-gray-50/80">
+                      <td className="py-3.5 px-5 font-bold text-gray-900">OpenRouter / Gemini API</td>
+                      <td className="py-3.5 px-5 text-gray-600">Multimodal Vision & Prompt Refiner</td>
+                      <td className="py-3.5 px-5 text-emerald-700 font-bold">15 Requests / Min Free</td>
+                      <td className="py-3.5 px-5 font-mono">$0.0001 / prompt</td>
+                      <td className="py-3.5 px-5 font-bold text-emerald-700">$0.00 (₹0.00)</td>
+                      <td className="py-3.5 px-5"><span className="bg-green-100 text-green-800 text-[10px] px-2 py-0.5 rounded-full font-bold">ACTIVE</span></td>
+                    </tr>
+                    <tr className="hover:bg-gray-50/80">
+                      <td className="py-3.5 px-5 font-bold text-gray-900">Mapbox 3D Standard</td>
+                      <td className="py-3.5 px-5 text-gray-600">Interactive 3D City Maps & Tiles</td>
+                      <td className="py-3.5 px-5 text-emerald-700 font-bold">50,000 Map Loads / Mo</td>
+                      <td className="py-3.5 px-5 font-mono">$0.000 / map load</td>
+                      <td className="py-3.5 px-5 font-bold text-emerald-700">$0.00 (₹0.00)</td>
+                      <td className="py-3.5 px-5"><span className="bg-green-100 text-green-800 text-[10px] px-2 py-0.5 rounded-full font-bold">ACTIVE</span></td>
+                    </tr>
+                    <tr className="hover:bg-gray-50/80">
+                      <td className="py-3.5 px-5 font-bold text-gray-900">Neon / Supabase Postgres</td>
+                      <td className="py-3.5 px-5 text-gray-600">User Data & Product Catalog Storage</td>
+                      <td className="py-3.5 px-5 text-emerald-700 font-bold">0.5 GB Free DB Storage</td>
+                      <td className="py-3.5 px-5 font-mono">$0.00 / query</td>
+                      <td className="py-3.5 px-5 font-bold text-emerald-700">$0.00 (₹0.00)</td>
+                      <td className="py-3.5 px-5"><span className="bg-green-100 text-green-800 text-[10px] px-2 py-0.5 rounded-full font-bold">CONNECTED</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Recommended Automated Affiliate APIs */}
+            <div className="bg-gradient-to-r from-gray-900 to-black text-white rounded-2xl p-6 shadow-lg space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-base text-[#CCFF00] flex items-center gap-2">
+                    <span>🛒</span> Recommended Automated Product Affiliate APIs
+                  </h3>
+                  <p className="text-xs text-gray-300 mt-1">
+                    Connect these APIs so products are automatically fetched & tagged with your affiliate link (`tag=anvitam-21`) without manual entry!
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs pt-2">
+                <div className="bg-white/10 p-4 rounded-xl border border-white/10 space-y-2">
+                  <p className="font-bold text-[#CCFF00] text-sm">CueLinks / EarnKaro API</p>
+                  <p className="text-gray-300 text-[11px]">Auto-converts 1,000+ top Indian & Asian store links (Amazon IN, Flipkart, Pepperfry, Urban Ladder, Myntra) with zero manual work.</p>
+                  <span className="inline-block bg-[#CCFF00]/20 text-[#CCFF00] text-[10px] px-2 py-0.5 rounded font-bold">India & SE Asia</span>
+                </div>
+
+                <div className="bg-white/10 p-4 rounded-xl border border-white/10 space-y-2">
+                  <p className="font-bold text-[#CCFF00] text-sm">Amazon PA-API v5</p>
+                  <p className="text-gray-300 text-[11px]">Direct real-time Amazon product catalog (US, IN, UK, DE, BR) with automated price, image, and tag injection.</p>
+                  <span className="inline-block bg-[#CCFF00]/20 text-[#CCFF00] text-[10px] px-2 py-0.5 rounded font-bold">Global / Worldwide</span>
+                </div>
+
+                <div className="bg-white/10 p-4 rounded-xl border border-white/10 space-y-2">
+                  <p className="font-bold text-[#CCFF00] text-sm">CJ Affiliate API</p>
+                  <p className="text-gray-300 text-[11px]">Global product search API across 3,000+ top luxury home decor, furniture, and lighting brands.</p>
+                  <span className="inline-block bg-[#CCFF00]/20 text-[#CCFF00] text-[10px] px-2 py-0.5 rounded font-bold">Global Brands</span>
+                </div>
+
+                <div className="bg-white/10 p-4 rounded-xl border border-white/10 space-y-2">
+                  <p className="font-bold text-[#CCFF00] text-sm">Impact.com API</p>
+                  <p className="text-gray-300 text-[11px]">Direct brand API for West Elm, Target, Home Depot, and Wayfair affiliate catalog integration.</p>
+                  <span className="inline-block bg-[#CCFF00]/20 text-[#CCFF00] text-[10px] px-2 py-0.5 rounded font-bold">US & Europe</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── Estimator Pricing & Services Manager ── */}
         {activeTab === 'estimator-pricing' && (

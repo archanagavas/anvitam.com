@@ -9,6 +9,8 @@ export interface ToolUser {
   id: string | number;
   email: string;
   name: string;
+  phone?: string;
+  country_code?: string;
   trial_days_remaining: number;
   is_subscribed: boolean;
   subscription_end?: string | null;
@@ -29,6 +31,8 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [countryCode, setCountryCode] = useState('+91');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [forgotSent, setForgotSent] = useState(false);
@@ -55,6 +59,12 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
     setLoading(true);
 
     try {
+      if (mode === 'register' && !phone.trim()) {
+        setError('Phone number is mandatory to enable regional product recommendations.');
+        setLoading(false);
+        return;
+      }
+
       if (mode === 'forgot') {
         try {
           const res = await fetch('/api/tools/forgot-password', {
@@ -77,7 +87,7 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
 
       try {
         const endpoint = mode === 'register' ? '/api/tools/register' : '/api/tools/login';
-        const body = mode === 'register' ? { email, password, name } : { email, password };
+        const body = mode === 'register' ? { email, password, name, phone, countryCode } : { email, password };
 
         const res = await fetch(endpoint, {
           method: 'POST',
@@ -99,6 +109,8 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
           id: `usr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
           email: email.trim() || 'user@anvitam.com',
           name: name.trim() || email.split('@')[0] || 'Architect',
+          phone: `${countryCode} ${phone.trim()}`,
+          country_code: countryCode,
           credits_remaining: DEFAULT_TRIAL_CREDITS,
           credits_used: 0,
           is_subscribed: false,
@@ -176,10 +188,38 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
             ) : (
               <form onSubmit={handleSubmit} className="auth-form">
                 {mode === 'register' && (
-                  <div className="auth-field">
-                    <label className="auth-label">Name</label>
-                    <input className="auth-input text-gray-900 bg-white placeholder-gray-400" type="text" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} />
-                  </div>
+                  <>
+                    <div className="auth-field">
+                      <label className="auth-label">Name</label>
+                      <input className="auth-input text-gray-900 bg-white placeholder-gray-400" type="text" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} required />
+                    </div>
+                    <div className="auth-field">
+                      <label className="auth-label">Phone Number (Mandatory for Region Catalog)</label>
+                      <div className="flex gap-2">
+                        <select
+                          className="auth-input text-gray-900 bg-white border border-gray-300 font-medium text-xs rounded-xl px-2 py-2"
+                          value={countryCode}
+                          onChange={e => setCountryCode(e.target.value)}
+                        >
+                          <option value="+91">🇮🇳 +91 (IN)</option>
+                          <option value="+1">🇺🇸 +1 (US)</option>
+                          <option value="+44">🇬🇧 +44 (UK)</option>
+                          <option value="+971">🇦🇪 +971 (UAE)</option>
+                          <option value="+55">🇧🇷 +55 (BR)</option>
+                          <option value="+61">🇦🇺 +61 (AU)</option>
+                          <option value="+49">🇩🇪 +49 (DE)</option>
+                        </select>
+                        <input
+                          className="auth-input flex-1 text-gray-900 bg-white placeholder-gray-400"
+                          type="tel"
+                          placeholder="98765 43210"
+                          value={phone}
+                          onChange={e => setPhone(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </>
                 )}
                 <div className="auth-field">
                   <label className="auth-label">Email</label>

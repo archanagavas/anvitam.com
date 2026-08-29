@@ -409,25 +409,54 @@ const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
         )}
       </div>
 
+      {/* 3D Navigation Control Overlay Badge */}
+      {status === 'ready' && (
+        <div style={{
+          position: 'absolute',
+          top: 70,
+          left: 20,
+          background: 'rgba(0,0,0,0.75)',
+          backdropFilter: 'blur(8px)',
+          border: '1px solid rgba(204,255,0,0.3)',
+          color: '#fff',
+          padding: '8px 14px',
+          borderRadius: '12px',
+          fontSize: '12px',
+          fontFamily: 'Inter, sans-serif',
+          zIndex: 10,
+          pointerEvents: 'none',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px'
+        }}>
+          <span style={{ color: '#CCFF00', fontWeight: 'bold' }}>🎮 3D Mouse Controls:</span>
+          <span>🖱️ Left Drag: Rotate</span>
+          <span>•</span>
+          <span>🔍 Scroll: Zoom</span>
+          <span>•</span>
+          <span>✋ Right Drag: Pan</span>
+        </div>
+      )}
+
       {/* Footer hint */}
       {status === 'ready' && (
         <div
           style={{
-            padding: '8px 20px',
-            background: 'rgba(255,255,255,0.02)',
-            borderTop: '1px solid rgba(255,255,255,0.06)',
+            padding: '10px 20px',
+            background: 'rgba(255,255,255,0.03)',
+            borderTop: '1px solid rgba(255,255,255,0.08)',
             display: 'flex',
             gap: 24,
-            color: '#555',
+            color: '#888',
             fontSize: 12,
             fontFamily: 'Inter, sans-serif',
           }}
         >
-          <span>🖱️ Drag to rotate</span>
-          <span>🔍 Scroll to zoom</span>
-          <span>✋ Right-click drag to pan</span>
-          <span style={{ marginLeft: 'auto', color: '#7c3aed' }}>
-            {depthLoaded ? '⚡ Depth-Anything-V2 · $0.00' : '⏳ Loading depth…'}
+          <span>🖱️ Left-Click Drag to Rotate View</span>
+          <span>🔍 Mouse Scroll to Zoom In/Out</span>
+          <span>✋ Right-Click Drag to Pan Camera</span>
+          <span style={{ marginLeft: 'auto', color: '#CCFF00', fontWeight: 'bold' }}>
+            {depthLoaded ? '⚡ Depth-Anything-V2 Mesh Lock · Live WebGL' : '⏳ Generating 3D Depth Mesh…'}
           </span>
         </div>
       )}

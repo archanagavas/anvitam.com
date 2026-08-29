@@ -98,7 +98,7 @@ export default function Tools() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto mb-8 leading-relaxed font-normal"
             >
-              Everything you need in 2 streamlined workspace canvases. Generate photorealistic interiors, house elevations, 3D sun shadow simulations, wind vectors, and soil reports in seconds.
+              🔥 Fire your interior designer! Upload a photo and transform your room, house exterior, or garden in 1 click. Plus simulate 3D sun shadows, wind, and soil health with zero effort.
             </motion.p>
 
             {/* Search & Category Filter Bar */}
