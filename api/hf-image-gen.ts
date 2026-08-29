@@ -300,6 +300,80 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const body: any = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
 
+  // Handle Depth Estimation sub-route (/api/hf-depth or action=depth)
+  const isDepthRequest = req.query.action === 'depth' || body.action === 'depth' || (body.image && !body.module);
+  if (isDepthRequest) {
+    const { image } = body;
+    if (!image || typeof image !== 'string') {
+      return res.status(400).json({ error: 'Missing or invalid "image" parameter' });
+    }
+    if (!HF_API_KEY) {
+      return res.status(503).json({ error: 'HUGGINGFACE_API_KEY not configured.' });
+    }
+
+    try {
+      let imageBuffer: Buffer;
+      if (image.startsWith('data:')) {
+        const base64Data = image.split(',')[1];
+        if (!base64Data) return res.status(400).json({ error: 'Invalid base64 image format' });
+        imageBuffer = Buffer.from(base64Data, 'base64');
+      } else if (image.startsWith('https://') || image.startsWith('http://')) {
+        const imgRes = await fetch(image, { headers: { 'User-Agent': 'AnvitamStudio/1.0' } });
+        if (!imgRes.ok) return res.status(400).json({ error: `Failed to fetch image: ${imgRes.statusText}` });
+        imageBuffer = Buffer.from(await imgRes.arrayBuffer());
+      } else {
+        return res.status(400).json({ error: 'Image must be base64 data URL or https URL' });
+      }
+
+      const DEPTH_MODELS = [
+        'https://api-inference.huggingface.co/models/depth-anything/Depth-Anything-V2-Small-hf',
+        'https://api-inference.huggingface.co/models/LiheYoung/depth-anything-small-hf',
+        'https://api-inference.huggingface.co/models/Intel/dpt-hybrid-midas',
+      ];
+
+      let depthImageB64: string | null = null;
+      let usedModel = '';
+
+      for (const modelUrl of DEPTH_MODELS) {
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 45_000);
+          const hfRes = await fetch(modelUrl, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${HF_API_KEY}`,
+              'Content-Type': 'application/octet-stream',
+              'x-wait-for-model': 'true',
+            },
+            body: imageBuffer,
+            signal: controller.signal,
+          });
+          clearTimeout(timeout);
+
+          if (hfRes.ok) {
+            const depthBuf = await hfRes.arrayBuffer();
+            if (depthBuf.byteLength > 1000) {
+              const contentType = hfRes.headers.get('content-type') || 'image/png';
+              depthImageB64 = `data:${contentType};base64,${Buffer.from(depthBuf).toString('base64')}`;
+              usedModel = modelUrl.split('/').slice(-2).join('/');
+              break;
+            }
+          }
+        } catch (err: any) {
+          console.warn(`[hf-depth] Model ${modelUrl} error:`, err.message);
+        }
+      }
+
+      if (!depthImageB64) {
+        return res.status(503).json({ error: 'Depth estimation temporarily unavailable.', retry_after: 20 });
+      }
+
+      return res.status(200).json({ success: true, depthMap: depthImageB64, model_used: usedModel, cost_usd: 0.000 });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || 'Internal error' });
+    }
+  }
+
   const {
     module = 'interior',
     style = 'modern',
