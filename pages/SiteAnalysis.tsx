@@ -6,9 +6,6 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import MapboxWorker from 'mapbox-gl/dist/mapbox-gl-csp-worker?worker';
-
-(mapboxgl as any).workerClass = MapboxWorker;
 
 import { fetchAllSiteData, type SiteAnalysisResult } from '../services/siteAnalysisService';
 import { AnalysisPanel, type DesignCategory } from '../components/siteanalysis/AnalysisPanel';
