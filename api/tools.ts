@@ -109,14 +109,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           email: user.email,
           name: user.name || '',
           country: user.country || 'IN',
-          credits_remaining: user.credits_remaining ?? 5,
+          credits_remaining: user.credits_remaining ?? 3,
           credits_used: user.credits_used ?? 0,
           trial_started_at: user.trial_started_at,
           is_subscribed: user.is_subscribed || false,
           subscription_end: user.subscription_end || null,
           subscription_plan: user.subscription_plan || null,
           trial_days_remaining,
-          has_access: user.is_subscribed || (user.credits_remaining ?? 5) > 0,
+          has_access: user.is_subscribed || (user.credits_remaining ?? 3) > 0,
         },
       });
     } catch (err) {

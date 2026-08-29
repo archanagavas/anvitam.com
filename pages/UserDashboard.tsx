@@ -176,7 +176,7 @@ export default function UserDashboard() {
                 className="px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-semibold flex items-center gap-1.5 hover:bg-black transition cursor-pointer shadow-2xs"
               >
                 <Zap size={14} className="fill-[#CCFF00] text-[#CCFF00]" />
-                <span>{user.credits_remaining ?? 5} Credits</span>
+                <span>{user.credits_remaining ?? 3} Credits</span>
               </button>
             ) : (
               <button

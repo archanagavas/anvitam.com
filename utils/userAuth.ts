@@ -39,14 +39,16 @@ export function getToolUser(): ToolUser | null {
   }
 }
 
+export const DEFAULT_TRIAL_CREDITS = 3;
+
 export function getOrCreateDefaultToolUser(): ToolUser {
   let user = getToolUser();
   if (!user) {
     user = {
-      id: `guest_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      id: `guest_${Date.now()}__${Math.random().toString(36).substring(2, 6)}`,
       email: 'guest@anvitam.com',
       name: 'Guest Designer',
-      credits_remaining: 5,
+      credits_remaining: DEFAULT_TRIAL_CREDITS,
       credits_used: 0,
       is_subscribed: false,
       is_guest: true,
@@ -110,7 +112,7 @@ export function setToolUser(user: ToolUser, token?: string): ToolUser {
   return authenticatedUser;
 }
 
-export function deductUserCredit(cost: number = 1): { success: boolean; user: ToolUser | null } {
+export function deductUserCredit(cost: number = 1, modelTier: string = 'fast'): { success: boolean; user: ToolUser | null } {
   const current = getToolUser() || getOrCreateDefaultToolUser();
   if (!current) return { success: false, user: null };
 
@@ -133,6 +135,29 @@ export function deductUserCredit(cost: number = 1): { success: boolean; user: To
     credits_remaining: newCredits,
     credits_used: newUsed
   });
+
+  // Background sync with API if logged in
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (token) {
+      fetch('/api/tools/consume-credit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ modelTier })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && typeof data.credits_remaining === 'number') {
+          updateToolUser({ credits_remaining: data.credits_remaining, credits_used: data.credits_used });
+        }
+      })
+      .catch(err => console.warn('[userAuth] Server credit sync warning:', err));
+    }
+  }
+
   return { success: true, user: updated };
 }
 

@@ -51,7 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           id: u.id,
           email: u.email,
           name: u.name || u.email.split('@')[0],
-          credits_remaining: u.credits_remaining ?? u.credits ?? 5,
+          credits_remaining: u.credits_remaining ?? u.credits ?? 3,
           credits_used: u.credits_used ?? 0,
           is_subscribed: u.is_subscribed ?? false,
           subscription_tier: u.subscription_plan || u.subscription_tier || (u.is_subscribed ? 'pro_monthly' : 'free_trial'),

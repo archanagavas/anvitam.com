@@ -18,7 +18,7 @@ import {
   Layers, Home, Building, Trees, Trash2, Paintbrush, LayoutGrid, Zap, Menu, X, AlertCircle,
   Settings, LogOut
 } from 'lucide-react';
-import { getToolUser, getOrCreateDefaultToolUser, logoutToolUser, type ToolUser } from '../utils/userAuth';
+import { getToolUser, getOrCreateDefaultToolUser, logoutToolUser, deductUserCredit, updateToolUser, type ToolUser } from '../utils/userAuth';
 import { ToolsAuthModal } from '../components/tools/ToolsAuthModal';
 import { ToolsPaywallOverlay } from '../components/tools/ToolsPaywallOverlay';
 import { AllToolsDrawer } from '../components/tools/AllToolsDrawer';
@@ -198,10 +198,13 @@ export default function AIHomeDesign() {
       setGeneratedImage(data.generatedImage);
       setShowBriefCard(false);
 
-      if (currentUser.credits_remaining > 0) {
-        currentUser.credits_remaining = Math.max(0, currentUser.credits_remaining - creditCost);
-        currentUser.credits_used = (currentUser.credits_used || 0) + creditCost;
-        setUser({ ...currentUser });
+      if (data.credits_remaining !== undefined) {
+        updateToolUser({
+          credits_remaining: data.credits_remaining,
+          credits_used: (currentUser.credits_used || 0) + creditCost
+        });
+      } else {
+        deductUserCredit(creditCost, selectedAiModel);
       }
 
     } catch (err: any) {

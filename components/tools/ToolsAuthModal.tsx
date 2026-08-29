@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { setToolUser } from '../../utils/userAuth';
+import { setToolUser, DEFAULT_TRIAL_CREDITS } from '../../utils/userAuth';
 
 export interface ToolUser {
   id: string | number;
@@ -99,7 +99,7 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
           id: `usr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
           email: email.trim() || 'user@anvitam.com',
           name: name.trim() || email.split('@')[0] || 'Architect',
-          credits_remaining: 10,
+          credits_remaining: DEFAULT_TRIAL_CREDITS,
           credits_used: 0,
           is_subscribed: false,
           trial_days_remaining: 15,
@@ -145,7 +145,7 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
                 <div className="auth-logo-badge">SA</div>
                 <h2 id="auth-modal-title" className="auth-title">Site Analysis by Anvitam</h2>
                 <p className="auth-subtitle">
-                  {mode === 'register' ? '5 Free Credits included. No credit card required.' :
+                  {mode === 'register' ? '3 Free Credits included. No credit card required.' :
                    mode === 'forgot' ? 'Enter your email to receive password reset instructions.' :
                    'Sign in to access your architectural tools.'}
                 </p>
@@ -196,7 +196,7 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
 
                 <button type="submit" className="auth-submit-btn" disabled={loading}>
                   {loading ? 'Please wait…' :
-                   mode === 'register' ? 'Start Free Trial (5 Credits) →' :
+                   mode === 'register' ? 'Start Free Trial (3 Credits) →' :
                    mode === 'forgot' ? 'Send Reset Request' :
                    'Sign In →'}
                 </button>
@@ -215,7 +215,7 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
                 </div>
 
                 {mode === 'register' && (
-                  <p className="auth-terms">By creating an account you agree to our Terms of Service and Privacy Policy. Get 5 free credits on signup; top up 10 credits or get Pro Monthly when you need more.</p>
+                  <p className="auth-terms">By creating an account you agree to our Terms of Service and Privacy Policy. Get 3 free credits on signup; top up 10 credits or get Pro Monthly when you need more.</p>
                 )}
               </form>
             )}

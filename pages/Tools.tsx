@@ -241,7 +241,7 @@ export default function Tools() {
                 Simple Pricing. No Hidden Fees.
               </h2>
               <p className="text-xs sm:text-sm text-gray-300 font-normal max-w-lg mx-auto leading-relaxed">
-                Try 5 tools for free when you sign up. Buy extra credits only when you need them.
+                Try 3 tools for free when you sign up. Buy extra credits only when you need them.
               </p>
             </div>
 
@@ -349,7 +349,7 @@ export default function Tools() {
 
             {/* Trial callout */}
             <div className="mt-10 text-center text-xs text-gray-400 font-normal">
-              🎁 First time here? Sign up in 10 seconds to get <strong className="text-[#CCFF00] font-bold">5 Free Credits</strong> instantly.
+              🎁 First time here? Sign up in 10 seconds to get <strong className="text-[#CCFF00] font-bold">3 Free Credits</strong> instantly.
             </div>
           </div>
         </section>

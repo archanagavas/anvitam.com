@@ -140,7 +140,7 @@ export const ToolsPaywallOverlay: React.FC<Props> = ({
                 <div>
                   <div className="flex items-center gap-1.5 text-xs font-bold text-gray-900">
                     <Sparkles size={15} className="text-amber-600" />
-                    <span>Get 5 Free Credits on Signup</span>
+                    <span>Get 3 Free Credits on Signup</span>
                   </div>
                   <p className="text-[11px] text-gray-700 mt-0.5 font-normal">
                     No credit card needed. Start testing tools in 10 seconds.
@@ -153,7 +153,7 @@ export const ToolsPaywallOverlay: React.FC<Props> = ({
                   }}
                   className="bg-[#111111] hover:bg-black text-[#CCFF00] font-bold text-xs px-4 py-2.5 rounded-full transition shadow-sm whitespace-nowrap cursor-pointer hover:scale-105 shrink-0 flex items-center gap-1"
                 >
-                  Start Free (5 Credits) <ArrowRight size={13} />
+                  Start Free (3 Credits) <ArrowRight size={13} />
                 </button>
               </div>
             ) : null}
@@ -265,7 +265,7 @@ export const ToolsPaywallOverlay: React.FC<Props> = ({
                     }}
                     className="text-black bg-[#CCFF00] px-4 py-2 rounded-full hover:bg-black hover:text-[#CCFF00] transition cursor-pointer shadow-xs"
                   >
-                    Sign Up Free (5 Credits)
+                    Sign Up Free (3 Credits)
                   </button>
                   {onLogin && (
                     <button

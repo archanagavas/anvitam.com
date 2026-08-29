@@ -119,7 +119,7 @@ export const ToolsSettingsModal: React.FC<Props> = ({
                     <span className="text-xs font-semibold">Available Studio Credits</span>
                   </div>
                   <span className="text-base font-semibold text-[#CCFF00]">
-                    {user?.is_subscribed ? 'Unlimited' : `${user?.credits_remaining ?? 5} Credits`}
+                    {user?.is_subscribed ? 'Unlimited' : `${user?.credits_remaining ?? 3} Credits`}
                   </span>
                 </div>
 
