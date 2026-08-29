@@ -422,10 +422,10 @@ export default function AIHomeDesign() {
                     Hello, how may I help you?
                   </h1>
 
-                  {/* Centered Interactive AI Prompt Box */}
-                  <form onSubmit={handlePromptSubmit} className="relative max-w-xl mx-auto space-y-3">
-                    <div className="bg-white border border-gray-300 hover:border-gray-900 rounded-3xl p-3 shadow-md flex items-center gap-3 transition">
-                      <div className="p-2.5 bg-[#111111] text-[#CCFF00] rounded-2xl shrink-0">
+                  {/* Centered Interactive AI Prompt Box with Tool Router & Budget Selector */}
+                  <form onSubmit={handlePromptSubmit} className="relative max-w-2xl mx-auto space-y-3">
+                    <div className="bg-white border border-gray-300 hover:border-gray-900 rounded-3xl p-3 shadow-md flex flex-col sm:flex-row items-center gap-3 transition">
+                      <div className="p-2.5 bg-[#111111] text-[#CCFF00] rounded-2xl shrink-0 hidden sm:flex">
                         <Wand2 size={18} />
                       </div>
                       <input
@@ -434,18 +434,31 @@ export default function AIHomeDesign() {
                         onChange={(e) => setPromptText(e.target.value)}
                         placeholder="Ask Anvitam's AI anything (e.g. Modern Scandinavian living room with warm wood)..."
                         aria-label="Ask Anvitam's AI architectural design prompt"
-                        className="w-full bg-transparent border-none text-xs text-gray-900 outline-none placeholder:text-gray-400 font-medium"
+                        className="w-full bg-transparent border-none text-xs text-gray-900 outline-none placeholder:text-gray-400 font-medium px-2"
                       />
-                      <div className="flex items-center gap-2 shrink-0">
-                        <button
-                          type="submit"
-                          className="w-9 h-9 rounded-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black transition flex items-center justify-center font-bold cursor-pointer border border-black/10 shadow-2xs"
-                          title="Generate Design"
-                          aria-label="Submit AI Design prompt to generate image"
+
+                      {/* Room Budget Selector Pill inside Prompt Bar */}
+                      <div className="flex items-center gap-1.5 shrink-0 bg-gray-100 p-1 rounded-full border border-gray-200">
+                        <span className="text-[10px] font-bold text-gray-500 pl-2">Budget:</span>
+                        <select
+                          value={budget}
+                          onChange={(e) => setBudget(e.target.value)}
+                          className="bg-white text-gray-900 font-semibold text-[11px] px-2.5 py-1 rounded-full outline-none cursor-pointer border border-gray-300 shadow-2xs"
                         >
-                          <ChevronRight size={18} />
-                        </button>
+                          <option value="Economy">₹25,000 (Economy)</option>
+                          <option value="Mid-Range">₹75,000 (Mid-Range)</option>
+                          <option value="Luxury">₹2,00,000+ (Luxury)</option>
+                        </select>
                       </div>
+
+                      <button
+                        type="submit"
+                        className="w-10 h-10 rounded-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black transition flex items-center justify-center font-bold cursor-pointer border border-black/10 shadow-2xs shrink-0"
+                        title="Generate Design"
+                        aria-label="Submit AI Design prompt to generate image"
+                      >
+                        <ChevronRight size={18} />
+                      </button>
                     </div>
 
                     {/* OpenRouter Model Tier Selection Bar */}
@@ -473,25 +486,6 @@ export default function AIHomeDesign() {
                       ))}
                     </div>
                   </form>
-
-                  {/* 1-Click Sample Photo Testing Chips */}
-                  <div className="space-y-2 pt-2">
-                    <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 block">
-                      Or click a sample photo to test rendering in 1-click:
-                    </span>
-                    <div className="flex items-center justify-center flex-wrap gap-2">
-                      {SAMPLE_PHOTOS.map(sample => (
-                        <button
-                          key={sample.id}
-                          onClick={() => handleSelectSamplePhoto(sample.url, sample.module)}
-                          className="bg-white border border-gray-300 hover:border-black text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-full transition flex items-center gap-2 cursor-pointer shadow-2xs hover:scale-105"
-                        >
-                          <img src={sample.url} alt={sample.label} className="w-5 h-5 rounded-full object-cover" />
-                          {sample.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
                 </div>
 
                 {/* EXPLORE AI TOOLS CARDS */}

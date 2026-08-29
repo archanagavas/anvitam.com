@@ -38,7 +38,8 @@ export const ToolsPaywallOverlay: React.FC<Props> = ({
   const isIndia = detectedCountry ? detectedCountry === 'IN' : false;
 
   const monthlyPrice = isIndia ? DODO_PRODUCTS.pro_monthly.priceINR : DODO_PRODUCTS.pro_monthly.priceUSD;
-  const topupPrice = isIndia ? DODO_PRODUCTS.topup_10.priceINR : DODO_PRODUCTS.topup_10.priceUSD;
+  const topup10Price = isIndia ? DODO_PRODUCTS.topup_10.priceINR : DODO_PRODUCTS.topup_10.priceUSD;
+  const topup50Price = isIndia ? DODO_PRODUCTS.topup_50.priceINR : DODO_PRODUCTS.topup_50.priceUSD;
 
   useEffect(() => {
     if (isOpen) {
@@ -58,11 +59,11 @@ export const ToolsPaywallOverlay: React.FC<Props> = ({
     };
   }, [isOpen, onClose]);
 
-  const handleSubscribe = (plan: 'monthly' | 'credits_10') => {
+  const handleSubscribe = (plan: 'monthly' | 'credits_10' | 'credits_50') => {
     if (onSubscribe) {
-      onSubscribe(plan);
+      onSubscribe(plan as any);
     } else {
-      const product = plan === 'monthly' ? DODO_PRODUCTS.pro_monthly : DODO_PRODUCTS.topup_10;
+      const product = plan === 'monthly' ? DODO_PRODUCTS.pro_monthly : plan === 'credits_50' ? DODO_PRODUCTS.topup_50 : DODO_PRODUCTS.topup_10;
       window.open(product.checkoutUrl, '_blank', 'noopener,noreferrer');
     }
   };
@@ -80,7 +81,7 @@ export const ToolsPaywallOverlay: React.FC<Props> = ({
           onClick={(e) => e.target === e.currentTarget && onClose?.()}
         >
           <motion.div
-            className="paywall-card bg-white text-gray-900 rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-gray-200 shadow-2xl space-y-5 my-auto relative max-h-[92vh] overflow-y-auto"
+            className="paywall-card bg-white text-gray-900 rounded-3xl p-6 sm:p-8 max-w-xl w-full border border-gray-200 shadow-2xl space-y-5 my-auto relative max-h-[92vh] overflow-y-auto"
             role="dialog"
             aria-modal="true"
             aria-label="Unlock Anvitam Architectural Suite"
@@ -158,56 +159,81 @@ export const ToolsPaywallOverlay: React.FC<Props> = ({
               </div>
             ) : null}
 
-            {/* 2 Product Options: 10 Credits Top-Up vs Pro Monthly */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-              {/* Option 1: 10 Credits Top-Up (Pay-As-You-Go) */}
+            {/* 3 Product Options: 10 Credits Top-Up, 50 Credits Pack, Pro Monthly */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+              {/* Option 1: 10 Credits Top-Up */}
               <div
                 onClick={() => handleSubscribe('credits_10')}
-                className="bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-2xl p-4 cursor-pointer transition flex flex-col justify-between group relative"
+                className="bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-2xl p-3.5 cursor-pointer transition flex flex-col justify-between group relative"
               >
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-gray-500">Pay-As-You-Go</span>
-                    <span className="text-[10px] font-bold bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full">One-Time</span>
+                    <span className="text-[9px] font-extrabold uppercase tracking-wider text-gray-500">Pay-As-You-Go</span>
+                    <span className="text-[9px] font-bold bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full">10 Creds</span>
                   </div>
-                  <div className="text-2xl font-bold text-gray-900 my-2">{topupPrice}</div>
-                  <div className="text-xs font-bold text-gray-800">10 Studio Credits</div>
-                  <p className="text-[10px] text-gray-500 mt-1 font-normal leading-relaxed">Ideal for single site analysis or quick project reports.</p>
+                  <div className="text-xl font-bold text-gray-900 my-1.5">{topup10Price}</div>
+                  <div className="text-xs font-bold text-gray-800">Starter Pack</div>
+                  <p className="text-[10px] text-gray-500 mt-1 font-normal leading-relaxed">Single project quick site report.</p>
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); handleSubscribe('credits_10'); }}
-                  className="mt-4 w-full bg-white border border-gray-300 text-gray-900 font-bold text-xs py-2.5 rounded-xl group-hover:bg-black group-hover:text-white transition cursor-pointer"
+                  className="mt-3 w-full bg-white border border-gray-300 text-gray-900 font-bold text-[11px] py-2 rounded-xl group-hover:bg-black group-hover:text-white transition cursor-pointer"
                 >
-                  Get 10 Credits ({topupPrice})
+                  Buy 10 ({topup10Price})
                 </button>
               </div>
 
-              {/* Option 2: Pro Monthly (250 Credits/mo) */}
+              {/* Option 2: 50 Credits Pack (High Volume One-Time) */}
+              <div
+                onClick={() => handleSubscribe('credits_50')}
+                className="bg-gray-50 hover:bg-gray-100 border border-gray-300 rounded-2xl p-3.5 cursor-pointer transition flex flex-col justify-between group relative"
+              >
+                <div className="absolute -top-2 right-2 bg-black text-[#CCFF00] text-[8px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  High Volume
+                </div>
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-extrabold uppercase tracking-wider text-gray-600">Agency Pack</span>
+                    <span className="text-[9px] font-bold bg-gray-200 text-gray-800 px-1.5 py-0.5 rounded-full">50 Creds</span>
+                  </div>
+                  <div className="text-xl font-bold text-gray-900 my-1.5">{topup50Price}</div>
+                  <div className="text-xs font-bold text-gray-800">50 Credits Pack</div>
+                  <p className="text-[10px] text-gray-500 mt-1 font-normal leading-relaxed">Best one-time deal for freelancers.</p>
+                </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleSubscribe('credits_50'); }}
+                  className="mt-3 w-full bg-black text-white font-bold text-[11px] py-2 rounded-xl group-hover:bg-[#CCFF00] group-hover:text-black transition cursor-pointer"
+                >
+                  Buy 50 ({topup50Price})
+                </button>
+              </div>
+
+              {/* Option 3: Pro Monthly (120 Credits/mo) */}
               <div
                 onClick={() => handleSubscribe('monthly')}
-                className="bg-[#111111] text-white border-2 border-black rounded-2xl p-4 cursor-pointer transition flex flex-col justify-between relative shadow-lg group overflow-hidden"
+                className="bg-[#111111] text-white border-2 border-black rounded-2xl p-3.5 cursor-pointer transition flex flex-col justify-between relative shadow-lg group overflow-hidden"
               >
-                <div className="absolute top-0 right-0 bg-[#CCFF00] text-black text-[9px] font-bold px-2.5 py-0.5 rounded-bl-xl uppercase tracking-wider">
+                <div className="absolute top-0 right-0 bg-[#CCFF00] text-black text-[8px] font-bold px-2 py-0.5 rounded-bl-xl uppercase tracking-wider">
                   Best Value
                 </div>
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#CCFF00]">Pro Subscription</span>
+                    <span className="text-[9px] font-extrabold uppercase tracking-wider text-[#CCFF00]">Pro Pass</span>
                   </div>
-                  <div className="text-2xl font-bold text-white my-2">
+                  <div className="text-xl font-bold text-white my-1.5">
                     {monthlyPrice}
-                    <span className="text-xs text-gray-400 font-normal"> / month</span>
+                    <span className="text-[10px] text-gray-400 font-normal"> / mo</span>
                   </div>
                   <div className="text-xs font-bold text-[#CCFF00] flex items-center gap-1">
-                    <Zap size={14} /> 250 Studio Credits / month
+                    <Zap size={13} /> 120 Credits / mo
                   </div>
-                  <p className="text-[10px] text-gray-400 mt-1 font-normal leading-relaxed">Refilled automatically every 30 days for active studios.</p>
+                  <p className="text-[10px] text-gray-400 mt-1 font-normal leading-relaxed">Refilled monthly for studios.</p>
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); handleSubscribe('monthly'); }}
-                  className="mt-4 w-full bg-[#CCFF00] text-black font-bold text-xs py-2.5 rounded-xl group-hover:bg-white transition shadow-sm cursor-pointer"
+                  className="mt-3 w-full bg-[#CCFF00] text-black font-bold text-[11px] py-2 rounded-xl group-hover:bg-white transition shadow-sm cursor-pointer"
                 >
-                  Subscribe Pro ({monthlyPrice}/mo) →
+                  Subscribe ({monthlyPrice})
                 </button>
               </div>
             </div>
