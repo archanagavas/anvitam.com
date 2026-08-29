@@ -186,7 +186,6 @@ export default function SiteAnalysis() {
           zoom: 15,
           pitch: 55,
           bearing: -15,
-          projection: 'mercator'
         });
 
         mapboxRef.current = map;
@@ -200,18 +199,6 @@ export default function SiteAnalysis() {
         map.on('style.load', () => {
           forceResize();
 
-          // Set sky/space fog atmosphere to prevent white background rendering
-          try {
-            map.setFog({
-              'range': [0.8, 8],
-              'color': '#dc4c4e',
-              'horizon-blend': 0.05,
-              'high-color': '#245b78',
-              'space-color': '#0b0e14',
-              'star-intensity': 0.15
-            });
-          } catch { /* silent */ }
-
           // Configure Mapbox Standard 3D features or 3D extrusions
           if (selectedObj.id === 'standard-3d') {
             try {
@@ -219,6 +206,18 @@ export default function SiteAnalysis() {
               (map as any).setConfigProperty('basemap', 'lightPreset', 'day');
             } catch { /* silent */ }
           } else {
+            // Set sky/space fog atmosphere for non-standard styles
+            try {
+              map.setFog({
+                'range': [0.8, 8],
+                'color': '#dc4c4e',
+                'horizon-blend': 0.05,
+                'high-color': '#245b78',
+                'space-color': '#0b0e14',
+                'star-intensity': 0.15
+              });
+            } catch { /* silent */ }
+
             // 3D Terrain Elevation DEM
             try {
               if (!map.getSource('mapbox-dem')) {
@@ -297,11 +296,27 @@ export default function SiteAnalysis() {
           forceResize();
         });
 
+        let tokenRetryAttempted = false;
         map.on('error', (e: any) => {
           console.warn('[Mapbox GL] Error caught during rendering:', e);
           const errMsg = String(e?.error?.message || e?.error || '');
           const status = e?.error?.status || e?.status;
-          if (status === 401 || status === 403 || errMsg.includes('WebGL') || errMsg.includes('401') || errMsg.includes('403') || errMsg.includes('failed to fetch') || errMsg.includes('Forbidden') || errMsg.includes('Unauthorized')) {
+
+          // Token auto-recovery: If Vercel environment variable token returned 401/403, retry with fallback token
+          if (!tokenRetryAttempted && (status === 401 || status === 403 || errMsg.includes('401') || errMsg.includes('403') || errMsg.includes('Forbidden') || errMsg.includes('Unauthorized'))) {
+            tokenRetryAttempted = true;
+            console.warn('[Mapbox GL] Vercel environment token failed authorization. Retrying with production fallback token...');
+            if (mb) mb.accessToken = FALLBACK_MAPBOX_TOKEN;
+            mapboxgl.accessToken = FALLBACK_MAPBOX_TOKEN;
+            try {
+              map.setStyle(selectedObj.style);
+            } catch {
+              setMapEngine('2d');
+            }
+            return;
+          }
+
+          if (status === 401 || status === 403 || errMsg.includes('WebGL') || errMsg.includes('failed to fetch')) {
             console.warn('[Mapbox GL] WebGL context or tile access error. Fallback to 2D map engine.');
             setMapEngine('2d');
           }

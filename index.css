@@ -150,6 +150,22 @@ html {
 
 
 
+/* Mapbox GL Canvas Container Parity */
+.mapboxgl-map {
+  width: 100% !important;
+  height: 100% !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+}
+
+.mapboxgl-canvas-container,
+.mapboxgl-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  outline: none !important;
+}
+
 @media (min-width: 768px) {
   body.hide-default-cursor {
     cursor: none;
