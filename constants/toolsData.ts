@@ -37,13 +37,13 @@ export const TOOLS_SUITE: ToolItem[] = [
     shortDesc: '🔥 Fire your interior designer! Upload any room photo to restyle, redesign, furnish, or swap furniture in 1 click.',
     fullDesc: '🤳 Step 1: Take or upload a photo of your room, house exterior, or garden yard.\n🎨 Step 2: Pick your style (Modern, Minimalist, Japandi & 50+ styles).\n⚡ Step 3: Watch AI render instant photorealistic 3D designs with direct buyable furniture links!',
     features: [
-      '🔥 Fire your interior designer — 100% Instant AI Restyle',
-      '🤳 1-Click Photo Upload — Room, House Exterior & Garden Yard',
-      '🎨 50+ Aesthetic Styles — Japandi, Modern, Minimalist, Luxury',
-      '⚡ Sketch2Image™ — Wireframes & SketchUp to 8K Photoreal Renders',
-      '🏡 Virtual Staging AI — Furnish Empty Rooms for Real Estate',
-      '📼 3D Flythrough Video — Interactive Mouse Orbit View & Video Export',
-      '🛒 Shoppable Furniture Pins — Auto-Matched Buy Links (India 🇮🇳, USA 🇺🇸, Global 🌍)'
+      '🔥 100% Instant AI Restyle',
+      '🤳 1-Click Upload (Room, Exterior, Garden)',
+      '🎨 50+ Aesthetic Styles (Japandi, Modern, Luxury)',
+      '⚡ Sketch2Image™ — Wireframes to 8K Renders',
+      '🏡 Virtual Staging AI for Real Estate',
+      '📼 Interactive 3D Orbit & Video Export',
+      '🛒 Shoppable Pins — Auto-Matched Buy Links'
     ],
     subModules: [
       { id: 'interior', name: 'Interior Room Design', badge: 'INTERIOR AI', href: '/tools/ai-home-design?module=interior', icon: '🛋️' },

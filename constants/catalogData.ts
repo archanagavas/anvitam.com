@@ -21,7 +21,7 @@ export interface CatalogProduct {
   price: string;
   image_url: string;
   affiliate_link: string;
-  source: 'manual' | 'skimlinks' | 'amazon_in' | 'mercadolivre' | 'paapi';
+  source: 'manual' | 'skimlinks' | 'amazon_in' | 'mercadolivre' | 'paapi' | 'cuelinks' | 'cj_affiliate' | 'impact';
   active: boolean;
   room_types?: string[];
 }

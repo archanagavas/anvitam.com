@@ -262,6 +262,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       itemType,
       newFinish,
       floorMaterial,
+      budget,
+      promptText,
     } = body;
 
     // ── Input validation ──
@@ -478,6 +480,84 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
+// ── External Affiliate API Fetcher (CueLinks / PA-API / CJ / Impact) ────────
+async function fetchExternalAffiliateProducts(searchQuery: string, region: string): Promise<CatalogProduct[]> {
+  const externalProducts: CatalogProduct[] = [];
+
+  // 1. CueLinks / EarnKaro API (India: Amazon IN, Flipkart, Pepperfry, Urban Ladder, Myntra)
+  const cuelinksKey = process.env.CUELINKS_API_KEY || process.env.CUELINKS_CID;
+  if (cuelinksKey && (region === 'India' || region === 'Global')) {
+    try {
+      const res = await fetch(`https://api.cuelinks.com/v2/products/search.json?query=${encodeURIComponent(searchQuery)}`, {
+        headers: { 'Authorization': `Token token=${cuelinksKey}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.products && Array.isArray(data.products)) {
+          data.products.slice(0, 5).forEach((item: any, idx: number) => {
+            externalProducts.push({
+              id: `cuelinks_${Date.now()}_${idx}`,
+              category_id: 'cat_furniture',
+              name: item.title || item.name || 'Designer Home Accent',
+              element_type: item.category || 'decor_accent',
+              region: 'India',
+              style_tags: [searchQuery, 'Modern'],
+              price: item.price ? `₹${item.price}` : 'Check Price',
+              image_url: item.image_url || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=800&auto=format&fit=crop',
+              affiliate_link: item.affiliate_url || item.url || 'https://amazon.in/dp/B08X123456?tag=anvitam-21',
+              source: 'cuelinks',
+              active: true,
+            });
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('[CueLinks API fetch failed]', e);
+    }
+  }
+
+  // 2. CJ Affiliate API (Global / USA: 3,000+ top home decor & furniture brands)
+  const cjKey = process.env.CJ_API_KEY;
+  if (cjKey && (region === 'USA' || region === 'Global')) {
+    try {
+      const graphqlQuery = {
+        query: `{ products(keywords: "${searchQuery}", limit: 5) { id name price { amount currency } imageUrl buyUrl merchantName } }`
+      };
+      const res = await fetch('https://ads.cj.com/query', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${cjKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(graphqlQuery)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const cjItems = data?.data?.products || [];
+        cjItems.forEach((item: any, idx: number) => {
+          externalProducts.push({
+            id: `cj_${Date.now()}_${idx}`,
+            category_id: 'cat_furniture',
+            name: `${item.merchantName || 'CJ'} ${item.name}`,
+            element_type: 'furniture',
+            region: 'USA',
+            style_tags: [searchQuery, 'Modern'],
+            price: item.price?.amount ? `$${item.price.amount}` : 'Check Price',
+            image_url: item.imageUrl || 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=800&auto=format&fit=crop',
+            affiliate_link: item.buyUrl,
+            source: 'cj_affiliate',
+            active: true
+          });
+        });
+      }
+    } catch (e) {
+      console.warn('[CJ Affiliate API fetch failed]', e);
+    }
+  }
+
+  return externalProducts;
+}
+
   // ── 4. RECOMMEND SHOPPABLE CATALOG PRODUCTS ──────────────────────────
   if (action === 'recommend') {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -491,7 +571,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     try {
       const dbProducts = await getAllDocs<CatalogProduct>('catalog_products');
-      const catalog = dbProducts.length > 0 ? dbProducts : INITIAL_CATALOG_PRODUCTS;
+      let catalog = dbProducts.length > 0 ? dbProducts : INITIAL_CATALOG_PRODUCTS;
+
+      // Try fetching live external affiliate API products if configured
+      const liveProducts = await fetchExternalAffiliateProducts(`${style} ${roomType}`, region);
+      if (liveProducts.length > 0) {
+        catalog = [...liveProducts, ...catalog];
+      }
 
       const filtered = catalog.filter(p => {
         const regionMatch = p.region === region || p.region === 'Global';

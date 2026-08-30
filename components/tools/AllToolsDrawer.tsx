@@ -40,7 +40,7 @@ export const AllToolsDrawer: React.FC<Props> = ({ isOpen, onClose, activeToolId 
     tool.name.toLowerCase().includes(search.toLowerCase()) ||
     tool.shortDesc.toLowerCase().includes(search.toLowerCase()) ||
     tool.category.toLowerCase().includes(search.toLowerCase()) ||
-    (tool.subModules && tool.subModules.some(s => s.name.toLowerCase().includes(search.toLowerCase()) || s.description.toLowerCase().includes(search.toLowerCase())))
+    (tool.subModules && tool.subModules.some(s => s.name.toLowerCase().includes(search.toLowerCase())))
   );
 
   const handleLaunch = (href: string) => {

@@ -282,6 +282,12 @@ export default function AIHomeDesign() {
       setGeneratedImage(data.generatedImage);
       setShowBriefCard(false);
 
+      // Auto-fetch shoppable products and detect visual pins matching the rendered design
+      fetchRecommendations(roomType, selectedStyle);
+      if (data.generatedImage) {
+        fetchElementPins(data.generatedImage);
+      }
+
       if (data.credits_remaining !== undefined) {
         updateToolUser({
           credits_remaining: data.credits_remaining,
@@ -315,6 +321,10 @@ export default function AIHomeDesign() {
       console.error('[Recommend error]', err);
     }
   };
+
+  useEffect(() => {
+    fetchRecommendations(roomType, selectedStyle);
+  }, []);
 
   const fetchElementPins = async (img: string) => {
     try {
@@ -559,35 +569,35 @@ export default function AIHomeDesign() {
                       {
                         id: 'interior',
                         title: 'Interior Design',
-                        desc: 'Transform interiors with AI-generated designs',
+                        desc: 'Transform any room instantly',
                         imageBefore: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=300&auto=format&fit=crop',
                         imageAfter: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=300&auto=format&fit=crop'
                       },
                       {
                         id: 'exterior',
                         title: 'Exterior Design',
-                        desc: 'Refresh exteriors with AI-powered redesigns',
+                        desc: 'Redesign your home exterior',
                         imageBefore: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?q=80&w=300&auto=format&fit=crop',
                         imageAfter: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=300&auto=format&fit=crop'
                       },
                       {
                         id: 'garden',
                         title: 'Garden Design',
-                        desc: 'Design stunning gardens and outdoor spaces',
+                        desc: 'Redesign gardens & outdoors',
                         imageBefore: 'https://images.unsplash.com/photo-1558904541-efa843a96f01?q=80&w=300&auto=format&fit=crop',
                         imageAfter: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?q=80&w=300&auto=format&fit=crop'
                       },
                       {
                         id: 'replace',
                         title: 'Replace & Add Furniture',
-                        desc: 'Instantly add or replace furniture with AI',
+                        desc: 'Swap furniture with AI',
                         imageBefore: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=300&auto=format&fit=crop',
                         imageAfter: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=300&auto=format&fit=crop'
                       },
                       {
                         id: 'remove',
                         title: 'Furniture Removal',
-                        desc: 'Remove furniture and objects in one click',
+                        desc: 'Remove objects in 1-click',
                         imageBefore: 'https://images.unsplash.com/photo-1540518614846-7ede433c5172?q=80&w=300&auto=format&fit=crop',
                         imageAfter: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=300&auto=format&fit=crop'
                       }
