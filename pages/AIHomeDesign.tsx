@@ -239,7 +239,7 @@ export default function AIHomeDesign() {
     setGeneratedImage(session.generatedImage);
     setPromptText(session.promptText);
     setRecommendations(session.recommendations || []);
-    setCurrentWorkflowStep(session.generatedImage ? 5 : 1);
+    setCurrentWorkflowStep(session.generatedImage ? 4 : 1);
   };
 
   // Form State
@@ -299,7 +299,7 @@ export default function AIHomeDesign() {
     const reader = new FileReader();
     reader.onload = (e) => {
       setSourceImage(e.target?.result as string);
-      setCurrentWorkflowStep(4); // Advance to Step 4: AI Model Selection
+      setCurrentWorkflowStep(2); // Advance to Step 2: Style Selection
     };
     reader.readAsDataURL(file);
   };
@@ -308,7 +308,7 @@ export default function AIHomeDesign() {
     setSelectedModule(sampleMod);
     setSearchParams({ module: sampleMod });
     setSourceImage(sampleUrl);
-    setCurrentWorkflowStep(4); // Advance to Step 4: AI Model Selection
+    setCurrentWorkflowStep(2); // Advance to Step 2: Style Selection
   };
 
   const handlePromptSubmit = (e?: React.FormEvent) => {
@@ -384,7 +384,7 @@ export default function AIHomeDesign() {
       }
 
       setGeneratedImage(data.generatedImage);
-      setCurrentWorkflowStep(5);
+      setCurrentWorkflowStep(4);
       setShowBriefCard(false);
 
       // Save generated chat session into persistent history
@@ -634,34 +634,28 @@ export default function AIHomeDesign() {
             </div>
           </div>
 
-          {/* Stepper Navigation Header Bar */}
-          <div className="bg-gray-50 border border-gray-200/90 rounded-2xl p-2 my-4 shadow-2xs flex items-center justify-between gap-1 overflow-x-auto no-scrollbar max-w-3xl mx-auto w-full">
-            {[
-              { step: 1, label: '1. Tool', icon: '🛠️' },
-              { step: 2, label: '2. Style', icon: '🎨' },
-              { step: 3, label: '3. Image & Brief', icon: '📷' },
-              { step: 4, label: '4. AI Model', icon: '🤖' },
-              { step: 5, label: '5. Render Output', icon: '✨' },
-            ].map((s) => (
+          {/* Conversational Assistant Active Status Bar */}
+          <div className="flex items-center justify-between bg-gray-50 border border-gray-200/80 rounded-2xl px-4 py-2 my-3 max-w-3xl mx-auto w-full text-xs font-semibold text-gray-700">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Step {currentWorkflowStep} of 4:</span>
+              <span className="text-gray-900 font-bold">
+                {currentWorkflowStep === 1 && 'Upload Photo & Select Tool'}
+                {currentWorkflowStep === 2 && 'Select Architectural Style'}
+                {currentWorkflowStep === 3 && 'Choose AI Model & Render'}
+                {currentWorkflowStep === 4 && 'Render Output & Shoppable Products'}
+              </span>
+            </div>
+
+            {currentWorkflowStep > 1 && (
               <button
-                key={s.step}
                 type="button"
-                onClick={() => {
-                  if (s.step === 5 && !generatedImage) return;
-                  setCurrentWorkflowStep(s.step);
-                }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap cursor-pointer ${
-                  currentWorkflowStep === s.step
-                    ? 'bg-black text-[#CCFF00] shadow-2xs font-semibold'
-                    : currentWorkflowStep > s.step
-                    ? 'bg-gray-200/80 text-gray-800'
-                    : 'bg-transparent text-gray-400 hover:text-gray-600'
-                }`}
+                onClick={() => setCurrentWorkflowStep((prev) => Math.max(1, prev - 1))}
+                className="text-[11px] text-gray-500 hover:text-black font-medium underline cursor-pointer"
               >
-                <span>{s.icon}</span>
-                <span>{s.label}</span>
+                ← Back
               </button>
-            ))}
+            )}
           </div>
 
           {/* ── CONVERSATIONAL STEP CANVASES IN MAIN WORKSPACE ── */}
