@@ -16,7 +16,7 @@ import {
   Sparkles, Upload, Wand2, ArrowLeft, Download, RefreshCw, Image as ImageIcon,
   Check, ChevronRight, Sliders, ShieldCheck, Crown, ShoppingBag, MapPin, ExternalLink,
   Layers, Home, Building, Trees, Trash2, Paintbrush, LayoutGrid, Zap, Menu, X, AlertCircle,
-  Settings, LogOut
+  Settings, LogOut, PanelLeft, Folder, Code, Clock
 } from 'lucide-react';
 import { getToolUser, getOrCreateDefaultToolUser, logoutToolUser, deductUserCredit, updateToolUser, type ToolUser } from '../utils/userAuth';
 import { ToolsAuthModal } from '../components/tools/ToolsAuthModal';
@@ -109,6 +109,13 @@ const SAMPLE_PHOTOS = [
   { id: 'garden', label: '🌿 Yard & Lawn', url: 'https://images.unsplash.com/photo-1558904541-efa843a96f01?q=80&w=800&auto=format&fit=crop', module: 'garden' }
 ];
 
+const AI_MODEL_ENGINES = [
+  { id: 'anvitam-ultra', name: '⚡ Anvitam Ultra HD (NVIDIA GPU)', creditCost: 1 },
+  { id: 'anvitam-v2-fast', name: '🏎️ Anvitam Fast Turbo', creditCost: 1 },
+  { id: 'ollama-sdxl', name: '🦙 God Ollama Local SDXL', creditCost: 1 },
+  { id: 'flux-dev', name: '✨ FLUX.1 Professional', creditCost: 2 },
+];
+
 // Preset AI Studio modules for topbar navigation
 const AI_MODULES = [
   { id: 'interior', label: 'Interior AI', icon: '🛋️' },
@@ -128,11 +135,24 @@ const DEFAULT_HOTSPOT_PINS = [
 ];
 
 
+interface SavedChatSession {
+  id: string;
+  title: string;
+  timestamp: string;
+  module: string;
+  style: string;
+  roomType: string;
+  sourceImage: string | null;
+  generatedImage: string | null;
+  promptText: string;
+  recommendations: any[];
+}
+
 export default function AIHomeDesign() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // Active module from URL (interior, exterior, garden, replace, remove, declutter, style-transfer, walls, flooring)
+  // Active module from URL
   const initialModule = searchParams.get('module') || 'interior';
   const [selectedModule, setSelectedModule] = useState<string>(initialModule);
 
@@ -147,9 +167,80 @@ export default function AIHomeDesign() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [showToolsDrawer, setShowToolsDrawer] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // UI Drawer & Sidebar States
   const [showBriefCard, setShowBriefCard] = useState(false);
+
+  // Saved Chat Sessions History (Claude "Chats and tasks" sidebar)
+  const [savedChats, setSavedChats] = useState<SavedChatSession[]>(() => {
+    try {
+      const raw = localStorage.getItem('anvitam_design_chats');
+      if (raw) return JSON.parse(raw);
+    } catch (e) {
+      console.error(e);
+    }
+    return [
+      {
+        id: 'chat-demo-1',
+        title: 'Architecture review of retail space',
+        timestamp: '2 hours ago',
+        module: 'interior',
+        style: 'modern',
+        roomType: 'Living Room',
+        sourceImage: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=800&auto=format&fit=crop',
+        generatedImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=800&auto=format&fit=crop',
+        promptText: 'Modern Scandinavian retail lounge with warm oak wood and ambient lighting',
+        recommendations: []
+      },
+      {
+        id: 'chat-demo-2',
+        title: 'Scandinavian Living Room Restyle',
+        timestamp: 'Yesterday',
+        module: 'interior',
+        style: 'japandi',
+        roomType: 'Living Room',
+        sourceImage: null,
+        generatedImage: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=800&auto=format&fit=crop',
+        promptText: 'Japandi minimal living room',
+        recommendations: []
+      },
+      {
+        id: 'chat-demo-3',
+        title: 'Site Intelligence 3D Shadow Analysis',
+        timestamp: '3 days ago',
+        module: 'site-intelligence',
+        style: 'minimalist',
+        roomType: 'Exterior Facade',
+        sourceImage: null,
+        generatedImage: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=800&auto=format&fit=crop',
+        promptText: '3D Sun & shadow simulation report',
+        recommendations: []
+      }
+    ];
+  });
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+
+  const handleStartNewChat = () => {
+    setActiveChatId(null);
+    setCurrentWorkflowStep(1);
+    setSourceImage(null);
+    setGeneratedImage(null);
+    setPromptText('');
+    setRecommendations([]);
+  };
+
+  const handleLoadSavedChat = (session: SavedChatSession) => {
+    setActiveChatId(session.id);
+    setSelectedModule(session.module || 'interior');
+    setSelectedStyle(session.style || 'modern');
+    setRoomType(session.roomType || 'Living Room');
+    setSourceImage(session.sourceImage);
+    setGeneratedImage(session.generatedImage);
+    setPromptText(session.promptText);
+    setRecommendations(session.recommendations || []);
+    setCurrentWorkflowStep(session.generatedImage ? 5 : 1);
+  };
 
   // Form State
   const [currentWorkflowStep, setCurrentWorkflowStep] = useState<number>(1);
@@ -296,6 +387,30 @@ export default function AIHomeDesign() {
       setCurrentWorkflowStep(5);
       setShowBriefCard(false);
 
+      // Save generated chat session into persistent history
+      const newSession: SavedChatSession = {
+        id: `chat_${Date.now()}`,
+        title: promptText ? promptText.slice(0, 36) + '...' : `${roomType} ${selectedStyle} Restyle`,
+        timestamp: 'Just now',
+        module: selectedModule,
+        style: selectedStyle,
+        roomType,
+        sourceImage,
+        generatedImage: data.generatedImage,
+        promptText: promptText || `${selectedStyle} style redesign for ${roomType}`,
+        recommendations: data.recommendations || []
+      };
+      setSavedChats(prev => {
+        const updated = [newSession, ...prev.filter(c => c.id !== newSession.id)];
+        try {
+          localStorage.setItem('anvitam_design_chats', JSON.stringify(updated.slice(0, 30)));
+        } catch (e) {
+          console.error(e);
+        }
+        return updated;
+      });
+      setActiveChatId(newSession.id);
+
       // Auto-fetch shoppable products and detect visual pins matching the rendered design
       fetchRecommendations(roomType, selectedStyle);
       if (data.generatedImage) {
@@ -367,211 +482,192 @@ export default function AIHomeDesign() {
   return (
     <>
       <Helmet>
-        <title>Anvitam's AI Studio | AI Interior &amp; Exterior Design</title>
+        <title>Anvitam's AI Studio | Claude Conversational AI Home Design</title>
         <meta name="description" content="Photorealistic AI Studio for interior design, exterior facade, garden landscape, room restyle, and furniture replacement." />
       </Helmet>
 
-      {/* Main Studio Wrapper */}
-      <div className="w-full bg-white text-[#111111] min-h-screen font-sans flex flex-col pt-20">
+      {/* Main Studio Wrapper with Claude Sidebar & Workspace */}
+      <div className="w-full bg-[#FAF9F6] text-[#111111] min-h-screen font-sans flex flex-row pt-20 overflow-hidden">
 
-        <div className="flex-1 flex flex-col overflow-visible">
+        {/* ── CLAUDE LEFT SIDEBAR ("Chats and tasks") ── */}
+        <aside className={`w-64 bg-[#F9F8F6] border-r border-gray-200/80 flex flex-col shrink-0 transition-all duration-300 ${sidebarOpen ? 'translate-x-0' : '-ml-64'} hidden md:flex`}>
+          
+          {/* Top: + New Chat Button */}
+          <div className="p-4 border-b border-gray-200/50 space-y-3">
+            <button
+              type="button"
+              onClick={handleStartNewChat}
+              className="w-full py-2.5 px-4 bg-white hover:bg-gray-100/80 text-gray-900 border border-gray-300/80 rounded-2xl text-xs font-semibold flex items-center justify-between shadow-2xs transition cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-base text-gray-600 font-bold">+</span>
+                <span>New design chat</span>
+              </div>
+              <span className="text-[10px] text-gray-400 font-mono">⌘K</span>
+            </button>
 
-          {/* Unified Topbar inside canvas with Hamburger, Module Selector, Settings & Logout */}
-          <div className="sa-topbar bg-white text-gray-900 px-6 py-3 border-b border-gray-200/80 shadow-2xs flex flex-col lg:flex-row items-center justify-between gap-4 z-20 sticky top-20">
-            <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
+            {/* Navigation Quick Links */}
+            <div className="space-y-0.5 text-xs text-gray-600 font-medium">
+              <button type="button" onClick={() => navigate('/tools')} className="w-full text-left px-3 py-1.5 rounded-xl hover:bg-gray-200/60 flex items-center gap-2.5 transition">
+                <Folder size={15} className="text-gray-500" />
+                <span>Projects</span>
+              </button>
+              <button type="button" onClick={() => setShowBriefCard(true)} className="w-full text-left px-3 py-1.5 rounded-xl hover:bg-gray-200/60 flex items-center gap-2.5 transition">
+                <Sliders size={15} className="text-gray-500" />
+                <span>Artifacts &amp; Brief</span>
+              </button>
+              <button type="button" onClick={() => setShowToolsDrawer(true)} className="w-full text-left px-3 py-1.5 rounded-xl hover:bg-gray-200/60 flex items-center gap-2.5 transition">
+                <Code size={15} className="text-gray-500" />
+                <span>21+ AI Tools</span>
+              </button>
+              <button type="button" onClick={() => setShowSettingsModal(true)} className="w-full text-left px-3 py-1.5 rounded-xl hover:bg-gray-200/60 flex items-center gap-2.5 transition">
+                <Settings size={15} className="text-gray-500" />
+                <span>Customize Studio</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Middle: Chats and tasks List */}
+          <div className="flex-1 overflow-y-auto p-3 space-y-1 no-scrollbar">
+            <div className="px-3 py-2 flex items-center justify-between text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+              <span>Chats and tasks</span>
+              <Clock size={13} />
+            </div>
+
+            {savedChats.map((chat) => (
+              <button
+                key={chat.id}
+                type="button"
+                onClick={() => handleLoadSavedChat(chat)}
+                className={`w-full text-left px-3 py-2 rounded-xl text-xs flex items-center gap-2 transition cursor-pointer truncate ${
+                  activeChatId === chat.id
+                    ? 'bg-gray-200/80 font-semibold text-gray-900'
+                    : 'text-gray-600 hover:bg-gray-200/40 hover:text-gray-900'
+                }`}
+                title={chat.title}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-600 shrink-0" />
+                <span className="truncate flex-1">{chat.title}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Bottom: Profile Avatar Footer */}
+          <div className="p-3 border-t border-gray-200/70 bg-[#FAF9F6] flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-full bg-amber-800 text-white font-semibold text-xs flex items-center justify-center">
+                {user?.full_name ? user.full_name[0] : 'A'}
+              </div>
+              <div className="leading-tight">
+                <p className="text-xs font-semibold text-gray-900">{user?.full_name || 'Archana Gavas'}</p>
+                <p className="text-[10px] text-gray-500">Free plan • {user?.credits_remaining || 50} credits</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowPaywall(true)}
+              className="text-[11px] font-semibold text-amber-800 hover:underline"
+            >
+              Upgrade
+            </button>
+          </div>
+        </aside>
+
+        {/* ── MAIN CLAUDE CHAT CANVAS WORKSPACE ── */}
+        <main className="flex-1 flex flex-col bg-white overflow-y-auto relative min-h-[calc(100vh-80px)] p-4 sm:p-8">
+
+          {/* Top Canvas Bar with Sidebar Toggle, Module Pills & Controls */}
+          <div className="flex items-center justify-between gap-4 pb-6 border-b border-gray-100">
+            <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={() => setShowToolsDrawer(true)}
-                className="px-3 py-2 rounded-xl bg-black text-[#CCFF00] hover:bg-gray-800 transition cursor-pointer flex items-center gap-2 text-xs font-semibold shadow-2xs shrink-0"
-                title="Open All 21+ Tools Drawer"
-                aria-label="Open All 21+ Tools Drawer"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition hidden md:block"
+                title="Toggle Sidebar"
               >
-                <Menu size={16} />
-                <span>All Tools</span>
+                <PanelLeft size={16} />
               </button>
-
-              <div
-                className="flex items-center gap-2 cursor-pointer shrink-0"
-                onClick={() => navigate('/tools')}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    navigate('/tools');
-                  }
-                }}
-                aria-label="Navigate to site tools directory"
-              >
-                <span className="w-7 h-7 rounded-lg bg-black text-[#CCFF00] font-semibold flex items-center justify-center text-xs shadow-2xs">AI</span>
-                <div>
-                  <h1 className="text-xs sm:text-sm font-semibold text-gray-900 leading-none">AI Space &amp; Home Studio</h1>
-                  <p className="text-[10px] text-gray-500 font-medium">Anvitam Studio</p>
-                </div>
+              <div>
+                <h1 className="text-sm font-semibold text-gray-900 leading-none">Anvitam Design Chat</h1>
+                <p className="text-[10px] text-gray-500 font-medium">Powered by Claude &amp; FLUX.1 Pro</p>
               </div>
             </div>
 
-            {/* Category / Module Selector Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto w-full lg:w-auto py-1 lg:py-0 no-scrollbar justify-start sm:justify-center">
-              {AI_MODULES.map(mod => (
-                <button
-                  key={mod.id}
-                  type="button"
-                  onClick={() => handleModuleChange(mod.id)}
-                  aria-label={`Select ${mod.label} module`}
-                  className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer whitespace-nowrap ${
-                    selectedModule === mod.id ? 'bg-black text-[#CCFF00] font-semibold shadow-2xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200/80'
-                  }`}
-                >
-                  <span className="text-xs">{mod.icon}</span>
-                  <span>{mod.label}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Controls: Credit Pill, Design Brief, Settings, Logout */}
-            <div className="flex items-center gap-2.5 shrink-0 w-full lg:w-auto justify-end">
-              {user ? (
-                <button
-                  type="button"
-                  onClick={() => setShowPaywall(true)}
-                  aria-label="View or top up available studio credits"
-                  className="px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-semibold flex items-center gap-1.5 hover:bg-black transition cursor-pointer shadow-2xs"
-                >
-                  <Zap size={14} className="fill-[#CCFF00] text-[#CCFF00]" />
-                  <span>{user.credits_remaining} Credits</span>
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setShowAuthModal(true)}
-                  aria-label="Sign in to Anvitam Studio"
-                  className="px-3.5 py-1.5 rounded-full bg-[#CCFF00] text-black border border-black/10 text-xs font-semibold hover:bg-black hover:text-[#CCFF00] transition cursor-pointer shadow-2xs"
-                >
-                  Sign In / Register
-                </button>
-              )}
-
+            {/* Controls: Credit Pill, Brief & Settings */}
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setShowBriefCard(true)}
-                aria-label="Open Design Brief parameters"
-                className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-semibold px-3.5 py-2 rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer border border-black/10 shadow-2xs"
+                className="bg-amber-50 hover:bg-amber-100 text-amber-900 font-semibold px-3 py-1.5 rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer border border-amber-200/60"
               >
-                <Sliders size={14} />
-                <span>Design Brief</span>
+                <Sliders size={13} />
+                <span>Brief</span>
               </button>
-
-              {/* Settings Button */}
-              <button
-                type="button"
-                onClick={() => setShowSettingsModal(true)}
-                className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-gray-400 text-gray-700 hover:text-black transition cursor-pointer shadow-2xs"
-                title="Studio & Account Settings"
-                aria-label="Studio & Account Settings"
-              >
-                <Settings size={17} />
-              </button>
-
-              {/* Sign Out Button */}
               {user && (
                 <button
                   type="button"
-                  onClick={() => {
-                    logoutToolUser();
-                    setUser(null);
-                  }}
-                  className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-red-400 text-gray-600 hover:text-red-600 transition cursor-pointer shadow-2xs"
-                  title="Sign Out"
-                  aria-label="Sign Out"
+                  onClick={() => setShowPaywall(true)}
+                  className="px-3 py-1.5 rounded-xl bg-gray-900 text-[#CCFF00] text-xs font-semibold flex items-center gap-1"
                 >
-                  <LogOut size={17} />
+                  <Zap size={13} className="fill-[#CCFF00]" />
+                  <span>{user.credits_remaining} Cred</span>
                 </button>
               )}
             </div>
           </div>
 
-          {/* ── MAIN WORKSPACE CANVAS ── */}
-          <main className="flex-1 bg-[#FAFBFD] p-6 sm:p-10 overflow-y-auto max-w-6xl mx-auto w-full">
-
-            {/* ── 5-STEP GUIDED CONVERSATIONAL WORKFLOW CANVAS ── */}
-            <div className="space-y-8 my-4">
-              
-              {/* Stepper Navigation Header Bar */}
-              <div className="bg-white border border-gray-200/90 rounded-2xl p-2 sm:p-3 shadow-2xs flex items-center justify-between gap-1 overflow-x-auto no-scrollbar">
-                {[
-                  { step: 1, label: '1. Select Tool', icon: '🛠️' },
-                  { step: 2, label: '2. Aesthetic Style', icon: '🎨' },
-                  { step: 3, label: '3. Image & Brief', icon: '📷' },
-                  { step: 4, label: '4. AI Model Engine', icon: '🤖' },
-                  { step: 5, label: '5. Render Output', icon: '✨' },
-                ].map((s) => (
-                  <button
-                    key={s.step}
-                    type="button"
-                    onClick={() => {
-                      if (s.step === 5 && !generatedImage) return;
-                      setCurrentWorkflowStep(s.step);
-                    }}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap cursor-pointer ${
-                      currentWorkflowStep === s.step
-                        ? 'bg-[#111111] text-[#CCFF00] shadow-2xs font-semibold'
-                        : currentWorkflowStep > s.step
-                        ? 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                        : 'bg-transparent text-gray-400 hover:text-gray-600'
-                    }`}
-                  >
-                    <span>{s.icon}</span>
-                    <span>{s.label}</span>
-                  </button>
-                ))}
+          {/* Dynamic Claude Greeting */}
+          {currentWorkflowStep === 1 && !generatedImage && (
+            <div className="text-center py-10 space-y-3 max-w-xl mx-auto">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 mb-2">
+                <Sparkles size={24} />
               </div>
+              <h1 className="text-3xl sm:text-4xl font-serif text-gray-800 tracking-tight">
+                {(() => {
+                  const hr = new Date().getHours();
+                  if (hr < 12) return 'Morning, how are things?';
+                  if (hr < 17) return 'Afternoon, how are things?';
+                  return 'Evening, how are things?';
+                })()}
+              </h1>
+              <p className="text-xs text-gray-500">
+                Select an architectural module below or enter your vision to begin the 5-step guided design flow.
+              </p>
+            </div>
+          )}
 
-              {/* Central Prompt & Conversational Bar */}
-              <div className="text-center space-y-4 max-w-2xl mx-auto">
-                <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight">
-                  Hello, how may I help you?
-                </h1>
+          {/* Stepper Navigation Header Bar */}
+          <div className="bg-gray-50 border border-gray-200/90 rounded-2xl p-2 my-4 shadow-2xs flex items-center justify-between gap-1 overflow-x-auto no-scrollbar max-w-3xl mx-auto w-full">
+            {[
+              { step: 1, label: '1. Tool', icon: '🛠️' },
+              { step: 2, label: '2. Style', icon: '🎨' },
+              { step: 3, label: '3. Image & Brief', icon: '📷' },
+              { step: 4, label: '4. AI Model', icon: '🤖' },
+              { step: 5, label: '5. Render Output', icon: '✨' },
+            ].map((s) => (
+              <button
+                key={s.step}
+                type="button"
+                onClick={() => {
+                  if (s.step === 5 && !generatedImage) return;
+                  setCurrentWorkflowStep(s.step);
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap cursor-pointer ${
+                  currentWorkflowStep === s.step
+                    ? 'bg-black text-[#CCFF00] shadow-2xs font-semibold'
+                    : currentWorkflowStep > s.step
+                    ? 'bg-gray-200/80 text-gray-800'
+                    : 'bg-transparent text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                <span>{s.icon}</span>
+                <span>{s.label}</span>
+              </button>
+            ))}
+          </div>
 
-                <form onSubmit={handlePromptSubmit} className="relative max-w-2xl mx-auto space-y-3">
-                  <div className="bg-white border border-gray-300 hover:border-gray-900 rounded-3xl p-3 shadow-md flex flex-col sm:flex-row items-center gap-3 transition">
-                    <div className="p-2.5 bg-[#111111] text-[#CCFF00] rounded-2xl shrink-0 hidden sm:flex">
-                      <Wand2 size={18} />
-                    </div>
-                    <input
-                      type="text"
-                      value={promptText}
-                      onChange={(e) => setPromptText(e.target.value)}
-                      placeholder="Ask Anvitam's AI anything (e.g. Modern Scandinavian living room with warm wood)..."
-                      aria-label="Ask Anvitam's AI architectural design prompt"
-                      className="w-full bg-transparent border-none text-xs text-gray-900 outline-none placeholder:text-gray-400 font-medium px-2"
-                    />
-
-                    {/* Room Budget Selector Pill inside Prompt Bar */}
-                    <div className="flex items-center gap-1.5 shrink-0 bg-gray-100 p-1 rounded-full border border-gray-200">
-                      <span className="text-[10px] font-bold text-gray-500 pl-2">Budget:</span>
-                      <select
-                        value={budget}
-                        onChange={(e) => setBudget(e.target.value)}
-                        className="bg-white text-gray-900 font-semibold text-[11px] px-2.5 py-1 rounded-full outline-none cursor-pointer border border-gray-300 shadow-2xs"
-                      >
-                        <option value="Economy">₹25,000 (Economy)</option>
-                        <option value="Mid-Range">₹75,000 (Mid-Range)</option>
-                        <option value="Luxury">₹2,00,000+ (Luxury)</option>
-                      </select>
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="w-10 h-10 rounded-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black transition flex items-center justify-center font-bold cursor-pointer border border-black/10 shadow-2xs shrink-0"
-                      title="Next Step / Generate"
-                      aria-label="Submit AI Design prompt to advance step or generate image"
-                    >
-                      <ChevronRight size={18} />
-                    </button>
-                  </div>
-                </form>
-              </div>
+          {/* ── CONVERSATIONAL STEP CANVASES IN MAIN WORKSPACE ── */}
+          <div className="flex-1 max-w-3xl w-full mx-auto space-y-8 pb-36">
 
               {/* ── STEP 1: MODULE & WORKFLOW TOOL SELECTION ── */}
               {currentWorkflowStep === 1 && (
@@ -1192,6 +1288,92 @@ export default function AIHomeDesign() {
 
           </main>
 
+          {/* ── CLAUDE FLOATING PROMPT BAR AT BOTTOM ── */}
+          <div className="sticky bottom-4 z-30 max-w-2xl w-full mx-auto px-4 mt-2">
+            <form onSubmit={handlePromptSubmit} className="bg-white border border-gray-300 hover:border-gray-400 rounded-3xl p-3 shadow-xl space-y-2.5 transition-all">
+              
+              {/* Text Prompt Input */}
+              <div className="flex items-center gap-2 px-2">
+                <input
+                  type="text"
+                  value={promptText}
+                  onChange={(e) => setPromptText(e.target.value)}
+                  placeholder="How can I help you today? (Type architectural vision or instructions...)"
+                  className="w-full text-xs font-sans placeholder-gray-400 bg-transparent border-none outline-none py-1 text-gray-900 font-medium"
+                />
+              </div>
+
+              {/* Control Buttons & Selectors Row */}
+              <div className="flex items-center justify-between pt-2 border-t border-gray-100 gap-2">
+                
+                {/* Left Controls: + Upload, Chat/Cowork pills, Region */}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition cursor-pointer text-sm font-bold shadow-2xs"
+                    title="Upload or Change Room Photo"
+                  >
+                    +
+                  </button>
+
+                  <div className="flex items-center gap-1 bg-gray-100/90 p-0.5 rounded-full text-[11px] font-semibold text-gray-600">
+                    <button
+                      type="button"
+                      onClick={() => setDesignMode('restyle')}
+                      className={`px-2.5 py-0.5 rounded-full transition cursor-pointer ${designMode === 'restyle' ? 'bg-white text-gray-900 shadow-2xs' : 'hover:text-gray-900'}`}
+                    >
+                      Chat
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDesignMode('empty')}
+                      className={`px-2.5 py-0.5 rounded-full transition cursor-pointer ${designMode === 'empty' ? 'bg-white text-gray-900 shadow-2xs' : 'hover:text-gray-900'}`}
+                    >
+                      Cowork
+                    </button>
+                  </div>
+
+                  {/* Region selector badge */}
+                  <select
+                    value={region}
+                    onChange={(e) => setRegion(e.target.value as any)}
+                    className="bg-amber-50 hover:bg-amber-100 text-amber-900 text-[10px] font-bold rounded-full px-2 py-0.5 border border-amber-200/80 outline-none cursor-pointer hidden sm:block"
+                  >
+                    <option value="India">🇮🇳 India</option>
+                    <option value="USA">🇺🇸 USA</option>
+                    <option value="Brazil">🇧🇷 Brazil</option>
+                  </select>
+                </div>
+
+                {/* Right Controls: Model Picker & Action Button */}
+                <div className="flex items-center gap-2">
+                  <select
+                    value={selectedAiModel}
+                    onChange={(e) => setSelectedAiModel(e.target.value)}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 text-[11px] font-semibold rounded-full px-2.5 py-1 border-none outline-none cursor-pointer"
+                  >
+                    {AI_MODEL_ENGINES.map(m => (
+                      <option key={m.id} value={m.id}>
+                        {m.name} ({m.creditCost} Cred)
+                      </option>
+                    ))}
+                  </select>
+
+                  <button
+                    type="submit"
+                    disabled={isGenerating}
+                    className="w-8 h-8 rounded-full bg-black hover:bg-gray-800 text-[#CCFF00] flex items-center justify-center transition cursor-pointer shadow-2xs disabled:opacity-50"
+                    title={currentWorkflowStep === 4 ? 'Render AI Design' : 'Next Step'}
+                  >
+                    {isGenerating ? <RefreshCw size={14} className="animate-spin" /> : <ChevronRight size={16} />}
+                  </button>
+                </div>
+
+              </div>
+            </form>
+          </div>
+
         </div>
 
         {/* ── DESIGN BRIEF CARD SLIDE-IN DRAWER ── */}
@@ -1361,8 +1543,6 @@ export default function AIHomeDesign() {
             </div>
           )}
         </AnimatePresence>
-
-      </div>
 
       <AllToolsDrawer
         isOpen={showToolsDrawer}
