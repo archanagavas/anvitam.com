@@ -474,12 +474,8 @@ export default function AIHomeDesign() {
               <span className="text-[10px] text-gray-400 font-mono">⌘K</span>
             </button>
 
-            {/* Navigation Quick Links (Cleaned: Projects & Artifacts removed per feedback) */}
+            {/* Navigation Quick Links */}
             <div className="space-y-0.5 text-xs text-gray-600 font-medium">
-              <button type="button" onClick={() => setShowToolsDrawer(true)} className="w-full text-left px-3 py-1.5 rounded-xl hover:bg-gray-200/60 flex items-center gap-2.5 transition">
-                <Code size={15} className="text-gray-500" />
-                <span>21+ AI Tools</span>
-              </button>
               <button type="button" onClick={() => setShowSettingsModal(true)} className="w-full text-left px-3 py-1.5 rounded-xl hover:bg-gray-200/60 flex items-center gap-2.5 transition">
                 <Settings size={15} className="text-gray-500" />
                 <span>Customize Studio</span>
@@ -554,19 +550,11 @@ export default function AIHomeDesign() {
             </div>
 
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setShowBriefCard(true)}
-                className="bg-amber-50 hover:bg-amber-100 text-amber-900 font-semibold px-3 py-1.5 rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer border border-amber-200/60"
-              >
-                <Sliders size={13} />
-                <span>Brief</span>
-              </button>
               {user && (
                 <button
                   type="button"
                   onClick={() => setShowPaywall(true)}
-                  className="px-3 py-1.5 rounded-xl bg-gray-900 text-[#CCFF00] text-xs font-semibold flex items-center gap-1"
+                  className="px-3 py-1.5 rounded-xl bg-gray-900 text-[#CCFF00] text-xs font-semibold flex items-center gap-1 cursor-pointer hover:bg-black transition"
                 >
                   <Zap size={13} className="fill-[#CCFF00]" />
                   <span>{user.credits_remaining} Cred</span>
@@ -684,7 +672,7 @@ export default function AIHomeDesign() {
                         id: 'remove',
                         title: 'Furniture Removal',
                         desc: 'Remove objects in 1-click',
-                        imageBefore: 'https://images.unsplash.com/photo-1540518614846-7ede433c5172?q=80&w=300&auto=format&fit=crop',
+                        imageBefore: 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?q=80&w=300&auto=format&fit=crop',
                         imageAfter: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=300&auto=format&fit=crop'
                       },
                       {
