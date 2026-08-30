@@ -237,6 +237,15 @@ export default function AIHomeDesign() {
   // 3D Viewer State
   const [show3DViewer, setShow3DViewer] = useState(false);
 
+  // Conversational Assistant Chat History State
+  const [chatMessages, setChatMessages] = useState<Array<{ id: string; sender: 'user' | 'assistant'; text: string }>>([
+    {
+      id: 'msg-init',
+      sender: 'assistant',
+      text: "Hello! What space would you like to design or transform today? Select an AI tool below or type your architectural vision in the prompt bar."
+    }
+  ]);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
 
@@ -288,11 +297,59 @@ export default function AIHomeDesign() {
       setShowAuthModal(true);
       return;
     }
-    if (currentWorkflowStep < 4) {
-      setCurrentWorkflowStep(currentWorkflowStep + 1);
-    } else {
-      handleGenerate();
+
+    if (!promptText.trim()) {
+      if (currentWorkflowStep < 4) {
+        setCurrentWorkflowStep(currentWorkflowStep + 1);
+      } else {
+        handleGenerate();
+      }
+      return;
     }
+
+    const userMsg = promptText.trim();
+    setPromptText('');
+
+    const userMsgObj = { id: `user-${Date.now()}`, sender: 'user' as const, text: userMsg };
+
+    let replyText = "";
+    const lower = userMsg.toLowerCase();
+
+    if (lower.includes('interior') || lower.includes('room') || lower.includes('living') || lower.includes('bedroom')) {
+      setSelectedModule('interior');
+      setCurrentWorkflowStep(2);
+      replyText = `I've set the AI tool to Interior Design AI for "${userMsg}". Now choose your preferred architectural style below or upload a room photo!`;
+    } else if (lower.includes('exterior') || lower.includes('house') || lower.includes('facade') || lower.includes('building')) {
+      setSelectedModule('exterior');
+      setCurrentWorkflowStep(2);
+      replyText = `Selected Exterior Design AI for "${userMsg}". Pick an architectural facade style below to start rendering!`;
+    } else if (lower.includes('garden') || lower.includes('yard') || lower.includes('landscape') || lower.includes('lawn')) {
+      setSelectedModule('garden');
+      setCurrentWorkflowStep(2);
+      replyText = `Selected Garden & Landscape AI. Choose your outdoor theme below!`;
+    } else if (lower.includes('site') || lower.includes('shadow') || lower.includes('wind') || lower.includes('analysis')) {
+      replyText = `Opening Site Intelligence 3D Canvas with sun path & wind analysis...`;
+      navigate('/site-analysis');
+    } else if (lower.includes('sketch') || lower.includes('blueprint') || lower.includes('cad') || lower.includes('drawing')) {
+      setSelectedModule('sketch2image');
+      setCurrentWorkflowStep(2);
+      replyText = `Selected Sketch2Image™. Upload your floorplan or sketch in Step 3 to convert to a photorealistic 3D render!`;
+    } else if (lower.includes('remove') || lower.includes('clear') || lower.includes('clean')) {
+      setSelectedModule('furniture-removal');
+      setCurrentWorkflowStep(2);
+      replyText = `Selected Furniture Removal AI. Upload your room photo to clear objects and declutter!`;
+    } else if (selectedAiModel === 'free-chat') {
+      replyText = `AI Assistant (Free): "${userMsg}". We have 8 specialized tools: Interior, Exterior, Landscape, Sketch2Image, Virtual Staging, Replace Furniture, Furniture Removal, and Site Intelligence. Select any tool below or choose a render engine (Low/Med/Hard) to generate 4K designs!`;
+    } else {
+      if (currentWorkflowStep < 4) {
+        setCurrentWorkflowStep(currentWorkflowStep + 1);
+      } else {
+        handleGenerate();
+      }
+      replyText = `Processing your prompt: "${userMsg}". Selected model: ${selectedAiModel.toUpperCase()}.`;
+    }
+
+    setChatMessages((prev) => [...prev, userMsgObj, { id: `ast-${Date.now()}`, sender: 'assistant', text: replyText }]);
   };
 
   const [selectedAiModel, setSelectedAiModel] = useState<string>('free-chat');
@@ -567,28 +624,97 @@ export default function AIHomeDesign() {
             </div>
           </div>
 
-          {/* ── CLAUDE-STYLE CHAT ASSISTANT MESSAGE BUBBLE ── */}
-          <div className="flex items-start gap-3 my-4 max-w-3xl mx-auto w-full">
-            <div className="w-8 h-8 rounded-full bg-[#111111] text-[#CCFF00] font-bold text-xs flex items-center justify-center shrink-0 shadow-xs border border-black/10">
-              ⚡
-            </div>
-            <div className="flex-1 space-y-1">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-gray-900">Anvitam AI Assistant</span>
-                  <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                    Online • Ready
-                  </span>
+          {/* ── UNIFIED CLAUDE-STYLE CHAT INTERFACE (IMAGE 1 ASSISTANT + IMAGE 2 PROMPT BAR) ── */}
+          <div className="max-w-3xl mx-auto w-full space-y-3 my-4">
+            
+            {/* Assistant Chat Message Feed (Image 1) */}
+            <div className="space-y-3 max-h-64 overflow-y-auto pr-1 no-scrollbar">
+              {chatMessages.map((msg) => (
+                <div key={msg.id} className={`flex items-start gap-3 ${msg.sender === 'user' ? 'justify-end' : ''}`}>
+                  {msg.sender === 'assistant' && (
+                    <div className="w-8 h-8 rounded-full bg-[#111111] text-[#CCFF00] font-bold text-xs flex items-center justify-center shrink-0 shadow-xs border border-black/10">
+                      ⚡
+                    </div>
+                  )}
+                  <div className={`max-w-xl space-y-1 ${msg.sender === 'user' ? 'text-right' : ''}`}>
+                    {msg.sender === 'assistant' && (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-gray-900">Anvitam AI Assistant</span>
+                          <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                            Online • Free Guide
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-gray-400 font-medium">Step {currentWorkflowStep} of 4</span>
+                      </div>
+                    )}
+                    <p className={`text-xs leading-relaxed font-medium rounded-2xl p-3.5 shadow-2xs ${
+                      msg.sender === 'user'
+                        ? 'bg-black text-[#CCFF00] rounded-tr-xs'
+                        : 'bg-gray-50 border border-gray-200/80 text-gray-700 rounded-tl-xs'
+                    }`}>
+                      {msg.text}
+                    </p>
+                  </div>
                 </div>
-                <span className="text-[10px] text-gray-400 font-medium">Step {currentWorkflowStep} of 4</span>
-              </div>
-              <p className="text-xs text-gray-700 leading-relaxed font-medium bg-gray-50 border border-gray-200/80 rounded-2xl rounded-tl-xs p-3.5 shadow-2xs">
-                {currentWorkflowStep === 1 && "Hello! What space would you like to design or transform today? Select an AI tool below or type your architectural vision in the prompt bar."}
-                {currentWorkflowStep === 2 && `Selected tool: ${selectedModule.toUpperCase()}. Now select your preferred architectural aesthetic from the 55+ styles below:`}
-                {currentWorkflowStep === 3 && `Selected style: ${selectedStyle}. Please upload your space photo and confirm room details:`}
-                {currentWorkflowStep === 4 && (generatedImage ? "Here is your photorealistic AI render! Compare original vs render using the slider, try 3D walkthrough, or shop recommended products below." : "Select your preferred neural AI engine to generate your photorealistic render:")}
-              </p>
+              ))}
             </div>
+
+            {/* Chat Input Prompt Bar (Image 2 - Placed directly below Image 1!) */}
+            <form onSubmit={handlePromptSubmit} className="bg-white border border-gray-300 hover:border-gray-400 rounded-3xl p-3 shadow-xl space-y-2.5 transition-all">
+              
+              {/* Text Prompt Input */}
+              <div className="flex items-center gap-2 px-2">
+                <input
+                  type="text"
+                  value={promptText}
+                  onChange={(e) => setPromptText(e.target.value)}
+                  placeholder="How can I help you today? (Type architectural vision or instructions...)"
+                  className="w-full text-xs font-sans placeholder-gray-400 bg-transparent border-none outline-none py-1 text-gray-900 font-medium"
+                />
+              </div>
+
+              {/* Control Buttons & Selectors Row */}
+              <div className="flex items-center justify-between pt-2 border-t border-gray-100 gap-2">
+                
+                {/* Left Controls: + Upload Photo */}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition cursor-pointer text-sm font-bold shadow-2xs"
+                    title="Upload or Change Room Photo"
+                  >
+                    +
+                  </button>
+                </div>
+
+                {/* Right Controls: Model Picker & Action Button */}
+                <div className="flex items-center gap-2">
+                  <select
+                    value={selectedAiModel}
+                    onChange={(e) => setSelectedAiModel(e.target.value)}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 text-[11px] font-semibold rounded-full px-2.5 py-1 border-none outline-none cursor-pointer max-w-[280px] truncate"
+                  >
+                    {AI_MODEL_ENGINES.map(m => (
+                      <option key={m.id} value={m.id}>
+                        {m.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  <button
+                    type="submit"
+                    disabled={isGenerating}
+                    className="w-8 h-8 rounded-full bg-black hover:bg-gray-800 text-[#CCFF00] flex items-center justify-center transition cursor-pointer shadow-2xs disabled:opacity-50 shrink-0"
+                    title={currentWorkflowStep === 4 ? 'Render AI Design' : 'Send Message / Next Step'}
+                  >
+                    {isGenerating ? <RefreshCw size={14} className="animate-spin" /> : <ChevronRight size={16} />}
+                  </button>
+                </div>
+
+              </div>
+            </form>
           </div>
 
           {/* Step Back Indicator Bar */}
@@ -1217,62 +1343,7 @@ export default function AIHomeDesign() {
             )}
 
           {/* ── CLAUDE FLOATING PROMPT BAR AT BOTTOM ── */}
-          <div className="sticky bottom-4 z-30 max-w-2xl w-full mx-auto px-4 mt-2">
-            <form onSubmit={handlePromptSubmit} className="bg-white border border-gray-300 hover:border-gray-400 rounded-3xl p-3 shadow-xl space-y-2.5 transition-all">
-              
-              {/* Text Prompt Input */}
-              <div className="flex items-center gap-2 px-2">
-                <input
-                  type="text"
-                  value={promptText}
-                  onChange={(e) => setPromptText(e.target.value)}
-                  placeholder="How can I help you today? (Type architectural vision or instructions...)"
-                  className="w-full text-xs font-sans placeholder-gray-400 bg-transparent border-none outline-none py-1 text-gray-900 font-medium"
-                />
-              </div>
 
-              {/* Control Buttons & Selectors Row */}
-              <div className="flex items-center justify-between pt-2 border-t border-gray-100 gap-2">
-                
-                {/* Left Controls: + Upload Photo */}
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition cursor-pointer text-sm font-bold shadow-2xs"
-                    title="Upload or Change Room Photo"
-                  >
-                    +
-                  </button>
-                </div>
-
-                {/* Right Controls: Model Picker & Action Button */}
-                <div className="flex items-center gap-2">
-                  <select
-                    value={selectedAiModel}
-                    onChange={(e) => setSelectedAiModel(e.target.value)}
-                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 text-[11px] font-semibold rounded-full px-2.5 py-1 border-none outline-none cursor-pointer"
-                  >
-                    {AI_MODEL_ENGINES.map(m => (
-                      <option key={m.id} value={m.id}>
-                        {m.name} ({m.creditCost} Cred)
-                      </option>
-                    ))}
-                  </select>
-
-                  <button
-                    type="submit"
-                    disabled={isGenerating}
-                    className="w-8 h-8 rounded-full bg-black hover:bg-gray-800 text-[#CCFF00] flex items-center justify-center transition cursor-pointer shadow-2xs disabled:opacity-50"
-                    title={currentWorkflowStep === 4 ? 'Render AI Design' : 'Next Step'}
-                  >
-                    {isGenerating ? <RefreshCw size={14} className="animate-spin" /> : <ChevronRight size={16} />}
-                  </button>
-                </div>
-
-              </div>
-            </form>
-          </div>
 
         </main>
 
