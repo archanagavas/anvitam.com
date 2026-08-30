@@ -1056,71 +1056,75 @@ export default function AIHomeDesign() {
                   <img src={generatedImage} alt="After" className="absolute inset-0 w-full h-full object-cover" />
 
                   {/* Interactive Visual Hotspot Pins Overlay */}
-                  {(pins.length > 0 ? pins : DEFAULT_HOTSPOT_PINS).map((pin: any, idx: number) => {
-                    const matchingProduct = catalog.find(p => p.element_type === pin.element_type) || catalog[idx % catalog.length];
-                    const pinId = pin.id || `pin_${idx}`;
-                    const isSelected = activePin?.id === pinId;
+                  {(() => {
+                    const isInteriorModule = ['interior', 'virtual-staging', 'replace-furniture'].includes(selectedModule);
+                    const activeHotspotPins = pins.length > 0 ? pins : (isInteriorModule ? DEFAULT_HOTSPOT_PINS : []);
+                    return activeHotspotPins.map((pin: any, idx: number) => {
+                      const matchingProduct = catalog.find(p => p.element_type === pin.element_type) || catalog[idx % catalog.length];
+                      const pinId = pin.id || `pin_${idx}`;
+                      const isSelected = activePin?.id === pinId;
 
-                    return (
-                      <div
-                        key={pinId}
-                        className="absolute z-20 transition-all duration-300 pointer-events-auto"
-                        style={{ left: `${pin.x_percent}%`, top: `${pin.y_percent}%` }}
-                      >
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setActivePin(isSelected ? null : { ...pin, id: pinId, product: matchingProduct });
-                          }}
-                          className="relative group cursor-pointer focus:outline-none"
-                          title={`Click to view ${pin.label}`}
+                      return (
+                        <div
+                          key={pinId}
+                          className="absolute z-20 transition-all duration-300 pointer-events-auto"
+                          style={{ left: `${pin.x_percent}%`, top: `${pin.y_percent}%` }}
                         >
-                          <span className="absolute -inset-2 rounded-full bg-[#CCFF00]/40 animate-ping" />
-                          <div className="relative w-8 h-8 rounded-full bg-black/90 text-[#CCFF00] border-2 border-[#CCFF00] flex items-center justify-center shadow-lg hover:scale-110 transition">
-                            <ShoppingBag size={14} />
-                          </div>
-                        </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActivePin(isSelected ? null : { ...pin, id: pinId, product: matchingProduct });
+                            }}
+                            className="relative group cursor-pointer focus:outline-none"
+                            title={`Click to view ${pin.label}`}
+                          >
+                            <span className="absolute -inset-2 rounded-full bg-[#CCFF00]/40 animate-ping" />
+                            <div className="relative w-8 h-8 rounded-full bg-black/90 text-[#CCFF00] border-2 border-[#CCFF00] flex items-center justify-center shadow-lg hover:scale-110 transition">
+                              <ShoppingBag size={14} />
+                            </div>
+                          </button>
 
-                        {isSelected && matchingProduct && (
-                          <div className="absolute left-10 -top-12 z-30 w-64 bg-black/95 text-white backdrop-blur-md rounded-2xl p-3 shadow-2xl border border-[#CCFF00]/40 animate-in fade-in slide-in-from-left-2">
-                            <div className="flex gap-3">
-                              <img src={matchingProduct.image_url} alt={matchingProduct.name} className="w-14 h-14 rounded-xl object-cover shrink-0 border border-white/10" />
-                              <div className="flex-1 min-w-0">
-                                <span className="text-[9px] uppercase font-bold text-[#CCFF00] tracking-wider block">{pin.label || matchingProduct.element_type}</span>
-                                <h5 className="text-xs font-bold text-white truncate leading-tight">{matchingProduct.name}</h5>
-                                <p className="text-xs font-extrabold text-amber-400 mt-0.5">{matchingProduct.price}</p>
+                          {isSelected && matchingProduct && (
+                            <div className="absolute left-10 -top-12 z-30 w-64 bg-black/95 text-white backdrop-blur-md rounded-2xl p-3 shadow-2xl border border-[#CCFF00]/40 animate-in fade-in slide-in-from-left-2">
+                              <div className="flex gap-3">
+                                <img src={matchingProduct.image_url} alt={matchingProduct.name} className="w-14 h-14 rounded-xl object-cover shrink-0 border border-white/10" />
+                                <div className="flex-1 min-w-0">
+                                  <span className="text-[9px] uppercase font-bold text-[#CCFF00] tracking-wider block">{pin.label || matchingProduct.element_type}</span>
+                                  <h5 className="text-xs font-bold text-white truncate leading-tight">{matchingProduct.name}</h5>
+                                  <p className="text-xs font-extrabold text-amber-400 mt-0.5">{matchingProduct.price}</p>
+                                </div>
+                              </div>
+                              <div className="mt-3 flex items-center gap-2">
+                                <a
+                                  href={`/api/ai-design?action=go&id=${matchingProduct.id}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex-1 bg-[#CCFF00] hover:bg-white text-black font-bold text-[11px] py-1.5 rounded-lg text-center transition flex items-center justify-center gap-1 shadow-xs"
+                                >
+                                  <span>Buy Item</span>
+                                  <ExternalLink size={11} />
+                                </a>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActivePin(null);
+                                    setSelectedCategoryFilter(matchingProduct.category_id || 'all');
+                                    const el = document.getElementById(`product-${matchingProduct.id}`);
+                                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                  }}
+                                  className="bg-white/10 hover:bg-white/20 text-white text-[10px] font-medium px-2.5 py-1.5 rounded-lg transition whitespace-nowrap cursor-pointer"
+                                >
+                                  View Grid ↓
+                                </button>
                               </div>
                             </div>
-                            <div className="mt-3 flex items-center gap-2">
-                              <a
-                                href={`/api/ai-design?action=go&id=${matchingProduct.id}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex-1 bg-[#CCFF00] hover:bg-white text-black font-bold text-[11px] py-1.5 rounded-lg text-center transition flex items-center justify-center gap-1 shadow-xs"
-                              >
-                                <span>Buy Item</span>
-                                <ExternalLink size={11} />
-                              </a>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setActivePin(null);
-                                  setSelectedCategoryFilter(matchingProduct.category_id || 'all');
-                                  const el = document.getElementById(`product-${matchingProduct.id}`);
-                                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                                }}
-                                className="bg-white/10 hover:bg-white/20 text-white text-[10px] font-medium px-2.5 py-1.5 rounded-lg transition whitespace-nowrap cursor-pointer"
-                              >
-                                View Grid ↓
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                          )}
+                        </div>
+                      );
+                    });
+                  })()}
 
                   {sourceImage && (
                     <div
@@ -1152,13 +1156,15 @@ export default function AIHomeDesign() {
 
                 {/* Export Action Footer */}
                 <div className="flex items-center justify-end gap-3 pt-2">
-                  {/* 3D Walkthrough Button */}
-                  <button
-                    onClick={() => setShow3DViewer(true)}
-                    className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold text-xs px-5 py-2.5 rounded-2xl transition flex items-center gap-1.5 shadow-md cursor-pointer"
-                  >
-                    🏠 3D Walkthrough
-                  </button>
+                  {/* 3D Walkthrough Button - ONLY FOR INTERIOR MODULES */}
+                  {['interior', 'virtual-staging', 'replace-furniture'].includes(selectedModule) && (
+                    <button
+                      onClick={() => setShow3DViewer(true)}
+                      className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold text-xs px-5 py-2.5 rounded-2xl transition flex items-center gap-1.5 shadow-md cursor-pointer"
+                    >
+                      🏠 3D Room Walkthrough
+                    </button>
+                  )}
                   <a
                     href={generatedImage}
                     download="anvitam-ai-design.jpg"

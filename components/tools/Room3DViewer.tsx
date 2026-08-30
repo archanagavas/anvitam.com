@@ -1,15 +1,14 @@
 /**
  * components/tools/Room3DViewer.tsx
  *
- * 🆓 ZERO-COST 3D Room Walkthrough & Video Flythrough — Anvitam Studio
+ * 🆓 4-SIDED INTERIOR 3D ROOM WALKTHROUGH — Anvitam Studio
  *
  * Architecture:
- *  - Fetches depth map once from /api/hf-depth (HuggingFace, $0.00)
- *  - All 3D rendering is browser-side Three.js WebGL — zero server compute
- *  - OrbitControls: user can rotate, pan, zoom, "walk" through the room
- *  - MediaRecorder API: records WebGL canvas → downloads .webm video flythrough
- *
- * No npm packages added — Three.js loaded dynamically from CDN only when component mounts.
+ *  - Encloses generated interior render inside a 4-sided 3D Room Enclosure (Back Wall, Left Wall, Right Wall, Ceiling, Hardwood Floor).
+ *  - AI Depth map displacement for 3D depth.
+ *  - WASD & Arrow Key Walkthrough + OrbitControls (rotate, pan, zoom).
+ *  - On-screen touch/click Directional Navigation Pad (Forward, Backward, Left, Right).
+ *  - MediaRecorder API: records WebGL canvas → downloads .webm video flythrough.
  */
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
@@ -17,7 +16,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 interface Room3DViewerProps {
-  imageUrl: string;          // Generated render (base64 or Cloudinary URL)
+  imageUrl: string;
   onClose: () => void;
 }
 
@@ -34,6 +33,29 @@ const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
   const [error, setError] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [depthLoaded, setDepthLoaded] = useState(false);
+
+  // ── Helper to create procedural wood floor canvas ──────────────────────────
+  const createWoodTexture = (): THREE.CanvasTexture => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.fillStyle = '#2d1b0e';
+      ctx.fillRect(0, 0, 512, 512);
+      ctx.fillStyle = '#3a2414';
+      for (let i = 0; i < 512; i += 64) {
+        ctx.fillRect(0, i, 512, 60);
+        ctx.fillStyle = 'rgba(0,0,0,0.15)';
+        ctx.fillRect(0, i + 60, 512, 4);
+      }
+    }
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(2, 2);
+    return texture;
+  };
 
   // ── Fetch depth map from HF API ───────────────────────────────────────────
   const fetchDepthMap = useCallback(async (): Promise<string | null> => {
@@ -52,7 +74,50 @@ const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
     }
   }, [imageUrl]);
 
-  // ── Initialize Three.js 3D scene ──────────────────────────────────────────
+  // ── Directional Walkthrough Controls ─────────────────────────────────────
+  const moveCamera = useCallback((direction: 'forward' | 'backward' | 'left' | 'right') => {
+    const camera = cameraRef.current;
+    const controls = controlsRef.current;
+    if (!camera || !controls) return;
+
+    const step = 0.4;
+    const forwardVec = new THREE.Vector3();
+    camera.getWorldDirection(forwardVec);
+    forwardVec.y = 0; // keep horizontal
+    forwardVec.normalize();
+
+    const sideVec = new THREE.Vector3();
+    sideVec.crossVectors(camera.up, forwardVec).normalize();
+
+    if (direction === 'forward') {
+      camera.position.addScaledVector(forwardVec, step);
+      controls.target.addScaledVector(forwardVec, step);
+    } else if (direction === 'backward') {
+      camera.position.addScaledVector(forwardVec, -step);
+      controls.target.addScaledVector(forwardVec, -step);
+    } else if (direction === 'left') {
+      camera.position.addScaledVector(sideVec, step);
+      controls.target.addScaledVector(sideVec, step);
+    } else if (direction === 'right') {
+      camera.position.addScaledVector(sideVec, -step);
+      controls.target.addScaledVector(sideVec, -step);
+    }
+    controls.update();
+  }, []);
+
+  // ── Keyboard Listener (WASD + Arrows) ─────────────────────────────────────
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (['w', 'W', 'ArrowUp'].includes(e.key)) moveCamera('forward');
+      if (['s', 'S', 'ArrowDown'].includes(e.key)) moveCamera('backward');
+      if (['a', 'A', 'ArrowLeft'].includes(e.key)) moveCamera('left');
+      if (['d', 'D', 'ArrowRight'].includes(e.key)) moveCamera('right');
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [moveCamera]);
+
+  // ── Initialize Three.js 3D Room Scene ─────────────────────────────────────
   useEffect(() => {
     let isMounted = true;
 
@@ -70,11 +135,11 @@ const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
         const H = container.clientHeight || window.innerHeight;
 
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0a0a0f);
+        scene.background = new THREE.Color(0x111116);
         sceneRef.current = scene;
 
-        const camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 100);
-        camera.position.set(0, 0, 2.5);
+        const camera = new THREE.PerspectiveCamera(65, W / H, 0.1, 100);
+        camera.position.set(0, 0, 1.8);
         cameraRef.current = camera;
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
@@ -87,25 +152,21 @@ const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.08;
-        controls.minDistance = 0.5;
-        controls.maxDistance = 8;
+        controls.minDistance = 0.2;
+        controls.maxDistance = 4.5;
+        controls.target.set(0, 0, -2);
         controls.maxPolarAngle = Math.PI * 0.85;
         controlsRef.current = controls;
 
         // ── Lighting ───────────────────────────────────────────────────────
-        const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+        const ambient = new THREE.AmbientLight(0xffffff, 0.7);
         scene.add(ambient);
-        const dirLight = new THREE.DirectionalLight(0xfff5e0, 1.2);
-        dirLight.position.set(2, 3, 2);
-        scene.add(dirLight);
+        const warmPoint = new THREE.PointLight(0xffeedd, 1.2, 10);
+        warmPoint.position.set(0, 1.5, 0);
+        scene.add(warmPoint);
 
-        // ── Room Plane Geometry ────────────────────────────────────────────
-        const segments = depthMapB64 ? 256 : 64; // Higher segments when depth is available
-        const geometry = new THREE.PlaneGeometry(4, 3, segments, segments);
-
-        // Load textures
+        // ── Texture Loader ─────────────────────────────────────────────────
         const textureLoader = new THREE.TextureLoader();
-
         const loadTex = (src: string): Promise<any> =>
           new Promise((res) => textureLoader.load(src, res, undefined, () => res(null)));
 
@@ -120,19 +181,59 @@ const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
           colorTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
         }
 
-        const material = new THREE.MeshStandardMaterial({
+        // ── 4-SIDED 3D ROOM ENCLOSURE ──────────────────────────────────────
+        const roomGroup = new THREE.Group();
+
+        // 1. Back Main Wall (Main Render Image with Depth Displacement)
+        const segments = depthTex ? 256 : 64;
+        const backWallGeo = new THREE.PlaneGeometry(6, 4, segments, segments);
+        const backWallMat = new THREE.MeshStandardMaterial({
           map: colorTex,
           displacementMap: depthTex,
-          displacementScale: depthTex ? 0.7 : 0,
-          displacementBias: depthTex ? -0.35 : 0,
-          side: THREE.FrontSide,
+          displacementScale: depthTex ? 0.6 : 0,
+          displacementBias: depthTex ? -0.3 : 0,
+          roughness: 0.4,
         });
+        const backWall = new THREE.Mesh(backWallGeo, backWallMat);
+        backWall.position.set(0, 0, -3);
+        roomGroup.add(backWall);
 
-        const plane = new THREE.Mesh(geometry, material);
-        scene.add(plane);
+        // 2. Floor (Hardwood Texture)
+        const floorGeo = new THREE.PlaneGeometry(6, 6);
+        const woodTex = createWoodTexture();
+        const floorMat = new THREE.MeshStandardMaterial({ map: woodTex, roughness: 0.5 });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.set(0, -2, 0);
+        roomGroup.add(floor);
+
+        // 3. Ceiling (Soft White)
+        const ceilingGeo = new THREE.PlaneGeometry(6, 6);
+        const ceilingMat = new THREE.MeshStandardMaterial({ color: 0xf5f5f7, roughness: 0.9 });
+        const ceiling = new THREE.Mesh(ceilingGeo, ceilingMat);
+        ceiling.rotation.x = Math.PI / 2;
+        ceiling.position.set(0, 2, 0);
+        roomGroup.add(ceiling);
+
+        // 4. Left Interior Wall
+        const sideWallGeo = new THREE.PlaneGeometry(6, 4);
+        const leftWallMat = new THREE.MeshStandardMaterial({ color: 0x22222a, roughness: 0.8 });
+        const leftWall = new THREE.Mesh(sideWallGeo, leftWallMat);
+        leftWall.rotation.y = Math.PI / 2;
+        leftWall.position.set(-3, 0, 0);
+        roomGroup.add(leftWall);
+
+        // 5. Right Interior Wall
+        const rightWallMat = new THREE.MeshStandardMaterial({ color: 0x22222a, roughness: 0.8 });
+        const rightWall = new THREE.Mesh(sideWallGeo, rightWallMat);
+        rightWall.rotation.y = -Math.PI / 2;
+        rightWall.position.set(3, 0, 0);
+        roomGroup.add(rightWall);
+
+        scene.add(roomGroup);
         setDepthLoaded(!!depthTex);
 
-        // ── Animate ────────────────────────────────────────────────────────
+        // ── Render Loop ────────────────────────────────────────────────────
         const animate = () => {
           animFrameRef.current = requestAnimationFrame(animate);
           if (controlsRef.current) controlsRef.current.update();
@@ -158,7 +259,7 @@ const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
         };
       } catch (err: any) {
         if (isMounted) {
-          setError(err.message || 'Failed to initialize 3D viewer');
+          setError(err.message || 'Failed to initialize 3D room walkthrough');
           setStatus('error');
         }
       }
@@ -178,7 +279,7 @@ const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
     };
   }, [imageUrl, fetchDepthMap]);
 
-  // ── Video Recording (MediaRecorder API — browser-side only) ───────────────
+  // ── Video Recording ────────────────────────────────────────────────────────
   const startVideoFlythrough = useCallback(() => {
     const renderer = rendererRef.current;
     const camera = cameraRef.current;
@@ -212,10 +313,8 @@ const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
       mediaRecorderRef.current = recorder;
       setIsRecording(true);
 
-      // Auto-animate camera on a cinematic arc for 8 seconds
       if (controls) controls.enabled = false;
       const startTime = Date.now();
-      const startPos = { x: 0, y: 0, z: 2.5 };
       const flythroughDuration = 8000;
 
       const cinematicAnimate = () => {
@@ -223,16 +322,15 @@ const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
         const t = elapsed / flythroughDuration;
 
         if (t < 1) {
-          // Cinematic arc: pan left to right + slight dolly in
-          camera.position.x = Math.sin(t * Math.PI * 1.2) * 1.8;
-          camera.position.y = Math.sin(t * Math.PI * 0.6) * 0.4;
-          camera.position.z = startPos.z - t * 0.8;
-          camera.lookAt(0, 0, 0);
+          camera.position.x = Math.sin(t * Math.PI * 1.2) * 1.2;
+          camera.position.y = Math.sin(t * Math.PI * 0.6) * 0.3;
+          camera.position.z = 1.8 - t * 1.2;
+          camera.lookAt(0, 0, -3);
           requestAnimationFrame(cinematicAnimate);
         } else {
-          // Done — stop recording
           if (controls) controls.enabled = true;
-          camera.position.set(startPos.x, startPos.y, startPos.z);
+          camera.position.set(0, 0, 1.8);
+          controls.target.set(0, 0, -2);
           recorder.stop();
         }
       };
@@ -243,7 +341,6 @@ const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
     }
   }, []);
 
-  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div
       style={{
@@ -271,12 +368,12 @@ const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
           <span style={{ fontSize: 20 }}>🏠</span>
           <div>
             <div style={{ color: '#fff', fontWeight: 700, fontSize: 15, fontFamily: 'Inter, sans-serif' }}>
-              3D Room Walkthrough
+              3D Interior Room Walkthrough
             </div>
             <div style={{ color: '#888', fontSize: 12, marginTop: 1 }}>
-              {status === 'loading' && 'Loading Three.js…'}
-              {status === 'generating-depth' && '⚡ Generating depth map (free HuggingFace AI)…'}
-              {status === 'ready' && (depthLoaded ? '✅ Full 3D depth active · Drag to explore' : '⚡ 2.5D mode · Depth loading…')}
+              {status === 'loading' && 'Loading 3D Engine…'}
+              {status === 'generating-depth' && '⚡ Generating 3D Depth Mesh…'}
+              {status === 'ready' && (depthLoaded ? '✅ 4-Sided 3D Interior Mesh Active · Use WASD or On-Screen Pad' : '⚡ 3D Room Box Ready · Depth loading…')}
               {status === 'error' && `❌ ${error}`}
             </div>
           </div>
@@ -369,10 +466,7 @@ const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
               }}
             />
             <div style={{ color: '#c4b5fd', fontSize: 14, textAlign: 'center', fontFamily: 'Inter, sans-serif' }}>
-              {status === 'loading' ? 'Initializing 3D Engine…' : 'AI Depth Analysis (HuggingFace · Free)…'}
-            </div>
-            <div style={{ color: '#6b7280', fontSize: 12 }}>
-              Cost: $0.00 · Powered by Depth-Anything-V2
+              Building 4-Sided 3D Interior Room Mesh…
             </div>
           </div>
         )}
@@ -407,6 +501,99 @@ const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
             </button>
           </div>
         )}
+
+        {/* 🎮 Interactive Directional Walkthrough Touch & Button Controls */}
+        {status === 'ready' && (
+          <div style={{
+            position: 'absolute',
+            bottom: 30,
+            right: 30,
+            zIndex: 20,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 6,
+            background: 'rgba(0,0,0,0.85)',
+            padding: '12px',
+            borderRadius: '20px',
+            border: '1px solid rgba(204,255,0,0.3)',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+          }}>
+            <span style={{ color: '#CCFF00', fontSize: 10, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Walk Controls
+            </span>
+            <button
+              onClick={() => moveCamera('forward')}
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 10,
+                background: '#CCFF00',
+                color: '#000',
+                fontWeight: 'bold',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 16,
+              }}
+              title="Walk Forward (W / Up Arrow)"
+            >
+              ▲
+            </button>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button
+                onClick={() => moveCamera('left')}
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 10,
+                  background: '#222',
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  border: '1px solid #444',
+                  cursor: 'pointer',
+                  fontSize: 16,
+                }}
+                title="Pan Left (A / Left Arrow)"
+              >
+                ◀
+              </button>
+              <button
+                onClick={() => moveCamera('backward')}
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 10,
+                  background: '#222',
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  border: '1px solid #444',
+                  cursor: 'pointer',
+                  fontSize: 16,
+                }}
+                title="Walk Backward (S / Down Arrow)"
+              >
+                ▼
+              </button>
+              <button
+                onClick={() => moveCamera('right')}
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 10,
+                  background: '#222',
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  border: '1px solid #444',
+                  cursor: 'pointer',
+                  fontSize: 16,
+                }}
+                title="Pan Right (D / Right Arrow)"
+              >
+                ▶
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 3D Navigation Control Overlay Badge */}
@@ -415,12 +602,12 @@ const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
           position: 'absolute',
           top: 70,
           left: 20,
-          background: 'rgba(0,0,0,0.75)',
+          background: 'rgba(0,0,0,0.85)',
           backdropFilter: 'blur(8px)',
           border: '1px solid rgba(204,255,0,0.3)',
           color: '#fff',
-          padding: '8px 14px',
-          borderRadius: '12px',
+          padding: '10px 16px',
+          borderRadius: '14px',
           fontSize: '12px',
           fontFamily: 'Inter, sans-serif',
           zIndex: 10,
@@ -429,35 +616,10 @@ const Room3DViewer: React.FC<Room3DViewerProps> = ({ imageUrl, onClose }) => {
           alignItems: 'center',
           gap: '12px'
         }}>
-          <span style={{ color: '#CCFF00', fontWeight: 'bold' }}>🎮 3D Mouse Controls:</span>
-          <span>🖱️ Left Drag: Rotate</span>
+          <span style={{ color: '#CCFF00', fontWeight: 'bold' }}>🎮 Keyboard &amp; Touch Controls:</span>
+          <span>Press <b>W/A/S/D</b> or <b>Arrow Keys</b> to walk</span>
           <span>•</span>
-          <span>🔍 Scroll: Zoom</span>
-          <span>•</span>
-          <span>✋ Right Drag: Pan</span>
-        </div>
-      )}
-
-      {/* Footer hint */}
-      {status === 'ready' && (
-        <div
-          style={{
-            padding: '10px 20px',
-            background: 'rgba(255,255,255,0.03)',
-            borderTop: '1px solid rgba(255,255,255,0.08)',
-            display: 'flex',
-            gap: 24,
-            color: '#888',
-            fontSize: 12,
-            fontFamily: 'Inter, sans-serif',
-          }}
-        >
-          <span>🖱️ Left-Click Drag to Rotate View</span>
-          <span>🔍 Mouse Scroll to Zoom In/Out</span>
-          <span>✋ Right-Click Drag to Pan Camera</span>
-          <span style={{ marginLeft: 'auto', color: '#CCFF00', fontWeight: 'bold' }}>
-            {depthLoaded ? '⚡ Depth-Anything-V2 Mesh Lock · Live WebGL' : '⏳ Generating 3D Depth Mesh…'}
-          </span>
+          <span>Drag mouse to look around</span>
         </div>
       )}
 
