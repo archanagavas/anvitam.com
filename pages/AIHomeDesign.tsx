@@ -249,6 +249,15 @@ export default function AIHomeDesign() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
 
+  // Specialized Tool Brief States
+  const [sketchRenderType, setSketchRenderType] = useState<'3d-floorplan' | 'exterior-elevation' | 'interior-walkthrough'>('3d-floorplan');
+  const [sketchDetailLevel, setSketchDetailLevel] = useState<'conceptual' | 'photorealistic' | 'high-detail'>('photorealistic');
+  const [stagingTheme, setStagingTheme] = useState<'luxury-minimalist' | 'executive-suite' | 'scandi-warmth' | 'family-cozy'>('luxury-minimalist');
+  const [stagingDemographic, setStagingDemographic] = useState<'luxury' | 'first-time' | 'airbnb'>('luxury');
+  const [itemToSwap, setItemToSwap] = useState<string>('Sofa / Couch');
+  const [swapPrompt, setSwapPrompt] = useState<string>('');
+  const [removalMode, setRemovalMode] = useState<'complete-declutter' | 'loose-objects' | 'fixed-walls'>('complete-declutter');
+
   useEffect(() => {
     setUser(getOrCreateDefaultToolUser());
     const handleUserUpdate = (e: Event) => {
@@ -267,7 +276,33 @@ export default function AIHomeDesign() {
   const handleSelectModule = (modId: string) => {
     setSelectedModule(modId);
     setSearchParams({ module: modId });
-    setCurrentWorkflowStep(2); // Advance to Step 2: Style Selection
+
+    if (modId === 'site-intelligence') {
+      setChatMessages((prev) => [
+        ...prev,
+        { id: `ast-${Date.now()}`, sender: 'assistant', text: '🌐 Launching Site Intelligence 3D Canvas with sun path & wind vector reports...' }
+      ]);
+      navigate('/site-analysis');
+      return;
+    }
+
+    let helperMsg = "";
+    if (['interior', 'exterior', 'garden'].includes(modId)) {
+      setCurrentWorkflowStep(2); // Step 2: Architectural Style Selection
+      helperMsg = `Selected ${modId.toUpperCase()} AI. Choose your preferred architectural aesthetic below (Step 2) or type instructions!`;
+    } else {
+      setCurrentWorkflowStep(3); // Skip Step 2 -> Go straight to Step 3 Photo/Sketch Brief
+      if (modId === 'sketch2image') helperMsg = `Selected Sketch2Image™. Upload your floorplan sketch or CAD blueprint in Step 3!`;
+      else if (modId === 'virtual-staging') helperMsg = `Selected Virtual Staging AI. Upload an empty room photo below to stage with photorealistic furniture!`;
+      else if (modId === 'replace-furniture') helperMsg = `Selected Replace & Add Furniture. Upload a photo below and select the item you want to swap or add!`;
+      else if (modId === 'furniture-removal') helperMsg = `Selected Furniture Removal AI. Upload a photo below for 1-click object decluttering!`;
+      else helperMsg = `Selected ${modId} tool. Set your brief details below!`;
+    }
+
+    setChatMessages((prev) => [
+      ...prev,
+      { id: `ast-${Date.now()}`, sender: 'assistant', text: helperMsg }
+    ]);
   };
 
   const handleImageUpload = (file: File) => {
@@ -278,8 +313,24 @@ export default function AIHomeDesign() {
     setErrorMsg(null);
     const reader = new FileReader();
     reader.onload = (e) => {
-      setSourceImage(e.target?.result as string);
-      setCurrentWorkflowStep(2); // Advance to Step 2: Style Selection
+      const imgDataUrl = e.target?.result as string;
+      setSourceImage(imgDataUrl);
+
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          id: `ast-${Date.now()}`,
+          sender: 'assistant',
+          text: `📷 Photo uploaded: "${file.name}". Set your brief details or click 'Next: Select AI Engine' to render!`
+        }
+      ]);
+
+      if (['interior', 'exterior', 'garden'].includes(selectedModule)) {
+        if (currentWorkflowStep === 1) setCurrentWorkflowStep(2);
+        else if (currentWorkflowStep === 2) setCurrentWorkflowStep(3);
+      } else {
+        if (currentWorkflowStep < 3) setCurrentWorkflowStep(3);
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -593,6 +644,17 @@ export default function AIHomeDesign() {
         {/* ── MAIN CLAUDE CHAT CANVAS WORKSPACE ── */}
         <main className="flex-1 flex flex-col bg-white overflow-y-auto relative min-h-[calc(100vh-80px)] p-4 sm:p-8">
 
+          {/* Global Hidden File Input (Always mounted so + button works from anywhere!) */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept="image/*"
+            onChange={(e) => {
+              if (e.target.files?.[0]) handleImageUpload(e.target.files[0]);
+            }}
+            className="hidden"
+          />
+
           {/* Top Canvas Bar with Sidebar Toggle & Studio Controls */}
           <div className="flex items-center justify-between gap-4 pb-4 border-b border-gray-100">
             <div className="flex items-center gap-3">
@@ -792,14 +854,14 @@ export default function AIHomeDesign() {
                         imageAfter: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=300&auto=format&fit=crop'
                       },
                       {
-                        id: 'replace',
+                        id: 'replace-furniture',
                         title: 'Replace & Add Furniture',
-                        desc: 'Swap furniture with AI',
+                        desc: 'Swap furniture with AI inpainting',
                         imageBefore: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=300&auto=format&fit=crop',
                         imageAfter: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=300&auto=format&fit=crop'
                       },
                       {
-                        id: 'remove',
+                        id: 'furniture-removal',
                         title: 'Furniture Removal',
                         desc: 'Remove objects in 1-click',
                         imageBefore: 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?q=80&w=300&auto=format&fit=crop',
@@ -897,45 +959,51 @@ export default function AIHomeDesign() {
               )}
 
               {/* ── STEP 3: IMAGE UPLOAD & ROOM BRIEF ── */}
+              {/* ── STEP 3: TAILORED UPLOAD & BRIEF FOR ALL 8 TOOLS ── */}
               {currentWorkflowStep === 3 && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 bg-white rounded-3xl p-6 border border-gray-200/90 shadow-2xs">
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="text-base sm:text-lg font-semibold text-gray-900 tracking-tight">
-                        Upload Room Photo &amp; Set Brief
+                        {selectedModule === 'sketch2image' && 'Upload Blueprint Sketch & CAD Brief'}
+                        {selectedModule === 'virtual-staging' && 'Upload Empty Room & Select Staging Theme'}
+                        {selectedModule === 'replace-furniture' && 'Upload Room Photo & Specify Item to Swap'}
+                        {selectedModule === 'furniture-removal' && 'Upload Photo for 1-Click Furniture Removal'}
+                        {selectedModule === 'exterior' && 'Upload Building / Facade Photo'}
+                        {selectedModule === 'garden' && 'Upload Yard & Outdoor Photo'}
+                        {(!['sketch2image', 'virtual-staging', 'replace-furniture', 'furniture-removal', 'exterior', 'garden'].includes(selectedModule)) && 'Upload Room Photo & Set Brief'}
                       </h2>
-                      <p className="text-xs text-gray-500">Add your space photo and specify room type, budget &amp; region.</p>
+                      <p className="text-xs text-gray-500">
+                        {selectedModule === 'sketch2image' && 'Convert raw hand sketches or CAD floorplans into photorealistic 3D renders.'}
+                        {selectedModule === 'virtual-staging' && 'Furnish empty real estate listings with high-end photorealistic furniture packages.'}
+                        {selectedModule === 'replace-furniture' && 'Target specific furniture pieces for AI swap or additions.'}
+                        {selectedModule === 'furniture-removal' && 'Declutter rooms and clear furniture objects in 1-click.'}
+                        {(!['sketch2image', 'virtual-staging', 'replace-furniture', 'furniture-removal'].includes(selectedModule)) && 'Add your photo and specify room type, budget & target region.'}
+                      </p>
                     </div>
                     <button
                       type="button"
                       onClick={() => setCurrentWorkflowStep(4)}
-                      className="px-4 py-2 rounded-xl bg-[#111111] text-[#CCFF00] font-semibold text-xs hover:bg-black transition cursor-pointer"
+                      className="px-4 py-2 rounded-xl bg-[#111111] text-[#CCFF00] font-semibold text-xs hover:bg-black transition cursor-pointer shrink-0"
                     >
                       Next: Select AI Engine →
                     </button>
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Photo Uploader & Sample Selector */}
+                    {/* Photo Uploader */}
                     <div className="space-y-4">
-                      <label className="text-xs font-semibold text-gray-900 block">Room / Site Photo</label>
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        accept="image/*"
-                        onChange={(e) => {
-                          if (e.target.files?.[0]) handleImageUpload(e.target.files[0]);
-                        }}
-                        className="hidden"
-                      />
+                      <label className="text-xs font-semibold text-gray-900 block">
+                        {selectedModule === 'sketch2image' ? 'Blueprint / CAD Sketch Image' : 'Room / Site Photo'}
+                      </label>
 
                       {sourceImage ? (
-                        <div className="relative rounded-2xl overflow-hidden border border-gray-300 h-48 group">
-                          <img src={sourceImage} alt="Uploaded Room" className="w-full h-full object-cover" />
+                        <div className="relative rounded-2xl overflow-hidden border border-gray-300 h-52 group">
+                          <img src={sourceImage} alt="Uploaded Spatial Brief" className="w-full h-full object-cover" />
                           <button
                             type="button"
                             onClick={() => setSourceImage(null)}
-                            className="absolute top-3 right-3 p-1.5 rounded-full bg-black/80 text-white hover:bg-red-600 transition"
+                            className="absolute top-3 right-3 p-1.5 rounded-full bg-black/80 text-white hover:bg-red-600 transition cursor-pointer"
                           >
                             <X size={14} />
                           </button>
@@ -946,66 +1014,235 @@ export default function AIHomeDesign() {
                           className="border-2 border-dashed border-gray-300 hover:border-black bg-gray-50 p-6 rounded-2xl text-center cursor-pointer transition space-y-2"
                         >
                           <Upload size={24} className="mx-auto text-gray-400" />
-                          <p className="text-xs font-semibold text-gray-800">Click to upload your room photo</p>
+                          <p className="text-xs font-semibold text-gray-800">
+                            {selectedModule === 'sketch2image' ? 'Click to upload your CAD blueprint or floorplan sketch' : 'Click to upload your space photo'}
+                          </p>
                           <p className="text-[10px] text-gray-400">JPG, PNG, WEBP up to 10MB</p>
                         </div>
                       )}
+                    </div>
 
-                     </div>
+                    {/* Specialized Brief Options per Tool */}
+                    <div className="space-y-5">
+                      
+                      {/* TOOL 1: SKETCH2IMAGE BRIEF */}
+                      {selectedModule === 'sketch2image' && (
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-gray-900 block">Render Output Format</label>
+                            <div className="grid grid-cols-3 gap-2">
+                              {[
+                                { id: '3d-floorplan', label: '3D Floorplan' },
+                                { id: 'exterior-elevation', label: 'Facade Elevation' },
+                                { id: 'interior-walkthrough', label: 'Interior Walkthrough' }
+                              ].map(opt => (
+                                <button
+                                  key={opt.id}
+                                  type="button"
+                                  onClick={() => setSketchRenderType(opt.id as any)}
+                                  className={`p-2 rounded-xl text-[11px] font-semibold transition border ${
+                                    sketchRenderType === opt.id
+                                      ? 'bg-black text-[#CCFF00] border-black'
+                                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border-gray-200'
+                                  }`}
+                                >
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
 
-                     {/* Brief Details: Room Type, Region & Budget */}
-                     <div className="space-y-5">
-                       <div className="space-y-2">
-                         <label className="text-xs font-semibold text-gray-900 block">Room or Area Type</label>
-                         <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto pr-1">
-                           {[
-                             'Living Room', 'Bedroom', 'Dining Room', 'Kitchen', 'Master Suite',
-                             'Home Office', 'Bathroom', 'Balcony & Patio', 'Backyard Garden', 'Kids Room',
-                             'Exterior Facade', 'Rooftop Terrace', 'Pool Deck & Lounge', 'Commercial Cafe', 'Retail Store'
-                           ].map(r => (
-                             <button
-                               key={r}
-                               type="button"
-                               onClick={() => setRoomType(r)}
-                               className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
-                                 roomType === r
-                                   ? 'bg-[#111111] text-[#CCFF00] shadow-2xs ring-1 ring-black'
-                                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200/60'
-                               }`}
-                             >
-                               {r}
-                             </button>
-                           ))}
-                         </div>
-                       </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label className="text-xs font-semibold text-gray-900 block">Target Region</label>
-                          <select
-                            value={region}
-                            onChange={(e) => setRegion(e.target.value as any)}
-                            className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
-                          >
-                            <option value="India">🇮🇳 India (INR ₹)</option>
-                            <option value="USA">🇺🇸 USA (USD $)</option>
-                            <option value="Brazil">🇧🇷 Brazil (BRL R$)</option>
-                          </select>
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-gray-900 block">CAD Detail Level</label>
+                            <div className="grid grid-cols-3 gap-2">
+                              {[
+                                { id: 'conceptual', label: 'Conceptual Mass' },
+                                { id: 'photorealistic', label: 'Photorealistic Material' },
+                                { id: 'high-detail', label: 'Raytraced Lighting' }
+                              ].map(opt => (
+                                <button
+                                  key={opt.id}
+                                  type="button"
+                                  onClick={() => setSketchDetailLevel(opt.id as any)}
+                                  className={`p-2 rounded-xl text-[11px] font-semibold transition border ${
+                                    sketchDetailLevel === opt.id
+                                      ? 'bg-black text-[#CCFF00] border-black'
+                                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border-gray-200'
+                                  }`}
+                                >
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
                         </div>
+                      )}
 
-                        <div className="space-y-2">
-                          <label className="text-xs font-semibold text-gray-900 block">Budget Level</label>
-                          <select
-                            value={budget}
-                            onChange={(e) => setBudget(e.target.value)}
-                            className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
-                          >
-                            <option value="Economy">Economy</option>
-                            <option value="Mid-Range">Mid-Range</option>
-                            <option value="Luxury">Luxury Bespoke</option>
-                          </select>
+                      {/* TOOL 2: VIRTUAL STAGING BRIEF */}
+                      {selectedModule === 'virtual-staging' && (
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-gray-900 block">Staging Furniture Vibe</label>
+                            <div className="grid grid-cols-2 gap-2">
+                              {[
+                                { id: 'luxury-minimalist', label: 'Luxury Minimalist' },
+                                { id: 'executive-suite', label: 'Executive Suite' },
+                                { id: 'scandi-warmth', label: 'Scandi Warmth' },
+                                { id: 'family-cozy', label: 'Family Cozy' }
+                              ].map(opt => (
+                                <button
+                                  key={opt.id}
+                                  type="button"
+                                  onClick={() => setStagingTheme(opt.id as any)}
+                                  className={`p-2.5 rounded-xl text-[11px] font-semibold transition border ${
+                                    stagingTheme === opt.id
+                                      ? 'bg-black text-[#CCFF00] border-black'
+                                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border-gray-200'
+                                  }`}
+                                >
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-gray-900 block">Target Real Estate Buyer</label>
+                            <select
+                              value={stagingDemographic}
+                              onChange={(e) => setStagingDemographic(e.target.value as any)}
+                              className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                            >
+                              <option value="luxury">High-End Luxury Buyer</option>
+                              <option value="first-time">First-Time Homebuyer</option>
+                              <option value="airbnb">Airbnb / Short-Term Rental</option>
+                            </select>
+                          </div>
                         </div>
-                      </div>
+                      )}
+
+                      {/* TOOL 3: REPLACE & ADD FURNITURE BRIEF */}
+                      {selectedModule === 'replace-furniture' && (
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-gray-900 block">Item to Swap or Add</label>
+                            <div className="flex flex-wrap gap-1.5">
+                              {['Sofa / Couch', 'Dining Set', 'Accent Chair', 'Floor Lamp', 'Area Rug', 'Wall Art'].map(item => (
+                                <button
+                                  key={item}
+                                  type="button"
+                                  onClick={() => setItemToSwap(item)}
+                                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
+                                    itemToSwap === item
+                                      ? 'bg-black text-[#CCFF00] border-black'
+                                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border-gray-200'
+                                  }`}
+                                >
+                                  {item}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-gray-900 block">Replacement Description (Optional)</label>
+                            <input
+                              type="text"
+                              value={swapPrompt}
+                              onChange={(e) => setSwapPrompt(e.target.value)}
+                              placeholder="e.g. Italian cognac leather sectional sofa..."
+                              className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-medium text-gray-900 outline-none"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* TOOL 4: FURNITURE REMOVAL BRIEF */}
+                      {selectedModule === 'furniture-removal' && (
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-gray-900 block">Declutter Intensity</label>
+                            <div className="space-y-2">
+                              {[
+                                { id: 'complete-declutter', title: '1-Click Complete Empty Room', desc: 'Remove all furniture and loose items completely' },
+                                { id: 'loose-objects', title: 'Remove Loose Objects Only', desc: 'Keep main sofa/table but remove clutter and boxes' },
+                                { id: 'fixed-walls', title: 'Walls & Flooring Clean', desc: 'Wipe all items and restore architectural shell' }
+                              ].map(opt => (
+                                <div
+                                  key={opt.id}
+                                  onClick={() => setRemovalMode(opt.id as any)}
+                                  className={`p-3 rounded-xl border cursor-pointer transition ${
+                                    removalMode === opt.id
+                                      ? 'bg-black text-white border-black ring-1 ring-black'
+                                      : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border-gray-200'
+                                  }`}
+                                >
+                                  <h4 className={`text-xs font-bold ${removalMode === opt.id ? 'text-[#CCFF00]' : 'text-gray-900'}`}>{opt.title}</h4>
+                                  <p className={`text-[10px] ${removalMode === opt.id ? 'text-gray-300' : 'text-gray-500'}`}>{opt.desc}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* STANDARD BRIEF (FOR INTERIOR, EXTERIOR, GARDEN) */}
+                      {(!['sketch2image', 'virtual-staging', 'replace-furniture', 'furniture-removal'].includes(selectedModule)) && (
+                        <>
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-gray-900 block">Space Type</label>
+                            <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
+                              {[
+                                'Living Room', 'Bedroom', 'Dining Room', 'Kitchen', 'Master Suite',
+                                'Home Office', 'Bathroom', 'Balcony & Patio', 'Backyard Garden',
+                                'Exterior Facade', 'Rooftop Terrace', 'Commercial Cafe'
+                              ].map(r => (
+                                <button
+                                  key={r}
+                                  type="button"
+                                  onClick={() => setRoomType(r)}
+                                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                                    roomType === r
+                                      ? 'bg-[#111111] text-[#CCFF00] shadow-2xs ring-1 ring-black'
+                                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200/60'
+                                  }`}
+                                >
+                                  {r}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <label className="text-xs font-semibold text-gray-900 block">Target Region</label>
+                              <select
+                                value={region}
+                                onChange={(e) => setRegion(e.target.value as any)}
+                                className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                              >
+                                <option value="India">🇮🇳 India (INR ₹)</option>
+                                <option value="USA">🇺🇸 USA (USD $)</option>
+                                <option value="Brazil">🇧🇷 Brazil (BRL R$)</option>
+                              </select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <label className="text-xs font-semibold text-gray-900 block">Budget Level</label>
+                              <select
+                                value={budget}
+                                onChange={(e) => setBudget(e.target.value)}
+                                className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                              >
+                                <option value="Economy">Economy</option>
+                                <option value="Mid-Range">Mid-Range</option>
+                                <option value="Luxury">Luxury Bespoke</option>
+                              </select>
+                            </div>
+                          </div>
+                        </>
+                      )}
+
                     </div>
                   </div>
                 </div>
