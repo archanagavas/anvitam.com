@@ -2,21 +2,20 @@
  * pages/AIHomeDesign.tsx — Anvitam's AI Studio Master Interface
  * 
  * Features:
- * 1. Seamless Single Navbar Layout (Unified with Anvitam Header)
- * 2. Dedicated Tools for Interior, Exterior Facade, Garden, Replace, Removal, Declutter, Style Transfer, Walls, Flooring
- * 3. 100% Interactive Prompt Bar & 1-Click Sample Photo Selector
- * 4. Interactive Before/After Split Canvas & Shoppable Regional Pins (India 🇮🇳, USA 🇺🇸, Brazil 🇧🇷)
+ * 1. Claude/ChatGPT Conversational Design Studio
+ * 2. Dedicated AI Tools for Interior, Exterior, Garden, Replace, Removal, Virtual Staging, Sketch2Image
+ * 3. Interactive Before/After Split Canvas & Hotspot Pins (Interior-only)
+ * 4. Shoppable Catalog rendered strictly POST-RENDER (Step 4) for generated design matches
  */
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
 import {
   Sparkles, Upload, Wand2, ArrowLeft, Download, RefreshCw, Image as ImageIcon,
   Check, ChevronRight, Sliders, ShieldCheck, Crown, ShoppingBag, MapPin, ExternalLink,
   Layers, Home, Building, Trees, Trash2, Paintbrush, LayoutGrid, Zap, Menu, X, AlertCircle,
-  Settings, LogOut, PanelLeft, Folder, Code, Clock
+  Settings, LogOut, PanelLeft, Code, Clock
 } from 'lucide-react';
 import { getToolUser, getOrCreateDefaultToolUser, logoutToolUser, deductUserCredit, updateToolUser, type ToolUser } from '../utils/userAuth';
 import { ToolsAuthModal } from '../components/tools/ToolsAuthModal';
@@ -116,24 +115,12 @@ const AI_MODEL_ENGINES = [
   { id: 'flux-dev', name: '✨ FLUX.1 Professional', creditCost: 2 },
 ];
 
-// Preset AI Studio modules for topbar navigation
-const AI_MODULES = [
-  { id: 'interior', label: 'Interior AI', icon: '🛋️' },
-  { id: 'sketch2image', label: 'Sketch2Image™', icon: '✏️' },
-  { id: 'virtual-staging', label: 'Virtual Staging AI', icon: '🏗️' },
-  { id: 'exterior', label: 'Exterior Facade', icon: '🏡' },
-  { id: 'garden', label: 'Yard & Landscape', icon: '🌿' },
-  { id: 'replace', label: 'Object Swap', icon: '🪑' },
-  { id: 'remove', label: 'Furniture Removal', icon: '🧹' }
-];
-
 const DEFAULT_HOTSPOT_PINS = [
   { id: 'pin_sofa', label: 'Designer Seating', element_type: 'sofa', x_percent: 42, y_percent: 64 },
   { id: 'pin_rug', label: 'Accent Area Rug', element_type: 'rug', x_percent: 58, y_percent: 80 },
   { id: 'pin_light', label: 'Pendant Lighting', element_type: 'pendant_light', x_percent: 50, y_percent: 25 },
   { id: 'pin_decor', label: 'Wall Decor', element_type: 'wall_art', x_percent: 25, y_percent: 38 },
 ];
-
 
 interface SavedChatSession {
   id: string;
@@ -156,11 +143,6 @@ export default function AIHomeDesign() {
   const initialModule = searchParams.get('module') || 'interior';
   const [selectedModule, setSelectedModule] = useState<string>(initialModule);
 
-  const handleModuleChange = (modId: string) => {
-    setSelectedModule(modId);
-    setSearchParams({ module: modId }, { replace: true });
-  };
-
   // User & Auth State
   const [user, setUser] = useState<ToolUser | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -172,7 +154,7 @@ export default function AIHomeDesign() {
   // UI Drawer & Sidebar States
   const [showBriefCard, setShowBriefCard] = useState(false);
 
-  // Saved Chat Sessions History (Claude "Chats and tasks" sidebar)
+  // Saved Chat Sessions History (Claude sidebar)
   const [savedChats, setSavedChats] = useState<SavedChatSession[]>(() => {
     try {
       const raw = localStorage.getItem('anvitam_design_chats');
@@ -183,19 +165,19 @@ export default function AIHomeDesign() {
     return [
       {
         id: 'chat-demo-1',
-        title: 'Architecture review of retail space',
+        title: 'Modern Living Room Restyle',
         timestamp: '2 hours ago',
         module: 'interior',
         style: 'modern',
         roomType: 'Living Room',
         sourceImage: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=800&auto=format&fit=crop',
         generatedImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=800&auto=format&fit=crop',
-        promptText: 'Modern Scandinavian retail lounge with warm oak wood and ambient lighting',
+        promptText: 'Modern Scandinavian lounge with warm oak wood and ambient lighting',
         recommendations: []
       },
       {
         id: 'chat-demo-2',
-        title: 'Scandinavian Living Room Restyle',
+        title: 'Japandi Minimal Interior',
         timestamp: 'Yesterday',
         module: 'interior',
         style: 'japandi',
@@ -203,18 +185,6 @@ export default function AIHomeDesign() {
         sourceImage: null,
         generatedImage: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=800&auto=format&fit=crop',
         promptText: 'Japandi minimal living room',
-        recommendations: []
-      },
-      {
-        id: 'chat-demo-3',
-        title: 'Site Intelligence 3D Shadow Analysis',
-        timestamp: '3 days ago',
-        module: 'site-intelligence',
-        style: 'minimalist',
-        roomType: 'Exterior Facade',
-        sourceImage: null,
-        generatedImage: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=800&auto=format&fit=crop',
-        promptText: '3D Sun & shadow simulation report',
         recommendations: []
       }
     ];
@@ -263,6 +233,7 @@ export default function AIHomeDesign() {
   const [pins, setPins] = useState<any[]>([]);
   const [activePin, setActivePin] = useState<any | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
   // 3D Viewer State
   const [show3DViewer, setShow3DViewer] = useState(false);
 
@@ -324,7 +295,6 @@ export default function AIHomeDesign() {
     }
   };
 
-  // OpenRouter Model Selection (Fast: 1 Credit, FLUX: 2 Credits, GPT-4o: 3 Credits)
   const [selectedAiModel, setSelectedAiModel] = useState<'fast' | 'flux' | 'claude' | 'gpt4o'>('fast');
 
   const getModelCreditCost = (model: string) => {
@@ -387,7 +357,6 @@ export default function AIHomeDesign() {
       setCurrentWorkflowStep(4);
       setShowBriefCard(false);
 
-      // Save generated chat session into persistent history
       const newSession: SavedChatSession = {
         id: `chat_${Date.now()}`,
         title: promptText ? promptText.slice(0, 36) + '...' : `${roomType} ${selectedStyle} Restyle`,
@@ -411,7 +380,6 @@ export default function AIHomeDesign() {
       });
       setActiveChatId(newSession.id);
 
-      // Auto-fetch shoppable products and detect visual pins matching the rendered design
       fetchRecommendations(roomType, selectedStyle);
       if (data.generatedImage) {
         fetchElementPins(data.generatedImage);
@@ -506,16 +474,8 @@ export default function AIHomeDesign() {
               <span className="text-[10px] text-gray-400 font-mono">⌘K</span>
             </button>
 
-            {/* Navigation Quick Links */}
+            {/* Navigation Quick Links (Cleaned: Projects & Artifacts removed per feedback) */}
             <div className="space-y-0.5 text-xs text-gray-600 font-medium">
-              <button type="button" onClick={() => navigate('/tools')} className="w-full text-left px-3 py-1.5 rounded-xl hover:bg-gray-200/60 flex items-center gap-2.5 transition">
-                <Folder size={15} className="text-gray-500" />
-                <span>Projects</span>
-              </button>
-              <button type="button" onClick={() => setShowBriefCard(true)} className="w-full text-left px-3 py-1.5 rounded-xl hover:bg-gray-200/60 flex items-center gap-2.5 transition">
-                <Sliders size={15} className="text-gray-500" />
-                <span>Artifacts &amp; Brief</span>
-              </button>
               <button type="button" onClick={() => setShowToolsDrawer(true)} className="w-full text-left px-3 py-1.5 rounded-xl hover:bg-gray-200/60 flex items-center gap-2.5 transition">
                 <Code size={15} className="text-gray-500" />
                 <span>21+ AI Tools</span>
@@ -576,8 +536,8 @@ export default function AIHomeDesign() {
         {/* ── MAIN CLAUDE CHAT CANVAS WORKSPACE ── */}
         <main className="flex-1 flex flex-col bg-white overflow-y-auto relative min-h-[calc(100vh-80px)] p-4 sm:p-8">
 
-          {/* Top Canvas Bar with Sidebar Toggle, Module Pills & Controls */}
-          <div className="flex items-center justify-between gap-4 pb-6 border-b border-gray-100">
+          {/* Top Canvas Bar with Sidebar Toggle & Studio Controls */}
+          <div className="flex items-center justify-between gap-4 pb-4 border-b border-gray-100">
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -588,12 +548,11 @@ export default function AIHomeDesign() {
                 <PanelLeft size={16} />
               </button>
               <div>
-                <h1 className="text-sm font-semibold text-gray-900 leading-none">Anvitam Design Chat</h1>
+                <h1 className="text-sm font-semibold text-gray-900 leading-none">Anvitam AI Design Suite</h1>
                 <p className="text-[10px] text-gray-500 font-medium">Powered by Claude &amp; FLUX.1 Pro</p>
               </div>
             </div>
 
-            {/* Controls: Credit Pill, Brief & Settings */}
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -616,47 +575,52 @@ export default function AIHomeDesign() {
             </div>
           </div>
 
-          {/* Conversational Assistant Welcome Bubble */}
-          <div className="bg-amber-50/60 border border-amber-200/80 rounded-3xl p-5 my-4 max-w-3xl mx-auto space-y-2 flex items-start gap-3 shadow-2xs">
-            <div className="w-9 h-9 rounded-2xl bg-amber-800 text-white font-bold text-sm flex items-center justify-center shrink-0 shadow-2xs">
-              🤖
+          {/* ── CLAUDE-STYLE CHAT ASSISTANT MESSAGE BUBBLE ── */}
+          <div className="flex items-start gap-3 my-4 max-w-3xl mx-auto w-full">
+            <div className="w-8 h-8 rounded-full bg-[#111111] text-[#CCFF00] font-bold text-xs flex items-center justify-center shrink-0 shadow-xs border border-black/10">
+              ⚡
             </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-gray-900">Anvitam AI Assistant</span>
-                <span className="text-[10px] text-amber-800 font-semibold bg-amber-100 px-2 py-0.5 rounded-full">
-                  Active Assistant
-                </span>
+            <div className="flex-1 space-y-1">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-gray-900">Anvitam AI Assistant</span>
+                  <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    Online • Ready
+                  </span>
+                </div>
+                <span className="text-[10px] text-gray-400 font-medium">Step {currentWorkflowStep} of 4</span>
               </div>
-              <p className="text-xs text-gray-700 leading-relaxed font-medium">
-                Hello! What are you looking to design or transform today? You can select any AI tool from the gallery on the right side panel, or choose your workflow step below:
+              <p className="text-xs text-gray-700 leading-relaxed font-medium bg-gray-50 border border-gray-200/80 rounded-2xl rounded-tl-xs p-3.5 shadow-2xs">
+                {currentWorkflowStep === 1 && "Hello! What space would you like to design or transform today? Select an AI tool below or type your architectural vision in the prompt bar."}
+                {currentWorkflowStep === 2 && `Selected tool: ${selectedModule.toUpperCase()}. Now select your preferred architectural aesthetic from the 55+ styles below:`}
+                {currentWorkflowStep === 3 && `Selected style: ${selectedStyle}. Please upload your space photo and confirm room details:`}
+                {currentWorkflowStep === 4 && (generatedImage ? "Here is your photorealistic AI render! Compare original vs render using the slider, try 3D walkthrough, or shop recommended products below." : "Select your preferred neural AI engine to generate your photorealistic render:")}
               </p>
             </div>
           </div>
 
-          {/* Conversational Assistant Active Status Bar */}
-          <div className="flex items-center justify-between bg-gray-50 border border-gray-200/80 rounded-2xl px-4 py-2 my-3 max-w-3xl mx-auto w-full text-xs font-semibold text-gray-700">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Step {currentWorkflowStep} of 4:</span>
-              <span className="text-gray-900 font-bold">
-                {currentWorkflowStep === 1 && 'Upload Photo & Select Tool'}
-                {currentWorkflowStep === 2 && 'Select Architectural Style'}
-                {currentWorkflowStep === 3 && 'Choose AI Model & Render'}
-                {currentWorkflowStep === 4 && 'Render Output & Shoppable Products'}
-              </span>
-            </div>
+          {/* Step Back Indicator Bar */}
+          {currentWorkflowStep > 1 && (
+            <div className="flex items-center justify-between bg-gray-50 border border-gray-200/80 rounded-2xl px-4 py-2 my-2 max-w-3xl mx-auto w-full text-xs font-semibold text-gray-700">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Active Step:</span>
+                <span className="text-gray-900 font-bold">
+                  {currentWorkflowStep === 2 && 'Step 2 of 4: Select Architectural Style'}
+                  {currentWorkflowStep === 3 && 'Step 3 of 4: Upload Photo & Set Brief'}
+                  {currentWorkflowStep === 4 && 'Step 4 of 4: AI Model & Render Output'}
+                </span>
+              </div>
 
-            {currentWorkflowStep > 1 && (
               <button
                 type="button"
                 onClick={() => setCurrentWorkflowStep((prev) => Math.max(1, prev - 1))}
-                className="text-[11px] text-gray-500 hover:text-black font-medium underline cursor-pointer"
+                className="text-[11px] text-gray-600 hover:text-black font-medium underline cursor-pointer"
               >
                 ← Back
               </button>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* ── CONVERSATIONAL STEP CANVASES IN MAIN WORKSPACE ── */}
           <div className="flex-1 max-w-3xl w-full mx-auto space-y-8 pb-36">
@@ -722,11 +686,24 @@ export default function AIHomeDesign() {
                         desc: 'Remove objects in 1-click',
                         imageBefore: 'https://images.unsplash.com/photo-1540518614846-7ede433c5172?q=80&w=300&auto=format&fit=crop',
                         imageAfter: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=300&auto=format&fit=crop'
+                      },
+                      {
+                        id: 'site-intelligence',
+                        title: 'Site Intelligence 3D Canvas',
+                        desc: 'Sun shadow, wind & site reports',
+                        imageBefore: 'https://images.unsplash.com/photo-1524813686514-a57563d77965?q=80&w=300&auto=format&fit=crop',
+                        imageAfter: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=300&auto=format&fit=crop'
                       }
                     ].map(card => (
                       <div
                         key={card.id}
-                        onClick={() => handleSelectModule(card.id)}
+                        onClick={() => {
+                          if (card.id === 'site-intelligence') {
+                            navigate('/site-intelligence');
+                          } else {
+                            handleSelectModule(card.id);
+                          }
+                        }}
                         className={`bg-white rounded-2xl border transition cursor-pointer group flex flex-col justify-between overflow-hidden shadow-xs hover:shadow-md ${
                           selectedModule === card.id ? 'border-black ring-2 ring-black/10' : 'border-gray-200/80 hover:border-gray-400'
                         }`}
@@ -753,49 +730,6 @@ export default function AIHomeDesign() {
                       </div>
                     ))}
                   </div>
-
-                  {/* Flagship Site Intelligence & 3D Shadow Canvas Section */}
-                  <div className="bg-gradient-to-br from-[#111111] via-gray-900 to-black rounded-3xl p-6 text-white border border-gray-800 shadow-xl space-y-5">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                      <div>
-                        <span className="px-3 py-1 rounded-full bg-[#CCFF00] text-black text-[10px] font-extrabold uppercase tracking-wider inline-block mb-2">
-                          FLAGSHIP SITE CANVAS
-                        </span>
-                        <h3 className="text-xl font-bold text-white tracking-tight">Site Intelligence &amp; 3D Shadow Canvas</h3>
-                        <p className="text-xs text-gray-300 max-w-xl mt-1">
-                          Drop a pin anywhere on Earth to simulate 3D building shadows, wind vectors, soil health, and get 11+ site reports.
-                        </p>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => navigate('/site-intelligence')}
-                        className="px-5 py-2.5 rounded-xl bg-[#CCFF00] text-black font-bold text-xs hover:bg-white transition flex items-center gap-2 cursor-pointer shadow-md shrink-0"
-                      >
-                        <span>Launch 3D Site Canvas</span>
-                        <ChevronRight size={16} />
-                      </button>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 pt-2">
-                      {[
-                        { icon: '☀️', title: '3D Sun & Shadow', desc: 'Solar path & glare' },
-                        { icon: '🏢', title: 'Heights & Density', desc: 'FSI & setbacks' },
-                        { icon: '💨', title: 'Wind & Breeze', desc: 'Microclimate vectors' },
-                        { icon: '🏔️', title: 'Slope Contours', desc: 'Elevation & grading' },
-                        { icon: '🧱', title: 'Soil & Foundation', desc: 'Geotech integrity' },
-                        { icon: '🌧️', title: 'Rainwater & Solar', desc: 'PV yield & harvesting' },
-                        { icon: '♻️', title: 'Green Costing', desc: 'LCA & carbon index' }
-                      ].map((item, idx) => (
-                        <div key={idx} className="bg-white/5 border border-white/10 rounded-2xl p-3 text-center space-y-1.5 hover:bg-white/10 transition">
-                          <span className="text-xl block">{item.icon}</span>
-                          <h4 className="text-[11px] font-bold text-white leading-tight">{item.title}</h4>
-                          <p className="text-[9px] text-gray-400 leading-tight">{item.desc}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
                 </div>
               )}
 
@@ -971,9 +905,9 @@ export default function AIHomeDesign() {
                 </div>
               )}
 
-              {/* ── STEP 4: AI MODEL ENGINE SELECTION ── */}
-              {currentWorkflowStep === 4 && (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 bg-white rounded-3xl p-6 border border-gray-200/90 shadow-2xs text-center space-y-6">
+              {/* ── STEP 4: AI MODEL ENGINE SELECTION & PRE-RENDER ── */}
+              {currentWorkflowStep === 4 && !generatedImage && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 bg-white rounded-3xl p-6 border border-gray-200/90 shadow-2xs text-center">
                   <div>
                     <h2 className="text-base sm:text-lg font-semibold text-gray-900 tracking-tight">
                       Select AI Model Engine &amp; Render
@@ -1027,155 +961,252 @@ export default function AIHomeDesign() {
                 </div>
               )}
 
-            </div>
-
-            {/* GENERATED DESIGN OUTPUT CANVAS */}
-            {generatedImage && (
-              <div className="space-y-6">
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-semibold text-gray-900">Your AI Design Render</h2>
-                    <p className="text-xs text-gray-500">Drag the slider to compare original photo vs AI render.</p>
+              {/* ── STEP 4 POST-RENDER: AI OUTPUT CANVAS & SHOPPABLE CATALOG ── */}
+              {generatedImage && (
+                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl font-semibold text-gray-900">Your AI Design Render</h2>
+                      <p className="text-xs text-gray-500">Drag the slider to compare original photo vs AI render.</p>
+                    </div>
+                    <button
+                      onClick={() => setCurrentWorkflowStep(3)}
+                      className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-semibold text-xs px-4 py-2 rounded-2xl transition cursor-pointer border border-black/10 flex items-center gap-1.5"
+                    >
+                      <Wand2 size={14} /> Adjust Settings &amp; Re-Render
+                    </button>
                   </div>
-                  <button
-                    onClick={() => setShowBriefCard(true)}
-                    className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-semibold text-xs px-4 py-2 rounded-2xl transition cursor-pointer border border-black/10 flex items-center gap-1.5"
+
+                  {/* Interactive Before / After Split Slider Canvas */}
+                  <div
+                    ref={sliderRef}
+                    onMouseMove={(e) => handleSliderMove(e.clientX)}
+                    onTouchMove={(e) => handleSliderMove(e.touches[0].clientX)}
+                    className="relative h-[480px] sm:h-[550px] w-full rounded-3xl overflow-hidden border border-gray-300 shadow-lg select-none cursor-ew-resize bg-black"
                   >
-                    <Wand2 size={14} /> Adjust Settings &amp; Re-Render
-                  </button>
-                </div>
+                    <img src={generatedImage} alt="After" className="absolute inset-0 w-full h-full object-cover" />
 
-                {/* Interactive Before / After Split Slider Canvas */}
-                <div
-                  ref={sliderRef}
-                  onMouseMove={(e) => handleSliderMove(e.clientX)}
-                  onTouchMove={(e) => handleSliderMove(e.touches[0].clientX)}
-                  className="relative h-[480px] sm:h-[550px] w-full rounded-3xl overflow-hidden border border-gray-300 shadow-lg select-none cursor-ew-resize bg-black"
-                >
-                  <img src={generatedImage} alt="After" className="absolute inset-0 w-full h-full object-cover" />
+                    {/* Interactive Visual Hotspot Pins Overlay (ONLY FOR INTERIOR MODULES) */}
+                    {(() => {
+                      const isInteriorModule = ['interior', 'virtual-staging', 'replace-furniture'].includes(selectedModule);
+                      const activeHotspotPins = pins.length > 0 ? pins : (isInteriorModule ? DEFAULT_HOTSPOT_PINS : []);
+                      return activeHotspotPins.map((pin: any, idx: number) => {
+                        const matchingProduct = catalog.find(p => p.element_type === pin.element_type) || catalog[idx % catalog.length];
+                        const pinId = pin.id || `pin_${idx}`;
+                        const isSelected = activePin?.id === pinId;
 
-                  {/* Interactive Visual Hotspot Pins Overlay */}
-                  {(() => {
-                    const isInteriorModule = ['interior', 'virtual-staging', 'replace-furniture'].includes(selectedModule);
-                    const activeHotspotPins = pins.length > 0 ? pins : (isInteriorModule ? DEFAULT_HOTSPOT_PINS : []);
-                    return activeHotspotPins.map((pin: any, idx: number) => {
-                      const matchingProduct = catalog.find(p => p.element_type === pin.element_type) || catalog[idx % catalog.length];
-                      const pinId = pin.id || `pin_${idx}`;
-                      const isSelected = activePin?.id === pinId;
-
-                      return (
-                        <div
-                          key={pinId}
-                          className="absolute z-20 transition-all duration-300 pointer-events-auto"
-                          style={{ left: `${pin.x_percent}%`, top: `${pin.y_percent}%` }}
-                        >
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActivePin(isSelected ? null : { ...pin, id: pinId, product: matchingProduct });
-                            }}
-                            className="relative group cursor-pointer focus:outline-none"
-                            title={`Click to view ${pin.label}`}
+                        return (
+                          <div
+                            key={pinId}
+                            className="absolute z-20 transition-all duration-300 pointer-events-auto"
+                            style={{ left: `${pin.x_percent}%`, top: `${pin.y_percent}%` }}
                           >
-                            <span className="absolute -inset-2 rounded-full bg-[#CCFF00]/40 animate-ping" />
-                            <div className="relative w-8 h-8 rounded-full bg-black/90 text-[#CCFF00] border-2 border-[#CCFF00] flex items-center justify-center shadow-lg hover:scale-110 transition">
-                              <ShoppingBag size={14} />
-                            </div>
-                          </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActivePin(isSelected ? null : { ...pin, id: pinId, product: matchingProduct });
+                              }}
+                              className="relative group cursor-pointer focus:outline-none"
+                              title={`Click to view ${pin.label}`}
+                            >
+                              <span className="absolute -inset-2 rounded-full bg-[#CCFF00]/40 animate-ping" />
+                              <div className="relative w-8 h-8 rounded-full bg-black/90 text-[#CCFF00] border-2 border-[#CCFF00] flex items-center justify-center shadow-lg hover:scale-110 transition">
+                                <ShoppingBag size={14} />
+                              </div>
+                            </button>
 
-                          {isSelected && matchingProduct && (
-                            <div className="absolute left-10 -top-12 z-30 w-64 bg-black/95 text-white backdrop-blur-md rounded-2xl p-3 shadow-2xl border border-[#CCFF00]/40 animate-in fade-in slide-in-from-left-2">
-                              <div className="flex gap-3">
-                                <img src={matchingProduct.image_url} alt={matchingProduct.name} className="w-14 h-14 rounded-xl object-cover shrink-0 border border-white/10" />
-                                <div className="flex-1 min-w-0">
-                                  <span className="text-[9px] uppercase font-bold text-[#CCFF00] tracking-wider block">{pin.label || matchingProduct.element_type}</span>
-                                  <h5 className="text-xs font-bold text-white truncate leading-tight">{matchingProduct.name}</h5>
-                                  <p className="text-xs font-extrabold text-amber-400 mt-0.5">{matchingProduct.price}</p>
+                            {isSelected && matchingProduct && (
+                              <div className="absolute left-10 -top-12 z-30 w-64 bg-black/95 text-white backdrop-blur-md rounded-2xl p-3 shadow-2xl border border-[#CCFF00]/40 animate-in fade-in slide-in-from-left-2">
+                                <div className="flex gap-3">
+                                  <img src={matchingProduct.image_url} alt={matchingProduct.name} className="w-14 h-14 rounded-xl object-cover shrink-0 border border-white/10" />
+                                  <div className="flex-1 min-w-0">
+                                    <span className="text-[9px] uppercase font-bold text-[#CCFF00] tracking-wider block">{pin.label || matchingProduct.element_type}</span>
+                                    <h5 className="text-xs font-bold text-white truncate leading-tight">{matchingProduct.name}</h5>
+                                    <p className="text-xs font-extrabold text-amber-400 mt-0.5">{matchingProduct.price}</p>
+                                  </div>
+                                </div>
+                                <div className="mt-3 flex items-center gap-2">
+                                  <a
+                                    href={`/api/ai-design?action=go&id=${matchingProduct.id}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex-1 bg-[#CCFF00] hover:bg-white text-black font-bold text-[11px] py-1.5 rounded-lg text-center transition flex items-center justify-center gap-1 shadow-xs"
+                                  >
+                                    <span>Buy Item</span>
+                                    <ExternalLink size={11} />
+                                  </a>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setActivePin(null);
+                                      setSelectedCategoryFilter(matchingProduct.category_id || 'all');
+                                      const el = document.getElementById(`product-${matchingProduct.id}`);
+                                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                    }}
+                                    className="bg-white/10 hover:bg-white/20 text-white text-[10px] font-medium px-2.5 py-1.5 rounded-lg transition whitespace-nowrap cursor-pointer"
+                                  >
+                                    View Grid ↓
+                                  </button>
                                 </div>
                               </div>
-                              <div className="mt-3 flex items-center gap-2">
-                                <a
-                                  href={`/api/ai-design?action=go&id=${matchingProduct.id}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex-1 bg-[#CCFF00] hover:bg-white text-black font-bold text-[11px] py-1.5 rounded-lg text-center transition flex items-center justify-center gap-1 shadow-xs"
-                                >
-                                  <span>Buy Item</span>
-                                  <ExternalLink size={11} />
-                                </a>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setActivePin(null);
-                                    setSelectedCategoryFilter(matchingProduct.category_id || 'all');
-                                    const el = document.getElementById(`product-${matchingProduct.id}`);
-                                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                                  }}
-                                  className="bg-white/10 hover:bg-white/20 text-white text-[10px] font-medium px-2.5 py-1.5 rounded-lg transition whitespace-nowrap cursor-pointer"
-                                >
-                                  View Grid ↓
-                                </button>
+                            )}
+                          </div>
+                        );
+                      });
+                    })()}
+
+                    {sourceImage && (
+                      <div
+                        className="absolute top-0 left-0 bottom-0 overflow-hidden border-r-2 border-[#CCFF00]"
+                        style={{ width: `${sliderPos}%` }}
+                      >
+                        <img src={sourceImage} alt="Before" className="w-full h-full object-cover max-w-none" />
+                      </div>
+                    )}
+
+                    {/* Slider Handle Divider */}
+                    <div
+                      className="absolute top-0 bottom-0 w-1 bg-[#CCFF00] shadow-md flex items-center justify-center pointer-events-none"
+                      style={{ left: `${sliderPos}%` }}
+                    >
+                      <div className="w-8 h-8 rounded-full bg-black text-[#CCFF00] font-semibold flex items-center justify-center text-xs shadow-lg border border-[#CCFF00]">
+                        ↔
+                      </div>
+                    </div>
+
+                    <span className="absolute bottom-4 left-4 text-[10px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-black/80 text-white backdrop-blur-md">
+                      Original Photo
+                    </span>
+                    <span className="absolute bottom-4 right-4 text-[10px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-[#CCFF00] text-black shadow-md font-bold">
+                      Anvitam AI Render
+                    </span>
+                  </div>
+
+                  {/* Export Action Footer */}
+                  <div className="flex items-center justify-end gap-3 pt-2">
+                    {/* 3D Walkthrough Button - ONLY FOR INTERIOR MODULES */}
+                    {['interior', 'virtual-staging', 'replace-furniture'].includes(selectedModule) && (
+                      <button
+                        onClick={() => setShow3DViewer(true)}
+                        className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold text-xs px-5 py-2.5 rounded-2xl transition flex items-center gap-1.5 shadow-md cursor-pointer"
+                      >
+                        🏠 3D Room Walkthrough
+                      </button>
+                    )}
+                    <a
+                      href={generatedImage}
+                      download="anvitam-ai-design.jpg"
+                      className="bg-[#111111] hover:bg-black text-[#CCFF00] font-semibold text-xs px-5 py-2.5 rounded-2xl transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+                    >
+                      <Download size={14} /> Export HD Design
+                    </a>
+                  </div>
+
+                  {/* 🛍️ SHOPPABLE AFFILIATE RECOMMENDATION CATALOG (STRICTLY RENDERED POST-GENERATION ONLY) */}
+                  <div className="pt-8 border-t border-gray-200/80 space-y-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <ShoppingBag className="w-5 h-5 text-amber-500" />
+                          <h3 className="text-lg font-bold text-gray-900">Shoppable Product Recommendations for Your Design</h3>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Curated product matches for your {selectedStyle} style redesign. Buy directly from verified partner stores.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Category Filter Pills */}
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedCategoryFilter('all')}
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
+                          selectedCategoryFilter === 'all'
+                            ? 'bg-[#111111] text-[#CCFF00]'
+                            : 'bg-white border border-gray-200 text-gray-700 hover:border-black'
+                        }`}
+                      >
+                        All Categories
+                      </button>
+                      {CATALOG_CATEGORIES.map(cat => (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => setSelectedCategoryFilter(cat.id)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
+                            selectedCategoryFilter === cat.id
+                              ? 'bg-[#111111] text-[#CCFF00]'
+                              : 'bg-white border border-gray-200 text-gray-700 hover:border-black'
+                          }`}
+                        >
+                          {cat.name}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Products Cards Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {catalog
+                        .filter(p => selectedCategoryFilter === 'all' || p.category_id === selectedCategoryFilter)
+                        .map(product => (
+                          <div
+                            key={product.id}
+                            id={`product-${product.id}`}
+                            className="bg-white rounded-2xl border border-gray-200/80 overflow-hidden shadow-xs hover:shadow-lg transition group flex flex-col justify-between"
+                          >
+                            <div>
+                              <div className="relative h-44 w-full overflow-hidden bg-gray-100">
+                                <img
+                                  src={product.image_url}
+                                  alt={product.name}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                                />
+                                <span className="absolute top-3 left-3 bg-black/80 text-[#CCFF00] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider backdrop-blur-xs">
+                                  {product.element_type.replace('_', ' ')}
+                                </span>
+                                <span className="absolute top-3 right-3 bg-white/90 text-gray-900 text-xs font-black px-2.5 py-1 rounded-full shadow-xs border border-gray-200">
+                                  {product.price}
+                                </span>
+                              </div>
+
+                              <div className="p-4 space-y-2">
+                                <h4 className="text-xs font-bold text-gray-900 leading-snug group-hover:text-black line-clamp-2">
+                                  {product.name}
+                                </h4>
+                                <div className="flex flex-wrap gap-1">
+                                  {product.style_tags.map((tag, idx) => (
+                                    <span key={idx} className="bg-gray-100 text-gray-600 text-[10px] font-medium px-2 py-0.5 rounded-md">
+                                      {tag}
+                                    </span>
+                                  ))}
+                                </div>
                               </div>
                             </div>
-                          )}
-                        </div>
-                      );
-                    });
-                  })()}
 
-                  {sourceImage && (
-                    <div
-                      className="absolute top-0 left-0 bottom-0 overflow-hidden border-r-2 border-[#CCFF00]"
-                      style={{ width: `${sliderPos}%` }}
-                    >
-                      <img src={sourceImage} alt="Before" className="w-full h-full object-cover max-w-none" />
-                    </div>
-                  )}
-
-                  {/* Slider Handle Divider */}
-                  <div
-                    className="absolute top-0 bottom-0 w-1 bg-[#CCFF00] shadow-md flex items-center justify-center pointer-events-none"
-                    style={{ left: `${sliderPos}%` }}
-                  >
-                    <div className="w-8 h-8 rounded-full bg-black text-[#CCFF00] font-semibold flex items-center justify-center text-xs shadow-lg border border-[#CCFF00]">
-                      ↔
+                            <div className="p-4 pt-0">
+                              <a
+                                href={`/api/ai-design?action=go&id=${product.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full bg-[#111111] hover:bg-black text-[#CCFF00] font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow-xs"
+                              >
+                                <span>Buy Product</span>
+                                <ExternalLink size={13} />
+                              </a>
+                            </div>
+                          </div>
+                        ))}
                     </div>
                   </div>
 
-                  <span className="absolute bottom-4 left-4 text-[10px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-black/80 text-white backdrop-blur-md">
-                    Original Photo
-                  </span>
-                  <span className="absolute bottom-4 right-4 text-[10px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-[#CCFF00] text-black shadow-md font-bold">
-                    Anvitam AI Render
-                  </span>
                 </div>
+              )}
 
-
-                {/* Export Action Footer */}
-                <div className="flex items-center justify-end gap-3 pt-2">
-                  {/* 3D Walkthrough Button - ONLY FOR INTERIOR MODULES */}
-                  {['interior', 'virtual-staging', 'replace-furniture'].includes(selectedModule) && (
-                    <button
-                      onClick={() => setShow3DViewer(true)}
-                      className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold text-xs px-5 py-2.5 rounded-2xl transition flex items-center gap-1.5 shadow-md cursor-pointer"
-                    >
-                      🏠 3D Room Walkthrough
-                    </button>
-                  )}
-                  <a
-                    href={generatedImage}
-                    download="anvitam-ai-design.jpg"
-                    className="bg-[#111111] hover:bg-black text-[#CCFF00] font-semibold text-xs px-5 py-2.5 rounded-2xl transition flex items-center gap-1.5 shadow-xs cursor-pointer"
-                  >
-                    <Download size={14} /> Export HD Design
-                  </a>
-                </div>
-
-              </div>
-            )}
+            </div>
 
             {/* Room 3D Viewer Overlay */}
             {show3DViewer && generatedImage && (
@@ -1184,105 +1215,6 @@ export default function AIHomeDesign() {
                 onClose={() => setShow3DViewer(false)}
               />
             )}
-
-
-            {/* SHOPPABLE AFFILIATE RECOMMENDATION ENGINE LAYER */}
-            <div className="mt-12 pt-8 border-t border-gray-200/80 space-y-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <ShoppingBag className="w-5 h-5 text-amber-500" />
-                    <h3 className="text-lg font-bold text-gray-900">Shoppable Design Catalog &amp; AI Product Recommendations</h3>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Curated product matches for your {selectedStyle} {selectedModule} space. Buy directly from verified partner stores.
-                  </p>
-                </div>
-              </div>
-
-              {/* Category Filter Pills */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-                <button
-                  type="button"
-                  onClick={() => setSelectedCategoryFilter('all')}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
-                    selectedCategoryFilter === 'all'
-                      ? 'bg-[#111111] text-[#CCFF00]'
-                      : 'bg-white border border-gray-200 text-gray-700 hover:border-black'
-                  }`}
-                >
-                  All Categories
-                </button>
-                {CATALOG_CATEGORIES.map(cat => (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => setSelectedCategoryFilter(cat.id)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
-                      selectedCategoryFilter === cat.id
-                        ? 'bg-[#111111] text-[#CCFF00]'
-                        : 'bg-white border border-gray-200 text-gray-700 hover:border-black'
-                    }`}
-                  >
-                    {cat.name}
-                  </button>
-                ))}
-              </div>
-
-              {/* Products Cards Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {catalog
-                  .filter(p => selectedCategoryFilter === 'all' || p.category_id === selectedCategoryFilter)
-                  .map(product => (
-                    <div
-                      key={product.id}
-                      id={`product-${product.id}`}
-                      className="bg-white rounded-2xl border border-gray-200/80 overflow-hidden shadow-xs hover:shadow-lg transition group flex flex-col justify-between"
-                    >
-                      <div>
-                        <div className="relative h-44 w-full overflow-hidden bg-gray-100">
-                          <img
-                            src={product.image_url}
-                            alt={product.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                          />
-                          <span className="absolute top-3 left-3 bg-black/80 text-[#CCFF00] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider backdrop-blur-xs">
-                            {product.element_type.replace('_', ' ')}
-                          </span>
-                          <span className="absolute top-3 right-3 bg-white/90 text-gray-900 text-xs font-black px-2.5 py-1 rounded-full shadow-xs border border-gray-200">
-                            {product.price}
-                          </span>
-                        </div>
-
-                        <div className="p-4 space-y-2">
-                          <h4 className="text-xs font-bold text-gray-900 leading-snug group-hover:text-black line-clamp-2">
-                            {product.name}
-                          </h4>
-                          <div className="flex flex-wrap gap-1">
-                            {product.style_tags.map((tag, idx) => (
-                              <span key={idx} className="bg-gray-100 text-gray-600 text-[10px] font-medium px-2 py-0.5 rounded-md">
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="p-4 pt-0">
-                        <a
-                          href={`/api/ai-design?action=go&id=${product.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="w-full bg-[#111111] hover:bg-black text-[#CCFF00] font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow-xs"
-                        >
-                          <span>Buy Product</span>
-                          <ExternalLink size={13} />
-                        </a>
-                      </div>
-                    </div>
-                  ))}
-            </div>
-          </div>
 
           {/* ── CLAUDE FLOATING PROMPT BAR AT BOTTOM ── */}
           <div className="sticky bottom-4 z-30 max-w-2xl w-full mx-auto px-4 mt-2">
@@ -1382,48 +1314,8 @@ export default function AIHomeDesign() {
               <p className="text-[10px] text-gray-500">Pick any tool to launch in chat</p>
             </div>
             <span className="bg-[#111111] text-[#CCFF00] text-[10px] font-bold px-2 py-0.5 rounded-full">
-              7 Active
+              8 Active
             </span>
-          </div>
-
-          {/* 🌟 Flagship Site Canvas Feature Card */}
-          <div className="bg-slate-950 text-white rounded-2xl p-4 shadow-lg space-y-3 relative overflow-hidden group border border-slate-800">
-            <span className="bg-[#CCFF00] text-black text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider font-mono">
-              FLAGSHIP SITE CANVAS
-            </span>
-            <div>
-              <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-                <span>Site Intelligence &amp; 3D Shadow</span>
-              </h3>
-              <p className="text-[11px] text-slate-300 mt-1 leading-snug">
-                Drop a pin anywhere on Earth to simulate 3D building shadows, wind vectors, soil health &amp; 11+ site reports.
-              </p>
-            </div>
-
-            {/* Quick Micro Modules */}
-            <div className="grid grid-cols-2 gap-1.5 pt-1 text-[10px]">
-              <div className="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800 flex items-center gap-1 text-slate-300">
-                <span>☀️</span> Sun &amp; Shadow
-              </div>
-              <div className="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800 flex items-center gap-1 text-slate-300">
-                <span>🏢</span> Heights &amp; FSI
-              </div>
-              <div className="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800 flex items-center gap-1 text-slate-300">
-                <span>💨</span> Wind Vectors
-              </div>
-              <div className="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800 flex items-center gap-1 text-slate-300">
-                <span>🏔️</span> Slope Contours
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => navigate('/tools')}
-              className="w-full bg-[#CCFF00] hover:bg-white text-black font-bold text-xs py-2 rounded-xl transition flex items-center justify-center gap-1 shadow-xs cursor-pointer"
-            >
-              <span>Launch 3D Site Canvas</span>
-              <ChevronRight size={14} />
-            </button>
           </div>
 
           {/* 🛋️ Studio Tools Gallery List */}
@@ -1482,14 +1374,25 @@ export default function AIHomeDesign() {
                   desc: 'Clear objects & declutter rooms in 1-click',
                   icon: '🧹',
                   badge: 'Clean'
+                },
+                {
+                  id: 'site-intelligence',
+                  name: 'Site Intelligence 3D Canvas',
+                  desc: '3D sun shadows, wind vectors & 11+ site reports',
+                  icon: '🌐',
+                  badge: 'Flagship'
                 }
               ].map(t => (
                 <button
                   key={t.id}
                   type="button"
                   onClick={() => {
-                    setSelectedModule(t.id);
-                    setCurrentWorkflowStep(2);
+                    if (t.id === 'site-intelligence') {
+                      navigate('/site-intelligence');
+                    } else {
+                      setSelectedModule(t.id);
+                      setCurrentWorkflowStep(2);
+                    }
                   }}
                   className={`w-full text-left p-3 rounded-2xl border transition-all cursor-pointer flex items-start gap-3 group ${
                     selectedModule === t.id
@@ -1499,235 +1402,26 @@ export default function AIHomeDesign() {
                 >
                   <span className="text-xl shrink-0 p-2 rounded-xl bg-gray-50 group-hover:scale-110 transition">{t.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-1">
-                      <h4 className="text-xs font-bold text-gray-900 group-hover:text-black truncate">{t.name}</h4>
-                      <span className="text-[9px] font-semibold bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-md shrink-0">
-                        {t.badge}
-                      </span>
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-bold text-gray-900 group-hover:text-black">{t.name}</h4>
+                      <span className="text-[9px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-md">{t.badge}</span>
                     </div>
-                    <p className="text-[10px] text-gray-500 line-clamp-2 mt-0.5">{t.desc}</p>
+                    <p className="text-[10px] text-gray-500 mt-0.5 line-clamp-2">{t.desc}</p>
                   </div>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Quick Info Badge */}
-          <div className="p-3 bg-amber-50/80 border border-amber-200/60 rounded-2xl text-[11px] text-amber-900 space-y-1">
-            <p className="font-bold flex items-center gap-1">
-              <span>💡</span> Instant Regional Pin Matching
-            </p>
-            <p className="text-[10px] text-amber-800 leading-snug">
-              Every rendered design maps to shoppable products in 🇮🇳 India, 🇺🇸 USA, and 🇧🇷 Brazil.
-            </p>
-          </div>
-
         </aside>
 
       </div>
 
-      {/* ── DESIGN BRIEF CARD SLIDE-IN DRAWER ── */}
-        <AnimatePresence>
-          {showBriefCard && (
-            <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-xs">
-              <motion.div
-                initial={{ x: '100%' }}
-                animate={{ x: 0 }}
-                exit={{ x: '100%' }}
-                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                className="w-full max-w-md bg-white h-full shadow-2xl p-6 overflow-y-auto flex flex-col justify-between border-l border-gray-200"
-              >
-                <div className="space-y-6">
-                  
-                  {/* Drawer Header */}
-                  <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-                    <div>
-                      <h2 className="text-lg font-semibold text-gray-900">Design Brief Settings</h2>
-                      <p className="text-xs text-gray-500 capitalize">Mode: {selectedModule.replace('-', ' ')}</p>
-                    </div>
-                    <button
-                      onClick={() => setShowBriefCard(false)}
-                      className="p-2 rounded-xl text-gray-400 hover:text-black hover:bg-gray-100 transition cursor-pointer"
-                    >
-                      <X size={18} />
-                    </button>
-                  </div>
-
-                  {/* Step 1: Upload or Choose Photo */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-[#111111] text-[#CCFF00] font-semibold text-[10px] flex items-center justify-center">1</span>
-                      <h3 className="text-xs font-semibold text-gray-900">Upload or Select Room Photo</h3>
-                    </div>
-
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
-                      accept="image/*"
-                      className="hidden"
-                    />
-
-                    {sourceImage ? (
-                      <div className="relative h-40 rounded-2xl overflow-hidden border border-gray-300">
-                        <img src={sourceImage} alt="Uploaded" className="w-full h-full object-cover" />
-                        <button
-                          onClick={() => fileInputRef.current?.click()}
-                          className="absolute bottom-3 right-3 bg-black/80 hover:bg-black text-white text-[10px] font-semibold px-3 py-1.5 rounded-xl transition cursor-pointer"
-                        >
-                          Change Photo
-                        </button>
-                      </div>
-                    ) : (
-                      <div
-                        onClick={() => fileInputRef.current?.click()}
-                        className="border-2 border-dashed border-gray-300 hover:border-gray-900 bg-gray-50 p-6 rounded-2xl text-center cursor-pointer transition space-y-2"
-                      >
-                        <Upload size={24} className="mx-auto text-gray-400" />
-                        <p className="text-xs font-semibold text-gray-800">Click to upload your room photo</p>
-                        <p className="text-[10px] text-gray-400">Supports JPG, PNG, WEBP up to 10MB</p>
-                      </div>
-                    )}
-
-                    {/* Quick Sample Photos */}
-                    <div className="space-y-1.5 pt-1">
-                      <span className="text-[10px] font-semibold text-gray-400 uppercase">Or select sample photo:</span>
-                      <div className="grid grid-cols-2 gap-2">
-                        {SAMPLE_PHOTOS.map(s => (
-                          <button
-                            key={s.id}
-                            type="button"
-                            onClick={() => handleSelectSamplePhoto(s.url, s.module)}
-                            className="p-2 rounded-xl border border-gray-200 hover:border-black bg-gray-50 flex items-center gap-2 cursor-pointer transition text-left"
-                          >
-                            <img src={s.url} alt={s.label} className="w-7 h-7 rounded-lg object-cover" />
-                            <span className="text-[11px] font-bold text-gray-800 truncate">{s.label}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Step 2: Room Type */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-[#111111] text-[#CCFF00] font-semibold text-[10px] flex items-center justify-center">2</span>
-                      <h3 className="text-xs font-semibold text-gray-900">Room or Area Type</h3>
-                    </div>
-
-                    <div className="flex flex-wrap gap-1.5">
-                      {['Living Room', 'Bedroom', 'Kitchen', 'Exterior Facade', 'Backyard Garden', 'Bathroom', 'Office Lounge'].map(r => (
-                        <button
-                          key={r}
-                          type="button"
-                          onClick={() => setRoomType(r)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
-                            roomType === r
-                              ? 'bg-[#111111] text-[#CCFF00] shadow-2xs'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                        >
-                          {r}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Step 3: Style Selection */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-[#111111] text-[#CCFF00] font-semibold text-[10px] flex items-center justify-center">3</span>
-                      <h3 className="text-xs font-semibold text-gray-900">Architectural Style</h3>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      {STYLE_OPTIONS.map(st => (
-                        <button
-                          key={st.id}
-                          type="button"
-                          onClick={() => setSelectedStyle(st.id)}
-                          className={`p-2 rounded-xl border text-left flex items-center gap-2 transition cursor-pointer ${
-                            selectedStyle === st.id
-                              ? 'border-black bg-gray-100 font-semibold ring-1 ring-black'
-                              : 'border-gray-200 hover:border-gray-400 bg-white'
-                          }`}
-                        >
-                          <img src={st.img} alt={st.name} className="w-8 h-8 rounded-lg object-cover" />
-                          <span className="text-[11px] font-semibold text-gray-800 truncate">{st.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-
-
-                  {errorMsg && (
-                    <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-                      <AlertCircle size={15} className="shrink-0" />
-                      <span>{errorMsg}</span>
-                    </div>
-                  )}
-
-                </div>
-
-                {/* Drawer Footer Action */}
-                <div className="pt-4 border-t border-gray-100">
-                  <button
-                    onClick={handleGenerate}
-                    disabled={isGenerating}
-                    className="w-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-semibold py-3.5 rounded-2xl text-xs transition shadow-md flex items-center justify-center gap-2 cursor-pointer border border-black/10"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <RefreshCw size={15} className="animate-spin" /> Rendering AI Design...
-                      </>
-                    ) : (
-                      <>
-                        <Wand2 size={15} /> Render AI Design (1 Credit)
-                      </>
-                    )}
-                  </button>
-                </div>
-
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-
-      <AllToolsDrawer
-        isOpen={showToolsDrawer}
-        onClose={() => setShowToolsDrawer(false)}
-        activeToolId="ai-home-design"
-      />
-
-      <ToolsSettingsModal
-        isOpen={showSettingsModal}
-        onClose={() => setShowSettingsModal(false)}
-        user={user}
-        onLogout={() => {
-          logoutToolUser();
-          setUser(null);
-        }}
-        onUpgrade={() => setShowPaywall(true)}
-      />
-
-      <ToolsAuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onSuccess={(u) => {
-          setUser(u);
-          setShowAuthModal(false);
-        }}
-      />
-
-      <ToolsPaywallOverlay
-        isOpen={showPaywall}
-        userCountry={user?.country}
-        onClose={() => setShowPaywall(false)}
-        onUseFreeTrial={() => setShowPaywall(false)}
-        onLogin={() => { setShowPaywall(false); setShowAuthModal(true); }}
-        onRegister={() => { setShowPaywall(false); setShowAuthModal(true); }}
-      />
+      {/* Drawers & Modals */}
+      <ToolsAuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      <ToolsPaywallOverlay isOpen={showPaywall} onClose={() => setShowPaywall(false)} user={user} />
+      <AllToolsDrawer isOpen={showToolsDrawer} onClose={() => setShowToolsDrawer(false)} />
+      <ToolsSettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} user={user} />
     </>
   );
 }
