@@ -10,12 +10,8 @@ import { parse } from 'url';
 
 // ── Import consolidated handlers ──────────────────────────────────────
 import adminHandler from '../api/admin';
-import blogsHandler from '../api/blogs';
-import projectsHandler from '../api/projects';
-import messagesHandler from '../api/messages';
-import servicesHandler from '../api/services';
-import productsHandler from '../api/products';
 import metaHandler from '../api/meta';
+import messagesHandler from '../api/messages';
 import seoHandler from '../api/seo';
 import toolsHandler from '../api/tools';
 
@@ -86,30 +82,38 @@ const server = createServer(async (req, res) => {
     if (pathname.startsWith('/api/admin') || pathname === '/api/db-init' || pathname === '/api/upload' || pathname === '/api/analytics') {
       await adminHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/blogs' || pathname === '/api/blogs/') {
-      await blogsHandler(vercelReq, vercelRes);
+      vercelReq.query.resource = 'blogs';
+      await metaHandler(vercelReq, vercelRes);
     } else if (blogsIdMatch) {
+      vercelReq.query.resource = 'blogs';
       vercelReq.query.id = blogsIdMatch[1];
-      await blogsHandler(vercelReq, vercelRes);
+      await metaHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/projects' || pathname === '/api/projects/') {
-      await projectsHandler(vercelReq, vercelRes);
+      vercelReq.query.resource = 'projects';
+      await metaHandler(vercelReq, vercelRes);
     } else if (projectsIdMatch) {
+      vercelReq.query.resource = 'projects';
       vercelReq.query.id = projectsIdMatch[1];
-      await projectsHandler(vercelReq, vercelRes);
+      await metaHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/messages' || pathname === '/api/messages/') {
       await messagesHandler(vercelReq, vercelRes);
     } else if (messagesIdMatch) {
       vercelReq.query.id = messagesIdMatch[1];
       await messagesHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/services' || pathname === '/api/services/') {
-      await servicesHandler(vercelReq, vercelRes);
+      vercelReq.query.resource = 'services';
+      await metaHandler(vercelReq, vercelRes);
     } else if (servicesIdMatch) {
+      vercelReq.query.resource = 'services';
       vercelReq.query.id = servicesIdMatch[1];
-      await servicesHandler(vercelReq, vercelRes);
+      await metaHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/products' || pathname === '/api/products/') {
-      await productsHandler(vercelReq, vercelRes);
+      vercelReq.query.resource = 'products';
+      await metaHandler(vercelReq, vercelRes);
     } else if (productsIdMatch) {
+      vercelReq.query.resource = 'products';
       vercelReq.query.id = productsIdMatch[1];
-      await productsHandler(vercelReq, vercelRes);
+      await metaHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/workshops' || pathname === '/api/workshops/') {
       vercelReq.query.resource = 'workshops';
       await metaHandler(vercelReq, vercelRes);

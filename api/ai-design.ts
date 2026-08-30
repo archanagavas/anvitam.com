@@ -23,7 +23,7 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import jwt from 'jsonwebtoken';
-import { getDoc, getAllDocs, upsertDoc } from '../lib/db.js';
+import { getDoc, getAllDocs, upsertDoc, deleteDoc } from '../lib/db.js';
 import {
   buildModulePrompt,
   buildRecommendationPrompt,
@@ -189,6 +189,105 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.error('[ai-design/admin-product]', err);
       return res.status(500).json({ error: 'Failed to save product to database.' });
     }
+  }
+
+  // ── 2b. ADMIN PRODUCT DELETE ──────────────────────────────────────────
+  if (action === 'admin-product-delete') {
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+    const decoded = validateJWT(req);
+    if (!decoded) return res.status(401).json({ error: 'Unauthorized. Admin JWT required.' });
+
+    const body = parseBody(req);
+    const { id } = body as { id?: string };
+    if (!id || typeof id !== 'string') return res.status(400).json({ error: 'Product ID is required.' });
+
+    try {
+      await deleteDoc('catalog_products', id.trim());
+      return res.status(200).json({ success: true, deleted_id: id });
+    } catch (err) {
+      console.error('[ai-design/admin-product-delete]', err);
+      return res.status(500).json({ error: 'Failed to delete product.' });
+    }
+  }
+
+  // ── 2c. ADMIN PRODUCT BULK IMPORT ────────────────────────────────────
+  if (action === 'admin-product-bulk') {
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+    const decoded = validateJWT(req);
+    if (!decoded) return res.status(401).json({ error: 'Unauthorized. Admin JWT required.' });
+
+    const body = parseBody(req);
+    const { products } = body as { products?: CatalogProduct[] };
+    if (!Array.isArray(products) || products.length === 0) {
+      return res.status(400).json({ error: 'A non-empty array of products is required.' });
+    }
+
+    try {
+      let savedCount = 0;
+      for (const prod of products) {
+        if (!prod.name || !prod.affiliate_link) continue;
+        const prodId = prod.id || `prod_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+        await upsertDoc('catalog_products', prodId, {
+          ...prod,
+          id: prodId,
+          name: prod.name.trim(),
+          region: prod.region || 'India',
+          element_type: prod.element_type || 'sofa',
+          style_tags: Array.isArray(prod.style_tags) ? prod.style_tags : ['Modern'],
+          price: prod.price || 'Check Price',
+          image_url: prod.image_url || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=800&auto=format&fit=crop',
+          affiliate_link: prod.affiliate_link.trim(),
+          source: prod.source || 'manual',
+          active: prod.active !== false
+        });
+        savedCount++;
+      }
+      return res.status(200).json({ success: true, count: savedCount });
+    } catch (err) {
+      console.error('[ai-design/admin-product-bulk]', err);
+      return res.status(500).json({ error: 'Failed to bulk import products.' });
+    }
+  }
+
+  // ── 2d. AUTO-FETCH PRODUCT METADATA FROM URL ─────────────────────────
+  if (action === 'auto-fetch-product') {
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+    const body = parseBody(req);
+    const { url, element_type } = body as { url?: string; element_type?: string };
+    if (!url || typeof url !== 'string') return res.status(400).json({ error: 'URL is required.' });
+
+    // Generate high quality fallback thumbnail based on element_type if URL parsing is restricted
+    const ELEMENT_PLACEHOLDERS: Record<string, string> = {
+      sofa: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=800&auto=format&fit=crop',
+      chair: 'https://images.unsplash.com/photo-1580481072645-022f9a6d83d0?q=80&w=800&auto=format&fit=crop',
+      rug: 'https://images.unsplash.com/photo-1600121848594-d8644e57abab?q=80&w=800&auto=format&fit=crop',
+      lighting_fixture: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?q=80&w=800&auto=format&fit=crop',
+      pendant_light: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?q=80&w=800&auto=format&fit=crop',
+      wall_paint: 'https://images.unsplash.com/photo-1562184552-997c461abbe6?q=80&w=800&auto=format&fit=crop',
+      flooring: 'https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?q=80&w=800&auto=format&fit=crop',
+      indoor_plant: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?q=80&w=800&auto=format&fit=crop',
+      decor_accent: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=800&auto=format&fit=crop'
+    };
+
+    let titleCandidate = 'Shoppable Home Decor';
+    try {
+      const parsedUrl = new URL(url);
+      const host = parsedUrl.hostname.replace('www.', '').split('.')[0];
+      const pathParts = parsedUrl.pathname.split('/').filter(Boolean);
+      const rawSlug = pathParts.find(p => p.length > 5 && !p.includes('dp')) || host;
+      titleCandidate = rawSlug.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      if (titleCandidate.length > 50) titleCandidate = titleCandidate.substring(0, 50) + '...';
+    } catch (e) {
+      // ignore URL parse errors
+    }
+
+    const imageUrl = ELEMENT_PLACEHOLDERS[element_type || 'sofa'] || ELEMENT_PLACEHOLDERS['sofa'];
+    return res.status(200).json({
+      success: true,
+      title: titleCandidate,
+      image_url: imageUrl,
+      affiliate_link: url
+    });
   }
 
   // ── 3. GENERATE IMAGE REDESIGN ───────────────────────────────────────

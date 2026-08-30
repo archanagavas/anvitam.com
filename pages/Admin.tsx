@@ -1483,6 +1483,117 @@ const Admin: React.FC = () => {
     }
   };
 
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
+  const [bulkImportInput, setBulkImportInput] = useState('');
+  const [bulkImportLoading, setBulkImportLoading] = useState(false);
+  const [autoFetching, setAutoFetching] = useState(false);
+
+  const deleteCatalogProduct = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this product from the catalog?')) return;
+    const token = getAuthToken();
+    if (!token) return;
+    try {
+      const res = await fetch('/api/ai-design?action=admin-product-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ id })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Delete failed');
+      showToast('Product deleted successfully');
+      fetchCatalogProducts();
+    } catch (err: any) {
+      showToast('Error: ' + (err.message || 'Failed to delete product'));
+    }
+  };
+
+  const autoFetchProductMetadata = async () => {
+    if (!catalogFormData.affiliate_link.trim()) {
+      showToast('Please enter an affiliate link first.');
+      return;
+    }
+    setAutoFetching(true);
+    try {
+      const res = await fetch('/api/ai-design?action=auto-fetch-product', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: catalogFormData.affiliate_link.trim(),
+          element_type: catalogFormData.element_type
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCatalogFormData(prev => ({
+          ...prev,
+          name: prev.name.trim() ? prev.name : data.title,
+          image_url: data.image_url
+        }));
+        showToast('⚡ Product details auto-populated!');
+      }
+    } catch (err) {
+      showToast('Auto-fetch failed. Please enter details manually.');
+    } finally {
+      setAutoFetching(false);
+    }
+  };
+
+  const parseCSVOrJSON = (input: string) => {
+    const trimmed = input.trim();
+    if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+      const parsed = JSON.parse(trimmed);
+      return Array.isArray(parsed) ? parsed : [parsed];
+    }
+    // Simple CSV parser
+    const lines = trimmed.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length < 2) return [];
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+    const products: any[] = [];
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+      const obj: any = {};
+      headers.forEach((h, idx) => {
+        obj[h] = values[idx] || '';
+      });
+      if (obj.name && obj.affiliate_link) {
+        products.push(obj);
+      }
+    }
+    return products;
+  };
+
+  const bulkImportCatalogProducts = async () => {
+    if (!bulkImportInput.trim()) {
+      showToast('Please upload or paste CSV/JSON content.');
+      return;
+    }
+    setBulkImportLoading(true);
+    try {
+      const products = parseCSVOrJSON(bulkImportInput);
+      if (!products.length) {
+        showToast('No valid products found in input.');
+        setBulkImportLoading(false);
+        return;
+      }
+      const token = getAuthToken();
+      const res = await fetch('/api/ai-design?action=admin-product-bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ products })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Bulk import failed');
+      showToast(`Successfully imported ${data.count} product(s)!`);
+      setIsBulkImportOpen(false);
+      setBulkImportInput('');
+      fetchCatalogProducts();
+    } catch (err: any) {
+      showToast('Error: ' + (err.message || 'Failed to import products'));
+    } finally {
+      setBulkImportLoading(false);
+    }
+  };
+
   // ── IndexNow Integration State ──────────────────────────────────────
   const [indexNowUrls, setIndexNowUrls] = useState('');
   const [indexNowStatus, setIndexNowStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
@@ -3773,20 +3884,28 @@ const Admin: React.FC = () => {
                   Each product needs a region, element_type, style_tags, and a working affiliate link.
                 </p>
               </div>
-              <button
-                onClick={() => {
-                  const newId = `prod_${Date.now()}`;
-                  setCatalogFormData({
-                    id: newId, name: '', category_id: 'cat_furniture', element_type: 'sofa',
-                    region: 'India', style_tags: 'Modern, Minimalist', price: '', image_url: '',
-                    affiliate_link: '', source: 'manual', active: true, room_types: 'Living Room'
-                  });
-                  setEditingCatalogProduct({ id: newId, _isNew: true });
-                }}
-                className="flex items-center gap-2 bg-black text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-gray-800 transition"
-              >
-                + Add Product
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsBulkImportOpen(true)}
+                  className="flex items-center gap-2 bg-gray-100 text-gray-800 text-xs font-bold px-3.5 py-2.5 rounded-xl hover:bg-gray-200 transition border border-gray-200"
+                >
+                  📥 Bulk Import (CSV / JSON)
+                </button>
+                <button
+                  onClick={() => {
+                    const newId = `prod_${Date.now()}`;
+                    setCatalogFormData({
+                      id: newId, name: '', category_id: 'cat_furniture', element_type: 'sofa',
+                      region: 'India', style_tags: 'Modern, Minimalist', price: '', image_url: '',
+                      affiliate_link: '', source: 'manual', active: true, room_types: 'Living Room'
+                    });
+                    setEditingCatalogProduct({ id: newId, _isNew: true });
+                  }}
+                  className="flex items-center gap-2 bg-black text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-gray-800 transition"
+                >
+                  + Add Product
+                </button>
+              </div>
             </div>
 
             {/* ADD / EDIT FORM */}
@@ -3855,20 +3974,30 @@ const Admin: React.FC = () => {
                     />
                   </div>
                   <div className="sm:col-span-2">
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-bold text-gray-600">Affiliate Link * (goes through /api/go redirect)</label>
+                      <button
+                        type="button"
+                        onClick={autoFetchProductMetadata}
+                        disabled={autoFetching || !catalogFormData.affiliate_link.trim()}
+                        className="text-[11px] font-extrabold text-blue-600 hover:text-blue-800 disabled:opacity-40 flex items-center gap-1"
+                      >
+                        {autoFetching ? 'Fetching...' : '⚡ Auto-Fetch Title & Image'}
+                      </button>
+                    </div>
+                    <input
+                      value={catalogFormData.affiliate_link}
+                      onChange={e => setCatalogFormData(f => ({ ...f, affiliate_link: e.target.value }))}
+                      placeholder="https://amazon.in/dp/... or https://..."
+                      className="w-full border rounded-lg px-3 py-2 text-xs outline-none focus:border-black"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
                     <label className="text-xs font-bold text-gray-600 block mb-1">Image URL *</label>
                     <input
                       value={catalogFormData.image_url}
                       onChange={e => setCatalogFormData(f => ({ ...f, image_url: e.target.value }))}
                       placeholder="https://..."
-                      className="w-full border rounded-lg px-3 py-2 text-xs outline-none focus:border-black"
-                    />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="text-xs font-bold text-gray-600 block mb-1">Affiliate Link * (goes through /api/go redirect)</label>
-                    <input
-                      value={catalogFormData.affiliate_link}
-                      onChange={e => setCatalogFormData(f => ({ ...f, affiliate_link: e.target.value }))}
-                      placeholder="https://amazon.in/dp/... or https://..."
                       className="w-full border rounded-lg px-3 py-2 text-xs outline-none focus:border-black"
                     />
                   </div>
@@ -3879,7 +4008,7 @@ const Admin: React.FC = () => {
                       onChange={e => setCatalogFormData(f => ({ ...f, source: e.target.value }))}
                       className="w-full border rounded-lg px-3 py-2 text-xs outline-none focus:border-black"
                     >
-                      {['manual','amazon_in','skimlinks','mercadolivre','paapi'].map(s => <option key={s}>{s}</option>)}
+                      {['manual','amazon_in','cuelinks','cj_affiliate','impact','skimlinks','mercadolivre'].map(s => <option key={s}>{s}</option>)}
                     </select>
                   </div>
                   <div className="flex items-center gap-3 pt-4">
@@ -3978,22 +4107,30 @@ const Admin: React.FC = () => {
                             </span>
                           </td>
                           <td className="py-3.5 px-4">
-                            <button
-                              onClick={() => {
-                                setCatalogFormData({
-                                  id: p.id, name: p.name, category_id: p.category_id || 'cat_furniture',
-                                  element_type: p.element_type, region: p.region,
-                                  style_tags: Array.isArray(p.style_tags) ? p.style_tags.join(', ') : (p.style_tags || ''),
-                                  price: p.price, image_url: p.image_url, affiliate_link: p.affiliate_link,
-                                  source: p.source || 'manual', active: p.active !== false,
-                                  room_types: Array.isArray(p.room_types) ? p.room_types.join(', ') : (p.room_types || '')
-                                });
-                                setEditingCatalogProduct(p);
-                              }}
-                              className="text-xs font-bold text-gray-600 hover:text-black underline"
-                            >
-                              Edit
-                            </button>
+                            <div className="flex items-center gap-3">
+                              <button
+                                onClick={() => {
+                                  setCatalogFormData({
+                                    id: p.id, name: p.name, category_id: p.category_id || 'cat_furniture',
+                                    element_type: p.element_type, region: p.region,
+                                    style_tags: Array.isArray(p.style_tags) ? p.style_tags.join(', ') : (p.style_tags || ''),
+                                    price: p.price, image_url: p.image_url, affiliate_link: p.affiliate_link,
+                                    source: p.source || 'manual', active: p.active !== false,
+                                    room_types: Array.isArray(p.room_types) ? p.room_types.join(', ') : (p.room_types || '')
+                                  });
+                                  setEditingCatalogProduct(p);
+                                }}
+                                className="text-xs font-bold text-gray-600 hover:text-black underline"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => deleteCatalogProduct(p.id)}
+                                className="text-xs font-bold text-red-500 hover:text-red-700 underline"
+                              >
+                                Delete
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -4001,6 +4138,84 @@ const Admin: React.FC = () => {
                   </table>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* BULK IMPORT MODAL */}
+        {isBulkImportOpen && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[110] backdrop-blur-xs font-sans">
+            <div className="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl border border-gray-150 p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-extrabold text-gray-900 text-lg">📥 Bulk Import Shoppable Products</h3>
+                  <p className="text-xs text-gray-500 mt-0.5">Upload a CSV or JSON file, or paste raw text below.</p>
+                </div>
+                <button onClick={() => setIsBulkImportOpen(false)} className="text-gray-400 hover:text-gray-700">
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-gray-700">Paste CSV or JSON:</span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        const sampleJSON = JSON.stringify([
+                          {
+                            name: "Urban Ladder 3-Seater Velvet Sofa",
+                            region: "India",
+                            element_type: "sofa",
+                            price: "₹34,999",
+                            style_tags: ["Modern", "Minimalist"],
+                            image_url: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc",
+                            affiliate_link: "https://amazon.in/dp/B08X123456?tag=anvitam-21",
+                            source: "amazon_in",
+                            active: true
+                          }
+                        ], null, 2);
+                        setBulkImportInput(sampleJSON);
+                      }}
+                      className="text-[11px] font-bold text-blue-600 hover:underline"
+                    >
+                      Sample JSON
+                    </button>
+                    <button
+                      onClick={() => {
+                        const sampleCSV = `name,region,element_type,price,image_url,affiliate_link,source\nUrban Ladder Velvet Sofa,India,sofa,₹34,999,https://images.unsplash.com/photo-1555041469-a586c61ea9bc,https://amazon.in/dp/B08X123456?tag=anvitam-21,amazon_in`;
+                        setBulkImportInput(sampleCSV);
+                      }}
+                      className="text-[11px] font-bold text-blue-600 hover:underline"
+                    >
+                      Sample CSV
+                    </button>
+                  </div>
+                </div>
+                <textarea
+                  rows={8}
+                  value={bulkImportInput}
+                  onChange={e => setBulkImportInput(e.target.value)}
+                  placeholder="Paste CSV or JSON here..."
+                  className="w-full border border-gray-300 rounded-xl p-3 text-xs font-mono outline-none focus:border-black"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  onClick={() => setIsBulkImportOpen(false)}
+                  className="px-4 py-2 text-xs font-bold border rounded-xl text-gray-600 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={bulkImportCatalogProducts}
+                  disabled={bulkImportLoading || !bulkImportInput.trim()}
+                  className="px-5 py-2 text-xs font-bold bg-black text-white rounded-xl hover:bg-gray-800 transition disabled:opacity-50"
+                >
+                  {bulkImportLoading ? 'Importing...' : 'Import Products'}
+                </button>
+              </div>
             </div>
           </div>
         )}

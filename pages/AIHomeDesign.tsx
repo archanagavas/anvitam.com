@@ -120,6 +120,14 @@ const AI_MODULES = [
   { id: 'remove', label: 'Furniture Removal', icon: '🧹' }
 ];
 
+const DEFAULT_HOTSPOT_PINS = [
+  { id: 'pin_sofa', label: 'Designer Seating', element_type: 'sofa', x_percent: 42, y_percent: 64 },
+  { id: 'pin_rug', label: 'Accent Area Rug', element_type: 'rug', x_percent: 58, y_percent: 80 },
+  { id: 'pin_light', label: 'Pendant Lighting', element_type: 'pendant_light', x_percent: 50, y_percent: 25 },
+  { id: 'pin_decor', label: 'Wall Decor', element_type: 'wall_art', x_percent: 25, y_percent: 38 },
+];
+
+
 export default function AIHomeDesign() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -144,6 +152,7 @@ export default function AIHomeDesign() {
   const [showBriefCard, setShowBriefCard] = useState(false);
 
   // Form State
+  const [currentWorkflowStep, setCurrentWorkflowStep] = useState<number>(1);
   const [sourceImage, setSourceImage] = useState<string | null>(null);
   const [designMode, setDesignMode] = useState<'empty' | 'restyle'>('restyle');
   const [roomType, setRoomType] = useState<string>('Living Room');
@@ -187,7 +196,7 @@ export default function AIHomeDesign() {
   const handleSelectModule = (modId: string) => {
     setSelectedModule(modId);
     setSearchParams({ module: modId });
-    setShowBriefCard(true);
+    setCurrentWorkflowStep(2); // Advance to Step 2: Style Selection
   };
 
   const handleImageUpload = (file: File) => {
@@ -199,7 +208,7 @@ export default function AIHomeDesign() {
     const reader = new FileReader();
     reader.onload = (e) => {
       setSourceImage(e.target?.result as string);
-      setShowBriefCard(true);
+      setCurrentWorkflowStep(4); // Advance to Step 4: AI Model Selection
     };
     reader.readAsDataURL(file);
   };
@@ -208,7 +217,7 @@ export default function AIHomeDesign() {
     setSelectedModule(sampleMod);
     setSearchParams({ module: sampleMod });
     setSourceImage(sampleUrl);
-    setShowBriefCard(true);
+    setCurrentWorkflowStep(4); // Advance to Step 4: AI Model Selection
   };
 
   const handlePromptSubmit = (e?: React.FormEvent) => {
@@ -217,7 +226,11 @@ export default function AIHomeDesign() {
       setShowAuthModal(true);
       return;
     }
-    setShowBriefCard(true);
+    if (currentWorkflowStep < 4) {
+      setCurrentWorkflowStep(currentWorkflowStep + 1);
+    } else {
+      handleGenerate();
+    }
   };
 
   // OpenRouter Model Selection (Fast: 1 Credit, FLUX: 2 Credits, GPT-4o: 3 Credits)
@@ -280,6 +293,7 @@ export default function AIHomeDesign() {
       }
 
       setGeneratedImage(data.generatedImage);
+      setCurrentWorkflowStep(5);
       setShowBriefCard(false);
 
       // Auto-fetch shoppable products and detect visual pins matching the rendered design
@@ -480,91 +494,97 @@ export default function AIHomeDesign() {
           {/* ── MAIN WORKSPACE CANVAS ── */}
           <main className="flex-1 bg-[#FAFBFD] p-6 sm:p-10 overflow-y-auto max-w-6xl mx-auto w-full">
 
-            {/* HERO GREETING SECTION */}
-            {!generatedImage && (
-              <div className="space-y-10 my-4">
-                
-                <div className="text-center space-y-5 max-w-2xl mx-auto">
-                  <h1 className="text-3xl sm:text-4xl font-semibold text-gray-900 tracking-tight">
-                    Hello, how may I help you?
-                  </h1>
+            {/* ── 5-STEP GUIDED CONVERSATIONAL WORKFLOW CANVAS ── */}
+            <div className="space-y-8 my-4">
+              
+              {/* Stepper Navigation Header Bar */}
+              <div className="bg-white border border-gray-200/90 rounded-2xl p-2 sm:p-3 shadow-2xs flex items-center justify-between gap-1 overflow-x-auto no-scrollbar">
+                {[
+                  { step: 1, label: '1. Select Tool', icon: '🛠️' },
+                  { step: 2, label: '2. Aesthetic Style', icon: '🎨' },
+                  { step: 3, label: '3. Image & Brief', icon: '📷' },
+                  { step: 4, label: '4. AI Model Engine', icon: '🤖' },
+                  { step: 5, label: '5. Render Output', icon: '✨' },
+                ].map((s) => (
+                  <button
+                    key={s.step}
+                    type="button"
+                    onClick={() => {
+                      if (s.step === 5 && !generatedImage) return;
+                      setCurrentWorkflowStep(s.step);
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap cursor-pointer ${
+                      currentWorkflowStep === s.step
+                        ? 'bg-[#111111] text-[#CCFF00] shadow-2xs font-semibold'
+                        : currentWorkflowStep > s.step
+                        ? 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                        : 'bg-transparent text-gray-400 hover:text-gray-600'
+                    }`}
+                  >
+                    <span>{s.icon}</span>
+                    <span>{s.label}</span>
+                  </button>
+                ))}
+              </div>
 
-                  {/* Centered Interactive AI Prompt Box with Tool Router & Budget Selector */}
-                  <form onSubmit={handlePromptSubmit} className="relative max-w-2xl mx-auto space-y-3">
-                    <div className="bg-white border border-gray-300 hover:border-gray-900 rounded-3xl p-3 shadow-md flex flex-col sm:flex-row items-center gap-3 transition">
-                      <div className="p-2.5 bg-[#111111] text-[#CCFF00] rounded-2xl shrink-0 hidden sm:flex">
-                        <Wand2 size={18} />
-                      </div>
-                      <input
-                        type="text"
-                        value={promptText}
-                        onChange={(e) => setPromptText(e.target.value)}
-                        placeholder="Ask Anvitam's AI anything (e.g. Modern Scandinavian living room with warm wood)..."
-                        aria-label="Ask Anvitam's AI architectural design prompt"
-                        className="w-full bg-transparent border-none text-xs text-gray-900 outline-none placeholder:text-gray-400 font-medium px-2"
-                      />
+              {/* Central Prompt & Conversational Bar */}
+              <div className="text-center space-y-4 max-w-2xl mx-auto">
+                <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight">
+                  Hello, how may I help you?
+                </h1>
 
-                      {/* Room Budget Selector Pill inside Prompt Bar */}
-                      <div className="flex items-center gap-1.5 shrink-0 bg-gray-100 p-1 rounded-full border border-gray-200">
-                        <span className="text-[10px] font-bold text-gray-500 pl-2">Budget:</span>
-                        <select
-                          value={budget}
-                          onChange={(e) => setBudget(e.target.value)}
-                          className="bg-white text-gray-900 font-semibold text-[11px] px-2.5 py-1 rounded-full outline-none cursor-pointer border border-gray-300 shadow-2xs"
-                        >
-                          <option value="Economy">₹25,000 (Economy)</option>
-                          <option value="Mid-Range">₹75,000 (Mid-Range)</option>
-                          <option value="Luxury">₹2,00,000+ (Luxury)</option>
-                        </select>
-                      </div>
+                <form onSubmit={handlePromptSubmit} className="relative max-w-2xl mx-auto space-y-3">
+                  <div className="bg-white border border-gray-300 hover:border-gray-900 rounded-3xl p-3 shadow-md flex flex-col sm:flex-row items-center gap-3 transition">
+                    <div className="p-2.5 bg-[#111111] text-[#CCFF00] rounded-2xl shrink-0 hidden sm:flex">
+                      <Wand2 size={18} />
+                    </div>
+                    <input
+                      type="text"
+                      value={promptText}
+                      onChange={(e) => setPromptText(e.target.value)}
+                      placeholder="Ask Anvitam's AI anything (e.g. Modern Scandinavian living room with warm wood)..."
+                      aria-label="Ask Anvitam's AI architectural design prompt"
+                      className="w-full bg-transparent border-none text-xs text-gray-900 outline-none placeholder:text-gray-400 font-medium px-2"
+                    />
 
-                      <button
-                        type="submit"
-                        className="w-10 h-10 rounded-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black transition flex items-center justify-center font-bold cursor-pointer border border-black/10 shadow-2xs shrink-0"
-                        title="Generate Design"
-                        aria-label="Submit AI Design prompt to generate image"
+                    {/* Room Budget Selector Pill inside Prompt Bar */}
+                    <div className="flex items-center gap-1.5 shrink-0 bg-gray-100 p-1 rounded-full border border-gray-200">
+                      <span className="text-[10px] font-bold text-gray-500 pl-2">Budget:</span>
+                      <select
+                        value={budget}
+                        onChange={(e) => setBudget(e.target.value)}
+                        className="bg-white text-gray-900 font-semibold text-[11px] px-2.5 py-1 rounded-full outline-none cursor-pointer border border-gray-300 shadow-2xs"
                       >
-                        <ChevronRight size={18} />
-                      </button>
+                        <option value="Economy">₹25,000 (Economy)</option>
+                        <option value="Mid-Range">₹75,000 (Mid-Range)</option>
+                        <option value="Luxury">₹2,00,000+ (Luxury)</option>
+                      </select>
                     </div>
 
-                    {/* OpenRouter Model Tier Selection Bar */}
-                    <div className="flex items-center justify-center gap-1.5 flex-wrap pt-1">
-                      <span className="text-[11px] font-semibold text-gray-500 mr-1">AI Model Engine:</span>
-                      {[
-                        { id: 'fast', label: '⚡ Anvitam Fast (1 Cred)', desc: 'Standard Gemini/OpenRouter' },
-                        { id: 'flux', label: '🚀 FLUX.1 Pro (2 Creds)', desc: 'Photorealistic Architectural Elevation' },
-                        { id: 'claude', label: '🏛️ Claude Spec (2 Creds)', desc: 'Spatial Detail Engine' },
-                        { id: 'gpt4o', label: '💎 GPT-4o 4K (3 Creds)', desc: 'Ultra-HD Luxury Render' }
-                      ].map(model => (
-                        <button
-                          key={model.id}
-                          type="button"
-                          onClick={() => setSelectedAiModel(model.id as any)}
-                          className={`px-3 py-1 rounded-full text-[11px] font-semibold transition cursor-pointer ${
-                            selectedAiModel === model.id
-                              ? 'bg-[#111111] text-[#CCFF00] shadow-2xs'
-                              : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'
-                          }`}
-                          title={model.desc}
-                        >
-                          {model.label}
-                        </button>
-                      ))}
-                    </div>
-                  </form>
-                </div>
+                    <button
+                      type="submit"
+                      className="w-10 h-10 rounded-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black transition flex items-center justify-center font-bold cursor-pointer border border-black/10 shadow-2xs shrink-0"
+                      title="Next Step / Generate"
+                      aria-label="Submit AI Design prompt to advance step or generate image"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
+                </form>
+              </div>
 
-                {/* EXPLORE AI TOOLS CARDS */}
-                <div className="space-y-4 pt-6">
+              {/* ── STEP 1: MODULE & WORKFLOW TOOL SELECTION ── */}
+              {currentWorkflowStep === 1 && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-gray-900 tracking-tight flex items-center gap-2">
+                    <h2 className="text-base sm:text-lg font-semibold text-gray-900 tracking-tight flex items-center gap-2">
                       <span className="w-2 h-5 bg-[#CCFF00] rounded-full inline-block border border-black/20" />
                       Explore AI tools for your design workflow
                     </h2>
+                    <span className="text-xs text-gray-500 font-medium">Step 1 of 4</span>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
                       {
                         id: 'interior',
@@ -586,6 +606,20 @@ export default function AIHomeDesign() {
                         desc: 'Redesign gardens & outdoors',
                         imageBefore: 'https://images.unsplash.com/photo-1558904541-efa843a96f01?q=80&w=300&auto=format&fit=crop',
                         imageAfter: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?q=80&w=300&auto=format&fit=crop'
+                      },
+                      {
+                        id: 'sketch2image',
+                        title: 'Sketch2Image™',
+                        desc: 'Sketch/blueprint → 3D photoreal',
+                        imageBefore: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=300&auto=format&fit=crop',
+                        imageAfter: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=300&auto=format&fit=crop'
+                      },
+                      {
+                        id: 'virtual-staging',
+                        title: 'Virtual Staging AI',
+                        desc: 'Furnish empty room spaces',
+                        imageBefore: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=300&auto=format&fit=crop',
+                        imageAfter: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=300&auto=format&fit=crop'
                       },
                       {
                         id: 'replace',
@@ -631,10 +665,281 @@ export default function AIHomeDesign() {
                       </div>
                     ))}
                   </div>
-                </div>
 
-              </div>
-            )}
+                  {/* Flagship Site Intelligence & 3D Shadow Canvas Section */}
+                  <div className="bg-gradient-to-br from-[#111111] via-gray-900 to-black rounded-3xl p-6 text-white border border-gray-800 shadow-xl space-y-5">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div>
+                        <span className="px-3 py-1 rounded-full bg-[#CCFF00] text-black text-[10px] font-extrabold uppercase tracking-wider inline-block mb-2">
+                          FLAGSHIP SITE CANVAS
+                        </span>
+                        <h3 className="text-xl font-bold text-white tracking-tight">Site Intelligence &amp; 3D Shadow Canvas</h3>
+                        <p className="text-xs text-gray-300 max-w-xl mt-1">
+                          Drop a pin anywhere on Earth to simulate 3D building shadows, wind vectors, soil health, and get 11+ site reports.
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => navigate('/site-intelligence')}
+                        className="px-5 py-2.5 rounded-xl bg-[#CCFF00] text-black font-bold text-xs hover:bg-white transition flex items-center gap-2 cursor-pointer shadow-md shrink-0"
+                      >
+                        <span>Launch 3D Site Canvas</span>
+                        <ChevronRight size={16} />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 pt-2">
+                      {[
+                        { icon: '☀️', title: '3D Sun & Shadow', desc: 'Solar path & glare' },
+                        { icon: '🏢', title: 'Heights & Density', desc: 'FSI & setbacks' },
+                        { icon: '💨', title: 'Wind & Breeze', desc: 'Microclimate vectors' },
+                        { icon: '🏔️', title: 'Slope Contours', desc: 'Elevation & grading' },
+                        { icon: '🧱', title: 'Soil & Foundation', desc: 'Geotech integrity' },
+                        { icon: '🌧️', title: 'Rainwater & Solar', desc: 'PV yield & harvesting' },
+                        { icon: '♻️', title: 'Green Costing', desc: 'LCA & carbon index' }
+                      ].map((item, idx) => (
+                        <div key={idx} className="bg-white/5 border border-white/10 rounded-2xl p-3 text-center space-y-1.5 hover:bg-white/10 transition">
+                          <span className="text-xl block">{item.icon}</span>
+                          <h4 className="text-[11px] font-bold text-white leading-tight">{item.title}</h4>
+                          <p className="text-[9px] text-gray-400 leading-tight">{item.desc}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* ── STEP 2: AESTHETIC STYLE SELECTION ── */}
+              {currentWorkflowStep === 2 && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-base sm:text-lg font-semibold text-gray-900 tracking-tight flex items-center gap-2">
+                        <span className="w-2 h-5 bg-[#CCFF00] rounded-full inline-block border border-black/20" />
+                        Select Architectural &amp; Design Aesthetic
+                      </h2>
+                      <p className="text-xs text-gray-500">Pick from 55+ curated styles to direct your AI visual generation.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentWorkflowStep(3)}
+                      className="px-4 py-2 rounded-xl bg-[#111111] text-[#CCFF00] font-semibold text-xs hover:bg-black transition cursor-pointer"
+                    >
+                      Next: Upload Image →
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 max-h-[480px] overflow-y-auto pr-1">
+                    {STYLE_OPTIONS.map((st) => (
+                      <div
+                        key={st.id}
+                        onClick={() => {
+                          setSelectedStyle(st.id);
+                          setCurrentWorkflowStep(3);
+                        }}
+                        className={`p-3 rounded-2xl border transition cursor-pointer flex flex-col items-center text-center gap-2 hover:shadow-md ${
+                          selectedStyle === st.id
+                            ? 'border-black bg-white ring-2 ring-black font-semibold'
+                            : 'border-gray-200/80 bg-white hover:border-gray-400'
+                        }`}
+                      >
+                        <img src={st.img} alt={st.name} className="w-14 h-14 rounded-xl object-cover shadow-2xs" />
+                        <div>
+                          <h4 className="text-xs font-semibold text-gray-900 truncate">{st.name}</h4>
+                          <span className="text-[10px] text-gray-500 font-medium">Select style</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ── STEP 3: IMAGE UPLOAD & ROOM BRIEF ── */}
+              {currentWorkflowStep === 3 && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 bg-white rounded-3xl p-6 border border-gray-200/90 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-base sm:text-lg font-semibold text-gray-900 tracking-tight">
+                        Upload Room Photo &amp; Set Brief
+                      </h2>
+                      <p className="text-xs text-gray-500">Add your space photo and specify room type, budget &amp; region.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentWorkflowStep(4)}
+                      className="px-4 py-2 rounded-xl bg-[#111111] text-[#CCFF00] font-semibold text-xs hover:bg-black transition cursor-pointer"
+                    >
+                      Next: Select AI Engine →
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Photo Uploader & Sample Selector */}
+                    <div className="space-y-4">
+                      <label className="text-xs font-semibold text-gray-900 block">Room / Site Photo</label>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        accept="image/*"
+                        onChange={(e) => {
+                          if (e.target.files?.[0]) handleImageUpload(e.target.files[0]);
+                        }}
+                        className="hidden"
+                      />
+
+                      {sourceImage ? (
+                        <div className="relative rounded-2xl overflow-hidden border border-gray-300 h-48 group">
+                          <img src={sourceImage} alt="Uploaded Room" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setSourceImage(null)}
+                            className="absolute top-3 right-3 p-1.5 rounded-full bg-black/80 text-white hover:bg-red-600 transition"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div
+                          onClick={() => fileInputRef.current?.click()}
+                          className="border-2 border-dashed border-gray-300 hover:border-black bg-gray-50 p-6 rounded-2xl text-center cursor-pointer transition space-y-2"
+                        >
+                          <Upload size={24} className="mx-auto text-gray-400" />
+                          <p className="text-xs font-semibold text-gray-800">Click to upload your room photo</p>
+                          <p className="text-[10px] text-gray-400">JPG, PNG, WEBP up to 10MB</p>
+                        </div>
+                      )}
+
+                      <div className="space-y-2 pt-2">
+                        <span className="text-[10px] font-semibold text-gray-400 uppercase">Or select sample photo:</span>
+                        <div className="grid grid-cols-2 gap-2">
+                          {SAMPLE_PHOTOS.map(s => (
+                            <button
+                              key={s.id}
+                              type="button"
+                              onClick={() => handleSelectSamplePhoto(s.url, s.module)}
+                              className="p-2 rounded-xl border border-gray-200 hover:border-black bg-gray-50 flex items-center gap-2 cursor-pointer transition text-left"
+                            >
+                              <img src={s.url} alt={s.label} className="w-8 h-8 rounded-lg object-cover" />
+                              <span className="text-[11px] font-semibold text-gray-800 truncate">{s.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Brief Details: Room Type, Region & Budget */}
+                    <div className="space-y-5">
+                      <div className="space-y-2">
+                        <label className="text-xs font-semibold text-gray-900 block">Room or Area Type</label>
+                        <div className="flex flex-wrap gap-1.5">
+                          {['Living Room', 'Bedroom', 'Kitchen', 'Exterior Facade', 'Backyard Garden', 'Bathroom', 'Office Lounge'].map(r => (
+                            <button
+                              key={r}
+                              type="button"
+                              onClick={() => setRoomType(r)}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                                roomType === r
+                                  ? 'bg-[#111111] text-[#CCFF00] shadow-2xs'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}
+                            >
+                              {r}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-xs font-semibold text-gray-900 block">Target Region</label>
+                          <select
+                            value={region}
+                            onChange={(e) => setRegion(e.target.value as any)}
+                            className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                          >
+                            <option value="India">🇮🇳 India (INR ₹)</option>
+                            <option value="USA">🇺🇸 USA (USD $)</option>
+                            <option value="Brazil">🇧🇷 Brazil (BRL R$)</option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-xs font-semibold text-gray-900 block">Budget Level</label>
+                          <select
+                            value={budget}
+                            onChange={(e) => setBudget(e.target.value)}
+                            className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                          >
+                            <option value="Economy">Economy</option>
+                            <option value="Mid-Range">Mid-Range</option>
+                            <option value="Luxury">Luxury Bespoke</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── STEP 4: AI MODEL ENGINE SELECTION ── */}
+              {currentWorkflowStep === 4 && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 bg-white rounded-3xl p-6 border border-gray-200/90 shadow-2xs text-center space-y-6">
+                  <div>
+                    <h2 className="text-base sm:text-lg font-semibold text-gray-900 tracking-tight">
+                      Select AI Model Engine &amp; Render
+                    </h2>
+                    <p className="text-xs text-gray-500">Pick your preferred neural render model to process your spatial brief.</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+                    {[
+                      { id: 'fast', label: '⚡ Anvitam Fast', cred: '1 Credit', desc: 'Standard Gemini/OpenRouter speed engine' },
+                      { id: 'flux', label: '🚀 FLUX.1 Pro', cred: '2 Credits', desc: 'Photorealistic architectural elevation model' },
+                      { id: 'claude', label: '🏛️ Claude Spec', cred: '2 Credits', desc: 'Spatial detail & texture analysis engine' },
+                      { id: 'gpt4o', label: '💎 GPT-4o 4K', cred: '3 Credits', desc: 'Ultra-HD luxury render pipeline' }
+                    ].map(m => (
+                      <div
+                        key={m.id}
+                        onClick={() => setSelectedAiModel(m.id as any)}
+                        className={`p-4 rounded-2xl border text-left cursor-pointer transition space-y-2 hover:shadow-md ${
+                          selectedAiModel === m.id
+                            ? 'border-black bg-gray-50 ring-2 ring-black font-semibold'
+                            : 'border-gray-200 hover:border-gray-400 bg-white'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-xs font-bold text-gray-900">{m.label}</h4>
+                          <span className="px-2 py-0.5 rounded-full bg-[#111111] text-[#CCFF00] text-[10px] font-extrabold">{m.cred}</span>
+                        </div>
+                        <p className="text-[11px] text-gray-500">{m.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="pt-4 max-w-md mx-auto">
+                    <button
+                      type="button"
+                      onClick={handleGenerate}
+                      disabled={isGenerating}
+                      className="w-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-extrabold py-4 rounded-2xl text-sm transition shadow-md flex items-center justify-center gap-2 cursor-pointer border border-black/10"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <RefreshCw size={16} className="animate-spin" /> Generating Photorealistic AI Render...
+                        </>
+                      ) : (
+                        <>
+                          <Wand2 size={16} /> Render AI Design ({getModelCreditCost(selectedAiModel)} Credits)
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+            </div>
 
             {/* GENERATED DESIGN OUTPUT CANVAS */}
             {generatedImage && (
@@ -662,6 +967,73 @@ export default function AIHomeDesign() {
                 >
                   <img src={generatedImage} alt="After" className="absolute inset-0 w-full h-full object-cover" />
 
+                  {/* Interactive Visual Hotspot Pins Overlay */}
+                  {(pins.length > 0 ? pins : DEFAULT_HOTSPOT_PINS).map((pin: any, idx: number) => {
+                    const matchingProduct = catalog.find(p => p.element_type === pin.element_type) || catalog[idx % catalog.length];
+                    const pinId = pin.id || `pin_${idx}`;
+                    const isSelected = activePin?.id === pinId;
+
+                    return (
+                      <div
+                        key={pinId}
+                        className="absolute z-20 transition-all duration-300 pointer-events-auto"
+                        style={{ left: `${pin.x_percent}%`, top: `${pin.y_percent}%` }}
+                      >
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActivePin(isSelected ? null : { ...pin, id: pinId, product: matchingProduct });
+                          }}
+                          className="relative group cursor-pointer focus:outline-none"
+                          title={`Click to view ${pin.label}`}
+                        >
+                          <span className="absolute -inset-2 rounded-full bg-[#CCFF00]/40 animate-ping" />
+                          <div className="relative w-8 h-8 rounded-full bg-black/90 text-[#CCFF00] border-2 border-[#CCFF00] flex items-center justify-center shadow-lg hover:scale-110 transition">
+                            <ShoppingBag size={14} />
+                          </div>
+                        </button>
+
+                        {isSelected && matchingProduct && (
+                          <div className="absolute left-10 -top-12 z-30 w-64 bg-black/95 text-white backdrop-blur-md rounded-2xl p-3 shadow-2xl border border-[#CCFF00]/40 animate-in fade-in slide-in-from-left-2">
+                            <div className="flex gap-3">
+                              <img src={matchingProduct.image_url} alt={matchingProduct.name} className="w-14 h-14 rounded-xl object-cover shrink-0 border border-white/10" />
+                              <div className="flex-1 min-w-0">
+                                <span className="text-[9px] uppercase font-bold text-[#CCFF00] tracking-wider block">{pin.label || matchingProduct.element_type}</span>
+                                <h5 className="text-xs font-bold text-white truncate leading-tight">{matchingProduct.name}</h5>
+                                <p className="text-xs font-extrabold text-amber-400 mt-0.5">{matchingProduct.price}</p>
+                              </div>
+                            </div>
+                            <div className="mt-3 flex items-center gap-2">
+                              <a
+                                href={`/api/ai-design?action=go&id=${matchingProduct.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex-1 bg-[#CCFF00] hover:bg-white text-black font-bold text-[11px] py-1.5 rounded-lg text-center transition flex items-center justify-center gap-1 shadow-xs"
+                              >
+                                <span>Buy Item</span>
+                                <ExternalLink size={11} />
+                              </a>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActivePin(null);
+                                  setSelectedCategoryFilter(matchingProduct.category_id || 'all');
+                                  const el = document.getElementById(`product-${matchingProduct.id}`);
+                                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                                className="bg-white/10 hover:bg-white/20 text-white text-[10px] font-medium px-2.5 py-1.5 rounded-lg transition whitespace-nowrap cursor-pointer"
+                              >
+                                View Grid ↓
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+
                   {sourceImage && (
                     <div
                       className="absolute top-0 left-0 bottom-0 overflow-hidden border-r-2 border-[#CCFF00]"
@@ -688,6 +1060,7 @@ export default function AIHomeDesign() {
                     Anvitam AI Render
                   </span>
                 </div>
+
 
                 {/* Export Action Footer */}
                 <div className="flex items-center justify-end gap-3 pt-2">
@@ -769,6 +1142,7 @@ export default function AIHomeDesign() {
                   .map(product => (
                     <div
                       key={product.id}
+                      id={`product-${product.id}`}
                       className="bg-white rounded-2xl border border-gray-200/80 overflow-hidden shadow-xs hover:shadow-lg transition group flex flex-col justify-between"
                     >
                       <div>
