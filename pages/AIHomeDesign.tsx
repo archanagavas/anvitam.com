@@ -833,45 +833,33 @@ export default function AIHomeDesign() {
                         </div>
                       )}
 
-                      <div className="space-y-2 pt-2">
-                        <span className="text-[10px] font-semibold text-gray-400 uppercase">Or select sample photo:</span>
-                        <div className="grid grid-cols-2 gap-2">
-                          {SAMPLE_PHOTOS.map(s => (
-                            <button
-                              key={s.id}
-                              type="button"
-                              onClick={() => handleSelectSamplePhoto(s.url, s.module)}
-                              className="p-2 rounded-xl border border-gray-200 hover:border-black bg-gray-50 flex items-center gap-2 cursor-pointer transition text-left"
-                            >
-                              <img src={s.url} alt={s.label} className="w-8 h-8 rounded-lg object-cover" />
-                              <span className="text-[11px] font-semibold text-gray-800 truncate">{s.label}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
+                     </div>
 
-                    {/* Brief Details: Room Type, Region & Budget */}
-                    <div className="space-y-5">
-                      <div className="space-y-2">
-                        <label className="text-xs font-semibold text-gray-900 block">Room or Area Type</label>
-                        <div className="flex flex-wrap gap-1.5">
-                          {['Living Room', 'Bedroom', 'Kitchen', 'Exterior Facade', 'Backyard Garden', 'Bathroom', 'Office Lounge'].map(r => (
-                            <button
-                              key={r}
-                              type="button"
-                              onClick={() => setRoomType(r)}
-                              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
-                                roomType === r
-                                  ? 'bg-[#111111] text-[#CCFF00] shadow-2xs'
-                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                              }`}
-                            >
-                              {r}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
+                     {/* Brief Details: Room Type, Region & Budget */}
+                     <div className="space-y-5">
+                       <div className="space-y-2">
+                         <label className="text-xs font-semibold text-gray-900 block">Room or Area Type</label>
+                         <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto pr-1">
+                           {[
+                             'Living Room', 'Bedroom', 'Dining Room', 'Kitchen', 'Master Suite',
+                             'Home Office', 'Bathroom', 'Balcony & Patio', 'Backyard Garden', 'Kids Room',
+                             'Exterior Facade', 'Rooftop Terrace', 'Pool Deck & Lounge', 'Commercial Cafe', 'Retail Store'
+                           ].map(r => (
+                             <button
+                               key={r}
+                               type="button"
+                               onClick={() => setRoomType(r)}
+                               className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                                 roomType === r
+                                   ? 'bg-[#111111] text-[#CCFF00] shadow-2xs ring-1 ring-black'
+                                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200/60'
+                               }`}
+                             >
+                               {r}
+                             </button>
+                           ))}
+                         </div>
+                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -915,27 +903,52 @@ export default function AIHomeDesign() {
                     <p className="text-xs text-gray-500">Pick your preferred neural render model to process your spatial brief.</p>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
                     {[
-                      { id: 'fast', label: '⚡ Anvitam Fast', cred: '1 Credit', desc: 'Standard Gemini/OpenRouter speed engine' },
-                      { id: 'flux', label: '🚀 FLUX.1 Pro', cred: '2 Credits', desc: 'Photorealistic architectural elevation model' },
-                      { id: 'claude', label: '🏛️ Claude Spec', cred: '2 Credits', desc: 'Spatial detail & texture analysis engine' },
-                      { id: 'gpt4o', label: '💎 GPT-4o 4K', cred: '3 Credits', desc: 'Ultra-HD luxury render pipeline' }
+                      { id: 'fast', label: '⚡ Anvitam Ultra HD', speed: 'NVIDIA GPU Accelerated', cred: '1 Credit', desc: 'Standard ultra-fast architectural rendering engine', icon: '✨' },
+                      { id: 'flux', label: '🚀 FLUX.1 Pro Architect', speed: 'Photorealistic Model', cred: '2 Credits', desc: 'High precision architectural elevation & exterior lighting', icon: '🏛️' },
+                      { id: 'claude', label: '🏛️ Claude Spec engine', speed: 'Spatial Texture Engine', cred: '2 Credits', desc: 'Detail, materials & texture synthesis for luxury spaces', icon: '🎨' },
+                      { id: 'gpt4o', label: '💎 GPT-4o 4K Master', speed: 'Max Fidelity Pipeline', cred: '3 Credits', desc: 'Ultra-HD luxury render pipeline with raytraced shadows', icon: '👑' }
                     ].map(m => (
                       <div
                         key={m.id}
                         onClick={() => setSelectedAiModel(m.id as any)}
-                        className={`p-4 rounded-2xl border text-left cursor-pointer transition space-y-2 hover:shadow-md ${
+                        className={`p-5 rounded-2xl border text-left cursor-pointer transition-all relative overflow-hidden flex flex-col justify-between ${
                           selectedAiModel === m.id
-                            ? 'border-black bg-gray-50 ring-2 ring-black font-semibold'
-                            : 'border-gray-200 hover:border-gray-400 bg-white'
+                            ? 'border-gray-900 bg-gradient-to-br from-gray-900 to-black text-white shadow-lg ring-2 ring-black scale-[1.01]'
+                            : 'border-gray-200 hover:border-gray-400 bg-white text-gray-900 hover:shadow-md'
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-xs font-bold text-gray-900">{m.label}</h4>
-                          <span className="px-2 py-0.5 rounded-full bg-[#111111] text-[#CCFF00] text-[10px] font-extrabold">{m.cred}</span>
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="text-base">{m.icon}</span>
+                              <h4 className={`text-xs font-bold tracking-tight ${selectedAiModel === m.id ? 'text-white' : 'text-gray-900'}`}>
+                                {m.label}
+                              </h4>
+                            </div>
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                              selectedAiModel === m.id
+                                ? 'bg-[#CCFF00] text-black border-[#CCFF00]'
+                                : 'bg-gray-100 text-gray-800 border-gray-200'
+                            }`}>
+                              {m.cred}
+                            </span>
+                          </div>
+                          <span className={`text-[10px] font-semibold block ${selectedAiModel === m.id ? 'text-gray-300' : 'text-gray-500'}`}>
+                            {m.speed}
+                          </span>
+                          <p className={`text-[11px] leading-relaxed pt-1 ${selectedAiModel === m.id ? 'text-gray-300' : 'text-gray-500'}`}>
+                            {m.desc}
+                          </p>
                         </div>
-                        <p className="text-[11px] text-gray-500">{m.desc}</p>
+
+                        {selectedAiModel === m.id && (
+                          <div className="mt-3 pt-2 border-t border-gray-800 flex items-center justify-between text-[10px] text-[#CCFF00] font-semibold">
+                            <span>Selected Engine Active</span>
+                            <span>✓</span>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -1234,7 +1247,7 @@ export default function AIHomeDesign() {
               {/* Control Buttons & Selectors Row */}
               <div className="flex items-center justify-between pt-2 border-t border-gray-100 gap-2">
                 
-                {/* Left Controls: + Upload, Chat/Cowork pills, Region */}
+                {/* Left Controls: + Upload Photo */}
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -1244,34 +1257,6 @@ export default function AIHomeDesign() {
                   >
                     +
                   </button>
-
-                  <div className="flex items-center gap-1 bg-gray-100/90 p-0.5 rounded-full text-[11px] font-semibold text-gray-600">
-                    <button
-                      type="button"
-                      onClick={() => setDesignMode('restyle')}
-                      className={`px-2.5 py-0.5 rounded-full transition cursor-pointer ${designMode === 'restyle' ? 'bg-white text-gray-900 shadow-2xs' : 'hover:text-gray-900'}`}
-                    >
-                      Chat
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDesignMode('empty')}
-                      className={`px-2.5 py-0.5 rounded-full transition cursor-pointer ${designMode === 'empty' ? 'bg-white text-gray-900 shadow-2xs' : 'hover:text-gray-900'}`}
-                    >
-                      Cowork
-                    </button>
-                  </div>
-
-                  {/* Region selector badge */}
-                  <select
-                    value={region}
-                    onChange={(e) => setRegion(e.target.value as any)}
-                    className="bg-amber-50 hover:bg-amber-100 text-amber-900 text-[10px] font-bold rounded-full px-2 py-0.5 border border-amber-200/80 outline-none cursor-pointer hidden sm:block"
-                  >
-                    <option value="India">🇮🇳 India</option>
-                    <option value="USA">🇺🇸 USA</option>
-                    <option value="Brazil">🇧🇷 Brazil</option>
-                  </select>
                 </div>
 
                 {/* Right Controls: Model Picker & Action Button */}
