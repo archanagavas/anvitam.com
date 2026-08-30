@@ -160,6 +160,10 @@ const App: React.FC = () => {
                           <Route path="/tools/ai-replace" element={<AIHomeDesign />} />
                           <Route path="/tools/ai-removal" element={<AIHomeDesign />} />
                           <Route path="/site-analysis" element={<SiteAnalysis />} />
+                          <Route path="/site-intelligence" element={<SiteAnalysis />} />
+                          <Route path="/site_intelligence" element={<SiteAnalysis />} />
+                          <Route path="/tools/site-intelligence" element={<SiteAnalysis />} />
+                          <Route path="/tools/site-analysis" element={<SiteAnalysis />} />
                           <Route path="/dashboard" element={<UserDashboard />} />
                           <Route path="/privacy" element={<Privacy />} />
                           <Route path="/terms" element={<Terms />} />

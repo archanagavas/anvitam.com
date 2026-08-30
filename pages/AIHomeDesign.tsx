@@ -109,10 +109,10 @@ const SAMPLE_PHOTOS = [
 ];
 
 const AI_MODEL_ENGINES = [
-  { id: 'anvitam-ultra', name: '⚡ Anvitam Ultra HD (NVIDIA GPU)', creditCost: 1 },
-  { id: 'anvitam-v2-fast', name: '🏎️ Anvitam Fast Turbo', creditCost: 1 },
-  { id: 'ollama-sdxl', name: '🦙 God Ollama Local SDXL', creditCost: 1 },
-  { id: 'flux-dev', name: '✨ FLUX.1 Professional', creditCost: 2 },
+  { id: 'free-chat', name: '🌱 Free AI Chat (Claude & Ollama) — 0 Creds', creditCost: 0, level: 'Free', speed: 'Instant Advice', desc: 'Unlimited conversational design advice & material Q&A', icon: '💬' },
+  { id: 'low-fast', name: '⚡ Fast Draft (Low Complexity) — 1 Cred', creditCost: 1, level: 'Low', speed: '1-3s Fast GPU', desc: 'Fast initial drafts & quick color restyles', icon: '⚡' },
+  { id: 'med-balanced', name: '🚀 Balanced Pro (Med Complexity) — 2 Creds', creditCost: 2, level: 'Med', speed: 'High Photorealism', desc: 'Balanced photorealism with lighting & texture synthesis', icon: '🚀' },
+  { id: 'hard-master', name: '💎 Ultra HD Master (Hard Reasoning) — 3 Creds', creditCost: 3, level: 'Hard', speed: 'Max 4K Depth', desc: 'Max depth reasoning, raytraced lighting & architectural precision', icon: '👑' },
 ];
 
 const DEFAULT_HOTSPOT_PINS = [
@@ -295,10 +295,14 @@ export default function AIHomeDesign() {
     }
   };
 
-  const [selectedAiModel, setSelectedAiModel] = useState<'fast' | 'flux' | 'claude' | 'gpt4o'>('fast');
+  const [selectedAiModel, setSelectedAiModel] = useState<string>('free-chat');
 
   const getModelCreditCost = (model: string) => {
     switch (model) {
+      case 'free-chat': return 0;
+      case 'low-fast': return 1;
+      case 'med-balanced': return 2;
+      case 'hard-master': return 3;
       case 'gpt4o': return 3;
       case 'flux': return 2;
       case 'claude': return 2;
@@ -516,7 +520,7 @@ export default function AIHomeDesign() {
               </div>
               <div className="leading-tight">
                 <p className="text-xs font-semibold text-gray-900">{user?.full_name || 'Archana Gavas'}</p>
-                <p className="text-[10px] text-gray-500">Free plan • {user?.credits_remaining || 50} credits</p>
+                <p className="text-[10px] text-gray-500">Free plan • {user?.credits_remaining ?? 0} credits</p>
               </div>
             </div>
             <button
@@ -687,7 +691,7 @@ export default function AIHomeDesign() {
                         key={card.id}
                         onClick={() => {
                           if (card.id === 'site-intelligence') {
-                            navigate('/site-intelligence');
+                            navigate('/site-analysis');
                           } else {
                             handleSelectModule(card.id);
                           }
@@ -892,16 +896,11 @@ export default function AIHomeDesign() {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
-                    {[
-                      { id: 'fast', label: '⚡ Anvitam Ultra HD', speed: 'NVIDIA GPU Accelerated', cred: '1 Credit', desc: 'Standard ultra-fast architectural rendering engine', icon: '✨' },
-                      { id: 'flux', label: '🚀 FLUX.1 Pro Architect', speed: 'Photorealistic Model', cred: '2 Credits', desc: 'High precision architectural elevation & exterior lighting', icon: '🏛️' },
-                      { id: 'claude', label: '🏛️ Claude Spec engine', speed: 'Spatial Texture Engine', cred: '2 Credits', desc: 'Detail, materials & texture synthesis for luxury spaces', icon: '🎨' },
-                      { id: 'gpt4o', label: '💎 GPT-4o 4K Master', speed: 'Max Fidelity Pipeline', cred: '3 Credits', desc: 'Ultra-HD luxury render pipeline with raytraced shadows', icon: '👑' }
-                    ].map(m => (
+                    {AI_MODEL_ENGINES.map(m => (
                       <div
                         key={m.id}
-                        onClick={() => setSelectedAiModel(m.id as any)}
-                        className={`p-5 rounded-2xl border text-left cursor-pointer transition-all relative overflow-hidden flex flex-col justify-between ${
+                        onClick={() => setSelectedAiModel(m.id)}
+                        className={`p-4 rounded-2xl border text-left cursor-pointer transition-all relative overflow-hidden flex flex-col justify-between ${
                           selectedAiModel === m.id
                             ? 'border-gray-900 bg-gradient-to-br from-gray-900 to-black text-white shadow-lg ring-2 ring-black scale-[1.01]'
                             : 'border-gray-200 hover:border-gray-400 bg-white text-gray-900 hover:shadow-md'
@@ -912,19 +911,19 @@ export default function AIHomeDesign() {
                             <div className="flex items-center gap-2">
                               <span className="text-base">{m.icon}</span>
                               <h4 className={`text-xs font-bold tracking-tight ${selectedAiModel === m.id ? 'text-white' : 'text-gray-900'}`}>
-                                {m.label}
+                                {m.name}
                               </h4>
                             </div>
-                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
                               selectedAiModel === m.id
                                 ? 'bg-[#CCFF00] text-black border-[#CCFF00]'
                                 : 'bg-gray-100 text-gray-800 border-gray-200'
                             }`}>
-                              {m.cred}
+                              {m.creditCost === 0 ? 'FREE (0 Cred)' : `${m.creditCost} Cred`}
                             </span>
                           </div>
-                          <span className={`text-[10px] font-semibold block ${selectedAiModel === m.id ? 'text-gray-300' : 'text-gray-500'}`}>
-                            {m.speed}
+                          <span className={`text-[10px] font-semibold block ${selectedAiModel === m.id ? 'text-[#CCFF00]' : 'text-gray-500'}`}>
+                            Level: {m.level} • {m.speed}
                           </span>
                           <p className={`text-[11px] leading-relaxed pt-1 ${selectedAiModel === m.id ? 'text-gray-300' : 'text-gray-500'}`}>
                             {m.desc}
@@ -1361,7 +1360,7 @@ export default function AIHomeDesign() {
                   type="button"
                   onClick={() => {
                     if (t.id === 'site-intelligence') {
-                      navigate('/site-intelligence');
+                      navigate('/site-analysis');
                     } else {
                       setSelectedModule(t.id);
                       setCurrentWorkflowStep(2);
