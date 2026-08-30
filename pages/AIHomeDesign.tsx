@@ -109,7 +109,6 @@ const SAMPLE_PHOTOS = [
 ];
 
 const AI_MODEL_ENGINES = [
-  { id: 'free-chat', name: '🌱 Free AI Chat (Claude & Ollama) — 0 Creds', creditCost: 0, level: 'Free', speed: 'Instant Advice', desc: 'Unlimited conversational design advice & material Q&A', icon: '💬' },
   { id: 'low-fast', name: '⚡ Fast Draft (Low Complexity) — 1 Cred', creditCost: 1, level: 'Low', speed: '1-3s Fast GPU', desc: 'Fast initial drafts & quick color restyles', icon: '⚡' },
   { id: 'med-balanced', name: '🚀 Balanced Pro (Med Complexity) — 2 Creds', creditCost: 2, level: 'Med', speed: 'High Photorealism', desc: 'Balanced photorealism with lighting & texture synthesis', icon: '🚀' },
   { id: 'hard-master', name: '💎 Ultra HD Master (Hard Reasoning) — 3 Creds', creditCost: 3, level: 'Hard', speed: 'Max 4K Depth', desc: 'Max depth reasoning, raytraced lighting & architectural precision', icon: '👑' },
@@ -572,12 +571,45 @@ export default function AIHomeDesign() {
         {/* ── CLAUDE LEFT SIDEBAR ("Chats and tasks") ── */}
         <aside className={`w-64 bg-[#F9F8F6] border-r border-gray-200/80 flex flex-col shrink-0 transition-all duration-300 ${sidebarOpen ? 'translate-x-0' : '-ml-64'} hidden md:flex`}>
           
-          {/* Top: + New Chat Button */}
-          <div className="p-4 border-b border-gray-200/50 space-y-3">
+          {/* Top: Studio Logo Header, User Profile & New Chat */}
+          <div className="p-3.5 border-b border-gray-200/60 space-y-3 bg-white">
+            
+            {/* Brand Logo */}
+            <div className="flex items-center gap-2.5 px-0.5 pt-0.5">
+              <div className="w-8 h-8 rounded-xl bg-black text-[#CCFF00] font-black text-sm flex items-center justify-center shadow-xs">
+                A
+              </div>
+              <div className="leading-tight">
+                <h2 className="text-xs font-black text-gray-900 tracking-wide uppercase">Anvitam Studio</h2>
+                <p className="text-[10px] text-gray-500 font-medium">AI Architectural Suite</p>
+              </div>
+            </div>
+
+            {/* Profile Info & Credit Upgrade (At Top of Sidebar) */}
+            <div className="bg-gray-50 rounded-2xl p-2.5 border border-gray-200/80 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-amber-800 text-white font-semibold text-xs flex items-center justify-center shrink-0">
+                  {user?.full_name ? user.full_name[0] : 'A'}
+                </div>
+                <div className="leading-tight truncate max-w-[95px]">
+                  <p className="text-xs font-bold text-gray-900 truncate">{user?.full_name || 'Archana Gavas'}</p>
+                  <p className="text-[10px] text-gray-500 font-medium">{user?.credits_remaining ?? 0} Creds</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPaywall(true)}
+                className="text-[10px] font-extrabold bg-[#111111] text-[#CCFF00] px-2.5 py-1 rounded-xl hover:bg-black transition cursor-pointer shrink-0"
+              >
+                Upgrade
+              </button>
+            </div>
+
+            {/* + New Chat Button */}
             <button
               type="button"
               onClick={handleStartNewChat}
-              className="w-full py-2.5 px-4 bg-white hover:bg-gray-100/80 text-gray-900 border border-gray-300/80 rounded-2xl text-xs font-semibold flex items-center justify-between shadow-2xs transition cursor-pointer"
+              className="w-full py-2 px-3 bg-white hover:bg-gray-100/80 text-gray-900 border border-gray-300/80 rounded-xl text-xs font-semibold flex items-center justify-between shadow-2xs transition cursor-pointer"
             >
               <div className="flex items-center gap-2">
                 <span className="text-base text-gray-600 font-bold">+</span>
@@ -588,8 +620,8 @@ export default function AIHomeDesign() {
 
             {/* Navigation Quick Links */}
             <div className="space-y-0.5 text-xs text-gray-600 font-medium">
-              <button type="button" onClick={() => setShowSettingsModal(true)} className="w-full text-left px-3 py-1.5 rounded-xl hover:bg-gray-200/60 flex items-center gap-2.5 transition">
-                <Settings size={15} className="text-gray-500" />
+              <button type="button" onClick={() => setShowSettingsModal(true)} className="w-full text-left px-2.5 py-1 rounded-xl hover:bg-gray-200/60 flex items-center gap-2 transition">
+                <Settings size={14} className="text-gray-500" />
                 <span>Customize Studio</span>
               </button>
             </div>
@@ -618,26 +650,6 @@ export default function AIHomeDesign() {
                 <span className="truncate flex-1">{chat.title}</span>
               </button>
             ))}
-          </div>
-
-          {/* Bottom: Profile Avatar Footer */}
-          <div className="p-3 border-t border-gray-200/70 bg-[#FAF9F6] flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-amber-800 text-white font-semibold text-xs flex items-center justify-center">
-                {user?.full_name ? user.full_name[0] : 'A'}
-              </div>
-              <div className="leading-tight">
-                <p className="text-xs font-semibold text-gray-900">{user?.full_name || 'Archana Gavas'}</p>
-                <p className="text-[10px] text-gray-500">Free plan • {user?.credits_remaining ?? 0} credits</p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowPaywall(true)}
-              className="text-[11px] font-semibold text-amber-800 hover:underline"
-            >
-              Upgrade
-            </button>
           </div>
         </aside>
 
