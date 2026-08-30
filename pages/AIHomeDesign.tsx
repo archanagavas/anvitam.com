@@ -616,25 +616,23 @@ export default function AIHomeDesign() {
             </div>
           </div>
 
-          {/* Dynamic Claude Greeting */}
-          {currentWorkflowStep === 1 && !generatedImage && (
-            <div className="text-center py-10 space-y-3 max-w-xl mx-auto">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 mb-2">
-                <Sparkles size={24} />
+          {/* Conversational Assistant Welcome Bubble */}
+          <div className="bg-amber-50/60 border border-amber-200/80 rounded-3xl p-5 my-4 max-w-3xl mx-auto space-y-2 flex items-start gap-3 shadow-2xs">
+            <div className="w-9 h-9 rounded-2xl bg-amber-800 text-white font-bold text-sm flex items-center justify-center shrink-0 shadow-2xs">
+              🤖
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-gray-900">Anvitam AI Assistant</span>
+                <span className="text-[10px] text-amber-800 font-semibold bg-amber-100 px-2 py-0.5 rounded-full">
+                  Active Assistant
+                </span>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-serif text-gray-800 tracking-tight">
-                {(() => {
-                  const hr = new Date().getHours();
-                  if (hr < 12) return 'Morning, how are things?';
-                  if (hr < 17) return 'Afternoon, how are things?';
-                  return 'Evening, how are things?';
-                })()}
-              </h1>
-              <p className="text-xs text-gray-500">
-                Select an architectural module below or enter your vision to begin the 5-step guided design flow.
+              <p className="text-xs text-gray-700 leading-relaxed font-medium">
+                Hello! What are you looking to design or transform today? You can select any AI tool from the gallery on the right side panel, or choose your workflow step below:
               </p>
             </div>
-          )}
+          </div>
 
           {/* Stepper Navigation Header Bar */}
           <div className="bg-gray-50 border border-gray-200/90 rounded-2xl p-2 my-4 shadow-2xs flex items-center justify-between gap-1 overflow-x-auto no-scrollbar max-w-3xl mx-auto w-full">
@@ -1283,10 +1281,8 @@ export default function AIHomeDesign() {
                       </div>
                     </div>
                   ))}
-              </div>
             </div>
-
-          </main>
+          </div>
 
           {/* ── CLAUDE FLOATING PROMPT BAR AT BOTTOM ── */}
           <div className="sticky bottom-4 z-30 max-w-2xl w-full mx-auto px-4 mt-2">
@@ -1374,9 +1370,163 @@ export default function AIHomeDesign() {
             </form>
           </div>
 
-        </div>
+        </main>
 
-        {/* ── DESIGN BRIEF CARD SLIDE-IN DRAWER ── */}
+        {/* ── RIGHT SIDEBAR: ALL AI TOOLS & FEATURE GALLERY ── */}
+        <aside className="w-80 border-l border-gray-200/80 bg-[#F9F8F6] shrink-0 hidden xl:flex flex-col p-4 overflow-y-auto space-y-6 no-scrollbar">
+          
+          {/* Section Header */}
+          <div className="flex items-center justify-between pb-2 border-b border-gray-200/60">
+            <div>
+              <h2 className="text-xs font-bold text-gray-900 uppercase tracking-wider">AI Tools Studio</h2>
+              <p className="text-[10px] text-gray-500">Pick any tool to launch in chat</p>
+            </div>
+            <span className="bg-[#111111] text-[#CCFF00] text-[10px] font-bold px-2 py-0.5 rounded-full">
+              7 Active
+            </span>
+          </div>
+
+          {/* 🌟 Flagship Site Canvas Feature Card */}
+          <div className="bg-slate-950 text-white rounded-2xl p-4 shadow-lg space-y-3 relative overflow-hidden group border border-slate-800">
+            <span className="bg-[#CCFF00] text-black text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider font-mono">
+              FLAGSHIP SITE CANVAS
+            </span>
+            <div>
+              <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                <span>Site Intelligence &amp; 3D Shadow</span>
+              </h3>
+              <p className="text-[11px] text-slate-300 mt-1 leading-snug">
+                Drop a pin anywhere on Earth to simulate 3D building shadows, wind vectors, soil health &amp; 11+ site reports.
+              </p>
+            </div>
+
+            {/* Quick Micro Modules */}
+            <div className="grid grid-cols-2 gap-1.5 pt-1 text-[10px]">
+              <div className="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800 flex items-center gap-1 text-slate-300">
+                <span>☀️</span> Sun &amp; Shadow
+              </div>
+              <div className="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800 flex items-center gap-1 text-slate-300">
+                <span>🏢</span> Heights &amp; FSI
+              </div>
+              <div className="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800 flex items-center gap-1 text-slate-300">
+                <span>💨</span> Wind Vectors
+              </div>
+              <div className="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800 flex items-center gap-1 text-slate-300">
+                <span>🏔️</span> Slope Contours
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => navigate('/tools')}
+              className="w-full bg-[#CCFF00] hover:bg-white text-black font-bold text-xs py-2 rounded-xl transition flex items-center justify-center gap-1 shadow-xs cursor-pointer"
+            >
+              <span>Launch 3D Site Canvas</span>
+              <ChevronRight size={14} />
+            </button>
+          </div>
+
+          {/* 🛋️ Studio Tools Gallery List */}
+          <div className="space-y-3">
+            <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider px-1">
+              Design &amp; Restyle Suite
+            </h3>
+
+            <div className="space-y-2">
+              {[
+                {
+                  id: 'interior',
+                  name: 'Interior Design AI',
+                  desc: 'Transform any room photo instantly into 55+ styles',
+                  icon: '🛋️',
+                  badge: 'Popular'
+                },
+                {
+                  id: 'exterior',
+                  name: 'Exterior Design AI',
+                  desc: 'Redesign your house facade & architecture',
+                  icon: '🏡',
+                  badge: 'HD'
+                },
+                {
+                  id: 'garden',
+                  name: 'Garden & Landscape AI',
+                  desc: 'Redesign yards, lawns & outdoor spaces',
+                  icon: '🌿',
+                  badge: 'Outdoor'
+                },
+                {
+                  id: 'sketch2image',
+                  name: 'Sketch2Image™',
+                  desc: 'Convert raw sketches/blueprints to 3D renders',
+                  icon: '✏️',
+                  badge: 'CAD/BIM'
+                },
+                {
+                  id: 'virtual-staging',
+                  name: 'Virtual Staging AI',
+                  desc: 'Fill empty rooms with photorealistic furniture',
+                  icon: '🏗️',
+                  badge: 'Real Estate'
+                },
+                {
+                  id: 'replace-furniture',
+                  name: 'Replace & Add Furniture',
+                  desc: 'Swap specific couches, tables, or lamps',
+                  icon: '🪑',
+                  badge: 'Inpainting'
+                },
+                {
+                  id: 'furniture-removal',
+                  name: 'Furniture Removal AI',
+                  desc: 'Clear objects & declutter rooms in 1-click',
+                  icon: '🧹',
+                  badge: 'Clean'
+                }
+              ].map(t => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedModule(t.id);
+                    setCurrentWorkflowStep(2);
+                  }}
+                  className={`w-full text-left p-3 rounded-2xl border transition-all cursor-pointer flex items-start gap-3 group ${
+                    selectedModule === t.id
+                      ? 'bg-white border-black shadow-md ring-1 ring-black'
+                      : 'bg-white/80 border-gray-200/80 hover:border-gray-400 hover:bg-white'
+                  }`}
+                >
+                  <span className="text-xl shrink-0 p-2 rounded-xl bg-gray-50 group-hover:scale-110 transition">{t.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-1">
+                      <h4 className="text-xs font-bold text-gray-900 group-hover:text-black truncate">{t.name}</h4>
+                      <span className="text-[9px] font-semibold bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-md shrink-0">
+                        {t.badge}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-gray-500 line-clamp-2 mt-0.5">{t.desc}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick Info Badge */}
+          <div className="p-3 bg-amber-50/80 border border-amber-200/60 rounded-2xl text-[11px] text-amber-900 space-y-1">
+            <p className="font-bold flex items-center gap-1">
+              <span>💡</span> Instant Regional Pin Matching
+            </p>
+            <p className="text-[10px] text-amber-800 leading-snug">
+              Every rendered design maps to shoppable products in 🇮🇳 India, 🇺🇸 USA, and 🇧🇷 Brazil.
+            </p>
+          </div>
+
+        </aside>
+
+      </div>
+
+      {/* ── DESIGN BRIEF CARD SLIDE-IN DRAWER ── */}
         <AnimatePresence>
           {showBriefCard && (
             <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-xs">
