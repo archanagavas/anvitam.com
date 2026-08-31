@@ -528,9 +528,9 @@ export default function AIHomeDesign() {
       });
       setActiveChatId(newSession.id);
 
-      fetchRecommendations(roomType, selectedStyle, activeModule);
+      fetchRecommendations(roomType, selectedStyle, selectedModule);
       if (data.generatedImage) {
-        fetchElementPins(data.generatedImage, activeModule);
+        fetchElementPins(data.generatedImage, selectedModule);
       }
 
       if (data.credits_remaining !== undefined) {
@@ -568,7 +568,7 @@ export default function AIHomeDesign() {
   };
 
   useEffect(() => {
-    fetchRecommendations(roomType, selectedStyle, activeModule);
+    fetchRecommendations(roomType, selectedStyle, selectedModule);
   }, []);
 
   const fetchElementPins = async (img: string, activeMod: string = 'interior') => {
