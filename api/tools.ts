@@ -30,6 +30,20 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       if (existing.length > 0) {
         return res.status(409).json({ error: 'An account with this email already exists' });
       }
+      const clientIp = (req.headers['x-forwarded-for'] as string) || req.socket?.remoteAddress || 'unknown';
+      
+      // Enforce max 2 registrations per IP per day
+      if (clientIp !== 'unknown') {
+        const sameIpUsers = await findWhere('tool_users', 'registered_ip', clientIp);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const regsToday = sameIpUsers.filter(u => new Date(u.created_at) >= today);
+        if (regsToday.length >= 2) {
+          return res.status(429).json({ error: 'Maximum registration limit (2 per day) reached for this IP address.' });
+        }
+      }
+
       const password_hash = await bcrypt.hash(password, 12);
       const userId = `tu_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
       const userCountry = country || 'IN';
@@ -40,6 +54,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
         password_hash,
         name: name || '',
         country: userCountry,
+        registered_ip: clientIp,
         credits_remaining: 3,
         credits_used: 0,
         trial_started_at: new Date().toISOString(),
@@ -47,9 +62,36 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
         is_subscribed: false,
         subscription_end: null,
         subscription_plan: null,
+        email_verified: false,
       };
 
       await upsertDoc('tool_users', userId, newUser);
+
+      // Send verification email via Resend
+      const RESEND_API_KEY = process.env.RESEND_API_KEY;
+      if (RESEND_API_KEY) {
+        const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+        // Store OTP in user doc for later verification
+        await upsertDoc('tool_users', userId, { ...newUser, verification_otp: otp });
+        
+        try {
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${RESEND_API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: 'Anvitam AI <hello@anvitam.com>',
+              to: [normalizedEmail],
+              subject: 'Verify your Anvitam AI account',
+              html: `<h2>Welcome to Anvitam AI!</h2><p>Your verification code is: <strong>${otp}</strong></p><p>Please enter this code to verify your account.</p>`,
+            }),
+          });
+        } catch (emailErr) {
+          console.warn('[tools/register] Failed to send verification email:', emailErr);
+        }
+      }
 
       const token = jwt.sign(
         { userId: newUser.id, email: newUser.email, type: 'tool_user' },

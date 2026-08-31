@@ -27,8 +27,8 @@ import { createHandler } from '../lib/adapter.js';
 // Vercel Hobby tier allows up to 60s if explicitly configured
 export const maxDuration = 60;
 
-import jwt from 'jsonwebtoken';
-import { getDoc, getAllDocs, upsertDoc, deleteDoc, getDb, isDbConfigured } from '../lib/db.js';
+import * as jwt from 'jsonwebtoken';
+import { getDoc, getAllDocs, upsertDoc, deleteDoc, getDb, isDbConfigured, findWhere } from '../lib/db.js';
 import {
   buildModulePrompt,
   buildRecommendationPrompt,
@@ -351,6 +351,10 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
           }
         }
       }
+    } catch (urlErr) {
+      console.warn('[ai-design/auto-fetch] URL fetch failed:', urlErr);
+    }
+    
     // 4. Auto-detect Element Type from URL & Title
     const sampleText = `${url} ${titleCandidate}`.toLowerCase();
     let detectedType = element_type || 'sofa';
@@ -476,7 +480,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
     if (!userDoc && body.email) {
       try {
-        const users = await queryDocs('tool_users', 'email', '==', body.email);
+        const users = await findWhere('tool_users', 'email', body.email);
         if (users && users.length > 0) {
           userDoc = users[0];
           userId = userDoc.id;
@@ -484,6 +488,10 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       } catch (err) {
         console.error('[ai-design/generate] Failed to fetch user doc by email:', body.email, err);
       }
+    }
+
+    if (!userDoc) {
+      return res.status(401).json({ error: 'Unauthorized. You must log in or register to generate AI designs.' });
     }
 
     const isSubscribed: boolean = userDoc?.is_subscribed ?? false;

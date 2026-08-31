@@ -537,6 +537,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
   }
 
   // If user requested instant-free, skip the heavy models
+  let imageB64: string | null = null;
   if (modelTier === 'instant-free') {
     imageB64 = await generateWithPollinations(positivePrompt);
   } else {
