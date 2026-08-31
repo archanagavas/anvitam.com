@@ -128,7 +128,8 @@ const Home: React.FC = () => {
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '25%']);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
-  const showcaseProjects = projects?.slice(0, 6) || [];
+  const publishedProjects = projects?.filter(p => !p.isDraft) || [];
+  const showcaseProjects = publishedProjects.slice(0, 6);
   const publishedBlogs = blogs?.filter(b => b.status === 'published') || [];
   
   const displayBlogs: BlogPost[] = publishedBlogs.length > 0 ? publishedBlogs : [
@@ -184,7 +185,7 @@ const Home: React.FC = () => {
     onClick: () => navigate(`/services/${s.id}`),
   }));
 
-  const projectSlides: CoverflowSlide[] = (projects && projects.length > 0 ? projects : showcaseProjects).map((p) => ({
+  const projectSlides: CoverflowSlide[] = (publishedProjects && publishedProjects.length > 0 ? publishedProjects : showcaseProjects).map((p) => ({
     id: p.id,
     src: p.image,
     alt: p.title,

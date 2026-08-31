@@ -2838,11 +2838,33 @@ const Admin: React.FC = () => {
                           <div className="flex items-center gap-4">
                             <img src={p.image} alt={p.title} className="w-14 h-14 object-cover rounded-lg bg-gray-100 border" />
                             <div>
-                              <h4 className="font-bold text-sm text-gray-850">{p.title}</h4>
+                              <h4 className="font-bold text-sm text-gray-850 flex items-center gap-2">
+                                {p.title}
+                                {p.isDraft && (
+                                  <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] uppercase font-bold tracking-wider">Draft</span>
+                                )}
+                              </h4>
                               <p className="text-xs text-gray-400 font-mono mt-0.5">/projects/{p.slug || p.id} · {p.category} · {p.year}</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await updateProject({ ...p, isDraft: !p.isDraft });
+                                  showToast(`Project ${!p.isDraft ? 'moved to drafts' : 'published'}!`);
+                                } catch (err) {
+                                  showToast('Failed to update project status');
+                                }
+                              }}
+                              className={`flex items-center gap-1 text-xs border px-3 py-1.5 rounded-lg transition font-medium ${
+                                p.isDraft 
+                                  ? 'border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100' 
+                                  : 'border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100'
+                              }`}
+                            >
+                              {p.isDraft ? <><Eye size={11} /> Publish</> : <><EyeOff size={11} /> Draft</>}
+                            </button>
                             <button
                               onClick={() => { setEditingProject(p); setProjectView('editor'); }}
                               className="flex items-center gap-1 text-xs border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition font-medium text-gray-650 bg-white"

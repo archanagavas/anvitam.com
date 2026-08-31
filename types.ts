@@ -41,6 +41,7 @@ export interface Project {
   metaDescription?: string;
   metaKeywords?: string;
   metaRobots?: string;
+  isDraft?: boolean; // New: Draft toggle for visibility
 }
 
 export interface BlogPost {

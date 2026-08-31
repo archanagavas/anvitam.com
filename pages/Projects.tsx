@@ -21,8 +21,8 @@ const Projects: React.FC = () => {
 
   // Category filter
   const categoryFiltered = selectedCategory === 'All'
-    ? projects
-    : projects.filter(p => 
+    ? projects.filter(p => !p.isDraft)
+    : projects.filter(p => !p.isDraft).filter(p => 
         p.category?.toLowerCase().includes(selectedCategory.toLowerCase()) || 
         (selectedCategory === 'Residential' && (p.category === 'Residential' || p.category === 'Homes & Retreats' || p.title.toLowerCase().includes('home') || p.title.toLowerCase().includes('house') || p.title.toLowerCase().includes('villa'))) || 
         (selectedCategory === 'Hospitality' && (p.category === 'Hospitality' || p.category === 'Hospitality & Resorts' || p.title.toLowerCase().includes('resort') || p.title.toLowerCase().includes('stay') || p.title.toLowerCase().includes('yurt'))) || 

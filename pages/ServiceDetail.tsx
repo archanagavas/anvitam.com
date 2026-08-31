@@ -45,11 +45,11 @@ const ServiceDetail: React.FC = () => {
   }
   selectedProjectIds.forEach(id => {
     const p = projects.find(proj => proj.id === id);
-    if (p) {
+    if (p && !p.isDraft) {
       showcaseProjectsMap.set(p.id, p);
     }
   });
-  const showcaseProjects = Array.from(showcaseProjectsMap.values());
+  const showcaseProjects = Array.from(showcaseProjectsMap.values()).filter(p => !p.isDraft);
 
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
