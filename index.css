@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+/* Hide Netlify drawer badge overlay */
+iframe[src*="netlify"],
+#netlify-drawer,
+[data-netlify-drawer],
+.netlify-badge,
+netlify-drawer-shadow-root {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 @theme {
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-serif: 'Playfair Display', Georgia, serif;
