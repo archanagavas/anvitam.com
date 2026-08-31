@@ -63,7 +63,13 @@ const JWT_SECRET = process.env.JWT_SECRET || '';
 /** ~10 MB base64 string limit — rejects obviously oversized payloads before base64 decoding */
 const MAX_IMAGE_B64_CHARS = 14_000_000; // ~10.5 MB raw when decoded
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '15mb',
+    },
+  },
+};
 
 function resolveAction(req: VercelRequest): string {
   const urlPath = (req.url || '').split('?')[0];
@@ -75,8 +81,8 @@ function resolveAction(req: VercelRequest): string {
   if (body?.action) return body.action;
 
   const pathLast = urlPath.split('/').pop() || '';
-  if (pathLast === 'ai-design' && req.method === 'POST') return 'generate';
-  return pathLast;
+  if ((pathLast === 'ai-design' || pathLast === '') && req.method === 'POST') return 'generate';
+  return pathLast || (req.method === 'POST' ? 'generate' : 'catalog');
 }
 
 function validateJWT(req: VercelRequest): { userId: string } | null {
@@ -90,10 +96,15 @@ function validateJWT(req: VercelRequest): { userId: string } | null {
 }
 
 function parseBody(req: VercelRequest): Record<string, any> {
+  if (!req.body) return {};
   if (typeof req.body === 'string') {
     try { return JSON.parse(req.body); } catch { return {}; }
   }
-  return req.body || {};
+  if (Buffer.isBuffer(req.body)) {
+    try { return JSON.parse(req.body.toString('utf-8')); } catch { return {}; }
+  }
+  if (typeof req.body === 'object') return req.body;
+  return {};
 }
 
 // ── Main handler ─────────────────────────────────────────────────────────────
