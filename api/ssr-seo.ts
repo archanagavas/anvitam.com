@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createHandler } from '../lib/adapter.js';
 import fs from 'fs';
 import path from 'path';
 import { isDbConfigured, getCollection, getDoc, findWhere } from '../lib/db.js';
@@ -1237,7 +1238,7 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
 
 // --- Express/Vercel Handler ---
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default createHandler(async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.url?.includes('debug-seo-headers') || 
       (req.headers['x-matched-path'] as string)?.includes('debug-seo-headers') ||
       (req.headers['x-forwarded-uri'] as string)?.includes('debug-seo-headers')) {
@@ -1735,4 +1736,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('X-Route-Section', section || 'home');
   res.setHeader('X-Response-Bytes', Buffer.byteLength(template, 'utf8').toString());
   return res.status(200).send(template);
-}
+});

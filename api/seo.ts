@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createHandler } from '../lib/adapter.js';
 import { isDbConfigured, getCollection } from '../lib/db.js';
 import { INITIAL_BLOGS, INITIAL_PROJECTS, SERVICES } from '../constants.js';
 import { TOOLS_SUITE } from '../constants/toolsData.js';
@@ -12,7 +13,7 @@ function stripHtml(html: string): string {
     .trim();
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default createHandler(async function handler(req: VercelRequest, res: VercelResponse) {
   const action = (req.query.action as string) || '';
   const url = req.url || '';
 
@@ -305,4 +306,4 @@ ${blogs.length > 0 ? blogs.map((b: any) => `- [${b.title}](https://www.anvitam.c
   // Content changes only when services/projects/blogs are updated.
   res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=43200, stale-while-revalidate=86400');
   return res.status(200).send(output);
-}
+});

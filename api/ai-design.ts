@@ -22,6 +22,7 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createHandler } from '../lib/adapter.js';
 
 // Vercel Hobby tier allows up to 60s if explicitly configured
 export const maxDuration = 60;
@@ -96,7 +97,7 @@ function parseBody(req: VercelRequest): Record<string, any> {
 
 // ── Main handler ─────────────────────────────────────────────────────────────
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default createHandler(async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -1001,4 +1002,4 @@ async function fetchExternalAffiliateProducts(searchQuery: string, region: strin
   }
 
   return res.status(404).json({ error: `Unknown AI Design action: "${action}"` });
-}
+});

@@ -34,6 +34,7 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createHandler } from '../lib/adapter.js';
 
 // Vercel Hobby tier allows up to 60s if explicitly configured
 export const maxDuration = 60;
@@ -342,7 +343,7 @@ export async function generateWithControlNet(prompt: string, sourceImageB64: str
 
 // ── Main Handler ──────────────────────────────────────────────────────────────
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default createHandler(async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
@@ -492,4 +493,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     prompt_used: positivePrompt.substring(0, 200),
     cost_usd: 0.000, // HF free tier = $0.000
   });
-}
+});

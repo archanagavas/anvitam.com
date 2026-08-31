@@ -1,5 +1,6 @@
 // api/tools.ts — Unified Serverless Router for Tool Auth, Credits, Subscriptions, Webhooks & Soil
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createHandler } from '../lib/adapter.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { findWhere, getDoc, upsertDoc } from '../lib/db.js';
@@ -11,7 +12,7 @@ const DODO_CHECKOUT_MAP: Record<string, string> = {
   pro_monthly: 'https://checkout.dodopayments.com/buy/pdt_0NlZ5wDhqx68MxeHE06JE?quantity=1',
 };
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default createHandler(async function handler(req: VercelRequest, res: VercelResponse) {
   const urlPath = (req.url || '').split('?')[0];
   const queryAction = req.query.action || req.query.path;
   const action = (Array.isArray(queryAction) ? queryAction[0] : queryAction) || urlPath.split('/').pop() || '';
@@ -337,4 +338,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   return res.status(404).json({ error: 'Tool action not found' });
-}
+});

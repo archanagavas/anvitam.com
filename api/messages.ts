@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createHandler } from '../lib/adapter.js';
 import { isDbConfigured, getCollection, getDoc, upsertDoc, deleteDoc } from '../lib/db.js';
 import { verifyAdminToken, extractToken } from '../lib/auth.js';
 
@@ -146,7 +147,7 @@ Direct consultation booking: topmate.io/archanagavas/1799075
 
 GOLDEN RULE: Every conversation should end with the visitor feeling: "I need to talk to Archana." Not "let me find someone else." You are Archana's ambassador — represent her expertise, warmth and unique approach in every single reply.`;
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default createHandler(async function handler(req: VercelRequest, res: VercelResponse) {
   const urlParts = (req.url || '').split('?')[0].split('/');
   const lastPart = urlParts[urlParts.length - 1];
   const id = (req.query.id as string | undefined) ||
@@ -349,4 +350,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
-}
+});

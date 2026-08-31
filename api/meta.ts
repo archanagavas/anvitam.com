@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createHandler } from '../lib/adapter.js';
 import { isDbConfigured, getCollection, getDoc, findWhere, upsertDoc, deleteDoc } from '../lib/db.js';
 import { verifyAdminToken, extractToken } from '../lib/auth.js';
 import {
@@ -37,7 +38,7 @@ const ALL_MOCK_PRODUCTS = [
   },
 ];
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default createHandler(async function handler(req: VercelRequest, res: VercelResponse) {
   const resource = (req.query.resource as string) || 'partners';
   const ALLOWED_RESOURCES = [
     'partners',
@@ -155,7 +156,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
-}
+});
 
 function sanitizeDocuments(raw: any): { id: string; label: string; url: string; description: string; gatedAccess: boolean }[] {
   if (!Array.isArray(raw)) return [];

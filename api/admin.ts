@@ -2,10 +2,11 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import bcrypt from 'bcryptjs';
 import { signAdminToken, verifyAdminToken, extractToken } from '../lib/auth.js';
 import { initDatabase, isDbConfigured, getCollection } from '../lib/db.js';
+import { createHandler } from '../lib/adapter.js';
 
 const attempts: Record<string, { count: number; until: number }> = {};
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default createHandler(async function handler(req: VercelRequest, res: VercelResponse) {
   const urlPath = (req.url || '').split('?')[0];
   const queryPath = req.query.path;
   const action = (Array.isArray(queryPath) ? queryPath[0] : queryPath) || urlPath.split('/').pop() || '';
@@ -311,4 +312,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
-}
+});
