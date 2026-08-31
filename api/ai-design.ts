@@ -422,9 +422,20 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
         error: 'Source image is too large. Please reduce the file size to under 10 MB.',
       });
     }
-    if (!['interior', 'exterior', 'garden', 'replace', 'remove', 'declutter', 'style-transfer', 'walls', 'flooring', 'sketch2image', 'floorplan2isometric'].includes(module)) {
+    const ALLOWED_MODULES = [
+      'interior', 'exterior', 'garden', 'replace', 'replace-furniture',
+      'remove', 'furniture-removal', 'declutter', 'style-transfer',
+      'walls', 'flooring', 'sketch2image', 'floorplan2isometric', 'virtual-staging'
+    ];
+    if (!ALLOWED_MODULES.includes(module)) {
       return res.status(400).json({ error: `Unknown design module: ${module}` });
     }
+
+    let normModule = module;
+    if (module === 'replace-furniture') normModule = 'replace';
+    if (module === 'furniture-removal') normModule = 'remove';
+    if (module === 'virtual-staging') normModule = 'interior';
+
     const hasAIConfigured = Boolean(OPENROUTER_API_KEY || GEMINI_API_KEY || process.env.NVIDIA_API_KEY || process.env.VITE_NVIDIA_API_KEY);
     if (!hasAIConfigured) {
       return res.status(500).json({
@@ -434,7 +445,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
     // ── Build prompt ──
     const promptParams: GenerateBriefParams = {
-      module,
+      module: normModule,
       designMode: designMode as GenerateBriefParams['designMode'],
       roomType: typeof roomType === 'string' ? roomType.substring(0, 100) : 'Living Room',
       style: typeof style === 'string' ? style.substring(0, 100) : 'Modern Minimalist',
@@ -452,16 +463,14 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       if (isDbConfigured) {
         const db = getDb();
         const memorySnap = await db.collection('ai_learning_memory')
-          .where('module', '==', module)
+          .where('module', '==', normModule)
           .where('style', '==', style)
           .where('rating', '==', 'positive')
-          // Note: Firestore requires a composite index for where+orderBy. If it fails, it will safely ignore.
-          // .orderBy('created_at', 'desc') 
           .limit(2)
           .get();
         if (!memorySnap.empty) {
           const examples = memorySnap.docs.map(d => `- ${d.data().promptText}`).join('\n\n');
-          goldenExamplesText = `\n\nGOLDEN EXAMPLES OF SUCCESSFUL DESIGNS (Learn from these highly rated past generations):\n${examples}`;
+          goldenExamplesText = `\n\nGOLDEN EXAMPLES OF SUCCESSFUL DESIGNS:\n${examples}`;
         }
       }
     } catch (e) {
@@ -469,7 +478,8 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     }
 
     const basePrompt = buildModulePrompt(promptParams);
-    const fullPrompt = basePrompt + goldenExamplesText;
+    const userCustomPrompt = typeof promptText === 'string' && promptText.trim() ? `\nUser Specific Instructions: ${promptText.trim()}` : '';
+    const fullPrompt = basePrompt + userCustomPrompt + goldenExamplesText;
 
     const cleanBase64 = (sourceImage as string).replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, '');
     const mimeType = (sourceImage as string).includes('data:image/png') ? 'image/png' : 'image/jpeg';

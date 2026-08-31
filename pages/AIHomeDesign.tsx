@@ -235,14 +235,60 @@ export default function AIHomeDesign() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
 
+const FURNITURE_SWAP_CATEGORIES = [
+  {
+    category: '🛋️ Seating',
+    items: ['Sofa / Couch', 'L-Shape Sectional', 'Accent Armchair', 'Dining Chairs', 'Recliner', 'Ottoman / Footstool', 'Barstools']
+  },
+  {
+    category: '🪑 Tables & Surfaces',
+    items: ['Coffee Table', 'Dining Table', 'Side / End Table', 'Console Table', 'Work / Study Desk', 'TV Media Unit']
+  },
+  {
+    category: '💡 Lighting & Rugs',
+    items: ['Floor Lamp', 'Pendant Chandelier', 'Table Lamp', 'Area Rug', 'Runner Rug', 'Curtains & Drapery']
+  },
+  {
+    category: '🎨 Decor & Accents',
+    items: ['Wall Art & Paintings', 'Decorative Mirror', 'Indoor Plants & Planters', 'Bookshelf / Display Cabinet', 'Wallpaper Accent']
+  }
+];
+
+const safeFetchJson = async (res: Response) => {
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    if (!res.ok) {
+      throw new Error(`Server Error (${res.status}): ${text.substring(0, 140) || res.statusText}`);
+    }
+    throw new Error('Invalid JSON response received from AI server.');
+  }
+};
+
   // Specialized Tool Brief States
   const [sketchRenderType, setSketchRenderType] = useState<'3d-floorplan' | 'exterior-elevation' | 'interior-walkthrough'>('3d-floorplan');
   const [sketchDetailLevel, setSketchDetailLevel] = useState<'conceptual' | 'photorealistic' | 'high-detail'>('photorealistic');
   const [stagingTheme, setStagingTheme] = useState<'luxury-minimalist' | 'executive-suite' | 'scandi-warmth' | 'family-cozy'>('luxury-minimalist');
   const [stagingDemographic, setStagingDemographic] = useState<'luxury' | 'first-time' | 'airbnb'>('luxury');
   const [itemToSwap, setItemToSwap] = useState<string>('Sofa / Couch');
+  const [selectedItemsToSwap, setSelectedItemsToSwap] = useState<string[]>(['Sofa / Couch']);
   const [swapPrompt, setSwapPrompt] = useState<string>('');
   const [removalMode, setRemovalMode] = useState<'complete-declutter' | 'loose-objects' | 'fixed-walls'>('complete-declutter');
+
+  const toggleItemToSwap = (item: string) => {
+    setSelectedItemsToSwap(prev => {
+      let updated: string[];
+      if (prev.includes(item)) {
+        if (prev.length === 1) return prev; // keep at least 1 item
+        updated = prev.filter(i => i !== item);
+      } else {
+        updated = [...prev, item];
+      }
+      setItemToSwap(updated.join(', '));
+      return updated;
+    });
+  };
 
   useEffect(() => {
     setUser(getOrCreateDefaultToolUser());
@@ -484,6 +530,11 @@ export default function AIHomeDesign() {
     setAiDescription('');
 
     try {
+      const itemTypeParam = selectedItemsToSwap.join(', ') || itemToSwap;
+      const combinedPromptText = promptText || (selectedModule === 'replace-furniture'
+        ? `Swap/Add furniture: ${itemTypeParam}.${swapPrompt ? ` Replacement details: ${swapPrompt}` : ''}`
+        : `${selectedStyle} style redesign for ${roomType}`);
+
       const res = await fetch('/api/ai-design?action=generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -495,14 +546,23 @@ export default function AIHomeDesign() {
           roomType,
           style: selectedStyle,
           colorPalette,
-          promptText,
+          promptText: combinedPromptText,
+          itemType: itemTypeParam,
+          itemToSwap: itemTypeParam,
+          target: swapPrompt,
+          swapPrompt,
+          stagingTheme,
+          stagingDemographic,
+          sketchRenderType,
+          sketchDetailLevel,
+          removalMode,
           budget,
           modelTier: selectedAiModel,
           email: currentUser.email
         })
       });
 
-      const data = await res.json();
+      const data = await safeFetchJson(res);
       if (!data.success) {
         throw new Error(data.error || 'Design generation failed.');
       }
@@ -521,7 +581,7 @@ export default function AIHomeDesign() {
         roomType,
         sourceImage,
         generatedImage: data.generatedImage,
-        promptText: promptText || `${selectedStyle} style redesign for ${roomType}`,
+        promptText: combinedPromptText,
         recommendations: data.recommendations || []
       };
       setSavedChats(prev => {
@@ -564,7 +624,7 @@ export default function AIHomeDesign() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ roomType: rType, style: rStyle, region, budget, module: activeMod })
       });
-      const data = await res.json();
+      const data = await safeFetchJson(res);
       if (data.success) {
         setRecommendations(data.recommendations || []);
         if (data.catalog) setCatalog(data.catalog);
@@ -585,7 +645,7 @@ export default function AIHomeDesign() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: img, module: activeMod })
       });
-      const data = await res.json();
+      const data = await safeFetchJson(res);
       if (data.success && data.pins) {
         setPins(data.pins);
       }
@@ -1225,34 +1285,54 @@ export default function AIHomeDesign() {
                       {/* TOOL 3: REPLACE & ADD FURNITURE BRIEF */}
                       {selectedModule === 'replace-furniture' && (
                         <div className="space-y-4">
-                          <div className="space-y-2">
-                            <label className="text-xs font-semibold text-gray-900 block">Item to Swap or Add</label>
-                            <div className="flex flex-wrap gap-1.5">
-                              {['Sofa / Couch', 'Dining Set', 'Accent Chair', 'Floor Lamp', 'Area Rug', 'Wall Art'].map(item => (
-                                <button
-                                  key={item}
-                                  type="button"
-                                  onClick={() => setItemToSwap(item)}
-                                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
-                                    itemToSwap === item
-                                      ? 'bg-black text-[#CCFF00] border-black'
-                                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border-gray-200'
-                                  }`}
-                                >
-                                  {item}
-                                </button>
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <label className="text-xs font-semibold text-gray-900 flex items-center gap-1.5">
+                                <span>Items to Swap or Add</span>
+                                <span className="bg-[#CCFF00] text-black font-extrabold text-[10px] px-2 py-0.5 rounded-full border border-black/10">
+                                  {selectedItemsToSwap.length} selected
+                                </span>
+                              </label>
+                              <span className="text-[10px] text-gray-500 font-medium">Click multiple to swap together</span>
+                            </div>
+
+                            <div className="space-y-3 bg-gray-50/80 p-3 rounded-2xl border border-gray-200/80">
+                              {FURNITURE_SWAP_CATEGORIES.map(cat => (
+                                <div key={cat.category} className="space-y-1.5">
+                                  <span className="text-[11px] font-bold text-gray-700 block">{cat.category}</span>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {cat.items.map(item => {
+                                      const isSelected = selectedItemsToSwap.includes(item);
+                                      return (
+                                        <button
+                                          key={item}
+                                          type="button"
+                                          onClick={() => toggleItemToSwap(item)}
+                                          className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition border flex items-center gap-1 cursor-pointer ${
+                                            isSelected
+                                              ? 'bg-black text-[#CCFF00] border-black shadow-sm'
+                                              : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-200'
+                                          }`}
+                                        >
+                                          {isSelected && <span className="text-[#CCFF00] text-xs font-black">✓</span>}
+                                          <span>{item}</span>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
                               ))}
                             </div>
                           </div>
 
                           <div className="space-y-2">
-                            <label className="text-xs font-semibold text-gray-900 block">Replacement Description (Optional)</label>
+                            <label className="text-xs font-semibold text-gray-900 block">Replacement Specs &amp; Style Details (Optional)</label>
                             <input
                               type="text"
                               value={swapPrompt}
                               onChange={(e) => setSwapPrompt(e.target.value)}
-                              placeholder="e.g. Italian cognac leather sectional sofa..."
-                              className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-medium text-gray-900 outline-none"
+                              placeholder="e.g. Italian cognac leather sectional sofa with brass legs, beige wool rug..."
+                              className="w-full bg-white border border-gray-300 rounded-xl p-2.5 text-xs font-medium text-gray-900 outline-none focus:border-black transition"
                             />
                           </div>
                         </div>
