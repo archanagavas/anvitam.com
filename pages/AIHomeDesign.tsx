@@ -15,7 +15,7 @@ import {
   Sparkles, Upload, Wand2, ArrowLeft, Download, RefreshCw, Image as ImageIcon,
   Check, ChevronRight, Sliders, ShieldCheck, Crown, ShoppingBag, MapPin, ExternalLink,
   Layers, Home, Building, Trees, Trash2, Paintbrush, LayoutGrid, Zap, Menu, X, AlertCircle,
-  Settings, LogOut, PanelLeft, Code, Clock
+  Settings, LogOut, PanelLeft, Code, Clock, ThumbsUp, ThumbsDown
 } from 'lucide-react';
 import { getToolUser, getOrCreateDefaultToolUser, logoutToolUser, deductUserCredit, updateToolUser, type ToolUser } from '../utils/userAuth';
 import { ToolsAuthModal } from '../components/tools/ToolsAuthModal';
@@ -197,6 +197,13 @@ export default function AIHomeDesign() {
     setGeneratedImage(null);
     setPromptText('');
     setRecommendations([]);
+    setChatMessages([
+      {
+        id: `msg-init-${Date.now()}`,
+        sender: 'assistant',
+        text: "Hello! What space would you like to design or transform today? Select an AI tool below or type your architectural vision in the prompt bar."
+      }
+    ]);
   };
 
   const handleLoadSavedChat = (session: SavedChatSession) => {
@@ -233,6 +240,11 @@ export default function AIHomeDesign() {
   const [activePin, setActivePin] = useState<any | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // Agentic Feedback & Learning State
+  const [feedbackGiven, setFeedbackGiven] = useState<'positive' | 'negative' | null>(null);
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+  const [aiDescription, setAiDescription] = useState<string>('');
+
   // 3D Viewer State
   const [show3DViewer, setShow3DViewer] = useState(false);
 
@@ -261,7 +273,29 @@ export default function AIHomeDesign() {
     setUser(getOrCreateDefaultToolUser());
     const handleUserUpdate = (e: Event) => {
       const customEvent = e as CustomEvent<ToolUser | null>;
-      setUser(customEvent.detail);
+      const newUser = customEvent.detail || getOrCreateDefaultToolUser();
+      
+      setUser((prevUser) => {
+        if (prevUser && !prevUser.is_guest && newUser.is_guest) {
+          setTimeout(() => {
+            setSavedChats([]);
+            setActiveChatId(null);
+            setCurrentWorkflowStep(1);
+            setSourceImage(null);
+            setGeneratedImage(null);
+            setPromptText('');
+            setRecommendations([]);
+            setChatMessages([
+              {
+                id: `msg-init-${Date.now()}`,
+                sender: 'assistant',
+                text: "Hello! What space would you like to design or transform today? Select an AI tool below or type your architectural vision in the prompt bar."
+              }
+            ]);
+          }, 0);
+        }
+        return newUser;
+      });
     };
     window.addEventListener('anvitam-user-updated', handleUserUpdate);
     return () => window.removeEventListener('anvitam-user-updated', handleUserUpdate);
@@ -439,6 +473,8 @@ export default function AIHomeDesign() {
 
     setIsGenerating(true);
     setErrorMsg(null);
+    setFeedbackGiven(null);
+    setAiDescription('');
 
     try {
       const res = await fetch('/api/ai-design?action=generate', {
@@ -465,6 +501,7 @@ export default function AIHomeDesign() {
       }
 
       setGeneratedImage(data.generatedImage);
+      setAiDescription(data.description || '');
       setCurrentWorkflowStep(4);
       setShowBriefCard(false);
 
@@ -491,9 +528,9 @@ export default function AIHomeDesign() {
       });
       setActiveChatId(newSession.id);
 
-      fetchRecommendations(roomType, selectedStyle);
+      fetchRecommendations(roomType, selectedStyle, activeModule);
       if (data.generatedImage) {
-        fetchElementPins(data.generatedImage);
+        fetchElementPins(data.generatedImage, activeModule);
       }
 
       if (data.credits_remaining !== undefined) {
@@ -513,12 +550,12 @@ export default function AIHomeDesign() {
     }
   };
 
-  const fetchRecommendations = async (rType: string, rStyle: string) => {
+  const fetchRecommendations = async (rType: string, rStyle: string, activeMod: string = 'interior') => {
     try {
       const res = await fetch('/api/ai-design?action=recommend', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomType: rType, style: rStyle, region, budget })
+        body: JSON.stringify({ roomType: rType, style: rStyle, region, budget, module: activeMod })
       });
       const data = await res.json();
       if (data.success) {
@@ -531,15 +568,15 @@ export default function AIHomeDesign() {
   };
 
   useEffect(() => {
-    fetchRecommendations(roomType, selectedStyle);
+    fetchRecommendations(roomType, selectedStyle, activeModule);
   }, []);
 
-  const fetchElementPins = async (img: string) => {
+  const fetchElementPins = async (img: string, activeMod: string = 'interior') => {
     try {
       const res = await fetch('/api/ai-design?action=detect-elements', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: img })
+        body: JSON.stringify({ image: img, module: activeMod })
       });
       const data = await res.json();
       if (data.success && data.pins) {
@@ -589,20 +626,30 @@ export default function AIHomeDesign() {
             <div className="bg-gray-50 rounded-2xl p-2.5 border border-gray-200/80 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-full bg-amber-800 text-white font-semibold text-xs flex items-center justify-center shrink-0">
-                  {user?.full_name ? user.full_name[0] : 'A'}
+                  {user?.name ? user.name[0] : 'G'}
                 </div>
                 <div className="leading-tight truncate max-w-[95px]">
-                  <p className="text-xs font-bold text-gray-900 truncate">{user?.full_name || 'Archana Gavas'}</p>
+                  <p className="text-xs font-bold text-gray-900 truncate">{user?.name || 'Guest Designer'}</p>
                   <p className="text-[10px] text-gray-500 font-medium">{user?.credits_remaining ?? 0} Creds</p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setShowPaywall(true)}
-                className="text-[10px] font-extrabold bg-[#111111] text-[#CCFF00] px-2.5 py-1 rounded-xl hover:bg-black transition cursor-pointer shrink-0"
-              >
-                Upgrade
-              </button>
+              {user?.is_guest ? (
+                <button
+                  type="button"
+                  onClick={() => setShowAuthModal(true)}
+                  className="text-[10px] font-extrabold bg-[#111111] text-[#CCFF00] px-2.5 py-1 rounded-xl hover:bg-black transition cursor-pointer shrink-0"
+                >
+                  Log In
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowPaywall(true)}
+                  className="text-[10px] font-extrabold bg-[#111111] text-[#CCFF00] px-2.5 py-1 rounded-xl hover:bg-black transition cursor-pointer shrink-0"
+                >
+                  Upgrade
+                </button>
+              )}
             </div>
 
             {/* + New Chat Button */}
@@ -686,14 +733,26 @@ export default function AIHomeDesign() {
 
             <div className="flex items-center gap-2">
               {user && (
-                <button
-                  type="button"
-                  onClick={() => setShowPaywall(true)}
-                  className="px-3 py-1.5 rounded-xl bg-gray-900 text-[#CCFF00] text-xs font-semibold flex items-center gap-1 cursor-pointer hover:bg-black transition"
-                >
-                  <Zap size={13} className="fill-[#CCFF00]" />
-                  <span>{user.credits_remaining} Cred</span>
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setShowPaywall(true)}
+                    className="px-3 py-1.5 rounded-xl bg-gray-900 text-[#CCFF00] text-xs font-semibold flex items-center gap-1 cursor-pointer hover:bg-black transition"
+                  >
+                    <Zap size={13} className="fill-[#CCFF00]" />
+                    <span>{user.credits_remaining} Cred</span>
+                  </button>
+                  {!user.is_guest && (
+                    <button
+                      type="button"
+                      onClick={() => logoutToolUser()}
+                      className="p-1.5 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-red-600 transition cursor-pointer"
+                      title="Sign Out"
+                    >
+                      <LogOut size={15} />
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -859,6 +918,13 @@ export default function AIHomeDesign() {
                         imageAfter: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=300&auto=format&fit=crop'
                       },
                       {
+                        id: 'floorplan2isometric',
+                        title: 'Floorplan to 3D',
+                        desc: '2D blueprint → 3D isometric',
+                        imageBefore: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=300&auto=format&fit=crop',
+                        imageAfter: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=300&auto=format&fit=crop'
+                      },
+                      {
                         id: 'virtual-staging',
                         title: 'Virtual Staging AI',
                         desc: 'Furnish empty room spaces',
@@ -978,19 +1044,21 @@ export default function AIHomeDesign() {
                     <div>
                       <h2 className="text-base sm:text-lg font-semibold text-gray-900 tracking-tight">
                         {selectedModule === 'sketch2image' && 'Upload Blueprint Sketch & CAD Brief'}
+                        {selectedModule === 'floorplan2isometric' && 'Upload 2D Floorplan'}
                         {selectedModule === 'virtual-staging' && 'Upload Empty Room & Select Staging Theme'}
                         {selectedModule === 'replace-furniture' && 'Upload Room Photo & Specify Item to Swap'}
                         {selectedModule === 'furniture-removal' && 'Upload Photo for 1-Click Furniture Removal'}
                         {selectedModule === 'exterior' && 'Upload Building / Facade Photo'}
                         {selectedModule === 'garden' && 'Upload Yard & Outdoor Photo'}
-                        {(!['sketch2image', 'virtual-staging', 'replace-furniture', 'furniture-removal', 'exterior', 'garden'].includes(selectedModule)) && 'Upload Room Photo & Set Brief'}
+                        {(!['sketch2image', 'floorplan2isometric', 'virtual-staging', 'replace-furniture', 'furniture-removal', 'exterior', 'garden'].includes(selectedModule)) && 'Upload Room Photo & Set Brief'}
                       </h2>
                       <p className="text-xs text-gray-500">
                         {selectedModule === 'sketch2image' && 'Convert raw hand sketches or CAD floorplans into photorealistic 3D renders.'}
+                        {selectedModule === 'floorplan2isometric' && 'Convert 2D blueprints into high-quality isometric 3D cutaway views.'}
                         {selectedModule === 'virtual-staging' && 'Furnish empty real estate listings with high-end photorealistic furniture packages.'}
                         {selectedModule === 'replace-furniture' && 'Target specific furniture pieces for AI swap or additions.'}
                         {selectedModule === 'furniture-removal' && 'Declutter rooms and clear furniture objects in 1-click.'}
-                        {(!['sketch2image', 'virtual-staging', 'replace-furniture', 'furniture-removal'].includes(selectedModule)) && 'Add your photo and specify room type, budget & target region.'}
+                        {(!['sketch2image', 'floorplan2isometric', 'virtual-staging', 'replace-furniture', 'furniture-removal'].includes(selectedModule)) && 'Add your photo and specify room type, budget & target region.'}
                       </p>
                     </div>
                     <button
@@ -1006,7 +1074,7 @@ export default function AIHomeDesign() {
                     {/* Photo Uploader */}
                     <div className="space-y-4">
                       <label className="text-xs font-semibold text-gray-900 block">
-                        {selectedModule === 'sketch2image' ? 'Blueprint / CAD Sketch Image' : 'Room / Site Photo'}
+                        {selectedModule === 'sketch2image' ? 'Blueprint / CAD Sketch Image' : (selectedModule === 'floorplan2isometric' ? '2D Floorplan Image' : 'Room / Site Photo')}
                       </label>
 
                       {sourceImage ? (
@@ -1027,7 +1095,7 @@ export default function AIHomeDesign() {
                         >
                           <Upload size={24} className="mx-auto text-gray-400" />
                           <p className="text-xs font-semibold text-gray-800">
-                            {selectedModule === 'sketch2image' ? 'Click to upload your CAD blueprint or floorplan sketch' : 'Click to upload your space photo'}
+                            {selectedModule === 'sketch2image' ? 'Click to upload your CAD blueprint or floorplan sketch' : (selectedModule === 'floorplan2isometric' ? 'Click to upload your 2D floorplan or blueprint' : 'Click to upload your space photo')}
                           </p>
                           <p className="text-[10px] text-gray-400">JPG, PNG, WEBP up to 10MB</p>
                         </div>
@@ -1199,7 +1267,7 @@ export default function AIHomeDesign() {
                       )}
 
                       {/* STANDARD BRIEF (FOR INTERIOR, EXTERIOR, GARDEN) */}
-                      {(!['sketch2image', 'virtual-staging', 'replace-furniture', 'furniture-removal'].includes(selectedModule)) && (
+                      {(!['sketch2image', 'floorplan2isometric', 'virtual-staging', 'replace-furniture', 'furniture-removal'].includes(selectedModule)) && (
                         <>
                           <div className="space-y-2">
                             <label className="text-xs font-semibold text-gray-900 block">Space Type</label>
@@ -1461,23 +1529,98 @@ export default function AIHomeDesign() {
                   </div>
 
                   {/* Export Action Footer */}
-                  <div className="flex items-center justify-end gap-3 pt-2">
-                    {/* 3D Walkthrough Button - ONLY FOR INTERIOR MODULES */}
-                    {['interior', 'virtual-staging', 'replace-furniture'].includes(selectedModule) && (
-                      <button
-                        onClick={() => setShow3DViewer(true)}
-                        className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold text-xs px-5 py-2.5 rounded-2xl transition flex items-center gap-1.5 shadow-md cursor-pointer"
+                  <div className="flex items-center justify-between pt-2">
+                    {/* Continuous Learning Loop Feedback UI */}
+                    <div className="flex items-center gap-2">
+                      {feedbackGiven ? (
+                        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-xl flex items-center gap-1">
+                          <Check size={14} className="text-[#CCFF00]" /> Thank you! AI is learning...
+                        </span>
+                      ) : (
+                        <>
+                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mr-2 hidden sm:block">Train AI:</span>
+                          <button
+                            onClick={async () => {
+                              if (!generatedImage || feedbackGiven || isSubmittingFeedback) return;
+                              setIsSubmittingFeedback(true);
+                              try {
+                                await fetch('/api/ai-design?action=feedback', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    module: selectedModule,
+                                    style: selectedStyle,
+                                    originalImage: sourceImage,
+                                    generatedImage: generatedImage,
+                                    promptText: aiDescription || promptText || `${selectedStyle} style redesign for ${roomType}`,
+                                    rating: 'positive'
+                                  })
+                                });
+                                setFeedbackGiven('positive');
+                              } catch (e) {
+                                console.error('Failed to submit feedback', e);
+                              } finally {
+                                setIsSubmittingFeedback(false);
+                              }
+                            }}
+                            disabled={isSubmittingFeedback}
+                            className="bg-gray-100 hover:bg-[#CCFF00] hover:text-black text-gray-600 font-semibold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                            title="Save as Golden Example to improve future results"
+                          >
+                            <ThumbsUp size={14} /> <span className="hidden sm:inline">Golden Example</span>
+                          </button>
+                          <button
+                            onClick={async () => {
+                              if (!generatedImage || feedbackGiven || isSubmittingFeedback) return;
+                              setIsSubmittingFeedback(true);
+                              try {
+                                await fetch('/api/ai-design?action=feedback', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    module: selectedModule,
+                                    style: selectedStyle,
+                                    originalImage: sourceImage,
+                                    generatedImage: generatedImage,
+                                    promptText: aiDescription || promptText || `${selectedStyle} style redesign for ${roomType}`,
+                                    rating: 'negative'
+                                  })
+                                });
+                                setFeedbackGiven('negative');
+                              } catch (e) {
+                                console.error('Failed to submit feedback', e);
+                              } finally {
+                                setIsSubmittingFeedback(false);
+                              }
+                            }}
+                            disabled={isSubmittingFeedback}
+                            className="bg-gray-100 hover:bg-red-500 hover:text-white text-gray-600 font-semibold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                            title="Report poor quality to prevent this in the future"
+                          >
+                            <ThumbsDown size={14} /> <span className="hidden sm:inline">Poor Quality</span>
+                          </button>
+                        </>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      {/* 3D Walkthrough Button - ONLY FOR INTERIOR MODULES */}
+                      {['interior', 'virtual-staging', 'replace-furniture'].includes(selectedModule) && (
+                        <button
+                          onClick={() => setShow3DViewer(true)}
+                          className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold text-xs px-5 py-2.5 rounded-2xl transition flex items-center gap-1.5 shadow-md cursor-pointer"
+                        >
+                          🏠 3D Room Walkthrough
+                        </button>
+                      )}
+                      <a
+                        href={generatedImage}
+                        download="anvitam-ai-design.jpg"
+                        className="bg-[#111111] hover:bg-black text-[#CCFF00] font-semibold text-xs px-5 py-2.5 rounded-2xl transition flex items-center gap-1.5 shadow-xs cursor-pointer"
                       >
-                        🏠 3D Room Walkthrough
-                      </button>
-                    )}
-                    <a
-                      href={generatedImage}
-                      download="anvitam-ai-design.jpg"
-                      className="bg-[#111111] hover:bg-black text-[#CCFF00] font-semibold text-xs px-5 py-2.5 rounded-2xl transition flex items-center gap-1.5 shadow-xs cursor-pointer"
-                    >
-                      <Download size={14} /> Export HD Design
-                    </a>
+                        <Download size={14} /> Export HD Design
+                      </a>
+                    </div>
                   </div>
 
                   {/* 🛍️ SHOPPABLE AFFILIATE RECOMMENDATION CATALOG (STRICTLY RENDERED POST-GENERATION ONLY) */}
@@ -1713,7 +1856,14 @@ export default function AIHomeDesign() {
       <ToolsAuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
       <ToolsPaywallOverlay isOpen={showPaywall} onClose={() => setShowPaywall(false)} user={user} />
       <AllToolsDrawer isOpen={showToolsDrawer} onClose={() => setShowToolsDrawer(false)} />
-      <ToolsSettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} user={user} />
+      <ToolsSettingsModal 
+        isOpen={showSettingsModal} 
+        onClose={() => setShowSettingsModal(false)} 
+        user={user} 
+        onLogout={() => {}} 
+        onUpgrade={() => setShowPaywall(true)}
+        onLogin={() => setShowAuthModal(true)}
+      />
     </>
   );
 }

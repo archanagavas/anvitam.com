@@ -35,6 +35,9 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
+// Vercel Hobby tier allows up to 60s if explicitly configured
+export const maxDuration = 60;
+
 // ── Model Configuration ───────────────────────────────────────────────────────
 
 const HF_API_KEY = process.env.HUGGINGFACE_API_KEY || '';
@@ -138,6 +141,7 @@ export function buildHFPrompt(config: PromptConfig): { positive: string; negativ
     exterior: `photorealistic house exterior facade redesign, architectural photography`,
     garden: `photorealistic garden and outdoor landscape design, lush greenery`,
     'sketch2image': `photorealistic interior render from architectural sketch, 3D rendering style`,
+    'floorplan2isometric': `photorealistic 3D isometric cutaway view of architectural floorplan, highly detailed, architectural rendering`,
     'virtual-staging': `photorealistic virtually staged interior, empty room with furniture added`,
     replace: `photorealistic interior, furniture replaced, seamless edit`,
     remove: `photorealistic interior, furniture removed, clean empty floor and walls`,
@@ -385,7 +389,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } = body;
 
   // Validate module
-  const validModules = ['interior', 'exterior', 'garden', 'sketch2image', 'virtual-staging', 'replace', 'remove'];
+  const validModules = ['interior', 'exterior', 'garden', 'sketch2image', 'floorplan2isometric', 'virtual-staging', 'replace', 'remove'];
   if (!validModules.includes(module)) {
     return res.status(400).json({ error: `Unknown module: ${module}` });
   }

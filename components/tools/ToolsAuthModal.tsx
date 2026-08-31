@@ -154,7 +154,7 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
             {/* Header */}
             <div className="auth-modal-header">
               <div>
-                <div className="auth-logo-badge">SA</div>
+                <div className="w-10 h-10 rounded-xl bg-black text-[#CCFF00] font-black text-lg flex items-center justify-center shadow-xs mx-auto mb-3">A</div>
                 <h2 id="auth-modal-title" className="auth-title">Site Analysis by Anvitam</h2>
                 <p className="auth-subtitle">
                   {mode === 'register' ? '3 Free Credits included. No credit card required.' :

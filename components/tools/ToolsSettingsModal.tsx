@@ -11,6 +11,7 @@ interface Props {
   user: ToolUser | null;
   onLogout: () => void;
   onUpgrade: () => void;
+  onLogin?: () => void;
 }
 
 export const ToolsSettingsModal: React.FC<Props> = ({
@@ -166,13 +167,23 @@ export const ToolsSettingsModal: React.FC<Props> = ({
 
             {/* Footer Actions */}
             <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
-              <button
-                onClick={handleSignOut}
-                className="flex items-center gap-2 text-xs font-semibold text-red-600 hover:text-red-700 transition cursor-pointer py-1 px-2 rounded-lg hover:bg-red-50"
-              >
-                <LogOut size={14} />
-                <span>Sign Out</span>
-              </button>
+              {user?.is_guest ? (
+                <button
+                  onClick={() => { onClose(); onLogin?.(); }}
+                  className="flex items-center gap-2 text-xs font-semibold text-gray-900 hover:text-black transition cursor-pointer py-1 px-2 rounded-lg hover:bg-gray-100"
+                >
+                  <User size={14} />
+                  <span>Log In / Register</span>
+                </button>
+              ) : (
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center gap-2 text-xs font-semibold text-red-600 hover:text-red-700 transition cursor-pointer py-1 px-2 rounded-lg hover:bg-red-50"
+                >
+                  <LogOut size={14} />
+                  <span>Sign Out</span>
+                </button>
+              )}
 
               <button
                 onClick={onClose}

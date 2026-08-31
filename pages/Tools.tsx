@@ -50,7 +50,7 @@ export default function Tools() {
 
   const handleLaunchTool = (tool: ToolItem) => {
     const user = getToolUser();
-    if (!user) {
+    if (!user || user.is_guest) {
       setPendingToolRedirect(tool.href);
       setShowAuthModal(true);
     } else {

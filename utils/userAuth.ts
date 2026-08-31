@@ -168,6 +168,7 @@ export function logoutToolUser() {
       sessionStorage.setItem(LOGOUT_KEY, 'true');
       localStorage.removeItem(USER_KEY);
       localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem('anvitam_design_chats');
       window.dispatchEvent(new CustomEvent('anvitam-user-updated', { detail: null }));
     }
   } catch (err) {

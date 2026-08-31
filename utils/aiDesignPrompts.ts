@@ -140,6 +140,26 @@ NEW FLOORING: ${floorMaterial}
 Replace the floor surface with ${floorMaterial}, correctly following the room's actual floor plane, perspective, and any furniture that sits on top of it (furniture legs/shadows must sit correctly on the new floor, not float or clip). Leave walls, ceiling, and furniture unchanged.`;
     }
 
+    case 'sketch2image': {
+      return `${SHARED_SYSTEM_PROMPT}
+
+11. SKETCH TO 3D PHOTOREAL BRIEF
+STYLE: ${style}
+REGION: ${region}
+
+Convert the provided wireframe, pencil sketch, or basic CAD model into a highly detailed, photorealistic 3D architectural render. Apply the ${style} aesthetic, selecting materials, textures, and lighting appropriate for ${region}. Maintain the original structural layout and perspective from the sketch. Render with raytraced global illumination, high-quality material definitions (like wood grain, glass reflections, and fabric textures) to produce a lifelike architectural visualization.`;
+    }
+
+    case 'floorplan2isometric': {
+      return `${SHARED_SYSTEM_PROMPT}
+
+10. FLOORPLAN TO 3D ISOMETRIC BRIEF
+STYLE: ${style}
+REGION: ${region}
+
+Convert the provided 2D floorplan or blueprint into a highly detailed, photorealistic 3D isometric cutaway view. The walls should be cut at roughly waist-height so the interior is visible. Furnish and decorate the space cohesively according to the ${style} style, using furniture and materials realistic for ${region}. Maintain the exact layout, room proportions, and wall geometry of the 2D plan. Render with professional studio lighting, ambient occlusion, and raytraced shadows to make the 3D model look like a high-end architectural visualization.`;
+    }
+
     default:
       return `${SHARED_SYSTEM_PROMPT}\nRedesign this ${roomType} in ${style} style for region ${region}.`;
   }
@@ -178,17 +198,44 @@ Return strict JSON array with format:
 /**
  * Step 3: Visual Element Bounding Box Detection Prompt
  */
-export const ELEMENT_DETECTION_PROMPT = `You are cataloging the furnishings visible in this generated room image.
-List each distinct furnishing/decor element you can identify (sofa, rug, coffee table, wall paint color, flooring, light fixture, wall art, etc.) along with its approximate bounding box position (x%, y% from top-left, width%, height%) in the image.
-
-Return strict JSON array with format:
-[
-  {
+export function buildElementDetectionPrompt(module: string): string {
+  let contextDesc = "furnishings and decor elements";
+  let jsonExample = `{
     "label": "Modern Beige Sofa",
     "element_type": "sofa",
     "x_percent": 35,
     "y_percent": 55,
     "width_percent": 40,
     "height_percent": 25
+  }`;
+
+  if (module === 'exterior') {
+    contextDesc = "exterior architectural elements, facade materials, and outdoor lighting";
+    jsonExample = `{
+    "label": "Modern Wall Sconce",
+    "element_type": "lighting",
+    "x_percent": 35,
+    "y_percent": 55,
+    "width_percent": 10,
+    "height_percent": 10
+  }`;
+  } else if (module === 'garden') {
+    contextDesc = "plants, landscaping, planters, and outdoor furniture elements";
+    jsonExample = `{
+    "label": "Stone Planter",
+    "element_type": "planter",
+    "x_percent": 60,
+    "y_percent": 75,
+    "width_percent": 15,
+    "height_percent": 20
+  }`;
   }
+
+  return `You are cataloging the ${contextDesc} visible in this generated room or outdoor image.
+List each distinct ${contextDesc.split(',')[0]} you can identify along with its approximate bounding box position (x%, y% from top-left, width%, height%) in the image.
+
+Return strict JSON array with format:
+[
+  ${jsonExample}
 ]`;
+}

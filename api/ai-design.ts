@@ -22,12 +22,16 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+
+// Vercel Hobby tier allows up to 60s if explicitly configured
+export const maxDuration = 60;
+
 import jwt from 'jsonwebtoken';
 import { getDoc, getAllDocs, upsertDoc, deleteDoc } from '../lib/db.js';
 import {
   buildModulePrompt,
   buildRecommendationPrompt,
-  ELEMENT_DETECTION_PROMPT,
+  buildElementDetectionPrompt,
   type GenerateBriefParams,
 } from '../utils/aiDesignPrompts.js';
 import { INITIAL_CATALOG_PRODUCTS, type CatalogProduct } from '../constants/catalogData.js';
@@ -290,6 +294,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
+  // ── 2e. RAG LEARNING LOOP: LOG FEEDBACK ──────────────────────────────
+  if (action === 'feedback') {
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+    const body = parseBody(req);
+    const { module, style, originalImage, generatedImage, promptText, rating } = body as any;
+
+    if (!module || !rating) {
+      return res.status(400).json({ error: 'module and rating are required.' });
+    }
+
+    try {
+      const db = getDb();
+      await db.collection('ai_learning_memory').add({
+        module,
+        style: style || '',
+        originalImage: originalImage || '',
+        generatedImage: generatedImage || '',
+        promptText: promptText || '',
+        rating, // 'positive' or 'negative'
+        created_at: new Date().toISOString()
+      });
+      return res.status(200).json({ success: true });
+    } catch (err) {
+      console.error('[ai-design/feedback]', err);
+      return res.status(500).json({ error: 'Failed to log feedback.' });
+    }
+  }
+
   // ── 3. GENERATE IMAGE REDESIGN ───────────────────────────────────────
   if (action === 'generate') {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -374,7 +406,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         error: 'Source image is too large. Please reduce the file size to under 10 MB.',
       });
     }
-    if (!['interior', 'exterior', 'garden', 'replace', 'remove', 'declutter', 'style-transfer', 'walls', 'flooring'].includes(module)) {
+    if (!['interior', 'exterior', 'garden', 'replace', 'remove', 'declutter', 'style-transfer', 'walls', 'flooring', 'sketch2image', 'floorplan2isometric'].includes(module)) {
       return res.status(400).json({ error: `Unknown design module: ${module}` });
     }
     const hasAIConfigured = Boolean(OPENROUTER_API_KEY || GEMINI_API_KEY || process.env.NVIDIA_API_KEY || process.env.VITE_NVIDIA_API_KEY);
@@ -399,7 +431,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       floorMaterial: typeof floorMaterial === 'string' ? floorMaterial.substring(0, 200) : undefined,
     };
 
-    const fullPrompt = buildModulePrompt(promptParams);
+    let goldenExamplesText = '';
+    try {
+      if (isDbConfigured) {
+        const db = getDb();
+        const memorySnap = await db.collection('ai_learning_memory')
+          .where('module', '==', module)
+          .where('style', '==', style)
+          .where('rating', '==', 'positive')
+          // Note: Firestore requires a composite index for where+orderBy. If it fails, it will safely ignore.
+          // .orderBy('created_at', 'desc') 
+          .limit(2)
+          .get();
+        if (!memorySnap.empty) {
+          const examples = memorySnap.docs.map(d => `- ${d.data().promptText}`).join('\n\n');
+          goldenExamplesText = `\n\nGOLDEN EXAMPLES OF SUCCESSFUL DESIGNS (Learn from these highly rated past generations):\n${examples}`;
+        }
+      }
+    } catch (e) {
+      console.error('[ai-design/generate] Failed to fetch golden examples', e);
+    }
+
+    const basePrompt = buildModulePrompt(promptParams);
+    const fullPrompt = basePrompt + goldenExamplesText;
 
     const cleanBase64 = (sourceImage as string).replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, '');
     const mimeType = (sourceImage as string).includes('data:image/png') ? 'image/png' : 'image/jpeg';
@@ -666,14 +720,22 @@ async function fetchExternalAffiliateProducts(searchQuery: string, region: strin
       style = 'Modern Minimalist',
       region = 'India',
       budget,
+      module = 'interior',
     } = body;
 
     try {
       const dbProducts = await getAllDocs<CatalogProduct>('catalog_products');
       let catalog = dbProducts.length > 0 ? dbProducts : INITIAL_CATALOG_PRODUCTS;
 
+      let finalQuery = `${style} ${roomType}`;
+      if (module === 'exterior') {
+        finalQuery = `${style} outdoor facade lighting patio furniture`;
+      } else if (module === 'garden') {
+        finalQuery = `${style} garden landscaping planter outdoor`;
+      }
+
       // Try fetching live external affiliate API products if configured
-      const liveProducts = await fetchExternalAffiliateProducts(`${style} ${roomType}`, region);
+      const liveProducts = await fetchExternalAffiliateProducts(finalQuery, region);
       if (liveProducts.length > 0) {
         catalog = [...liveProducts, ...catalog];
       }
@@ -812,14 +874,25 @@ async function fetchExternalAffiliateProducts(searchQuery: string, region: strin
   if (action === 'detect-elements') {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
     const body = parseBody(req);
-    const { image } = body;
+    const { image, module = 'interior' } = body;
 
-    const FALLBACK_PINS = [
+    let FALLBACK_PINS = [
       { label: 'Seating Furniture', element_type: 'sofa', x_percent: 45, y_percent: 60, width_percent: 30, height_percent: 20 },
       { label: 'Area Rug', element_type: 'rug', x_percent: 50, y_percent: 75, width_percent: 40, height_percent: 18 },
       { label: 'Lighting Fixture', element_type: 'pendant_light', x_percent: 50, y_percent: 22, width_percent: 15, height_percent: 15 },
       { label: 'Wall Finish', element_type: 'wall_paint', x_percent: 20, y_percent: 35, width_percent: 25, height_percent: 30 },
     ];
+    if (module === 'exterior') {
+      FALLBACK_PINS = [
+        { label: 'Wall Sconce', element_type: 'lighting', x_percent: 45, y_percent: 60, width_percent: 10, height_percent: 10 },
+        { label: 'Facade', element_type: 'material', x_percent: 50, y_percent: 75, width_percent: 40, height_percent: 18 },
+      ];
+    } else if (module === 'garden') {
+      FALLBACK_PINS = [
+        { label: 'Planter', element_type: 'planter', x_percent: 45, y_percent: 60, width_percent: 20, height_percent: 20 },
+        { label: 'Plant', element_type: 'plant', x_percent: 50, y_percent: 75, width_percent: 40, height_percent: 18 },
+      ];
+    }
 
     if (!image || typeof image !== 'string' || (!OPENROUTER_API_KEY && !GEMINI_API_KEY)) {
       return res.status(200).json({ success: true, pins: FALLBACK_PINS });
@@ -855,7 +928,7 @@ async function fetchExternalAffiliateProducts(searchQuery: string, region: strin
                 {
                   role: 'user',
                   content: [
-                    { type: 'text', text: ELEMENT_DETECTION_PROMPT },
+                    { type: 'text', text: buildElementDetectionPrompt(module) },
                     { type: 'image_url', image_url: { url: `data:${mimeType};base64,${cleanBase64}` } }
                   ]
                 }
@@ -884,7 +957,7 @@ async function fetchExternalAffiliateProducts(searchQuery: string, region: strin
                 {
                   role: 'user',
                   parts: [
-                    { text: ELEMENT_DETECTION_PROMPT },
+                    { text: buildElementDetectionPrompt(module) },
                     { inline_data: { mime_type: mimeType, data: cleanBase64 } },
                   ],
                 },
