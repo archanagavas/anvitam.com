@@ -2026,7 +2026,10 @@ const safeFetchJson = async (res: Response) => {
                       <p className="text-xs text-gray-500">Drag the slider to compare original photo vs AI render.</p>
                     </div>
                     <button
-                      onClick={() => setCurrentWorkflowStep(3)}
+                      onClick={() => {
+                        setGeneratedImage(null);
+                        setCurrentWorkflowStep(3);
+                      }}
                       className="bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-semibold text-xs px-4 py-2 rounded-2xl transition cursor-pointer border border-black/10 flex items-center gap-1.5"
                     >
                       <Wand2 size={14} /> Adjust Settings &amp; Re-Render
