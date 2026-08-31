@@ -36,8 +36,8 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     }
   }
 
-  // 2. Admin Verification (GET)
-  if (action === 'verify' || req.method === 'GET') {
+  // 2. Admin Verification (GET /api/admin, /api/admin/verify, /api/admin/tool-users)
+  if (action === 'verify' || action === 'admin' || action === '' || action === 'tool-users') {
     const token = extractToken(req.headers.authorization);
     if (!token) return res.status(401).json({ valid: false, error: 'No token provided.' });
 

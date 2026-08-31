@@ -197,54 +197,130 @@ function mergePreservingLocal<T extends { id: string }>(
 const repairWorkshop = (w: Workshop, def?: Workshop): Workshop => ({
   ...def,
   ...w,
-  images: (w.images && w.images.length > 0) ? w.images : (def?.images || [])
+  id: w?.id || def?.id || '',
+  title: (w?.title && w.title.trim() !== '') ? w.title : (def?.title || ''),
+  slug: (w?.slug && w.slug.trim() !== '') ? w.slug : (def?.slug || ''),
+  subtitle: (w?.subtitle && w.subtitle.trim() !== '') ? w.subtitle : (def?.subtitle || ''),
+  description: (w?.description && w.description.trim() !== '') ? w.description : (def?.description || ''),
+  audience: w?.audience || def?.audience || 'School Students',
+  date: w?.date || def?.date || '',
+  time: w?.time || def?.time || '',
+  location: w?.location || def?.location || '',
+  coverImage: w?.coverImage || (w as any)?.cover_image || def?.coverImage || '',
+  images: (Array.isArray(w?.images) && w.images.length > 0) ? w.images : (def?.images || []),
+  outcomes: (Array.isArray(w?.outcomes) && w.outcomes.length > 0) ? w.outcomes : (def?.outcomes || []),
+  curriculum: (Array.isArray(w?.curriculum) && w.curriculum.length > 0) ? w.curriculum : (def?.curriculum || []),
+  targetAudience: (Array.isArray(w?.targetAudience) && w.targetAudience.length > 0) ? w.targetAudience : (def?.targetAudience || []),
+  status: w?.status || def?.status || 'upcoming',
+  registerUrl: w?.registerUrl || def?.registerUrl || '',
+  metaTitle: w?.metaTitle || def?.metaTitle || '',
+  metaDescription: w?.metaDescription || def?.metaDescription || '',
 });
 
 const repairService = (s: Service, def?: Service): Service => {
-  const heroImage = s.heroImage || (s as any).hero_image || (s as any).image || def?.heroImage || (def as any)?.image || '';
+  const heroImage = s?.heroImage || (s as any)?.hero_image || (s as any)?.image || def?.heroImage || (def as any)?.image || '';
   return {
     ...def,
     ...s,
-    metaTitle: s.metaTitle || def?.metaTitle || '',
-    metaDescription: s.metaDescription || def?.metaDescription || '',
-    metaKeywords: s.metaKeywords || def?.metaKeywords || '',
-    metaRobots: s.metaRobots || def?.metaRobots || 'index, follow',
-    heroImage
+    id: s?.id || def?.id || '',
+    title: (s?.title && s.title.trim() !== '') ? s.title : (def?.title || ''),
+    description: (s?.description && s.description.trim() !== '') ? s.description : (def?.description || ''),
+    icon: s?.icon || def?.icon || 'PenTool',
+    category: s?.category || def?.category || 'Homes & Retreats',
+    valueProps: (Array.isArray(s?.valueProps) && s.valueProps.length > 0) ? s.valueProps : (def?.valueProps || []),
+    heroImage,
+    whatItIs: (Array.isArray(s?.whatItIs) && s.whatItIs.length > 0) ? s.whatItIs : (def?.whatItIs || []),
+    whoItsFor: (Array.isArray(s?.whoItsFor) && s.whoItsFor.length > 0) ? s.whoItsFor : (def?.whoItsFor || []),
+    caseStudyId: s?.caseStudyId || def?.caseStudyId || '',
+    caseStudyIds: Array.isArray(s?.caseStudyIds) ? s.caseStudyIds : (def?.caseStudyIds || []),
+    process: (Array.isArray(s?.process) && s.process.length > 0) ? s.process : (def?.process || []),
+    pricing: s?.pricing || def?.pricing || '',
+    faq: Array.isArray(s?.faq) ? s.faq : (def?.faq || []),
+    bookingLink: s?.bookingLink || def?.bookingLink || '',
+    gallery: Array.isArray(s?.gallery) ? s.gallery : (def?.gallery || []),
+    videos: Array.isArray(s?.videos) ? s.videos : (def?.videos || []),
+    documents: Array.isArray(s?.documents) ? s.documents : (def?.documents || []),
+    metaTitle: s?.metaTitle || def?.metaTitle || '',
+    metaDescription: s?.metaDescription || def?.metaDescription || '',
+    metaKeywords: s?.metaKeywords || def?.metaKeywords || '',
+    metaRobots: s?.metaRobots || def?.metaRobots || 'index, follow',
   };
 };
 
 const repairProduct = (p: DigitalProduct, def?: DigitalProduct): DigitalProduct => ({
   ...def,
   ...p,
-  image: p.image || def?.image || ''
+  id: p?.id || def?.id || '',
+  title: (p?.title && p.title.trim() !== '') ? p.title : (def?.title || ''),
+  description: (p?.description && p.description.trim() !== '') ? p.description : (def?.description || ''),
+  image: p?.image || def?.image || ''
 });
 
 const repairProject = (p: Project, def?: Project): Project => {
-  const heroImage = p.heroImage || (p as any).hero_image || p.image || def?.heroImage || def?.image || '';
-  const image = p.image || heroImage || def?.image || def?.heroImage || '';
+  const heroImage = p?.heroImage || (p as any)?.hero_image || p?.image || def?.heroImage || def?.image || '';
+  const image = p?.image || heroImage || def?.image || def?.heroImage || '';
   return {
     ...def,
     ...p,
+    id: p?.id || def?.id || '',
+    title: (p?.title && p.title.trim() !== '') ? p.title : (def?.title || ''),
+    slug: p?.slug || def?.slug || p?.id || '',
+    category: p?.category || def?.category || '',
+    location: p?.location || def?.location || '',
+    year: p?.year || def?.year || '',
     image,
     heroImage,
-    gallery: (p.gallery && p.gallery.length > 0) ? p.gallery : (def?.gallery || [])
+    description: (p?.description && p.description.trim() !== '') ? p.description : (def?.description || ''),
+    fullDescription: p?.fullDescription || def?.fullDescription || '',
+    gallery: (Array.isArray(p?.gallery) && p.gallery.length > 0) ? p.gallery : (def?.gallery || []),
+    specs: Array.isArray(p?.specs) ? p.specs : (def?.specs || []),
+    story: Array.isArray(p?.story) ? p.story : (def?.story || []),
+    isFeatured: p?.isFeatured ?? def?.isFeatured ?? false,
+    tags: Array.isArray(p?.tags) ? p.tags : (def?.tags || []),
+    faqs: Array.isArray(p?.faqs) ? p.faqs : (def?.faqs || []),
+    videos: Array.isArray(p?.videos) ? p.videos : (def?.videos || []),
+    documents: Array.isArray(p?.documents) ? p.documents : (def?.documents || []),
+    status: p?.status || def?.status || 'published',
+    metaTitle: p?.metaTitle || def?.metaTitle || '',
+    metaDescription: p?.metaDescription || def?.metaDescription || '',
+    metaKeywords: p?.metaKeywords || def?.metaKeywords || '',
+    metaRobots: p?.metaRobots || def?.metaRobots || 'index, follow',
   };
 };
 
 const repairBlog = (b: BlogPost, def?: BlogPost): BlogPost => ({
   ...def,
   ...b,
-  image: b.image || def?.image || '',
-  status: b.status || def?.status || 'published'
+  id: b?.id || def?.id || '',
+  title: (b?.title && b.title.trim() !== '') ? b.title : (def?.title || ''),
+  slug: (b?.slug && b.slug.trim() !== '') ? b.slug : (def?.slug || ''),
+  date: b?.date || def?.date || new Date().toISOString().split('T')[0],
+  excerpt: (b?.excerpt && b.excerpt.trim() !== '') ? b.excerpt : (def?.excerpt || ''),
+  content: (b?.content && b.content.trim() !== '') ? b.content : (def?.content || ''),
+  image: b?.image || def?.image || '',
+  author: b?.author || def?.author || 'Ar. Archana Gavas',
+  authorBio: b?.authorBio || def?.authorBio || '',
+  authorImage: b?.authorImage || def?.authorImage || '',
+  status: b?.status || def?.status || 'published',
+  tags: Array.isArray(b?.tags) ? b.tags : (def?.tags || []),
+  faqs: Array.isArray(b?.faqs) ? b.faqs : (def?.faqs || []),
+  toc: Array.isArray(b?.toc) ? b.toc : (def?.toc || []),
+  coverImageAlt: b?.coverImageAlt || def?.coverImageAlt || '',
+  metaTitle: b?.metaTitle || def?.metaTitle || '',
+  metaDescription: b?.metaDescription || def?.metaDescription || '',
+  metaKeywords: b?.metaKeywords || def?.metaKeywords || '',
+  metaRobots: b?.metaRobots || def?.metaRobots || 'index, follow',
 });
 
 const repairEstimatorService = (e: EstimatorService, def?: EstimatorService): EstimatorService => ({
   ...def,
   ...e,
-  icon: e.icon || def?.icon || '🌿',
-  desc: e.desc || def?.desc || '',
-  subs: Array.isArray(e.subs) ? e.subs : (def?.subs || []),
-  baseINR: Array.isArray(e.baseINR) ? e.baseINR : (def?.baseINR || [])
+  id: e?.id || def?.id || '',
+  title: (e as any)?.title || (e as any)?.name || def?.name || '',
+  icon: e?.icon || def?.icon || '🌿',
+  desc: e?.desc || def?.desc || '',
+  subs: Array.isArray(e?.subs) ? e.subs : (def?.subs || []),
+  baseINR: Array.isArray(e?.baseINR) ? e.baseINR : (def?.baseINR || [])
 });
 
 export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {

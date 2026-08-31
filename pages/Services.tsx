@@ -26,9 +26,9 @@ const Services: React.FC = () => {
     ? services 
     : services.filter(s => 
         s.category === selectedCategory || 
-        (selectedCategory === 'Homes & Retreats' && (s.id.includes('home') || s.id.includes('villa') || s.id.includes('retreat'))) || 
-        (selectedCategory === 'Land & Gardens' && (s.id.includes('permaculture') || s.id.includes('forest') || s.id.includes('garden') || s.id.includes('landscape'))) ||
-        (selectedCategory === 'Consultation' && (s.category === 'Consultation' || s.id.includes('consult') || s.title.toLowerCase().includes('consult')))
+        (selectedCategory === 'Homes & Retreats' && ((s.id || '').includes('home') || (s.id || '').includes('villa') || (s.id || '').includes('retreat'))) || 
+        (selectedCategory === 'Land & Gardens' && ((s.id || '').includes('permaculture') || (s.id || '').includes('forest') || (s.id || '').includes('garden') || (s.id || '').includes('landscape'))) ||
+        (selectedCategory === 'Consultation' && (s.category === 'Consultation' || (s.id || '').includes('consult') || (s.title || '').toLowerCase().includes('consult')))
       );
 
   const faqs = [
@@ -112,8 +112,8 @@ const Services: React.FC = () => {
             >
               {/* Column 1: Title & Desc */}
               <div className="md:col-span-3">
-                <h3 className="text-2xl md:text-3xl font-medium text-[#0a0a0a] mb-4 leading-tight">{service.title}</h3>
-                <p className="text-[#0a0a0a]/60 text-sm md:text-base leading-relaxed">{service.description}</p>
+                <h3 className="text-2xl md:text-3xl font-medium text-[#0a0a0a] mb-4 leading-tight">{service.title || 'Service Title'}</h3>
+                <p className="text-[#0a0a0a]/60 text-sm md:text-base leading-relaxed">{service.description || ''}</p>
               </div>
 
               {/* Column 2: Image */}
@@ -122,8 +122,8 @@ const Services: React.FC = () => {
                 onClick={() => navigate(`/services/${service.id}`)}
               >
                 <img 
-                  src={service.heroImage} 
-                  alt={service.title} 
+                  src={service.heroImage || 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=800&auto=format&fit=crop'} 
+                  alt={service.title || 'Service Image'} 
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" 
                 />
               </div>
@@ -132,7 +132,7 @@ const Services: React.FC = () => {
               <div className="md:col-span-4 flex flex-col items-start bg-white z-10 w-full lg:w-11/12 mx-auto">
                 <h4 className="text-lg md:text-xl text-[#0a0a0a] mb-6 md:mb-8 font-medium">Whats Included</h4>
                 <ul className="space-y-4 mb-8 md:mb-10 w-full">
-                  {service.valueProps.map((prop, i) => (
+                  {(service.valueProps || []).map((prop, i) => (
                     <li key={i} className="flex items-start gap-3">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-[#0a0a0a] shrink-0" />
                       <p className="text-sm text-[#0a0a0a]/70">
@@ -140,7 +140,7 @@ const Services: React.FC = () => {
                       </p>
                     </li>
                   ))}
-                  {service.process.slice(0, 2).map((p, i) => (
+                  {(service.process || []).slice(0, 2).map((p, i) => (
                     <li key={`p-${i}`} className="flex items-start gap-3">
                       <div className="w-1.5 h-1.5 mt-2 rounded-full bg-[#0a0a0a] shrink-0" />
                       <p className="text-sm text-[#0a0a0a]/70">
