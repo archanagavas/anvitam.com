@@ -1506,6 +1506,18 @@ const Admin: React.FC = () => {
       showToast('Error: ' + (err.message || 'Failed to delete product'));
     }
   };
+  const handleCatalogImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const base64 = await compressImage(file);
+      setCatalogFormData(prev => ({ ...prev, image_url: base64 }));
+      showToast('Image attached successfully!');
+    } catch (err) {
+      console.error('Image compression failed:', err);
+      showToast('Failed to attach image');
+    }
+  };
 
   const autoFetchProductMetadata = async () => {
     if (!catalogFormData.affiliate_link.trim()) {
@@ -4001,7 +4013,13 @@ const Admin: React.FC = () => {
                   <div className="sm:col-span-2">
                     <div className="flex items-center justify-between mb-1">
                       <label className="text-xs font-bold text-gray-600 block">Image URL *</label>
-                      <span className="text-[10px] text-gray-500 font-semibold">Auto-fetched, or paste/attach direct product image URL</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-gray-500 font-semibold">Auto-fetched, or paste link</span>
+                        <label className="cursor-pointer text-[10px] font-bold bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 border text-gray-700 flex items-center gap-1">
+                          📎 Attach File
+                          <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden" onChange={handleCatalogImageUpload} />
+                        </label>
+                      </div>
                     </div>
                     <input
                       value={catalogFormData.image_url}
