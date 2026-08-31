@@ -27,7 +27,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 export const maxDuration = 60;
 
 import jwt from 'jsonwebtoken';
-import { getDoc, getAllDocs, upsertDoc, deleteDoc } from '../lib/db.js';
+import { getDoc, getAllDocs, upsertDoc, deleteDoc, getDb, isDbConfigured } from '../lib/db.js';
 import {
   buildModulePrompt,
   buildRecommendationPrompt,

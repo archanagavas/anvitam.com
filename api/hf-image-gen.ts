@@ -282,6 +282,8 @@ export async function generateWithReplicate(prompt: string): Promise<string | nu
       const buf = await imgRes.arrayBuffer();
       const b64 = Buffer.from(buf).toString('base64');
       return `data:image/webp;base64,${b64}`;
+    }
+
     return null;
   } catch (err) {
     console.error('[hf-image-gen] Replicate error:', err);

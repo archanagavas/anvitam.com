@@ -37,7 +37,7 @@ let _app: App | null = null;
 let _db: Firestore | null = null;
 export let isDbConfigured = false;
 
-function getDb(): Firestore {
+export function getDb(): Firestore {
   if (_db) return _db;
 
   const projectId   = process.env.FIREBASE_PROJECT_ID;

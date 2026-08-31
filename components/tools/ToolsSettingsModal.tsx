@@ -20,6 +20,7 @@ export const ToolsSettingsModal: React.FC<Props> = ({
   user,
   onLogout,
   onUpgrade,
+  onLogin,
 }) => {
   useEffect(() => {
     if (isOpen) {
