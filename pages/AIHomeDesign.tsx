@@ -109,9 +109,10 @@ const SAMPLE_PHOTOS = [
 ];
 
 const AI_MODEL_ENGINES = [
-  { id: 'low-fast', name: '⚡ Fast Draft (Low Complexity) — 1 Cred', creditCost: 1, level: 'Low', speed: '1-3s Fast GPU', desc: 'Fast initial drafts & quick color restyles', icon: '⚡' },
-  { id: 'med-balanced', name: '🚀 Balanced Pro (Med Complexity) — 2 Creds', creditCost: 2, level: 'Med', speed: 'High Photorealism', desc: 'Balanced photorealism with lighting & texture synthesis', icon: '🚀' },
-  { id: 'hard-master', name: '💎 Ultra HD Master (Hard Reasoning) — 3 Creds', creditCost: 3, level: 'Hard', speed: 'Max 4K Depth', desc: 'Max depth reasoning, raytraced lighting & architectural precision', icon: '👑' },
+  { id: 'instant-free', name: '💨 Instant Render (Fallback) — 0 Creds', creditCost: 0, level: 'Basic', speed: '< 5s Guaranteed', desc: 'Fastest 1024x1024 generation using open-source models. No wait.', icon: '💨' },
+  { id: 'low-fast', name: '⚡ Fast Draft (Low Complexity) — 1 Cred', creditCost: 1, level: 'Low', speed: '5-15s Fast GPU', desc: 'Fast initial drafts & quick color restyles', icon: '⚡' },
+  { id: 'med-balanced', name: '🚀 Balanced Pro (Med Complexity) — 2 Creds', creditCost: 2, level: 'Med', speed: '15-30s High Photorealism', desc: 'Balanced photorealism with lighting & texture synthesis', icon: '🚀' },
+  { id: 'hard-master', name: '💎 Ultra HD Master (Hard Reasoning) — 3 Creds', creditCost: 3, level: 'Hard', speed: '30-60s Max 4K Depth', desc: 'Max depth reasoning, raytraced lighting & architectural precision', icon: '👑' },
 ];
 
 const DEFAULT_HOTSPOT_PINS = [
