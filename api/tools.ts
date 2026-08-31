@@ -53,7 +53,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
       const token = jwt.sign(
         { userId: newUser.id, email: newUser.email, type: 'tool_user' },
-        process.env.JWT_SECRET || 'anvitam_prod_secure_jwt_secret_2026',
+        process.env.JWT_SECRET || '',
         { expiresIn: '30d' }
       );
 
@@ -99,7 +99,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
       const token = jwt.sign(
         { userId: user.id, email: user.email, type: 'tool_user' },
-        process.env.JWT_SECRET || 'anvitam_prod_secure_jwt_secret_2026',
+        process.env.JWT_SECRET || '',
         { expiresIn: '30d' }
       );
 
@@ -146,7 +146,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     }
     const token = authHeader.split(' ')[1];
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'anvitam_prod_secure_jwt_secret_2026') as { userId: string; email: string };
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as { userId: string; email: string };
       const user = await getDoc('tool_users', decoded.userId);
       if (!user) return res.status(404).json({ error: 'User not found' });
 
