@@ -1012,26 +1012,38 @@ export default function AIHomeDesign() {
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 max-h-[480px] overflow-y-auto pr-1">
-                    {STYLE_OPTIONS.map((st) => (
-                      <div
-                        key={st.id}
-                        onClick={() => {
-                          setSelectedStyle(st.id);
-                          setCurrentWorkflowStep(3);
-                        }}
-                        className={`p-3 rounded-2xl border transition cursor-pointer flex flex-col items-center text-center gap-2 hover:shadow-md ${
-                          selectedStyle === st.id
-                            ? 'border-black bg-white ring-2 ring-black font-semibold'
-                            : 'border-gray-200/80 bg-white hover:border-gray-400'
-                        }`}
-                      >
-                        <img src={st.img} alt={st.name} className="w-14 h-14 rounded-xl object-cover shadow-2xs" />
-                        <div>
-                          <h4 className="text-xs font-semibold text-gray-900 truncate">{st.name}</h4>
-                          <span className="text-[10px] text-gray-500 font-medium">Select style</span>
+                    {(() => {
+                      const getFilteredStyles = () => {
+                        if (selectedModule === 'garden') {
+                          return STYLE_OPTIONS.filter(s => ['zen', 'japanese', 'biophilic', 'rustic', 'eco', 'bali', 'tropical', 'mediterranean', 'french_country', 'traditional', 'cottagecore', 'modern', 'minimalist'].includes(s.id));
+                        }
+                        if (selectedModule === 'exterior') {
+                          return STYLE_OPTIONS.filter(s => ['modern', 'minimalist', 'contemporary', 'luxury', 'neoclassic', 'artdeco', 'rustic', 'mediterranean', 'french_country', 'farmhouse', 'industrial', 'soviet', 'cyberpunk'].includes(s.id));
+                        }
+                        return STYLE_OPTIONS;
+                      };
+                      
+                      return getFilteredStyles().map((st) => (
+                        <div
+                          key={st.id}
+                          onClick={() => {
+                            setSelectedStyle(st.id);
+                            setCurrentWorkflowStep(3);
+                          }}
+                          className={`p-3 rounded-2xl border transition cursor-pointer flex flex-col items-center text-center gap-2 hover:shadow-md ${
+                            selectedStyle === st.id
+                              ? 'border-black bg-white ring-2 ring-black font-semibold'
+                              : 'border-gray-200/80 bg-white hover:border-gray-400'
+                          }`}
+                        >
+                          <img src={st.img} alt={st.name} className="w-14 h-14 rounded-xl object-cover shadow-2xs" />
+                          <div>
+                            <h4 className="text-xs font-semibold text-gray-900 truncate">{st.name}</h4>
+                            <span className="text-[10px] text-gray-500 font-medium">Select style</span>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ));
+                    })()}
                   </div>
                 </div>
               )}
@@ -1058,7 +1070,9 @@ export default function AIHomeDesign() {
                         {selectedModule === 'virtual-staging' && 'Furnish empty real estate listings with high-end photorealistic furniture packages.'}
                         {selectedModule === 'replace-furniture' && 'Target specific furniture pieces for AI swap or additions.'}
                         {selectedModule === 'furniture-removal' && 'Declutter rooms and clear furniture objects in 1-click.'}
-                        {(!['sketch2image', 'floorplan2isometric', 'virtual-staging', 'replace-furniture', 'furniture-removal'].includes(selectedModule)) && 'Add your photo and specify room type, budget & target region.'}
+                        {selectedModule === 'exterior' && 'Add your photo and specify building type & target region.'}
+                        {selectedModule === 'garden' && 'Add your photo and specify outdoor space type & target region.'}
+                        {(!['sketch2image', 'floorplan2isometric', 'virtual-staging', 'replace-furniture', 'furniture-removal', 'exterior', 'garden'].includes(selectedModule)) && 'Add your photo and specify room type, budget & target region.'}
                       </p>
                     </div>
                     <button
@@ -1270,13 +1284,13 @@ export default function AIHomeDesign() {
                       {(!['sketch2image', 'floorplan2isometric', 'virtual-staging', 'replace-furniture', 'furniture-removal'].includes(selectedModule)) && (
                         <>
                           <div className="space-y-2">
-                            <label className="text-xs font-semibold text-gray-900 block">Space Type</label>
+                            <label className="text-xs font-semibold text-gray-900 block">{selectedModule === 'exterior' ? 'Building Type' : (selectedModule === 'garden' ? 'Outdoor Space Type' : 'Space Type')}</label>
                             <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
-                              {[
-                                'Living Room', 'Bedroom', 'Dining Room', 'Kitchen', 'Master Suite',
-                                'Home Office', 'Bathroom', 'Balcony & Patio', 'Backyard Garden',
-                                'Exterior Facade', 'Rooftop Terrace', 'Commercial Cafe'
-                              ].map(r => (
+                              {(() => {
+                                if (selectedModule === 'garden') return ['Backyard Garden', 'Front Yard', 'Balcony & Patio', 'Rooftop Terrace', 'Courtyard', 'Pool Area'];
+                                if (selectedModule === 'exterior') return ['Exterior Facade', 'Modern Villa', 'Suburban Home', 'Cottage Front', 'Commercial Building', 'Log Cabin'];
+                                return ['Living Room', 'Bedroom', 'Dining Room', 'Kitchen', 'Master Suite', 'Home Office', 'Bathroom', 'Commercial Cafe'];
+                              })().map(r => (
                                 <button
                                   key={r}
                                   type="button"
@@ -1293,7 +1307,7 @@ export default function AIHomeDesign() {
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className={`grid ${selectedModule === 'interior' ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
                             <div className="space-y-2">
                               <label className="text-xs font-semibold text-gray-900 block">Target Region</label>
                               <select
@@ -1307,18 +1321,20 @@ export default function AIHomeDesign() {
                               </select>
                             </div>
 
-                            <div className="space-y-2">
-                              <label className="text-xs font-semibold text-gray-900 block">Budget Level</label>
-                              <select
-                                value={budget}
-                                onChange={(e) => setBudget(e.target.value)}
-                                className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
-                              >
-                                <option value="Economy">Economy</option>
-                                <option value="Mid-Range">Mid-Range</option>
-                                <option value="Luxury">Luxury Bespoke</option>
-                              </select>
-                            </div>
+                            {selectedModule === 'interior' && (
+                              <div className="space-y-2">
+                                <label className="text-xs font-semibold text-gray-900 block">Budget Level</label>
+                                <select
+                                  value={budget}
+                                  onChange={(e) => setBudget(e.target.value)}
+                                  className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                                >
+                                  <option value="Economy">Economy</option>
+                                  <option value="Mid-Range">Mid-Range</option>
+                                  <option value="Luxury">Luxury Bespoke</option>
+                                </select>
+                              </div>
+                            )}
                           </div>
                         </>
                       )}
