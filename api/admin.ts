@@ -86,11 +86,11 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       return res.status(400).json({ error: 'Email and password are required.' });
     }
 
-    const expectedEmail = (process.env.ADMIN_EMAIL ?? '').toLowerCase().trim();
+    const expectedEmail = (process.env.ADMIN_EMAIL || 'ar.archanagavas@gmail.com').toLowerCase().trim();
     const expectedHash  = process.env.ADMIN_PASSWORD_HASH ?? '';
 
-    if (!expectedEmail || !expectedHash) {
-      console.error('[admin/login] ADMIN_EMAIL or ADMIN_PASSWORD_HASH not configured.');
+    if (!expectedHash) {
+      console.error('[admin/login] ADMIN_PASSWORD_HASH not configured.');
       return res.status(500).json({ error: 'Authentication not configured on server.' });
     }
 
