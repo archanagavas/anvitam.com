@@ -191,11 +191,11 @@ export function buildHFPrompt(config: PromptConfig): { positive: string; negativ
 
 // ── HuggingFace Inference ─────────────────────────────────────────────────────
 
-export async function generateWithHuggingFace(prompt: string, model: string): Promise<string | null> {
+export async function generateWithHuggingFace(prompt: string, model: string, timeoutMs: number = 2500): Promise<string | null> {
   if (!HF_API_KEY) return null;
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 2500);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const res = await fetch(model, {
@@ -243,11 +243,11 @@ export async function generateWithHuggingFace(prompt: string, model: string): Pr
 
 // ── Cloudflare Workers AI Inference (Free Tier 10,000 Neurons/Day) ───────────────
 
-export async function generateWithCloudflare(prompt: string): Promise<string | null> {
+export async function generateWithCloudflare(prompt: string, timeoutMs: number = 2500): Promise<string | null> {
   if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_API_TOKEN) return null;
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 2500);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const url = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/black-forest-labs/flux-1-schnell`;
@@ -283,8 +283,9 @@ export async function generateWithCloudflare(prompt: string): Promise<string | n
 
 // ── Replicate Fallback ────────────────────────────────────────────────────────
 
-export async function generateWithReplicate(prompt: string): Promise<string | null> {
+export async function generateWithReplicate(prompt: string, timeoutMs: number = 2500): Promise<string | null> {
   if (!REPLICATE_API_TOKEN) return null;
+  const waitSeconds = Math.max(1, Math.floor(timeoutMs / 1000));
 
   try {
     // Start prediction
@@ -293,7 +294,7 @@ export async function generateWithReplicate(prompt: string): Promise<string | nu
       headers: {
         'Authorization': `Bearer ${REPLICATE_API_TOKEN}`,
         'Content-Type': 'application/json',
-        'Prefer': 'wait=2', // Synchronous wait up to 2s
+        'Prefer': `wait=${waitSeconds}`, // Synchronous wait
       },
       body: JSON.stringify({
         input: {
@@ -509,34 +510,41 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
   const { positive: positivePrompt } = buildHFPrompt({ module, style, roomType, budget, promptText, designMode });
 
-  // Select model
+  // Select model and determine timeout
   let selectedModel = HF_MODELS.flux_schnell;
-  if (modelTier === 'sdxl') selectedModel = HF_MODELS.sdxl;
-  if (modelTier === 'realistic') selectedModel = HF_MODELS.realistic;
+  let timeoutMs = 8000; // Default 8s for fast
+  
+  if (modelTier === 'med-balanced' || modelTier === 'sdxl') {
+    selectedModel = HF_MODELS.sdxl;
+    timeoutMs = 15000; // 15 seconds
+  } else if (modelTier === 'hard-master' || modelTier === 'realistic') {
+    selectedModel = HF_MODELS.realistic;
+    timeoutMs = 45000; // 45 seconds (gives Vercel 15s to gracefully failover before 60s hard limit)
+  }
 
   // If user requested instant-free, skip the heavy models
   if (modelTier === 'instant-free') {
     imageB64 = await generateWithPollinations(positivePrompt);
   } else {
     // 1. Try HuggingFace FLUX.1-schnell (free)
-    imageB64 = await generateWithHuggingFace(positivePrompt, selectedModel);
+    imageB64 = await generateWithHuggingFace(positivePrompt, selectedModel, timeoutMs);
 
     // 2. If HF FLUX fails, try Cloudflare Workers AI
     if (!imageB64 && CLOUDFLARE_ACCOUNT_ID && CLOUDFLARE_API_TOKEN) {
       console.log('[hf-image-gen] HF failed, trying Cloudflare Workers AI (FLUX) fallback...');
-      imageB64 = await generateWithCloudflare(positivePrompt);
+      imageB64 = await generateWithCloudflare(positivePrompt, 8000); // always use short timeout for fallback
     }
 
     // 3. If Cloudflare fails, try HF SDXL
     if (!imageB64 && modelTier === 'flux') {
       console.log('[hf-image-gen] Cloudflare failed, trying SDXL fallback...');
-      imageB64 = await generateWithHuggingFace(positivePrompt, HF_MODELS.sdxl);
+      imageB64 = await generateWithHuggingFace(positivePrompt, HF_MODELS.sdxl, 8000);
     }
 
     // 4. Final fallback: Replicate
     if (!imageB64 && REPLICATE_API_TOKEN) {
       console.log('[hf-image-gen] HF/Cloudflare failed, trying Replicate FLUX fallback...');
-      imageB64 = await generateWithReplicate(positivePrompt);
+      imageB64 = await generateWithReplicate(positivePrompt, 8000);
     }
   }
 
