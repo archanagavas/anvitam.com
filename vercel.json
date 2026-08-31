@@ -1,0 +1,49 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/sitemap.xml", "destination": "/api/seo?action=sitemap" },
+    { "source": "/llms.txt", "destination": "/api/seo?action=llms" },
+    { "source": "/llms-full.txt", "destination": "/api/seo?action=llms-full" },
+    { "source": "/api/indexnow", "destination": "/api/seo?action=indexnow" },
+
+    { "source": "/api/admin/:splat*", "destination": "/api/admin?path=:splat*" },
+    { "source": "/api/admin", "destination": "/api/admin" },
+
+    { "source": "/api/tools/:splat*", "destination": "/api/tools?action=:splat*" },
+    { "source": "/api/tools", "destination": "/api/tools" },
+
+    { "source": "/api/blogs/:splat*", "destination": "/api/meta?resource=blogs&id=:splat*" },
+    { "source": "/api/blogs", "destination": "/api/meta?resource=blogs" },
+
+    { "source": "/api/projects/:splat*", "destination": "/api/meta?resource=projects&id=:splat*" },
+    { "source": "/api/projects", "destination": "/api/meta?resource=projects" },
+
+    { "source": "/api/services/:splat*", "destination": "/api/meta?resource=services&id=:splat*" },
+    { "source": "/api/services", "destination": "/api/meta?resource=services" },
+
+    { "source": "/api/products/:splat*", "destination": "/api/meta?resource=products&id=:splat*" },
+    { "source": "/api/products", "destination": "/api/meta?resource=products" },
+
+    { "source": "/api/testimonials/:splat*", "destination": "/api/meta?resource=testimonials&id=:splat*" },
+    { "source": "/api/testimonials", "destination": "/api/meta?resource=testimonials" },
+
+    { "source": "/api/partners/:splat*", "destination": "/api/meta?resource=partners&id=:splat*" },
+    { "source": "/api/partners", "destination": "/api/meta?resource=partners" },
+
+    { "source": "/api/workshops/:splat*", "destination": "/api/meta?resource=workshops&id=:splat*" },
+    { "source": "/api/workshops", "destination": "/api/meta?resource=workshops" },
+
+    { "source": "/api/estimator-services/:splat*", "destination": "/api/meta?resource=estimator-services&id=:splat*" },
+    { "source": "/api/estimator-services", "destination": "/api/meta?resource=estimator-services" },
+
+    { "source": "/api/messages/:splat*", "destination": "/api/messages?id=:splat*" },
+    { "source": "/api/messages", "destination": "/api/messages" },
+
+    { "source": "/api/ai-design/:splat*", "destination": "/api/ai-design?action=:splat*" },
+    { "source": "/api/ai-design", "destination": "/api/ai-design" },
+
+    { "source": "/((?!api/|assets/|.*\\..*).*)", "destination": "/index.html" }
+  ]
+}
