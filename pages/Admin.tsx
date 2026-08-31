@@ -1541,12 +1541,13 @@ const Admin: React.FC = () => {
           name: data.title || prev.name,
           image_url: data.image_url || prev.image_url,
           price: data.price || prev.price,
-          element_type: data.element_type || prev.element_type
+          element_type: data.element_type || prev.element_type,
+          style_tags: data.style_tags || prev.style_tags
         }));
         if (data.image_extracted === false) {
-          showToast('⚠️ Title, price & element type auto-populated! Product photo could not be extracted directly from this link — please attach or paste image URL.', 'warning');
+          showToast('⚠️ Title, price, styles & element type auto-populated! Product photo could not be extracted directly from this link — please attach or paste image URL.', 'warning');
         } else {
-          showToast('⚡ Live product details, element type & price auto-populated!');
+          showToast('⚡ Live product details, element type, styles & price auto-populated!');
         }
       }
     } catch (err) {

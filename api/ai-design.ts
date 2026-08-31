@@ -398,12 +398,25 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     const finalImage = extractedImage || ELEMENT_PLACEHOLDERS[detectedType] || ELEMENT_PLACEHOLDERS['sofa'];
     const finalPrice = extractedPrice || (url.includes('.in') ? '₹14,999' : '$199');
 
+    // 5. Auto-detect Style Tags
+    const detectedStyles: string[] = [];
+    const styleKeywords = ['modern', 'minimalist', 'japandi', 'bohemian', 'boho', 'mid-century', 'industrial', 'scandinavian', 'farmhouse', 'traditional', 'transitional', 'contemporary', 'rustic', 'coastal', 'vintage', 'luxury', 'classic'];
+    styleKeywords.forEach(style => {
+      if (sampleText.includes(style)) {
+        detectedStyles.push(style.charAt(0).toUpperCase() + style.slice(1).toLowerCase());
+      }
+    });
+    // Add default if none found
+    if (detectedStyles.length === 0) detectedStyles.push('Modern', 'Minimalist');
+    const styleTagsStr = [...new Set(detectedStyles.map(s => s === 'Boho' ? 'Bohemian' : s))].slice(0, 3).join(', ');
+
     return res.status(200).json({
       success: true,
       title: titleCandidate || 'Shoppable Decor Item',
       image_url: finalImage,
       price: finalPrice,
       element_type: detectedType,
+      style_tags: styleTagsStr,
       image_extracted: imageExtracted,
       affiliate_link: url
     });
