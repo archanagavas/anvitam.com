@@ -313,16 +313,48 @@ export default function AIHomeDesign() {
     ]);
   };
 
+  const compressImageBase64 = (dataUrl: string, maxDim = 1600, quality = 0.85): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = dataUrl;
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        } else {
+          resolve(dataUrl);
+        }
+      };
+      img.onerror = () => resolve(dataUrl);
+    });
+  };
+
   const handleImageUpload = (file: File) => {
-    if (file.size > 10 * 1024 * 1024) {
-      setErrorMsg('Image size exceeds 10MB limit. Please select a smaller photo.');
+    if (file.size > 20 * 1024 * 1024) {
+      setErrorMsg('Image size exceeds 20MB limit. Please select a smaller photo.');
       return;
     }
     setErrorMsg(null);
     const reader = new FileReader();
-    reader.onload = (e) => {
-      const imgDataUrl = e.target?.result as string;
-      setSourceImage(imgDataUrl);
+    reader.onload = async (e) => {
+      const rawDataUrl = e.target?.result as string;
+      const compressed = await compressImageBase64(rawDataUrl);
+      setSourceImage(compressed);
 
       setChatMessages((prev) => [
         ...prev,
@@ -1373,6 +1405,13 @@ export default function AIHomeDesign() {
                       </div>
                     ))}
                   </div>
+
+                  {errorMsg && (
+                    <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center justify-center gap-2 max-w-md mx-auto mb-2">
+                      <AlertCircle size={16} className="shrink-0 text-red-500" />
+                      <span>{errorMsg}</span>
+                    </div>
+                  )}
 
                   <div className="pt-4 max-w-md mx-auto">
                     <button

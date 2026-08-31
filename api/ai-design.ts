@@ -356,11 +356,11 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     const isSubscribed: boolean = userDoc?.is_subscribed ?? false;
     const creditsRemaining: number = userDoc?.credits_remaining ?? 3; // 3 trial credits default
 
-    const body = parseBody(req);
     const modelTier = (body.modelTier || body.modelChoice || 'low-fast').toLowerCase();
     let creditCost = 1;
-    if (modelTier === 'med-balanced' || modelTier === 'pro' || modelTier === 'flux' || modelTier === 'claude') creditCost = 2;
-    if (modelTier === 'hard-master' || modelTier === 'gpt4o') creditCost = 3;
+    if (modelTier === 'free-chat') creditCost = 0;
+    else if (modelTier === 'med-balanced' || modelTier === 'pro' || modelTier === 'flux' || modelTier === 'claude') creditCost = 2;
+    else if (modelTier === 'hard-master' || modelTier === 'gpt4o') creditCost = 3;
 
     if (userDoc && !isSubscribed && creditsRemaining < creditCost) {
       return res.status(402).json({
