@@ -329,18 +329,18 @@ export async function generateWithReplicate(prompt: string, timeoutMs: number = 
 
 // ── ControlNet (100% Structural Adherence) ───────────────────────────────────
 
-export async function generateWithControlNet(prompt: string, sourceImageB64: string): Promise<string | null> {
+export async function generateWithControlNet(prompt: string, sourceImageB64: string, timeoutMs: number = 35000): Promise<string | null> {
   if (!REPLICATE_API_TOKEN) return null;
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
   try {
-    // We use a robust SDXL ControlNet Depth or FLUX ControlNet Depth model on Replicate
-    // xlabs-ai/flux-controlnet-depth-v3 is excellent for structural locking
     const startRes = await fetch('https://api.replicate.com/v1/models/xlabs-ai/flux-controlnet-depth-v3/predictions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${REPLICATE_API_TOKEN}`,
         'Content-Type': 'application/json',
-        'Prefer': 'wait=10', // Synchronous wait up to 10s
       },
       body: JSON.stringify({
         input: {
@@ -353,15 +353,28 @@ export async function generateWithControlNet(prompt: string, sourceImageB64: str
           output_quality: 90,
         },
       }),
+      signal: controller.signal
     });
 
     if (!startRes.ok) {
-      console.warn(`[hf-image-gen/controlnet] Replicate status: ${startRes.status}`);
+      clearTimeout(timeout);
       return null;
     }
-    const pred = await startRes.json();
+    let pred = await startRes.json();
 
-    if (pred.output && Array.isArray(pred.output) && pred.output[0]) {
+    while (pred.status !== 'succeeded' && pred.status !== 'failed' && pred.status !== 'canceled') {
+      await new Promise(r => setTimeout(r, 2000));
+      const pollRes = await fetch(pred.urls.get, {
+        headers: { 'Authorization': `Bearer ${REPLICATE_API_TOKEN}` },
+        signal: controller.signal
+      });
+      if (!pollRes.ok) break;
+      pred = await pollRes.json();
+    }
+    
+    clearTimeout(timeout);
+
+    if (pred.status === 'succeeded' && pred.output && Array.isArray(pred.output) && pred.output[0]) {
       const imgRes = await fetch(pred.output[0]);
       if (!imgRes.ok) return pred.output[0];
       const buf = await imgRes.arrayBuffer();
@@ -371,6 +384,7 @@ export async function generateWithControlNet(prompt: string, sourceImageB64: str
 
     return null;
   } catch (err) {
+    clearTimeout(timeout);
     console.error('[hf-image-gen/controlnet] Replicate error:', err);
     return null;
   }
