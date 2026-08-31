@@ -158,7 +158,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Model: llama-3.1-8b-instruct (fast) instead of 70B (slow)
   // ──────────────────────────────────────────────────────────
   if (req.query.chat === 'true' && req.method === 'POST') {
-    const { userQuery, history } = req.body ?? {};
+    const body = typeof req.body === 'string' ? (req.body ? JSON.parse(req.body) : {}) : (req.body ?? {});
+    const { userQuery, history } = body;
     if (!userQuery) return res.status(400).json({ error: 'userQuery is required.' });
 
     const nvKey = process.env.NVIDIA_API_KEY;
@@ -289,7 +290,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json([]);
     }
     if (req.method === 'POST') {
-      const { name, email, message, date } = req.body ?? {};
+      const body = typeof req.body === 'string' ? (req.body ? JSON.parse(req.body) : {}) : (req.body ?? {});
+      const { name, email, message, date } = body;
       if (!name || !email || !message) return res.status(400).json({ error: 'name, email and message are required.' });
       await sendLeadEmailNotification(name, email, message, date);
       return res.status(201).json({ success: true, mocked: true });
@@ -320,7 +322,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'POST') {
-    const { id: bodyId, name, email, message, date } = req.body ?? {};
+    const body = typeof req.body === 'string' ? (req.body ? JSON.parse(req.body) : {}) : (req.body ?? {});
+    const { id: bodyId, name, email, message, date } = body;
     if (!name || !email || !message) return res.status(400).json({ error: 'name, email and message are required.' });
     const msgId = id || bodyId || crypto.randomUUID();
     let dbSaved = false;

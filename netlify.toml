@@ -6,6 +6,7 @@
 [functions]
   node_bundler = "esbuild"
 
+# Dynamic SEO & Crawlability Endpoints
 [[redirects]]
   from = "/sitemap.xml"
   to = "/.netlify/functions/seo?action=sitemap"
@@ -22,8 +23,132 @@
   status = 200
 
 [[redirects]]
+  from = "/api/indexnow"
+  to = "/.netlify/functions/seo?action=indexnow"
+  status = 200
+
+# Admin API
+[[redirects]]
   from = "/api/admin/*"
   to = "/.netlify/functions/admin?path=:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/admin"
+  to = "/.netlify/functions/admin"
+  status = 200
+
+# Tools API
+[[redirects]]
+  from = "/api/tools/*"
+  to = "/.netlify/functions/tools?action=:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/tools"
+  to = "/.netlify/functions/tools"
+  status = 200
+
+# Meta API Resources (Blogs, Projects, Services, Products, Testimonials, Partners, Workshops, Estimator Services)
+[[redirects]]
+  from = "/api/blogs/*"
+  to = "/.netlify/functions/meta?resource=blogs&id=:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/blogs"
+  to = "/.netlify/functions/meta?resource=blogs"
+  status = 200
+
+[[redirects]]
+  from = "/api/projects/*"
+  to = "/.netlify/functions/meta?resource=projects&id=:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/projects"
+  to = "/.netlify/functions/meta?resource=projects"
+  status = 200
+
+[[redirects]]
+  from = "/api/services/*"
+  to = "/.netlify/functions/meta?resource=services&id=:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/services"
+  to = "/.netlify/functions/meta?resource=services"
+  status = 200
+
+[[redirects]]
+  from = "/api/products/*"
+  to = "/.netlify/functions/meta?resource=products&id=:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/products"
+  to = "/.netlify/functions/meta?resource=products"
+  status = 200
+
+[[redirects]]
+  from = "/api/testimonials/*"
+  to = "/.netlify/functions/meta?resource=testimonials&id=:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/testimonials"
+  to = "/.netlify/functions/meta?resource=testimonials"
+  status = 200
+
+[[redirects]]
+  from = "/api/partners/*"
+  to = "/.netlify/functions/meta?resource=partners&id=:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/partners"
+  to = "/.netlify/functions/meta?resource=partners"
+  status = 200
+
+[[redirects]]
+  from = "/api/workshops/*"
+  to = "/.netlify/functions/meta?resource=workshops&id=:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/workshops"
+  to = "/.netlify/functions/meta?resource=workshops"
+  status = 200
+
+[[redirects]]
+  from = "/api/estimator-services/*"
+  to = "/.netlify/functions/meta?resource=estimator-services&id=:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/estimator-services"
+  to = "/.netlify/functions/meta?resource=estimator-services"
+  status = 200
+
+# Direct API Functions (messages, ai-design, hf-image-gen)
+[[redirects]]
+  from = "/api/messages/*"
+  to = "/.netlify/functions/messages?id=:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/messages"
+  to = "/.netlify/functions/messages"
+  status = 200
+
+[[redirects]]
+  from = "/api/ai-design/*"
+  to = "/.netlify/functions/ai-design?action=:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/ai-design"
+  to = "/.netlify/functions/ai-design"
   status = 200
 
 [[redirects]]
@@ -31,6 +156,7 @@
   to = "/.netlify/functions/:splat"
   status = 200
 
+# SPA Fallback
 [[redirects]]
   from = "/*"
   to = "/index.html"
