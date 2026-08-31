@@ -43,7 +43,6 @@ export const maxDuration = 60;
 
 const HF_API_KEY = process.env.HUGGINGFACE_API_KEY || '';
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN || '';
-const WORLD_LABS_API_KEY = process.env.WORLD_LABS_API_KEY || '';
 const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID || '';
 const CLOUDFLARE_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN || '';
 
@@ -55,8 +54,6 @@ export const HF_MODELS = {
   /** Realistic Vision for interior photorealism */
   realistic: 'https://api-inference.huggingface.co/models/SG161222/Realistic_Vision_V6.0_B1_noVAE',
 };
-
-const REPLICATE_FLUX_SCHNELL = 'black-forest-labs/flux-schnell';
 
 // ── Prompt Builder ────────────────────────────────────────────────────────────
 

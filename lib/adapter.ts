@@ -115,7 +115,7 @@ export function createHandler(
       try {
         const parsedUrl = new URL(arg1.url, 'http://localhost');
         url = parsedUrl.pathname + parsedUrl.search;
-        for (const [k, v] of parsedUrl.searchParams.entries()) {
+        for (const [k, v] of Array.from(parsedUrl.searchParams.entries())) {
           if (!(k in query)) query[k] = v;
         }
       } catch {
