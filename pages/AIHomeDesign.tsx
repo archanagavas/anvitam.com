@@ -474,7 +474,8 @@ const safeFetchJson = async (res: Response) => {
 
   const handlePromptSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!getToolUser()) {
+    const currentUser = getToolUser();
+    if (!currentUser || currentUser.is_guest) {
       setShowAuthModal(true);
       return;
     }
@@ -549,8 +550,8 @@ const safeFetchJson = async (res: Response) => {
   };
 
   const handleGenerate = async () => {
-    const currentUser = getToolUser() || getOrCreateDefaultToolUser();
-    if (!currentUser) {
+    const currentUser = getToolUser();
+    if (!currentUser || currentUser.is_guest) {
       setShowAuthModal(true);
       return;
     }
