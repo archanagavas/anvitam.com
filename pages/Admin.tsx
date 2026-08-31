@@ -3989,8 +3989,30 @@ const Admin: React.FC = () => {
                       value={catalogFormData.style_tags}
                       onChange={e => setCatalogFormData(f => ({ ...f, style_tags: e.target.value }))}
                       placeholder="Modern, Minimalist, Japandi"
-                      className="w-full border rounded-lg px-3 py-2 text-xs outline-none focus:border-black"
+                      className="w-full border rounded-lg px-3 py-2 text-xs outline-none focus:border-black mb-2"
                     />
+                    <div className="flex flex-wrap gap-1.5">
+                      {['Modern', 'Minimalist', 'Japandi', 'Bohemian', 'Mid-Century', 'Industrial', 'Scandinavian', 'Farmhouse', 'Traditional', 'Transitional', 'Contemporary', 'Rustic', 'Coastal', 'Vintage', 'Luxury', 'Classic'].map(tag => {
+                        const currentTags = catalogFormData.style_tags.split(',').map(t => t.trim()).filter(Boolean);
+                        const isSelected = currentTags.includes(tag);
+                        return (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() => {
+                              if (isSelected) {
+                                setCatalogFormData(f => ({ ...f, style_tags: currentTags.filter(t => t !== tag).join(', ') }));
+                              } else {
+                                setCatalogFormData(f => ({ ...f, style_tags: [...currentTags, tag].join(', ') }));
+                              }
+                            }}
+                            className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${isSelected ? 'bg-black text-white border-black' : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'}`}
+                          >
+                            {isSelected ? '✓ ' : '+ '}{tag}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                   <div className="sm:col-span-2">
                     <div className="flex items-center justify-between mb-1">
