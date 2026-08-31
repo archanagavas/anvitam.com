@@ -8,7 +8,7 @@
  * 4. Shoppable Catalog rendered strictly POST-RENDER (Step 4) for generated design matches
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
