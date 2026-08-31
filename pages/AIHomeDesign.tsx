@@ -276,6 +276,26 @@ const safeFetchJson = async (res: Response) => {
   const [swapPrompt, setSwapPrompt] = useState<string>('');
   const [removalMode, setRemovalMode] = useState<'complete-declutter' | 'loose-objects' | 'fixed-walls'>('complete-declutter');
 
+  // Additional Detailed Brief Options
+  const [facadeMaterial, setFacadeMaterial] = useState<string>('White Italian Marble');
+  const [lightingAmbience, setLightingAmbience] = useState<string>('Warm Evening Accent Lighting');
+  const [landscapeFeatures, setLandscapeFeatures] = useState<string[]>(['Swimming Pool & Deck', 'Pergola Lounge']);
+  const [flooringType, setFlooringType] = useState<string>('Italian White Marble');
+
+  const toggleLandscapeFeature = (feat: string) => {
+    setLandscapeFeatures(prev =>
+      prev.includes(feat) ? prev.filter(f => f !== feat) : [...prev, feat]
+    );
+  };
+
+  const appendPromptChip = (chip: string) => {
+    setPromptText(prev => {
+      if (!prev) return chip;
+      if (prev.toLowerCase().includes(chip.toLowerCase())) return prev;
+      return `${prev}, ${chip}`;
+    });
+  };
+
   const toggleItemToSwap = (item: string) => {
     setSelectedItemsToSwap(prev => {
       let updated: string[];
@@ -531,9 +551,24 @@ const safeFetchJson = async (res: Response) => {
 
     try {
       const itemTypeParam = selectedItemsToSwap.join(', ') || itemToSwap;
-      const combinedPromptText = promptText || (selectedModule === 'replace-furniture'
-        ? `Swap/Add furniture: ${itemTypeParam}.${swapPrompt ? ` Replacement details: ${swapPrompt}` : ''}`
-        : `${selectedStyle} style redesign for ${roomType}`);
+      
+      const extraDetailsList: string[] = [];
+      if (selectedModule === 'exterior') {
+        if (facadeMaterial) extraDetailsList.push(`Facade Material: ${facadeMaterial}`);
+        if (lightingAmbience) extraDetailsList.push(`Lighting: ${lightingAmbience}`);
+      } else if (selectedModule === 'garden') {
+        if (landscapeFeatures.length > 0) extraDetailsList.push(`Landscape Amenities: ${landscapeFeatures.join(', ')}`);
+        if (lightingAmbience) extraDetailsList.push(`Lighting: ${lightingAmbience}`);
+      } else if (selectedModule === 'interior') {
+        if (flooringType) extraDetailsList.push(`Flooring: ${flooringType}`);
+      }
+      const extraDetailsStr = extraDetailsList.length > 0 ? ` [Specifications: ${extraDetailsList.join('; ')}]` : '';
+
+      const combinedPromptText = promptText 
+        ? `${promptText}${extraDetailsStr}`
+        : (selectedModule === 'replace-furniture'
+          ? `Swap/Add furniture: ${itemTypeParam}.${swapPrompt ? ` Replacement details: ${swapPrompt}` : ''}${extraDetailsStr}`
+          : `${selectedStyle} style redesign for ${roomType}.${extraDetailsStr}`);
 
       const res = await fetch('/api/ai-design?action=generate', {
         method: 'POST',
@@ -551,6 +586,10 @@ const safeFetchJson = async (res: Response) => {
           itemToSwap: itemTypeParam,
           target: swapPrompt,
           swapPrompt,
+          facadeMaterial,
+          lightingAmbience,
+          landscapeFeatures,
+          flooringType,
           stagingTheme,
           stagingDemographic,
           sketchRenderType,
@@ -1369,13 +1408,13 @@ const safeFetchJson = async (res: Response) => {
 
                       {/* STANDARD BRIEF (FOR INTERIOR, EXTERIOR, GARDEN) */}
                       {(!['sketch2image', 'floorplan2isometric', 'virtual-staging', 'replace-furniture', 'furniture-removal'].includes(selectedModule)) && (
-                        <>
+                        <div className="space-y-4">
                           <div className="space-y-2">
                             <label className="text-xs font-semibold text-gray-900 block">{selectedModule === 'exterior' ? 'Building Type' : (selectedModule === 'garden' ? 'Outdoor Space Type' : 'Space Type')}</label>
                             <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
                               {(() => {
                                 if (selectedModule === 'garden') return ['Backyard Garden', 'Front Yard', 'Balcony & Patio', 'Rooftop Terrace', 'Courtyard', 'Pool Area'];
-                                if (selectedModule === 'exterior') return ['Exterior Facade', 'Modern Villa', 'Suburban Home', 'Cottage Front', 'Commercial Building', 'Log Cabin'];
+                                if (selectedModule === 'exterior') return ['Exterior Facade', 'Modern Villa', 'Suburban Home', 'Cottage Front', 'Commercial Building', 'Log Cabin', 'Penthouse High-Rise', 'Resort Villa'];
                                 return ['Living Room', 'Bedroom', 'Dining Room', 'Kitchen', 'Master Suite', 'Home Office', 'Bathroom', 'Commercial Cafe'];
                               })().map(r => (
                                 <button
@@ -1393,6 +1432,86 @@ const safeFetchJson = async (res: Response) => {
                               ))}
                             </div>
                           </div>
+
+                          {/* EXTERIOR SPECIFIC EXTRA OPTIONS */}
+                          {selectedModule === 'exterior' && (
+                            <>
+                              <div className="space-y-2">
+                                <label className="text-xs font-semibold text-gray-900 block">Facade Cladding &amp; Materials</label>
+                                <select
+                                  value={facadeMaterial}
+                                  onChange={(e) => setFacadeMaterial(e.target.value)}
+                                  className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                                >
+                                  <option value="White Italian Marble">White Italian Marble &amp; Glass</option>
+                                  <option value="Exposed Red Brick">Exposed Red Brick &amp; Metal</option>
+                                  <option value="Concrete & Glass Curtain">Modern Concrete &amp; Glass Curtain</option>
+                                  <option value="Timber & Teak Slats">Timber &amp; Teak Wood Slats</option>
+                                  <option value="Natural Travertine Stone">Natural Travertine Stone Cladding</option>
+                                  <option value="Dark Charcoal Metal">Dark Charcoal Metal &amp; Steel</option>
+                                </select>
+                              </div>
+
+                              <div className="space-y-2">
+                                <label className="text-xs font-semibold text-gray-900 block">Lighting &amp; Atmosphere</label>
+                                <select
+                                  value={lightingAmbience}
+                                  onChange={(e) => setLightingAmbience(e.target.value)}
+                                  className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                                >
+                                  <option value="Warm Evening Accent Lighting">Warm Evening Accent Lighting</option>
+                                  <option value="Golden Hour Sun">Golden Hour Sun Glow</option>
+                                  <option value="Bright Daylight">Bright Natural Daylight</option>
+                                  <option value="Dramatic Night Floodlights">Dramatic Architectural Night Floodlights</option>
+                                </select>
+                              </div>
+                            </>
+                          )}
+
+                          {/* GARDEN SPECIFIC EXTRA OPTIONS */}
+                          {selectedModule === 'garden' && (
+                            <div className="space-y-2">
+                              <label className="text-xs font-semibold text-gray-900 block">Landscape Features &amp; Amenities</label>
+                              <div className="flex flex-wrap gap-1.5">
+                                {['Swimming Pool & Deck', 'Pergola Lounge', 'Stone Pathway & Lawn', 'Fire Pit Lounge', 'Water Fountain & Pond', 'Outdoor Kitchen & BBQ', 'Ambient Garden Lights'].map(feat => {
+                                  const isSel = landscapeFeatures.includes(feat);
+                                  return (
+                                    <button
+                                      key={feat}
+                                      type="button"
+                                      onClick={() => toggleLandscapeFeature(feat)}
+                                      className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition border flex items-center gap-1 cursor-pointer ${
+                                        isSel
+                                          ? 'bg-black text-[#CCFF00] border-black shadow-2xs'
+                                          : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-200'
+                                      }`}
+                                    >
+                                      {isSel && <span className="text-[#CCFF00] text-xs font-black">✓</span>}
+                                      <span>{feat}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* INTERIOR SPECIFIC EXTRA OPTIONS */}
+                          {selectedModule === 'interior' && (
+                            <div className="space-y-2">
+                              <label className="text-xs font-semibold text-gray-900 block">Flooring Material</label>
+                              <select
+                                value={flooringType}
+                                onChange={(e) => setFlooringType(e.target.value)}
+                                className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                              >
+                                <option value="Italian White Marble">Italian White Marble</option>
+                                <option value="Warm Hardwood Oak">Warm Hardwood Oak</option>
+                                <option value="Polished Microcement">Polished Microcement / Concrete</option>
+                                <option value="Terrazzo Tile">Modern Terrazzo Tile</option>
+                                <option value="Luxury Vinyl Plank">Luxury Neutral Vinyl Plank</option>
+                              </select>
+                            </div>
+                          )}
 
                           <div className={`grid ${selectedModule === 'interior' ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
                             <div className="space-y-2">
@@ -1423,9 +1542,92 @@ const safeFetchJson = async (res: Response) => {
                               </div>
                             )}
                           </div>
-                        </>
+                        </div>
                       )}
 
+                    </div>
+                  </div>
+
+                  {/* UNIVERSAL CUSTOM BRIEF TEXT BOX WITH QUICK CHIPS */}
+                  <div className="pt-4 border-t border-gray-200/80 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-gray-900 flex items-center gap-2">
+                        <span>✍️ Custom Architectural &amp; Design Vision (Detailed Brief)</span>
+                        <span className="text-[10px] bg-black text-[#CCFF00] font-extrabold px-2.5 py-0.5 rounded-full border border-black/10">
+                          AI Direct Instruction
+                        </span>
+                      </label>
+                      <span className="text-[10px] text-gray-500 font-medium">Type details or tap chips to append</span>
+                    </div>
+
+                    <textarea
+                      rows={3}
+                      value={promptText}
+                      onChange={(e) => setPromptText(e.target.value)}
+                      placeholder={
+                        selectedModule === 'exterior'
+                          ? "e.g. 2-story ultra-modern villa with white Italian marble cladding, floor-to-ceiling glass windows, warm LED sconce lights, and cantilevered balcony..."
+                          : selectedModule === 'garden'
+                          ? "e.g. Modern resort backyard with infinity pool, teak wood sun deck, outdoor fireplace lounge, tropical palm trees, and ambient garden pathway lights..."
+                          : selectedModule === 'sketch2image'
+                          ? "e.g. Convert CAD blueprint into photorealistic 3D rendering with concrete structure, large glass panels, and natural sunlight..."
+                          : selectedModule === 'virtual-staging'
+                          ? "e.g. Luxury minimalist staging with cream bouclé sofa, brass floor lamp, large marble coffee table, and soft abstract wall art..."
+                          : "e.g. Describe exact materials, lighting, colors, architectural styles, or furniture specifications you want..."
+                      }
+                      className="w-full bg-gray-50/80 border border-gray-300 focus:border-black focus:bg-white rounded-2xl p-3.5 text-xs font-medium text-gray-900 outline-none transition shadow-2xs leading-relaxed"
+                    />
+
+                    {/* Quick Suggestion Chips */}
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-bold text-gray-600 uppercase tracking-wider block">
+                        ⚡ Quick Add Details &amp; Material Specs:
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(() => {
+                          const getChips = () => {
+                            if (selectedModule === 'exterior') {
+                              return [
+                                '+ White Italian Marble', '+ Floor-to-Ceiling Glass', '+ Warm Accent Sconces', 
+                                '+ Cantilevered Balcony', '+ Teak Wood Slats', '+ Infinity Edge Pool', 
+                                '+ Flat Roof Pergola', '+ Lush Vertical Garden'
+                              ];
+                            }
+                            if (selectedModule === 'garden') {
+                              return [
+                                '+ Swimming Pool & Deck', '+ Pergola Outdoor Lounge', '+ Stone Pathway & Lawn', 
+                                '+ Fire Pit Seating', '+ Ambient Garden Lights', '+ Tropical Palms', '+ Water Fountain'
+                              ];
+                            }
+                            if (selectedModule === 'sketch2image') {
+                              return [
+                                '+ Photorealistic 3D Glass Facade', '+ Double-Height Ceiling', 
+                                '+ Cantilevered Structure', '+ Exposed Concrete Walls', '+ Warm Interior Lights'
+                              ];
+                            }
+                            if (selectedModule === 'virtual-staging') {
+                              return [
+                                '+ Creamy Linen Sofas', '+ Mid-Century Modern Desk', '+ Large Monstera Plants', 
+                                '+ Geometric Area Rug', '+ Warm Ambient Lamps'
+                              ];
+                            }
+                            return [
+                              '+ Italian Marble Flooring', '+ Recessed LED Cove Lighting', '+ Cognac Leather Sofa', 
+                              '+ Statement Chandelier', '+ Neutral Earthy Tones', '+ Brass Accents', '+ Slatted Wood Accent'
+                            ];
+                          };
+                          return getChips().map(chip => (
+                            <button
+                              key={chip}
+                              type="button"
+                              onClick={() => appendPromptChip(chip.replace('+ ', ''))}
+                              className="px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-black hover:text-[#CCFF00] text-gray-700 text-[11px] font-semibold transition border border-gray-200 cursor-pointer shadow-2xs"
+                            >
+                              {chip}
+                            </button>
+                          ));
+                        })()}
+                      </div>
                     </div>
                   </div>
                 </div>
