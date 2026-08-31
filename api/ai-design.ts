@@ -738,12 +738,19 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
           if (!generatedImageB64) {
              // Fallback to standard cascade if ControlNet fails or no sourceImage was provided
-             generatedImageB64 =
-              (await generateWithHuggingFace(positive, modelTier === 'hard-master' ? HF_MODELS.realistic : HF_MODELS.flux_schnell)) ||
-              (await generateWithCloudflare(positive)) ||
-              (await generateWithReplicate(positive)) ||
-              (await generateWithPollinations(positive)) ||
-              '';
+             if (modelTier === 'instant-free') {
+               generatedImageB64 = await generateWithPollinations(positive) || '';
+             } else {
+               const timeoutMs = (modelTier === 'hard-master' || modelTier === 'realistic') ? 45000 : (modelTier === 'med-balanced' || modelTier === 'sdxl' ? 15000 : 8000);
+               const selectedModel = (modelTier === 'hard-master' || modelTier === 'realistic') ? HF_MODELS.realistic : (modelTier === 'med-balanced' || modelTier === 'sdxl' ? HF_MODELS.sdxl : HF_MODELS.flux_schnell);
+               
+               generatedImageB64 =
+                (await generateWithHuggingFace(positive, selectedModel, timeoutMs)) ||
+                (await generateWithCloudflare(positive, 8000)) ||
+                (await generateWithReplicate(positive, 8000)) ||
+                (await generateWithPollinations(positive)) ||
+                '';
+             }
           }
         } catch (imgErr) {
           console.error('[ai-design/generate] HF image cascade error:', imgErr);
