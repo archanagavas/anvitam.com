@@ -3,9 +3,9 @@
  * ─────────────────────────────────────────────────────────────
  * Universal Netlify & Vercel Serverless Function Adapter.
  * 
- * Translates Netlify / AWS Lambda (event, context) invocations seamlessly into 
- * standard Vercel (req, res) signatures with helper methods (.status(), .json(), 
- * .send(), .setHeader()), preventing 502 Bad Gateway crashes across all Netlify functions.
+ * Translates Netlify Functions (v1 AWS Lambda event, v2 Web Request, or Vercel req/res)
+ * into standard Vercel (req, res) signatures with helper methods (.status(), .json(), 
+ * .send(), .setHeader()), returning Web Standard Response objects required by Netlify v2.
  * ─────────────────────────────────────────────────────────────
  */
 
@@ -26,8 +26,7 @@ export function createHandler(
       return await fn(arg1 as VercelRequest, arg2 as VercelResponse);
     }
 
-    // 2. Running in Netlify / AWS Lambda where arg1 is 'event' and arg2 is 'context'
-    const event = arg1 || {};
+    // 2. Running in Netlify (v1 event/context or v2 Request/Context)
     const responseHeaders: Record<string, string> = {
       'content-type': 'application/json',
       'access-control-allow-origin': '*',
@@ -75,44 +74,79 @@ export function createHandler(
       },
     };
 
-    // Normalize HTTP method
-    const httpMethod = (event.httpMethod || event.method || 'GET').toUpperCase();
+    // Extract HTTP Method
+    const httpMethod = (
+      arg1?.method ||
+      arg1?.httpMethod ||
+      'GET'
+    ).toUpperCase();
 
     // Auto-respond to CORS OPTIONS preflight
     if (httpMethod === 'OPTIONS') {
-      return {
-        statusCode: 204,
-        headers: responseHeaders,
-        body: '',
-      };
+      return buildNetlifyResponse(204, responseHeaders, '');
     }
 
-    // Extract headers
-    const rawHeaders = event.headers || {};
+    // Extract Headers
     const headers: Record<string, string> = {};
-    for (const [k, v] of Object.entries(rawHeaders)) {
-      if (k && v !== undefined) {
-        headers[k.toLowerCase()] = String(v);
+    if (arg1?.headers) {
+      if (typeof arg1.headers.entries === 'function') {
+        for (const [k, v] of arg1.headers.entries()) {
+          headers[k.toLowerCase()] = String(v);
+        }
+      } else if (typeof arg1.headers === 'object') {
+        for (const [k, v] of Object.entries(arg1.headers)) {
+          if (k && v !== undefined) headers[k.toLowerCase()] = String(v);
+        }
       }
     }
 
-    // Extract query parameters
-    const query: Record<string, any> = { ...(event.queryStringParameters || {}) };
+    // Extract Query Parameters
+    const query: Record<string, any> = { ...(arg1?.queryStringParameters || {}) };
+    let url = arg1?.path || '/';
 
-    // Safely parse body
+    if (arg1?.url) {
+      try {
+        const parsedUrl = new URL(arg1.url, 'http://localhost');
+        url = parsedUrl.pathname + parsedUrl.search;
+        for (const [k, v] of parsedUrl.searchParams.entries()) {
+          if (!(k in query)) query[k] = v;
+        }
+      } catch {
+        url = arg1.url;
+      }
+    }
+
+    if (arg1?.rawQuery) {
+      url = `${url}${url.includes('?') ? '&' : '?'}${arg1.rawQuery}`;
+    }
+
+    const forwardedUri = headers['x-forwarded-uri'] || headers['x-original-url'];
+    if (forwardedUri) url = forwardedUri;
+
+    // Extract Request Body
     let body: any = {};
-    if (event.body) {
-      const rawBody = event.isBase64Encoded
-        ? Buffer.from(event.body, 'base64').toString('utf-8')
-        : event.body;
+    if (typeof arg1?.text === 'function') {
+      try {
+        const text = await arg1.text();
+        if (text) {
+          const trimmed = text.trim();
+          if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+            try { body = JSON.parse(trimmed); } catch { body = text; }
+          } else {
+            body = text;
+          }
+        }
+      } catch (err) {
+        console.warn('[Adapter Body Text Parse Error]', err);
+      }
+    } else if (arg1?.body) {
+      const rawBody = arg1.isBase64Encoded
+        ? Buffer.from(arg1.body, 'base64').toString('utf-8')
+        : arg1.body;
       if (typeof rawBody === 'string') {
         const trimmed = rawBody.trim();
         if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
-          try {
-            body = JSON.parse(trimmed);
-          } catch {
-            body = rawBody;
-          }
+          try { body = JSON.parse(trimmed); } catch { body = rawBody; }
         } else {
           body = rawBody;
         }
@@ -121,19 +155,13 @@ export function createHandler(
       }
     }
 
-    // Construct URL
-    const path = event.path || '/';
-    const rawQuery = event.rawQuery ? `?${event.rawQuery}` : '';
-    const forwardedUri = headers['x-forwarded-uri'] || headers['x-original-url'];
-    const url = forwardedUri || `${path}${rawQuery}`;
-
     const req: any = {
       method: httpMethod,
       url,
       query,
       headers,
       body,
-      rawHeaders,
+      rawHeaders: arg1?.headers || {},
     };
 
     try {
@@ -143,18 +171,34 @@ export function createHandler(
         ? responseBody
         : JSON.stringify(responseBody ?? {});
 
-      return {
-        statusCode,
-        headers: responseHeaders,
-        body: finalBody,
-      };
+      return buildNetlifyResponse(statusCode, responseHeaders, finalBody);
     } catch (err: any) {
       console.error('[Netlify Adapter Error]', err);
-      return {
-        statusCode: 500,
-        headers: responseHeaders,
-        body: JSON.stringify({ error: err?.message || 'Internal Server Error' }),
-      };
+      return buildNetlifyResponse(500, responseHeaders, JSON.stringify({ error: err?.message || 'Internal Server Error' }));
     }
+  };
+}
+
+function buildNetlifyResponse(statusCode: number, headers: Record<string, string>, body: string) {
+  if (typeof Response !== 'undefined') {
+    try {
+      const res = new Response(body, {
+        status: statusCode,
+        headers,
+      });
+      Object.defineProperties(res, {
+        statusCode: { value: statusCode, enumerable: true },
+        body: { value: body, enumerable: true },
+      });
+      return res;
+    } catch (e) {
+      console.warn('[Adapter Web Response Fallback]', e);
+    }
+  }
+
+  return {
+    statusCode,
+    headers,
+    body,
   };
 }
