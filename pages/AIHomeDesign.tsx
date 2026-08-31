@@ -209,6 +209,7 @@ export default function AIHomeDesign() {
 
   // Generation & Output State
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(0);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [sliderPos, setSliderPos] = useState<number>(50);
   const [recommendations, setRecommendations] = useState<any[]>([]);
@@ -568,9 +569,20 @@ const safeFetchJson = async (res: Response) => {
     }
 
     setIsGenerating(true);
+    setGenerationProgress(0);
     setErrorMsg(null);
     setFeedbackGiven(null);
     setAiDescription('');
+
+    // Start a simulated progress bar that creeps up to 95% while waiting for API
+    const progressInterval = setInterval(() => {
+      setGenerationProgress(prev => {
+        if (prev >= 95) return 95;
+        // Slow down as it gets closer to 95 to simulate heavy processing
+        const increment = prev < 50 ? 5 : prev < 80 ? 2 : prev < 90 ? 1 : 0.2;
+        return prev + increment;
+      });
+    }, 1000);
 
     try {
       const itemTypeParam = selectedItemsToSwap.join(', ') || itemToSwap;
@@ -652,6 +664,7 @@ const safeFetchJson = async (res: Response) => {
         throw new Error(data.error || 'Design generation failed.');
       }
 
+      setGenerationProgress(100);
       setGeneratedImage(data.generatedImage);
       setAiDescription(data.description || '');
       setCurrentWorkflowStep(4);
@@ -696,9 +709,18 @@ const safeFetchJson = async (res: Response) => {
 
     } catch (err: any) {
       console.error('[AI Design Error]', err);
-      setErrorMsg(err.message || 'Unable to generate design. Please try again.');
+      // More descriptive error for Cloudflare timeouts (usually happens after 100s)
+      if (err.message.includes('524') || err.message.includes('Timeout') || String(err).includes('524')) {
+        setErrorMsg('The AI rendering engine took too long to respond (Timeout). Try a faster model tier or try again.');
+      } else {
+        setErrorMsg(err.message || 'Unable to generate design. Please try again.');
+      }
     } finally {
-      setIsGenerating(false);
+      clearInterval(progressInterval);
+      setTimeout(() => {
+        setIsGenerating(false);
+        setGenerationProgress(0);
+      }, 500); // Small delay to let the progress bar visually hit 100% if successful
     }
   };
 
@@ -2000,17 +2022,26 @@ const safeFetchJson = async (res: Response) => {
                       type="button"
                       onClick={handleGenerate}
                       disabled={isGenerating}
-                      className="w-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-extrabold py-4 rounded-2xl text-sm transition shadow-md flex items-center justify-center gap-2 cursor-pointer border border-black/10"
+                      className="relative w-full bg-[#CCFF00] hover:bg-black hover:text-[#CCFF00] text-black font-extrabold py-4 rounded-2xl text-sm transition shadow-md overflow-hidden border border-black/10 cursor-pointer"
                     >
-                      {isGenerating ? (
-                        <>
-                          <RefreshCw size={16} className="animate-spin" /> Generating Photorealistic AI Render...
-                        </>
-                      ) : (
-                        <>
-                          <Wand2 size={16} /> Render AI Design ({getModelCreditCost(selectedAiModel)} Credits)
-                        </>
+                      {isGenerating && (
+                        <div 
+                          className="absolute left-0 top-0 bottom-0 bg-black/10 transition-all duration-500 ease-out" 
+                          style={{ width: `${generationProgress}%` }}
+                        />
                       )}
+                      <div className="relative z-10 flex items-center justify-center gap-2">
+                        {isGenerating ? (
+                          <>
+                            <RefreshCw size={16} className="animate-spin" /> 
+                            <span>Generating Photorealistic AI Render... {Math.floor(generationProgress)}%</span>
+                          </>
+                        ) : (
+                          <>
+                            <Wand2 size={16} /> Render AI Design ({getModelCreditCost(selectedAiModel)} Credits)
+                          </>
+                        )}
+                      </div>
                     </button>
                   </div>
                 </div>
