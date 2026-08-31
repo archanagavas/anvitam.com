@@ -78,7 +78,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(429).json({ error: `Too many attempts. Try again in ${secs}s.` });
     }
 
-    const { email, password } = req.body ?? {};
+    const bodyData = typeof req.body === 'string' ? (req.body ? JSON.parse(req.body) : {}) : (req.body ?? {});
+    const { email, password } = bodyData;
 
     if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
       return res.status(400).json({ error: 'Email and password are required.' });
