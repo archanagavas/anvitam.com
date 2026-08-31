@@ -40,6 +40,7 @@ import {
   generateWithHuggingFace,
   generateWithCloudflare,
   generateWithReplicate,
+  generateWithControlNet,
   HF_MODELS,
 } from './hf-image-gen.js';
 
@@ -559,7 +560,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       clearTimeout(timeoutId);
 
-      // ── Zero-Cost Image Cascade Fallback (HuggingFace -> Cloudflare -> Replicate) ──
+      // ── Image Generation (ControlNet & Cascade) ──
       if (!generatedImageB64) {
         try {
           const promptConfig = {
@@ -570,11 +571,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             promptText: promptText ? String(promptText) : textDescription,
           };
           const { positive } = buildHFPrompt(promptConfig);
-          generatedImageB64 =
-            (await generateWithHuggingFace(positive, HF_MODELS.flux_schnell)) ||
-            (await generateWithCloudflare(positive)) ||
-            (await generateWithReplicate(positive)) ||
-            '';
+
+          if (sourceImage) {
+            // 100% Structural Adherence for User Uploads
+            generatedImageB64 = await generateWithControlNet(positive, String(sourceImage)) || '';
+          }
+
+          if (!generatedImageB64) {
+             // Fallback to standard cascade if ControlNet fails or no sourceImage was provided
+             generatedImageB64 =
+              (await generateWithHuggingFace(positive, HF_MODELS.flux_schnell)) ||
+              (await generateWithCloudflare(positive)) ||
+              (await generateWithReplicate(positive)) ||
+              '';
+          }
         } catch (imgErr) {
           console.error('[ai-design/generate] HF image cascade error:', imgErr);
         }

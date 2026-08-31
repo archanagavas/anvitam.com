@@ -1,0 +1,20 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "api"
+
+[functions]
+  node_bundler = "esbuild"
+  # This tells Netlify to give the functions 60 seconds (requires Netlify Pro for > 10s, but matches Vercel Hobby maxDuration)
+  timeout = 60
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false

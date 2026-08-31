@@ -320,7 +320,7 @@ export default function AIHomeDesign() {
     }
 
     let helperMsg = "";
-    if (['interior', 'exterior', 'garden'].includes(modId)) {
+    if (['interior', 'exterior', 'garden', 'sketch2image', 'floorplan2isometric'].includes(modId)) {
       setCurrentWorkflowStep(2); // Step 2: Architectural Style Selection
       helperMsg = `Selected ${modId.toUpperCase()} AI. Choose your preferred architectural aesthetic below (Step 2) or type instructions!`;
     } else {

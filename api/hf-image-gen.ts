@@ -285,8 +285,53 @@ export async function generateWithReplicate(prompt: string): Promise<string | nu
     }
 
     return null;
+}
+
+// ── ControlNet (100% Structural Adherence) ───────────────────────────────────
+
+export async function generateWithControlNet(prompt: string, sourceImageB64: string): Promise<string | null> {
+  if (!REPLICATE_API_TOKEN) return null;
+
+  try {
+    // We use a robust SDXL ControlNet Depth or FLUX ControlNet Depth model on Replicate
+    // xlabs-ai/flux-controlnet-depth-v3 is excellent for structural locking
+    const startRes = await fetch('https://api.replicate.com/v1/models/xlabs-ai/flux-controlnet-depth-v3/predictions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${REPLICATE_API_TOKEN}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'wait=60', // Synchronous wait up to 60s
+      },
+      body: JSON.stringify({
+        input: {
+          prompt,
+          control_image: sourceImageB64,
+          steps: 28,
+          guidance: 3.5,
+          controlnet_conditioning_scale: 1.0,
+          output_format: 'webp',
+          output_quality: 90,
+        },
+      }),
+    });
+
+    if (!startRes.ok) {
+      console.warn(`[hf-image-gen/controlnet] Replicate status: ${startRes.status}`);
+      return null;
+    }
+    const pred = await startRes.json();
+
+    if (pred.output && Array.isArray(pred.output) && pred.output[0]) {
+      const imgRes = await fetch(pred.output[0]);
+      if (!imgRes.ok) return pred.output[0];
+      const buf = await imgRes.arrayBuffer();
+      const b64 = Buffer.from(buf).toString('base64');
+      return `data:image/webp;base64,${b64}`;
+    }
+
+    return null;
   } catch (err) {
-    console.error('[hf-image-gen] Replicate error:', err);
+    console.error('[hf-image-gen/controlnet] Replicate error:', err);
     return null;
   }
 }
