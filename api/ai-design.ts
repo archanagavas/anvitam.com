@@ -340,6 +340,8 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
   if (action === 'generate') {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+    const body = parseBody(req);
+
     // Auth & credits — allow unauthenticated users up to trial limit
     let userId: string | null = null;
     let userDoc: any = null;

@@ -23,7 +23,14 @@ export function createHandler(
   return async (arg1: any, arg2: any): Promise<any> => {
     // 1. Check if running in Vercel or local Express where res.status is a function
     if (arg2 && typeof arg2.status === 'function') {
-      return await fn(arg1 as VercelRequest, arg2 as VercelResponse);
+      try {
+        return await fn(arg1 as VercelRequest, arg2 as VercelResponse);
+      } catch (err: any) {
+        console.error('[Vercel Adapter Catch]', err);
+        if (!arg2.headersSent) {
+          return arg2.status(500).json({ error: err?.message || 'Serverless Function Execution Error' });
+        }
+      }
     }
 
     // 2. Running in Netlify (v1 event/context or v2 Request/Context)
