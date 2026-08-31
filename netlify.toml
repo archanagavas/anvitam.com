@@ -5,8 +5,6 @@
 
 [functions]
   node_bundler = "esbuild"
-  # This tells Netlify to give the functions 60 seconds (requires Netlify Pro for > 10s, but matches Vercel Hobby maxDuration)
-  timeout = 60
 
 [[redirects]]
   from = "/api/*"
