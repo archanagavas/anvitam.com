@@ -341,6 +341,28 @@ export async function generateWithControlNet(prompt: string, sourceImageB64: str
   }
 }
 
+// ── Pollinations AI Fallback (100% Free, Zero Key Required) ────────────────────
+
+export async function generateWithPollinations(prompt: string): Promise<string | null> {
+  try {
+    const seed = Math.floor(Math.random() * 1000000);
+    const cleanPrompt = prompt.substring(0, 300);
+    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?width=1024&height=1024&nologo=true&seed=${seed}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.warn(`[hf-image-gen/pollinations] Status: ${res.status}`);
+      return null;
+    }
+    const buf = await res.arrayBuffer();
+    const b64 = Buffer.from(buf).toString('base64');
+    const contentType = res.headers.get('content-type') || 'image/jpeg';
+    return `data:${contentType};base64,${b64}`;
+  } catch (err) {
+    console.error('[hf-image-gen/pollinations] Error:', err);
+    return null;
+  }
+}
+
 // ── Main Handler ──────────────────────────────────────────────────────────────
 
 export default createHandler(async function handler(req: VercelRequest, res: VercelResponse) {
