@@ -161,32 +161,7 @@ export default function AIHomeDesign() {
     } catch (e) {
       console.error(e);
     }
-    return [
-      {
-        id: 'chat-demo-1',
-        title: 'Modern Living Room Restyle',
-        timestamp: '2 hours ago',
-        module: 'interior',
-        style: 'modern',
-        roomType: 'Living Room',
-        sourceImage: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=800&auto=format&fit=crop',
-        generatedImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=800&auto=format&fit=crop',
-        promptText: 'Modern Scandinavian lounge with warm oak wood and ambient lighting',
-        recommendations: []
-      },
-      {
-        id: 'chat-demo-2',
-        title: 'Japandi Minimal Interior',
-        timestamp: 'Yesterday',
-        module: 'interior',
-        style: 'japandi',
-        roomType: 'Living Room',
-        sourceImage: null,
-        generatedImage: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=800&auto=format&fit=crop',
-        promptText: 'Japandi minimal living room',
-        recommendations: []
-      }
-    ];
+    return [];
   });
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
 
@@ -465,10 +440,10 @@ export default function AIHomeDesign() {
       return;
     }
 
-    if (!sourceImage) {
-      setErrorMsg('Please upload a room photo or choose a sample image to render your AI design.');
-      setShowBriefCard(true);
-      return;
+    let activeSource = sourceImage;
+    if (!activeSource) {
+      activeSource = 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=800&auto=format&fit=crop';
+      setSourceImage(activeSource);
     }
 
     setIsGenerating(true);
@@ -483,7 +458,7 @@ export default function AIHomeDesign() {
         body: JSON.stringify({
           action: 'generate',
           module: selectedModule,
-          sourceImage: sourceImage,
+          sourceImage: activeSource,
           designMode,
           roomType,
           style: selectedStyle,
