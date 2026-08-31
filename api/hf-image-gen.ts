@@ -67,10 +67,11 @@ export interface PromptConfig {
   budget: string;
   promptText?: string;
   designMode?: string;
+  hasSourceImage?: boolean;
 }
 
 export function buildHFPrompt(config: PromptConfig): { positive: string; negative: string } {
-  const { module, style, roomType, budget, promptText } = config;
+  const { module, style, roomType, budget, promptText, hasSourceImage = false } = config;
 
   const styleMap: Record<string, string> = {
     modern: 'modern minimalist interior, clean lines, neutral palette, premium finishes',
@@ -146,6 +147,8 @@ export function buildHFPrompt(config: PromptConfig): { positive: string; negativ
     'virtual-staging': `photorealistic virtually staged interior, empty room with furniture added`,
     replace: `photorealistic interior, furniture replaced, seamless edit`,
     remove: `photorealistic interior, furniture removed, clean empty floor and walls`,
+    walls: `photorealistic interior with new wall paint finish and wall texture`,
+    flooring: `photorealistic interior with new floor material and flooring finish`,
   };
 
   const baseRoom = moduleMap[module] || `photorealistic ${roomType} interior design`;
@@ -153,9 +156,35 @@ export function buildHFPrompt(config: PromptConfig): { positive: string; negativ
   const budgetDesc = budgetMap[budget] || '';
   const customText = promptText ? `, ${promptText}` : '';
 
-  const positive = `${baseRoom}, ${styleDesc}, ${budgetDesc}${customText}, professional photography, 8K ultra-detailed, soft natural lighting, award-winning architecture, realistic textures, high dynamic range`;
+  let structuralRule = '';
+  if (hasSourceImage) {
+    if (module === 'walls') {
+      structuralRule = 'CRITICAL ARCHITECTURAL CONSTRAINTS: Preserve exact room layout, windows, doors, ceiling height, flooring, and furniture layout 100% INTACT. ONLY modify the wall colors, paints, stucco, or wall paneling.';
+    } else if (module === 'flooring') {
+      structuralRule = 'CRITICAL ARCHITECTURAL CONSTRAINTS: Preserve exact room layout, walls, windows, doors, ceiling height, and furniture 100% INTACT. ONLY modify the floor surface material (e.g. wood, tile, marble).';
+    } else if (module === 'remove' || module === 'furniture-removal') {
+      structuralRule = 'CRITICAL ARCHITECTURAL CONSTRAINTS: Preserve bare architectural shell, walls, windows, doors, flooring, and ceiling 100% INTACT. Clear all loose furniture, objects, wires, and clutter.';
+    } else if (module === 'virtual-staging') {
+      structuralRule = 'CRITICAL ARCHITECTURAL CONSTRAINTS: Preserve empty room architecture, walls, windows, flooring, and ceiling 100% INTACT. Place stylish furniture seamlessly inside.';
+    } else if (module === 'exterior') {
+      structuralRule = 'CRITICAL ARCHITECTURAL CONSTRAINTS: Preserve house silhouette, roofline, window cutout positions, and footprint 100% INTACT. ONLY upgrade facade materials, exterior wall paint, and outdoor landscaping.';
+    } else if (module === 'garden') {
+      structuralRule = 'CRITICAL ARCHITECTURAL CONSTRAINTS: Preserve house footprint and building boundary 100% INTACT. Upgrade lawn, plants, patio, and garden hardscaping.';
+    } else {
+      structuralRule = 'CRITICAL ARCHITECTURAL CONSTRAINTS: Retain 100% exact spatial layout, room geometry, walls, doors, ceiling height, camera angle, window positioning, and perspective of the original photo. Do NOT alter structural walls or room boundaries. ONLY restyle interior furnishings, materials, lighting, and finishes inside the existing room bounds.';
+    }
+  }
 
-  const negative = `low quality, blurry, cartoon, painting, sketch, watermark, text, logo, people, faces, distorted perspective, bad anatomy, ugly, poor lighting, overexposed, dark room, unfinished, messy, clutter`;
+  const positive = [
+    baseRoom,
+    styleDesc,
+    budgetDesc,
+    customText,
+    structuralRule,
+    'professional architectural photography, 8K ultra-detailed, soft natural lighting, award-winning architecture, realistic textures, high dynamic range'
+  ].filter(Boolean).join(', ');
+
+  const negative = `low quality, blurry, cartoon, painting, sketch, watermark, text, logo, people, faces, distorted perspective, altered walls, broken geometry, bad anatomy, ugly, poor lighting, overexposed, dark room, unfinished, messy, clutter`;
 
   return { positive, negative };
 }

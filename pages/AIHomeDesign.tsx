@@ -143,7 +143,10 @@ export default function AIHomeDesign() {
   const [selectedModule, setSelectedModule] = useState<string>(initialModule);
 
   // User & Auth State
-  const [user, setUser] = useState<ToolUser | null>(null);
+  const [user, setUser] = useState<ToolUser | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return getToolUser() || getOrCreateDefaultToolUser();
+  });
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [showToolsDrawer, setShowToolsDrawer] = useState(false);
@@ -281,6 +284,18 @@ const safeFetchJson = async (res: Response) => {
   const [lightingAmbience, setLightingAmbience] = useState<string>('Warm Evening Accent Lighting');
   const [landscapeFeatures, setLandscapeFeatures] = useState<string[]>(['Swimming Pool & Deck', 'Pergola Lounge']);
   const [flooringType, setFlooringType] = useState<string>('Italian White Marble');
+  const [wallFinish, setWallFinish] = useState<string>('Limewash Stucco Paint');
+  const [roofType, setRoofType] = useState<string>('Flat Concrete Slab');
+  const [exteriorStyle, setExteriorStyle] = useState<string>('Ultra-Modern Villa');
+  const [gardenStyle, setGardenStyle] = useState<string>('Modern Minimalist Resort');
+  const [hardscapingType, setHardscapingType] = useState<string>('Teak Decking & Flagstone');
+  const [outdoorLighting, setOutdoorLighting] = useState<string>('Warm Evening Sconces & Uplights');
+  const [renderStyle, setRenderStyle] = useState<string>('Photorealistic 8K Render');
+  const [buildingEnvironment, setBuildingEnvironment] = useState<string>('Lush Forest & Sunlight');
+  const [isometricPerspective, setIsometricPerspective] = useState<string>('3D Axonometric Dollhouse');
+  const [isometricTheme, setIsometricTheme] = useState<string>('Warm Scandinavian Light Wood');
+  const [replacementStyle, setReplacementStyle] = useState<string>('Italian Cognac Grain Leather');
+  const [flooringPattern, setFlooringPattern] = useState<string>('Herringbone Pattern');
 
   const toggleLandscapeFeature = (feat: string) => {
     setLandscapeFeatures(prev =>
@@ -310,37 +325,45 @@ const safeFetchJson = async (res: Response) => {
     });
   };
 
+  const handleUserUpdate = useCallback((eventOrUser?: Event | ToolUser | null) => {
+    let newUser: ToolUser | null = null;
+    if (eventOrUser && typeof eventOrUser === 'object' && 'detail' in eventOrUser) {
+      newUser = (eventOrUser as CustomEvent<ToolUser | null>).detail;
+    } else if (eventOrUser && typeof eventOrUser === 'object' && 'id' in eventOrUser) {
+      newUser = eventOrUser as ToolUser;
+    } else {
+      newUser = getToolUser();
+    }
+    if (!newUser) newUser = getOrCreateDefaultToolUser();
+
+    setUser((prevUser) => {
+      if (prevUser && !prevUser.is_guest && newUser.is_guest) {
+        setTimeout(() => {
+          setSavedChats([]);
+          setActiveChatId(null);
+          setCurrentWorkflowStep(1);
+          setSourceImage(null);
+          setGeneratedImage(null);
+          setPromptText('');
+          setRecommendations([]);
+          setChatMessages([
+            {
+              id: `msg-init-${Date.now()}`,
+              sender: 'assistant',
+              text: "Hello! What space would you like to design or transform today? Select an AI tool below or type your architectural vision in the prompt bar."
+            }
+          ]);
+        }, 0);
+      }
+      return newUser;
+    });
+  }, []);
+
   useEffect(() => {
     setUser(getOrCreateDefaultToolUser());
-    const handleUserUpdate = (e: Event) => {
-      const customEvent = e as CustomEvent<ToolUser | null>;
-      const newUser = customEvent.detail || getOrCreateDefaultToolUser();
-      
-      setUser((prevUser) => {
-        if (prevUser && !prevUser.is_guest && newUser.is_guest) {
-          setTimeout(() => {
-            setSavedChats([]);
-            setActiveChatId(null);
-            setCurrentWorkflowStep(1);
-            setSourceImage(null);
-            setGeneratedImage(null);
-            setPromptText('');
-            setRecommendations([]);
-            setChatMessages([
-              {
-                id: `msg-init-${Date.now()}`,
-                sender: 'assistant',
-                text: "Hello! What space would you like to design or transform today? Select an AI tool below or type your architectural vision in the prompt bar."
-              }
-            ]);
-          }, 0);
-        }
-        return newUser;
-      });
-    };
-    window.addEventListener('anvitam-user-updated', handleUserUpdate);
-    return () => window.removeEventListener('anvitam-user-updated', handleUserUpdate);
-  }, []);
+    window.addEventListener('anvitam-user-updated', handleUserUpdate as EventListener);
+    return () => window.removeEventListener('anvitam-user-updated', handleUserUpdate as EventListener);
+  }, [handleUserUpdate]);
 
   useEffect(() => {
     const mod = searchParams.get('module');
@@ -554,13 +577,35 @@ const safeFetchJson = async (res: Response) => {
       
       const extraDetailsList: string[] = [];
       if (selectedModule === 'exterior') {
+        if (exteriorStyle) extraDetailsList.push(`Architectural Style: ${exteriorStyle}`);
         if (facadeMaterial) extraDetailsList.push(`Facade Material: ${facadeMaterial}`);
+        if (roofType) extraDetailsList.push(`Roof Design: ${roofType}`);
         if (lightingAmbience) extraDetailsList.push(`Lighting: ${lightingAmbience}`);
       } else if (selectedModule === 'garden') {
+        if (gardenStyle) extraDetailsList.push(`Garden Style: ${gardenStyle}`);
+        if (hardscapingType) extraDetailsList.push(`Hardscaping: ${hardscapingType}`);
         if (landscapeFeatures.length > 0) extraDetailsList.push(`Landscape Amenities: ${landscapeFeatures.join(', ')}`);
-        if (lightingAmbience) extraDetailsList.push(`Lighting: ${lightingAmbience}`);
-      } else if (selectedModule === 'interior') {
+        if (outdoorLighting) extraDetailsList.push(`Outdoor Lighting: ${outdoorLighting}`);
+      } else if (selectedModule === 'interior' || selectedModule === 'virtual-staging') {
         if (flooringType) extraDetailsList.push(`Flooring: ${flooringType}`);
+        if (wallFinish) extraDetailsList.push(`Wall Treatment: ${wallFinish}`);
+        if (lightingAmbience) extraDetailsList.push(`Lighting Ambience: ${lightingAmbience}`);
+      } else if (selectedModule === 'walls') {
+        if (wallFinish) extraDetailsList.push(`Wall Finish: ${wallFinish}`);
+      } else if (selectedModule === 'flooring') {
+        if (flooringType) extraDetailsList.push(`Flooring Type: ${flooringType}`);
+        if (flooringPattern) extraDetailsList.push(`Laying Pattern: ${flooringPattern}`);
+      } else if (selectedModule === 'sketch2image') {
+        if (renderStyle) extraDetailsList.push(`Render Engine Style: ${renderStyle}`);
+        if (buildingEnvironment) extraDetailsList.push(`Environment: ${buildingEnvironment}`);
+      } else if (selectedModule === 'floorplan2isometric') {
+        if (isometricPerspective) extraDetailsList.push(`3D Angle: ${isometricPerspective}`);
+        if (isometricTheme) extraDetailsList.push(`Color Scheme: ${isometricTheme}`);
+      } else if (selectedModule === 'replace-furniture' || selectedModule === 'replace') {
+        if (itemTypeParam) extraDetailsList.push(`Item to Swap: ${itemTypeParam}`);
+        if (replacementStyle) extraDetailsList.push(`Replacement Material/Style: ${replacementStyle}`);
+      } else if (selectedModule === 'furniture-removal' || selectedModule === 'remove') {
+        if (removalMode) extraDetailsList.push(`Removal Mode: ${removalMode}`);
       }
       const extraDetailsStr = extraDetailsList.length > 0 ? ` [Specifications: ${extraDetailsList.join('; ')}]` : '';
 
@@ -597,6 +642,7 @@ const safeFetchJson = async (res: Response) => {
           removalMode,
           budget,
           modelTier: selectedAiModel,
+          userId: currentUser.id,
           email: currentUser.email
         })
       });
@@ -682,7 +728,7 @@ const safeFetchJson = async (res: Response) => {
       const res = await fetch('/api/ai-design?action=detect-elements', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: img, module: activeMod })
+        body: JSON.stringify({ image: img, module: activeMod, roomType })
       });
       const data = await safeFetchJson(res);
       if (data.success && data.pins) {
@@ -1252,27 +1298,69 @@ const safeFetchJson = async (res: Response) => {
                             </div>
                           </div>
 
-                          <div className="space-y-2">
-                            <label className="text-xs font-semibold text-gray-900 block">CAD Detail Level</label>
-                            <div className="grid grid-cols-3 gap-2">
-                              {[
-                                { id: 'conceptual', label: 'Conceptual Mass' },
-                                { id: 'photorealistic', label: 'Photorealistic Material' },
-                                { id: 'high-detail', label: 'Raytraced Lighting' }
-                              ].map(opt => (
-                                <button
-                                  key={opt.id}
-                                  type="button"
-                                  onClick={() => setSketchDetailLevel(opt.id as any)}
-                                  className={`p-2 rounded-xl text-[11px] font-semibold transition border ${
-                                    sketchDetailLevel === opt.id
-                                      ? 'bg-black text-[#CCFF00] border-black'
-                                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border-gray-200'
-                                  }`}
-                                >
-                                  {opt.label}
-                                </button>
-                              ))}
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                              <label className="text-xs font-semibold text-gray-900 block">Render Engine Style</label>
+                              <select
+                                value={renderStyle}
+                                onChange={(e) => setRenderStyle(e.target.value)}
+                                className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                              >
+                                <option value="Photorealistic 8K Render">Photorealistic 8K Photography</option>
+                                <option value="Cinematic Unreal Engine 5">Cinematic Unreal Engine 5</option>
+                                <option value="Architectural Watercolor">Architectural Watercolor</option>
+                                <option value="Charcoal Conceptual Sketch">Charcoal Conceptual Sketch</option>
+                                <option value="Clean Axonometric Model">Clean Axonometric Model</option>
+                              </select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <label className="text-xs font-semibold text-gray-900 block">Environment &amp; Sun</label>
+                              <select
+                                value={buildingEnvironment}
+                                onChange={(e) => setBuildingEnvironment(e.target.value)}
+                                className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                              >
+                                <option value="Lush Forest & Sunlight">Lush Forest &amp; Direct Sunlight</option>
+                                <option value="Urban City Street">Urban City Streetscape</option>
+                                <option value="Cliffside Coastal Ocean">Cliffside Coastal Ocean</option>
+                                <option value="Minimalist Studio Backdrop">Minimalist Studio Backdrop</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* TOOL: 2D FLOORPLAN TO 3D ISOMETRIC */}
+                      {selectedModule === 'floorplan2isometric' && (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                              <label className="text-xs font-semibold text-gray-900 block">Perspective View</label>
+                              <select
+                                value={isometricPerspective}
+                                onChange={(e) => setIsometricPerspective(e.target.value)}
+                                className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                              >
+                                <option value="3D Axonometric Dollhouse">3D Axonometric Dollhouse View</option>
+                                <option value="Layered Floor Cutaway">Layered Floor Cutaway</option>
+                                <option value="High-Angle Bird's Eye">High-Angle Bird's Eye 3D</option>
+                                <option value="Top-Down 3D View">Top-Down 3D View</option>
+                              </select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <label className="text-xs font-semibold text-gray-900 block">Finish Theme</label>
+                              <select
+                                value={isometricTheme}
+                                onChange={(e) => setIsometricTheme(e.target.value)}
+                                className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                              >
+                                <option value="Warm Scandinavian Light Wood">Warm Scandinavian Oak</option>
+                                <option value="Monochromatic OLED Dark Model">Monochromatic OLED Dark</option>
+                                <option value="Modern Pastel Color-Coded">Pastel Room Color-Coded</option>
+                                <option value="Crisp White Architectural Model">Crisp White Model</option>
+                              </select>
                             </div>
                           </div>
                         </div>
@@ -1322,7 +1410,7 @@ const safeFetchJson = async (res: Response) => {
                       )}
 
                       {/* TOOL 3: REPLACE & ADD FURNITURE BRIEF */}
-                      {selectedModule === 'replace-furniture' && (
+                      {(selectedModule === 'replace-furniture' || selectedModule === 'replace') && (
                         <div className="space-y-4">
                           <div className="space-y-3">
                             <div className="flex items-center justify-between">
@@ -1365,11 +1453,11 @@ const safeFetchJson = async (res: Response) => {
                           </div>
 
                           <div className="space-y-2">
-                            <label className="text-xs font-semibold text-gray-900 block">Replacement Specs &amp; Style Details (Optional)</label>
+                            <label className="text-xs font-semibold text-gray-900 block">Replacement Material &amp; Style Specs</label>
                             <input
                               type="text"
-                              value={swapPrompt}
-                              onChange={(e) => setSwapPrompt(e.target.value)}
+                              value={replacementStyle}
+                              onChange={(e) => setReplacementStyle(e.target.value)}
                               placeholder="e.g. Italian cognac leather sectional sofa with brass legs, beige wool rug..."
                               className="w-full bg-white border border-gray-300 rounded-xl p-2.5 text-xs font-medium text-gray-900 outline-none focus:border-black transition"
                             />
@@ -1378,7 +1466,7 @@ const safeFetchJson = async (res: Response) => {
                       )}
 
                       {/* TOOL 4: FURNITURE REMOVAL BRIEF */}
-                      {selectedModule === 'furniture-removal' && (
+                      {(selectedModule === 'furniture-removal' || selectedModule === 'remove') && (
                         <div className="space-y-4">
                           <div className="space-y-2">
                             <label className="text-xs font-semibold text-gray-900 block">Declutter Intensity</label>
@@ -1406,11 +1494,75 @@ const safeFetchJson = async (res: Response) => {
                         </div>
                       )}
 
-                      {/* STANDARD BRIEF (FOR INTERIOR, EXTERIOR, GARDEN) */}
-                      {(!['sketch2image', 'floorplan2isometric', 'virtual-staging', 'replace-furniture', 'furniture-removal'].includes(selectedModule)) && (
+                      {/* TOOL 5: WALL FINISH & PAINT SWAP BRIEF */}
+                      {selectedModule === 'walls' && (
                         <div className="space-y-4">
                           <div className="space-y-2">
-                            <label className="text-xs font-semibold text-gray-900 block">{selectedModule === 'exterior' ? 'Building Type' : (selectedModule === 'garden' ? 'Outdoor Space Type' : 'Space Type')}</label>
+                            <label className="text-xs font-semibold text-gray-900 block">Wall Finish &amp; Texture</label>
+                            <select
+                              value={wallFinish}
+                              onChange={(e) => setWallFinish(e.target.value)}
+                              className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                            >
+                              <option value="Limewash Stucco Paint">Limewash Stucco Plaster Paint</option>
+                              <option value="Fluted Oak Wall Battens">Fluted Oak Wood Wall Battens</option>
+                              <option value="Venetian Plaster Finish">Venetian Plaster Polished Finish</option>
+                              <option value="Calacatta Marble Slab">Calacatta Marble Accent Wall Slab</option>
+                              <option value="Exposed Red Brick">Exposed Heritage Red Brick</option>
+                              <option value="Geometric Textured Wallpaper">Geometric Textured Wallpaper</option>
+                              <option value="Acoustic Felt Wood Panels">Acoustic Felt Wood Slat Panels</option>
+                              <option value="Soft Matte Paint">Soft Matte Neutral Wall Paint</option>
+                            </select>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* TOOL 6: FLOOR REPLACEMENT BRIEF */}
+                      {selectedModule === 'flooring' && (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                              <label className="text-xs font-semibold text-gray-900 block">Flooring Material</label>
+                              <select
+                                value={flooringType}
+                                onChange={(e) => setFlooringType(e.target.value)}
+                                className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                              >
+                                <option value="Italian White Marble">Italian White Carrara Marble</option>
+                                <option value="Warm Hardwood Oak">Warm Hardwood Oak Parquet</option>
+                                <option value="Polished Microcement">Polished Microcement / Concrete</option>
+                                <option value="Terrazzo Tile">Terrazzo Tile with Brass Inlays</option>
+                                <option value="Dark Walnut Chevron">Dark Walnut Chevron Wood</option>
+                                <option value="Hexagon Slate Tile">Matte Hexagon Slate Tile</option>
+                                <option value="Seamless Epoxy Resin">Seamless Gloss Epoxy Resin</option>
+                              </select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <label className="text-xs font-semibold text-gray-900 block">Laying Pattern</label>
+                              <select
+                                value={flooringPattern}
+                                onChange={(e) => setFlooringPattern(e.target.value)}
+                                className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                              >
+                                <option value="Herringbone Pattern">Herringbone Pattern</option>
+                                <option value="Straight Grid">Straight Grid</option>
+                                <option value="Chevron 45°">Chevron 45° Angle</option>
+                                <option value="Large Slab Seamless">Large Slab Seamless</option>
+                                <option value="Staggered Brick Pattern">Staggered Brick Pattern</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* STANDARD BRIEF (FOR INTERIOR, EXTERIOR, GARDEN) */}
+                      {(!['sketch2image', 'floorplan2isometric', 'virtual-staging', 'replace-furniture', 'replace', 'furniture-removal', 'remove', 'walls', 'flooring'].includes(selectedModule)) && (
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-gray-900 block">
+                              {selectedModule === 'exterior' ? 'Building Type' : (selectedModule === 'garden' ? 'Outdoor Space Type' : 'Space Type')}
+                            </label>
                             <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
                               {(() => {
                                 if (selectedModule === 'garden') return ['Backyard Garden', 'Front Yard', 'Balcony & Patio', 'Rooftop Terrace', 'Courtyard', 'Pool Area'];
@@ -1435,25 +1587,58 @@ const safeFetchJson = async (res: Response) => {
 
                           {/* EXTERIOR SPECIFIC EXTRA OPTIONS */}
                           {selectedModule === 'exterior' && (
-                            <>
+                            <div className="space-y-3">
                               <div className="space-y-2">
-                                <label className="text-xs font-semibold text-gray-900 block">Facade Cladding &amp; Materials</label>
+                                <label className="text-xs font-semibold text-gray-900 block">Architectural Style</label>
                                 <select
-                                  value={facadeMaterial}
-                                  onChange={(e) => setFacadeMaterial(e.target.value)}
+                                  value={exteriorStyle}
+                                  onChange={(e) => setExteriorStyle(e.target.value)}
                                   className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
                                 >
-                                  <option value="White Italian Marble">White Italian Marble &amp; Glass</option>
-                                  <option value="Exposed Red Brick">Exposed Red Brick &amp; Metal</option>
-                                  <option value="Concrete & Glass Curtain">Modern Concrete &amp; Glass Curtain</option>
-                                  <option value="Timber & Teak Slats">Timber &amp; Teak Wood Slats</option>
-                                  <option value="Natural Travertine Stone">Natural Travertine Stone Cladding</option>
-                                  <option value="Dark Charcoal Metal">Dark Charcoal Metal &amp; Steel</option>
+                                  <option value="Ultra-Modern Villa">Ultra-Modern Minimalist Villa</option>
+                                  <option value="Brutalist Concrete">Brutalist Formed Concrete</option>
+                                  <option value="Contemporary Tropical">Contemporary Tropical Resort</option>
+                                  <option value="Scandinavian Villa">Scandinavian Timber Villa</option>
+                                  <option value="Neo-Classical Haveli">Heritage Neo-Classical Haveli</option>
+                                  <option value="Mediterranean Stone">Mediterranean Stone Estate</option>
                                 </select>
                               </div>
 
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-2">
+                                  <label className="text-xs font-semibold text-gray-900 block">Facade Cladding &amp; Material</label>
+                                  <select
+                                    value={facadeMaterial}
+                                    onChange={(e) => setFacadeMaterial(e.target.value)}
+                                    className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                                  >
+                                    <option value="White Italian Marble">White Italian Marble &amp; Glass</option>
+                                    <option value="Exposed Red Brick">Exposed Red Brick &amp; Metal</option>
+                                    <option value="Concrete & Glass Curtain">Concrete &amp; Glass Curtain</option>
+                                    <option value="Timber & Teak Slats">Timber &amp; Teak Wood Slats</option>
+                                    <option value="Natural Travertine Stone">Travertine Stone Cladding</option>
+                                    <option value="Dark Charcoal Metal">Dark Charcoal Steel Panels</option>
+                                  </select>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <label className="text-xs font-semibold text-gray-900 block">Roof Design</label>
+                                  <select
+                                    value={roofType}
+                                    onChange={(e) => setRoofType(e.target.value)}
+                                    className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                                  >
+                                    <option value="Flat Concrete Slab">Flat Minimalist Concrete Slab</option>
+                                    <option value="Slanted Clay Tiles">Slanted Clay / Terracotta Tiles</option>
+                                    <option value="Metal Standing Seam">Dark Metal Standing Seam</option>
+                                    <option value="Cantilevered Glass Roof">Cantilevered Glass Canopy</option>
+                                    <option value="Green Roof Garden">Green Eco Roof Garden</option>
+                                  </select>
+                                </div>
+                              </div>
+
                               <div className="space-y-2">
-                                <label className="text-xs font-semibold text-gray-900 block">Lighting &amp; Atmosphere</label>
+                                <label className="text-xs font-semibold text-gray-900 block">Lighting &amp; Ambiance</label>
                                 <select
                                   value={lightingAmbience}
                                   onChange={(e) => setLightingAmbience(e.target.value)}
@@ -1465,51 +1650,103 @@ const safeFetchJson = async (res: Response) => {
                                   <option value="Dramatic Night Floodlights">Dramatic Architectural Night Floodlights</option>
                                 </select>
                               </div>
-                            </>
+                            </div>
                           )}
 
                           {/* GARDEN SPECIFIC EXTRA OPTIONS */}
                           {selectedModule === 'garden' && (
-                            <div className="space-y-2">
-                              <label className="text-xs font-semibold text-gray-900 block">Landscape Features &amp; Amenities</label>
-                              <div className="flex flex-wrap gap-1.5">
-                                {['Swimming Pool & Deck', 'Pergola Lounge', 'Stone Pathway & Lawn', 'Fire Pit Lounge', 'Water Fountain & Pond', 'Outdoor Kitchen & BBQ', 'Ambient Garden Lights'].map(feat => {
-                                  const isSel = landscapeFeatures.includes(feat);
-                                  return (
-                                    <button
-                                      key={feat}
-                                      type="button"
-                                      onClick={() => toggleLandscapeFeature(feat)}
-                                      className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition border flex items-center gap-1 cursor-pointer ${
-                                        isSel
-                                          ? 'bg-black text-[#CCFF00] border-black shadow-2xs'
-                                          : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-200'
-                                      }`}
-                                    >
-                                      {isSel && <span className="text-[#CCFF00] text-xs font-black">✓</span>}
-                                      <span>{feat}</span>
-                                    </button>
-                                  );
-                                })}
+                            <div className="space-y-3">
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-2">
+                                  <label className="text-xs font-semibold text-gray-900 block">Garden Aesthetic</label>
+                                  <select
+                                    value={gardenStyle}
+                                    onChange={(e) => setGardenStyle(e.target.value)}
+                                    className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                                  >
+                                    <option value="Modern Minimalist Resort">Modern Minimalist Resort</option>
+                                    <option value="Japanese Zen Garden">Japanese Zen Garden</option>
+                                    <option value="Resort Tropical Oasis">Resort Tropical Oasis</option>
+                                    <option value="English Cottage Garden">English Cottage Garden</option>
+                                    <option value="Mediterranean Courtyard">Mediterranean Courtyard</option>
+                                    <option value="Desert Xeriscape">Desert Xeriscape</option>
+                                  </select>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <label className="text-xs font-semibold text-gray-900 block">Hardscaping &amp; Paving</label>
+                                  <select
+                                    value={hardscapingType}
+                                    onChange={(e) => setHardscapingType(e.target.value)}
+                                    className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                                  >
+                                    <option value="Teak Decking & Flagstone">Teak Decking &amp; Flagstone</option>
+                                    <option value="Natural Stone Pavers">Natural Stone Pavers</option>
+                                    <option value="White Pebble Gravel">White Pebble Gravel</option>
+                                    <option value="Turf & Concrete Steppers">Turf &amp; Concrete Steppers</option>
+                                    <option value="Polished Deck Tiles">Polished Outdoor Deck Tiles</option>
+                                  </select>
+                                </div>
+                              </div>
+
+                              <div className="space-y-2">
+                                <label className="text-xs font-semibold text-gray-900 block">Landscape Features &amp; Amenities</label>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {['Swimming Pool & Deck', 'Pergola Lounge', 'Stone Pathway & Lawn', 'Fire Pit Lounge', 'Water Fountain & Pond', 'Outdoor Kitchen & BBQ', 'Ambient Garden Lights'].map(feat => {
+                                    const isSel = landscapeFeatures.includes(feat);
+                                    return (
+                                      <button
+                                        key={feat}
+                                        type="button"
+                                        onClick={() => toggleLandscapeFeature(feat)}
+                                        className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition border flex items-center gap-1 cursor-pointer ${
+                                          isSel
+                                            ? 'bg-black text-[#CCFF00] border-black shadow-2xs'
+                                            : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-200'
+                                        }`}
+                                      >
+                                        {isSel && <span className="text-[#CCFF00] text-xs font-black">✓</span>}
+                                        <span>{feat}</span>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
                               </div>
                             </div>
                           )}
 
                           {/* INTERIOR SPECIFIC EXTRA OPTIONS */}
                           {selectedModule === 'interior' && (
-                            <div className="space-y-2">
-                              <label className="text-xs font-semibold text-gray-900 block">Flooring Material</label>
-                              <select
-                                value={flooringType}
-                                onChange={(e) => setFlooringType(e.target.value)}
-                                className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
-                              >
-                                <option value="Italian White Marble">Italian White Marble</option>
-                                <option value="Warm Hardwood Oak">Warm Hardwood Oak</option>
-                                <option value="Polished Microcement">Polished Microcement / Concrete</option>
-                                <option value="Terrazzo Tile">Modern Terrazzo Tile</option>
-                                <option value="Luxury Vinyl Plank">Luxury Neutral Vinyl Plank</option>
-                              </select>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-2">
+                                <label className="text-xs font-semibold text-gray-900 block">Flooring Material</label>
+                                <select
+                                  value={flooringType}
+                                  onChange={(e) => setFlooringType(e.target.value)}
+                                  className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                                >
+                                  <option value="Italian White Marble">Italian White Marble</option>
+                                  <option value="Warm Hardwood Oak">Warm Hardwood Oak</option>
+                                  <option value="Polished Microcement">Polished Microcement</option>
+                                  <option value="Terrazzo Tile">Modern Terrazzo Tile</option>
+                                  <option value="Luxury Vinyl Plank">Luxury Neutral Vinyl Plank</option>
+                                </select>
+                              </div>
+
+                              <div className="space-y-2">
+                                <label className="text-xs font-semibold text-gray-900 block">Wall Finish</label>
+                                <select
+                                  value={wallFinish}
+                                  onChange={(e) => setWallFinish(e.target.value)}
+                                  className="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs font-semibold text-gray-900 outline-none"
+                                >
+                                  <option value="Limewash Stucco Paint">Limewash Stucco Plaster</option>
+                                  <option value="Fluted Oak Wall Battens">Fluted Wood Panels</option>
+                                  <option value="Venetian Plaster Finish">Venetian Plaster</option>
+                                  <option value="Accent Marble Slab">Accent Marble Slab</option>
+                                  <option value="Soft Matte Paint">Soft Matte Neutral Paint</option>
+                                </select>
+                              </div>
                             </div>
                           )}
 
@@ -1569,10 +1806,20 @@ const safeFetchJson = async (res: Response) => {
                           ? "e.g. 2-story ultra-modern villa with white Italian marble cladding, floor-to-ceiling glass windows, warm LED sconce lights, and cantilevered balcony..."
                           : selectedModule === 'garden'
                           ? "e.g. Modern resort backyard with infinity pool, teak wood sun deck, outdoor fireplace lounge, tropical palm trees, and ambient garden pathway lights..."
+                          : selectedModule === 'walls'
+                          ? "e.g. Apply limewash plaster in soft greige tone with fluted oak wood panel accent wall behind the sofa..."
+                          : selectedModule === 'flooring'
+                          ? "e.g. Replace existing floor with light oak herringbone hardwood parquet with matte finish..."
                           : selectedModule === 'sketch2image'
                           ? "e.g. Convert CAD blueprint into photorealistic 3D rendering with concrete structure, large glass panels, and natural sunlight..."
+                          : selectedModule === 'floorplan2isometric'
+                          ? "e.g. Render 2D floor plan as a 3D isometric cutaway dollhouse view with Scandinavian light wood flooring..."
                           : selectedModule === 'virtual-staging'
                           ? "e.g. Luxury minimalist staging with cream bouclé sofa, brass floor lamp, large marble coffee table, and soft abstract wall art..."
+                          : selectedModule === 'replace-furniture' || selectedModule === 'replace'
+                          ? "e.g. Replace main sofa with Italian cognac leather sectional with brushed brass legs..."
+                          : selectedModule === 'furniture-removal' || selectedModule === 'remove'
+                          ? "e.g. Completely clear room furniture while keeping windows, flooring, and architectural shell intact..."
                           : "e.g. Describe exact materials, lighting, colors, architectural styles, or furniture specifications you want..."
                       }
                       className="w-full bg-gray-50/80 border border-gray-300 focus:border-black focus:bg-white rounded-2xl p-3.5 text-xs font-medium text-gray-900 outline-none transition shadow-2xs leading-relaxed"
@@ -1590,25 +1837,78 @@ const safeFetchJson = async (res: Response) => {
                               return [
                                 '+ White Italian Marble', '+ Floor-to-Ceiling Glass', '+ Warm Accent Sconces', 
                                 '+ Cantilevered Balcony', '+ Teak Wood Slats', '+ Infinity Edge Pool', 
-                                '+ Flat Roof Pergola', '+ Lush Vertical Garden'
+                                '+ Flat Roof Pergola', '+ Lush Vertical Garden', '+ Exposed Red Brick',
+                                '+ Charcoal Steel Panels', '+ Travertine Cladding', '+ Golden Hour Sun Glow'
                               ];
                             }
                             if (selectedModule === 'garden') {
                               return [
-                                '+ Swimming Pool & Deck', '+ Pergola Outdoor Lounge', '+ Stone Pathway & Lawn', 
-                                '+ Fire Pit Seating', '+ Ambient Garden Lights', '+ Tropical Palms', '+ Water Fountain'
+                                '+ Swimming Pool & Deck', '+ Teak Pergola Lounge', '+ Stone Pathway & Lawn', 
+                                '+ Fire Pit Seating', '+ Ambient Garden Lights', '+ Tropical Palms', 
+                                '+ Tiered Water Fountain', '+ Zen Rock Garden', '+ Outdoor Kitchen & BBQ', '+ Sun Lounger Deck'
+                              ];
+                            }
+                            if (selectedModule === 'walls') {
+                              return [
+                                '+ Limewash Stucco Paint', '+ Fluted Oak Wall Battens', '+ Venetian Plaster Finish', 
+                                '+ Calacatta Marble Backdrop', '+ Exposed Red Brick Wall', '+ Geometric Textured Wallpaper', 
+                                '+ Acoustic Felt Wood Panels', '+ Soft Matte Alabaster White', '+ Charcoal Slate Accent'
+                              ];
+                            }
+                            if (selectedModule === 'flooring') {
+                              return [
+                                '+ Herringbone Hardwood Oak', '+ Italian Carrara Marble Slabs', '+ Polished Grey Microcement', 
+                                '+ Terrazzo Tile with Brass Inlays', '+ Dark Walnut Chevron Parquet', '+ Hexagon Matte Slate Tile', 
+                                '+ Seamless Epoxy Resin', '+ Rustic Travertine Stone'
                               ];
                             }
                             if (selectedModule === 'sketch2image') {
                               return [
-                                '+ Photorealistic 3D Glass Facade', '+ Double-Height Ceiling', 
-                                '+ Cantilevered Structure', '+ Exposed Concrete Walls', '+ Warm Interior Lights'
+                                '+ Photorealistic 8K Render', '+ Cinematic Unreal Engine 5', '+ Volumetric Sunlight & Shadows', 
+                                '+ Double-Height Glass Atrium', '+ Exposed Concrete Structure', '+ Dramatic Dusk Sky & City Lights'
+                              ];
+                            }
+                            if (selectedModule === 'floorplan2isometric') {
+                              return [
+                                '+ 3D Axonometric Dollhouse View', '+ Layered Floor Cutaway', '+ Scandinavian Light Oak Interior', 
+                                '+ Monochromatic OLED Dark Model', '+ Color-Coded Room Layout', '+ High-Density Modern Furniture'
                               ];
                             }
                             if (selectedModule === 'virtual-staging') {
                               return [
                                 '+ Creamy Linen Sofas', '+ Mid-Century Modern Desk', '+ Large Monstera Plants', 
-                                '+ Geometric Area Rug', '+ Warm Ambient Lamps'
+                                '+ Geometric Area Rug', '+ Warm Ambient Lamps', '+ Abstract Gallery Wall Art'
+                              ];
+                            }
+                            if (selectedModule === 'replace-furniture' || selectedModule === 'replace') {
+                              return [
+                                '+ Italian Cognac Leather', '+ Cream Linen Bouclé Fabric', '+ Solid Walnut & Brass', 
+                                '+ Fluted Glass & Steel', '+ Minimalist Low-Profile Sofa', '+ Marble Top Coffee Table'
+                              ];
+                            }
+                            if (selectedModule === 'furniture-removal' || selectedModule === 'remove') {
+                              return [
+                                '+ Complete Spatial Declutter', '+ Preserve Architectural Windows', '+ Keep Original Flooring Intact', 
+                                '+ Wall-to-Wall Empty Room', '+ Remove Clutter & Wires', '+ Clear Bare Shell'
+                              ];
+                            }
+                            const rt = (roomType || '').toLowerCase();
+                            if (rt.includes('kitchen')) {
+                              return [
+                                '+ Calacatta Quartz Countertops', '+ Fluted Oak Kitchen Island', '+ Zellige Tile Backsplash',
+                                '+ Brushed Brass Handles', '+ Integrated Smart Appliances', '+ Glass Pendant Cluster', '+ Matte Black Faucet'
+                              ];
+                            }
+                            if (rt.includes('bedroom')) {
+                              return [
+                                '+ Upholstered Linen Bedhead', '+ Soft Wool Berber Area Rug', '+ Headboard Wall Sconces',
+                                '+ Sheer Linen Window Drapes', '+ Floating Walnut Nightstands', '+ Warm 2700K Ambient Glow'
+                              ];
+                            }
+                            if (rt.includes('bathroom')) {
+                              return [
+                                '+ Fluted Stone Vanity Cabinet', '+ Backlit LED Arch Mirror', '+ Brushed Gold Rain Showerhead',
+                                '+ Large Format Slate Tiles', '+ Freestanding Soaking Tub', '+ Recessed Shower Niche'
                               ];
                             }
                             return [
@@ -1742,12 +2042,80 @@ const safeFetchJson = async (res: Response) => {
                   >
                     <img src={generatedImage} alt="After" className="absolute inset-0 w-full h-full object-cover" />
 
-                    {/* Interactive Visual Hotspot Pins Overlay (ONLY FOR INTERIOR MODULES) */}
+                    {/* Interactive Visual Hotspot Pins Overlay */}
                     {(() => {
-                      const isInteriorModule = ['interior', 'virtual-staging', 'replace-furniture'].includes(selectedModule);
-                      const activeHotspotPins = pins.length > 0 ? pins : (isInteriorModule ? DEFAULT_HOTSPOT_PINS : []);
+                      const isVisualModule = ['interior', 'virtual-staging', 'replace-furniture', 'walls', 'flooring', 'exterior', 'garden', 'remove'].includes(selectedModule);
+                      const getContextualFallback = () => {
+                        const mod = selectedModule;
+                        const rt = (roomType || '').toLowerCase();
+                        if (mod === 'walls') {
+                          return [
+                            { id: 'pin_wall_1', label: 'Accent Wall Paint', element_type: 'wall_paint', x_percent: 30, y_percent: 40 },
+                            { id: 'pin_wall_2', label: 'Wall Moulding & Trim', element_type: 'wall_paint', x_percent: 70, y_percent: 55 },
+                            { id: 'pin_wall_3', label: 'Wall Lighting Sconce', element_type: 'sconce', x_percent: 50, y_percent: 25 },
+                          ];
+                        }
+                        if (mod === 'flooring') {
+                          return [
+                            { id: 'pin_floor_1', label: 'Hardwood / Tile Floor', element_type: 'flooring', x_percent: 50, y_percent: 82 },
+                            { id: 'pin_floor_2', label: 'Accent Layering Rug', element_type: 'rug', x_percent: 38, y_percent: 72 },
+                          ];
+                        }
+                        if (mod === 'exterior') {
+                          return [
+                            { id: 'pin_ext_1', label: 'Facade Paint & Finish', element_type: 'facade', x_percent: 50, y_percent: 50 },
+                            { id: 'pin_ext_2', label: 'Entrance Doorway', element_type: 'door', x_percent: 48, y_percent: 68 },
+                            { id: 'pin_ext_3', label: 'Outdoor Sconce', element_type: 'lighting', x_percent: 35, y_percent: 58 },
+                          ];
+                        }
+                        if (mod === 'garden') {
+                          return [
+                            { id: 'pin_gar_1', label: 'Patio Lounge Seating', element_type: 'patio_furniture', x_percent: 45, y_percent: 65 },
+                            { id: 'pin_gar_2', label: 'Pathway Decking', element_type: 'decking', x_percent: 50, y_percent: 80 },
+                            { id: 'pin_gar_3', label: 'Garden Planter', element_type: 'planter', x_percent: 25, y_percent: 58 },
+                          ];
+                        }
+                        if (rt.includes('kitchen')) {
+                          return [
+                            { id: 'pin_kit_1', label: 'Granite / Marble Countertop', element_type: 'countertop', x_percent: 48, y_percent: 62 },
+                            { id: 'pin_kit_2', label: 'Custom Cabinetry', element_type: 'cabinet', x_percent: 30, y_percent: 45 },
+                            { id: 'pin_kit_3', label: 'Tile Backsplash', element_type: 'backsplash', x_percent: 50, y_percent: 38 },
+                          ];
+                        }
+                        return DEFAULT_HOTSPOT_PINS;
+                      };
+                      const activeHotspotPins = pins.length > 0 ? pins : (isVisualModule ? getContextualFallback() : []);
                       return activeHotspotPins.map((pin: any, idx: number) => {
-                        const matchingProduct = catalog.find(p => p.element_type === pin.element_type) || catalog[idx % catalog.length];
+                        const activeCatalog = catalog.filter(p => p.active !== false);
+                        const pinType = (pin.element_type || '').toLowerCase();
+                        const pinLabel = (pin.label || '').toLowerCase();
+                        const SYNONYMS: Record<string, string[]> = {
+                          sofa: ['sofa', 'chair', 'seating', 'couch', 'armchair', 'furniture'],
+                          chair: ['chair', 'sofa', 'seating', 'armchair'],
+                          dining_table: ['dining_table', 'table', 'furniture'],
+                          bed: ['bed', 'headboard', 'bedding'],
+                          coffee_table: ['coffee_table', 'table', 'cabinet'],
+                          cabinet: ['cabinet', 'storage', 'sideboard', 'vanity'],
+                          pendant_light: ['pendant_light', 'floor_lamp', 'table_lamp', 'sconce', 'chandelier', 'lighting'],
+                          floor_lamp: ['floor_lamp', 'pendant_light', 'table_lamp', 'sconce'],
+                          table_lamp: ['table_lamp', 'floor_lamp', 'pendant_light', 'sconce'],
+                          sconce: ['sconce', 'pendant_light', 'floor_lamp', 'table_lamp'],
+                          rug: ['rug', 'carpet', 'mat'],
+                          curtains: ['curtains', 'drapes'],
+                          wall_paint: ['wall_paint', 'wallpaper', 'wall_art', 'wall_panel'],
+                          flooring: ['flooring', 'hardwood', 'tile', 'laminate'],
+                          indoor_plant: ['indoor_plant', 'vase', 'decor_accent'],
+                          decor_accent: ['decor_accent', 'mirror', 'vase', 'indoor_plant'],
+                          facade: ['wall_paint', 'wall_panel', 'decor_accent'],
+                          countertop: ['cabinet', 'tile', 'decor_accent'],
+                          vanity: ['cabinet', 'mirror', 'decor_accent']
+                        };
+                        const matchingProduct = activeCatalog.find(p => (p.element_type || '').toLowerCase() === pinType)
+                          || (pinLabel ? activeCatalog.find(p => (p.name || '').toLowerCase().includes(pinLabel) || pinLabel.includes((p.name || '').toLowerCase())) : null)
+                          || (SYNONYMS[pinType] ? activeCatalog.find(p => (SYNONYMS[pinType] || []).includes((p.element_type || '').toLowerCase())) : null)
+                          || activeCatalog[idx % activeCatalog.length]
+                          || catalog[0];
+
                         const pinId = pin.id || `pin_${idx}`;
                         const isSelected = activePin?.id === pinId;
 
@@ -2165,7 +2533,14 @@ const safeFetchJson = async (res: Response) => {
       </div>
 
       {/* Drawers & Modals */}
-      <ToolsAuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      <ToolsAuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={(u) => {
+          setUser(u);
+          setShowAuthModal(false);
+        }}
+      />
       <ToolsPaywallOverlay isOpen={showPaywall} onClose={() => setShowPaywall(false)} user={user} />
       <AllToolsDrawer isOpen={showToolsDrawer} onClose={() => setShowToolsDrawer(false)} />
       <ToolsSettingsModal 

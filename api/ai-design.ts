@@ -274,7 +274,6 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     const { url, element_type } = body as { url?: string; element_type?: string };
     if (!url || typeof url !== 'string') return res.status(400).json({ error: 'URL is required.' });
 
-    // Generate high quality fallback thumbnail based on element_type if URL parsing is restricted
     const ELEMENT_PLACEHOLDERS: Record<string, string> = {
       sofa: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=800&auto=format&fit=crop',
       chair: 'https://images.unsplash.com/photo-1580481072645-022f9a6d83d0?q=80&w=800&auto=format&fit=crop',
@@ -287,23 +286,125 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       decor_accent: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=800&auto=format&fit=crop'
     };
 
-    let titleCandidate = 'Shoppable Home Decor';
+    let titleCandidate = '';
+    let extractedImage = '';
+    let extractedPrice = '';
+
     try {
       const parsedUrl = new URL(url);
       const host = parsedUrl.hostname.replace('www.', '').split('.')[0];
       const pathParts = parsedUrl.pathname.split('/').filter(Boolean);
       const rawSlug = pathParts.find(p => p.length > 5 && !p.includes('dp')) || host;
       titleCandidate = rawSlug.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-      if (titleCandidate.length > 50) titleCandidate = titleCandidate.substring(0, 50) + '...';
-    } catch (e) {
-      // ignore URL parse errors
+      if (titleCandidate.length > 60) titleCandidate = titleCandidate.substring(0, 60) + '...';
+
+      // Perform live fetch to extract OpenGraph & JSON-LD metadata
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const pageRes = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        },
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (pageRes.ok) {
+        const html = await pageRes.text();
+
+        // 1. Extract Title (og:title, title tag)
+        const ogTitleMatch = html.match(/<meta\s+(?:property|name)=["']og:title["']\s+content=["']([^"']+)["']/i)
+          || html.match(/<title[^>]*>([^<]+)<\/title>/i);
+        if (ogTitleMatch && ogTitleMatch[1]?.trim()) {
+          titleCandidate = ogTitleMatch[1].trim().replace(/\s+/g, ' ');
+        }
+
+        // 2. Extract High-Res Image (og:image, twitter:image, Amazon hiRes)
+        const ogImgMatch = html.match(/<meta\s+(?:property|name)=["']og:image["']\s+content=["']([^"']+)["']/i)
+          || html.match(/<meta\s+(?:property|name)=["']twitter:image["']\s+content=["']([^"']+)["']/i)
+          || html.match(/"hiRes"\s*:\s*"([^"]+)"/i)
+          || html.match(/"large"\s*:\s*"([^"]+)"/i);
+        if (ogImgMatch && ogImgMatch[1]?.trim()) {
+          let rawImg = ogImgMatch[1].trim();
+          if (rawImg.startsWith('//')) rawImg = 'https:' + rawImg;
+          else if (rawImg.startsWith('/')) rawImg = new URL(rawImg, url).href;
+          extractedImage = rawImg;
+        }
+
+        // 3. Extract Price (og:price:amount, product:price:amount, JSON-LD price, price regex)
+        const ogPriceMatch = html.match(/<meta\s+(?:property|name)=["'](?:og|product):price:amount["']\s+content=["']([^"']+)["']/i)
+          || html.match(/"price"\s*:\s*"?([0-9.,]+)"?/i);
+        const currMatch = html.match(/<meta\s+(?:property|name)=["'](?:og|product):price:currency["']\s+content=["']([^"']+)["']/i)
+          || html.match(/"priceCurrency"\s*:\s*"([A-Z]{3})"/i);
+
+        if (ogPriceMatch && ogPriceMatch[1]) {
+          const numericPrice = ogPriceMatch[1].replace(/,/g, '');
+          const curr = (currMatch && currMatch[1]) ? currMatch[1].toUpperCase() : (url.includes('.in') ? 'INR' : 'USD');
+          const symbol = curr === 'INR' ? '₹' : curr === 'BRL' ? 'R$' : '$';
+          extractedPrice = `${symbol}${Number(numericPrice).toLocaleString('en-US')}`;
+        } else {
+          // Fallback HTML price regex (₹34,999 or $299)
+          const fallbackPriceRegex = html.match(/(?:₹|Rs\.?|\$|EUR|R\$)\s*([0-9,]+(?:\.[0-9]{2})?)/i);
+          if (fallbackPriceRegex && fallbackPriceRegex[0]) {
+            extractedPrice = fallbackPriceRegex[0].trim();
+          }
+        }
+      }
+    // 4. Auto-detect Element Type from URL & Title
+    const sampleText = `${url} ${titleCandidate}`.toLowerCase();
+    let detectedType = element_type || 'sofa';
+    if (sampleText.includes('sofa') || sampleText.includes('couch') || sampleText.includes('davenport') || sampleText.includes('sectional')) {
+      detectedType = 'sofa';
+    } else if (sampleText.includes('chair') || sampleText.includes('armchair') || sampleText.includes('stool') || sampleText.includes('recliner') || sampleText.includes('bench')) {
+      detectedType = 'chair';
+    } else if (sampleText.includes('dining table') || sampleText.includes('dining-table') || sampleText.includes('dining_table')) {
+      detectedType = 'dining_table';
+    } else if (sampleText.includes('bed') || sampleText.includes('headboard') || sampleText.includes('mattress') || sampleText.includes('cot')) {
+      detectedType = 'bed';
+    } else if (sampleText.includes('coffee table') || sampleText.includes('tea table') || sampleText.includes('side table') || sampleText.includes('end table')) {
+      detectedType = 'coffee_table';
+    } else if (sampleText.includes('pendant') || sampleText.includes('chandelier') || sampleText.includes('hanging light')) {
+      detectedType = 'pendant_light';
+    } else if (sampleText.includes('floor lamp')) {
+      detectedType = 'floor_lamp';
+    } else if (sampleText.includes('table lamp') || sampleText.includes('desk lamp')) {
+      detectedType = 'table_lamp';
+    } else if (sampleText.includes('sconce') || sampleText.includes('wall light')) {
+      detectedType = 'sconce';
+    } else if (sampleText.includes('lamp') || sampleText.includes('light') || sampleText.includes('fixture')) {
+      detectedType = 'pendant_light';
+    } else if (sampleText.includes('rug') || sampleText.includes('carpet') || sampleText.includes('runner') || sampleText.includes('mat')) {
+      detectedType = 'rug';
+    } else if (sampleText.includes('curtain') || sampleText.includes('drape') || sampleText.includes('blind') || sampleText.includes('shade')) {
+      detectedType = 'curtains';
+    } else if (sampleText.includes('paint') || sampleText.includes('wallpaper') || sampleText.includes('wall art') || sampleText.includes('wall panel')) {
+      detectedType = 'wall_paint';
+    } else if (sampleText.includes('flooring') || sampleText.includes('tile') || sampleText.includes('hardwood') || sampleText.includes('laminate')) {
+      detectedType = 'flooring';
+    } else if (sampleText.includes('plant') || sampleText.includes('planter') || sampleText.includes('flowerpot') || sampleText.includes('bonsai')) {
+      detectedType = 'indoor_plant';
+    } else if (sampleText.includes('cabinet') || sampleText.includes('sideboard') || sampleText.includes('credenza') || sampleText.includes('wardrobe') || sampleText.includes('dresser')) {
+      detectedType = 'cabinet';
+    } else if (sampleText.includes('counter') || sampleText.includes('countertop')) {
+      detectedType = 'countertop';
+    } else if (sampleText.includes('vanity')) {
+      detectedType = 'vanity';
+    } else if (sampleText.includes('mirror') || sampleText.includes('vase') || sampleText.includes('decor') || sampleText.includes('cushion') || sampleText.includes('pillow') || sampleText.includes('clock')) {
+      detectedType = 'decor_accent';
     }
 
-    const imageUrl = ELEMENT_PLACEHOLDERS[element_type || 'sofa'] || ELEMENT_PLACEHOLDERS['sofa'];
+    const imageExtracted = Boolean(extractedImage);
+    const finalImage = extractedImage || ELEMENT_PLACEHOLDERS[detectedType] || ELEMENT_PLACEHOLDERS['sofa'];
+    const finalPrice = extractedPrice || (url.includes('.in') ? '₹14,999' : '$199');
+
     return res.status(200).json({
       success: true,
-      title: titleCandidate,
-      image_url: imageUrl,
+      title: titleCandidate || 'Shoppable Decor Item',
+      image_url: finalImage,
+      price: finalPrice,
+      element_type: detectedType,
+      image_extracted: imageExtracted,
       affiliate_link: url
     });
   }
@@ -342,21 +443,38 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
     const body = parseBody(req);
 
-    // Auth & credits — allow unauthenticated users up to trial limit
+    // Auth & credits — resolve user from JWT, body.userId, or body.email
     let userId: string | null = null;
     let userDoc: any = null;
     const decoded = validateJWT(req);
     if (decoded) {
       userId = decoded.userId;
+    } else if (body.userId || body.user_id) {
+      userId = body.userId || body.user_id;
+    }
+
+    if (userId) {
       try {
         userDoc = await getDoc('tool_users', userId);
       } catch (err) {
-        console.error('[ai-design/generate] Failed to fetch user doc:', userId, err);
+        console.error('[ai-design/generate] Failed to fetch user doc by ID:', userId, err);
+      }
+    }
+
+    if (!userDoc && body.email) {
+      try {
+        const users = await queryDocs('tool_users', 'email', '==', body.email);
+        if (users && users.length > 0) {
+          userDoc = users[0];
+          userId = userDoc.id;
+        }
+      } catch (err) {
+        console.error('[ai-design/generate] Failed to fetch user doc by email:', body.email, err);
       }
     }
 
     const isSubscribed: boolean = userDoc?.is_subscribed ?? false;
-    const creditsRemaining: number = userDoc?.credits_remaining ?? 3; // 3 trial credits default
+    const creditsRemaining: number = userDoc?.credits_remaining ?? 0;
 
     const modelTier = (body.modelTier || body.modelChoice || 'low-fast').toLowerCase();
     let creditCost = 1;
@@ -596,6 +714,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
             roomType: String(roomType || 'living room'),
             budget: String(budget || 'Mid-Range'),
             promptText: promptText ? String(promptText) : textDescription,
+            hasSourceImage: !!sourceImage,
           };
           const { positive } = buildHFPrompt(promptConfig);
 
@@ -662,8 +781,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
         success: true,
         generatedImage: finalOutputImage,
         description: textDescription || `Photorealistic ${style} redesign for your ${roomType}.`,
-        is_watermarked: true, // unauthenticated — always watermarked
-        credits_remaining: 2, // trial display value
+        is_watermarked: true,
       });
 
     } catch (err: any) {
@@ -919,25 +1037,76 @@ async function fetchExternalAffiliateProducts(searchQuery: string, region: strin
   if (action === 'detect-elements') {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
     const body = parseBody(req);
-    const { image, module = 'interior' } = body;
+    const { image, module = 'interior', roomType = 'living room' } = body;
 
-    let FALLBACK_PINS = [
-      { label: 'Seating Furniture', element_type: 'sofa', x_percent: 45, y_percent: 60, width_percent: 30, height_percent: 20 },
-      { label: 'Area Rug', element_type: 'rug', x_percent: 50, y_percent: 75, width_percent: 40, height_percent: 18 },
-      { label: 'Lighting Fixture', element_type: 'pendant_light', x_percent: 50, y_percent: 22, width_percent: 15, height_percent: 15 },
-      { label: 'Wall Finish', element_type: 'wall_paint', x_percent: 20, y_percent: 35, width_percent: 25, height_percent: 30 },
+    let basePins = [
+      { label: 'Seating Furniture', element_type: 'sofa', x_percent: 42, y_percent: 64, width_percent: 30, height_percent: 20 },
+      { label: 'Area Rug', element_type: 'rug', x_percent: 52, y_percent: 78, width_percent: 40, height_percent: 18 },
+      { label: 'Lighting Fixture', element_type: 'pendant_light', x_percent: 50, y_percent: 25, width_percent: 15, height_percent: 15 },
+      { label: 'Wall Finish', element_type: 'wall_paint', x_percent: 25, y_percent: 38, width_percent: 25, height_percent: 30 },
     ];
-    if (module === 'exterior') {
-      FALLBACK_PINS = [
-        { label: 'Wall Sconce', element_type: 'lighting', x_percent: 45, y_percent: 60, width_percent: 10, height_percent: 10 },
-        { label: 'Facade', element_type: 'material', x_percent: 50, y_percent: 75, width_percent: 40, height_percent: 18 },
+
+    const rType = String(roomType).toLowerCase();
+    if (module === 'walls') {
+      basePins = [
+        { label: 'Primary Accent Wall', element_type: 'wall_paint', x_percent: 30, y_percent: 40, width_percent: 35, height_percent: 40 },
+        { label: 'Perimeter Trim & Moulding', element_type: 'wall_paint', x_percent: 70, y_percent: 55, width_percent: 25, height_percent: 35 },
+        { label: 'Wall Sconce / Accent Light', element_type: 'sconce', x_percent: 50, y_percent: 25, width_percent: 15, height_percent: 15 },
+      ];
+    } else if (module === 'flooring') {
+      basePins = [
+        { label: 'Main Flooring Material', element_type: 'flooring', x_percent: 50, y_percent: 82, width_percent: 60, height_percent: 25 },
+        { label: 'Area Layering Rug', element_type: 'rug', x_percent: 38, y_percent: 72, width_percent: 35, height_percent: 20 },
+        { label: 'Baseboard / Floor Transition', element_type: 'flooring', x_percent: 75, y_percent: 88, width_percent: 20, height_percent: 10 },
+      ];
+    } else if (rType.includes('kitchen')) {
+      basePins = [
+        { label: 'Kitchen Countertop', element_type: 'countertop', x_percent: 48, y_percent: 62, width_percent: 35, height_percent: 20 },
+        { label: 'Cabinetry Finish', element_type: 'cabinet', x_percent: 30, y_percent: 45, width_percent: 25, height_percent: 30 },
+        { label: 'Backsplash Tile', element_type: 'backsplash', x_percent: 50, y_percent: 38, width_percent: 30, height_percent: 18 },
+        { label: 'Island Pendant Light', element_type: 'pendant_light', x_percent: 52, y_percent: 22, width_percent: 15, height_percent: 15 },
+      ];
+    } else if (rType.includes('bedroom')) {
+      basePins = [
+        { label: 'Bed Frame & Headboard', element_type: 'bed', x_percent: 48, y_percent: 58, width_percent: 40, height_percent: 25 },
+        { label: 'Bedding & Linen', element_type: 'bedding', x_percent: 48, y_percent: 68, width_percent: 35, height_percent: 18 },
+        { label: 'Nightstand Lamp', element_type: 'table_lamp', x_percent: 24, y_percent: 52, width_percent: 12, height_percent: 15 },
+        { label: 'Bedroom Area Rug', element_type: 'rug', x_percent: 52, y_percent: 80, width_percent: 45, height_percent: 16 },
+      ];
+    } else if (rType.includes('bathroom')) {
+      basePins = [
+        { label: 'Vanity Cabinet', element_type: 'vanity', x_percent: 40, y_percent: 60, width_percent: 30, height_percent: 22 },
+        { label: 'Vanity Mirror & Sconce', element_type: 'mirror', x_percent: 40, y_percent: 35, width_percent: 20, height_percent: 20 },
+        { label: 'Wall Tile / Surface', element_type: 'wall_tile', x_percent: 75, y_percent: 45, width_percent: 20, height_percent: 35 },
+      ];
+    } else if (module === 'exterior') {
+      basePins = [
+        { label: 'Facade Finish & Paint', element_type: 'facade', x_percent: 50, y_percent: 50, width_percent: 45, height_percent: 35 },
+        { label: 'Roof & Trim Accent', element_type: 'roof', x_percent: 50, y_percent: 22, width_percent: 50, height_percent: 18 },
+        { label: 'Entrance Doorway', element_type: 'door', x_percent: 48, y_percent: 68, width_percent: 15, height_percent: 22 },
+        { label: 'Exterior Sconce Lighting', element_type: 'lighting', x_percent: 35, y_percent: 58, width_percent: 10, height_percent: 10 },
       ];
     } else if (module === 'garden') {
-      FALLBACK_PINS = [
-        { label: 'Planter', element_type: 'planter', x_percent: 45, y_percent: 60, width_percent: 20, height_percent: 20 },
-        { label: 'Plant', element_type: 'plant', x_percent: 50, y_percent: 75, width_percent: 40, height_percent: 18 },
+      basePins = [
+        { label: 'Outdoor Lounge Seating', element_type: 'patio_furniture', x_percent: 45, y_percent: 65, width_percent: 30, height_percent: 20 },
+        { label: 'Garden Path & Patio Decking', element_type: 'decking', x_percent: 50, y_percent: 80, width_percent: 45, height_percent: 18 },
+        { label: 'Decorative Planter', element_type: 'planter', x_percent: 25, y_percent: 58, width_percent: 15, height_percent: 18 },
+        { label: 'Landscape Feature Plant', element_type: 'plant', x_percent: 75, y_percent: 55, width_percent: 20, height_percent: 22 },
       ];
     }
+
+    // Apply deterministic spatial jitter based on image/module string hash
+    const seedString = String(image || '') + String(module) + String(roomType);
+    const hashNum = seedString.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const FALLBACK_PINS = basePins.map((pin, idx) => {
+      const jitterX = ((hashNum * (idx + 1) * 17) % 13) - 6;
+      const jitterY = ((hashNum * (idx + 1) * 31) % 13) - 6;
+      return {
+        ...pin,
+        x_percent: Math.min(85, Math.max(15, pin.x_percent + jitterX)),
+        y_percent: Math.min(85, Math.max(15, pin.y_percent + jitterY)),
+      };
+    });
 
     if (!image || typeof image !== 'string' || (!OPENROUTER_API_KEY && !GEMINI_API_KEY)) {
       return res.status(200).json({ success: true, pins: FALLBACK_PINS });

@@ -20,7 +20,7 @@ export interface ToolUser {
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (user: ToolUser, token: string) => void;
+  onSuccess?: (user: ToolUser, token: string) => void;
   initialMode?: 'login' | 'register';
 }
 
@@ -120,7 +120,9 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
       }
 
       const activeUser = setToolUser(authenticatedUser, token);
-      onSuccess(activeUser, token);
+      if (typeof onSuccess === 'function') {
+        onSuccess(activeUser, token);
+      }
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Authentication failed. Please try again.');

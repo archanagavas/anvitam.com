@@ -1526,10 +1526,16 @@ const Admin: React.FC = () => {
       if (data.success) {
         setCatalogFormData(prev => ({
           ...prev,
-          name: prev.name.trim() ? prev.name : data.title,
-          image_url: data.image_url
+          name: data.title || prev.name,
+          image_url: data.image_url || prev.image_url,
+          price: data.price || prev.price,
+          element_type: data.element_type || prev.element_type
         }));
-        showToast('⚡ Product details auto-populated!');
+        if (data.image_extracted === false) {
+          showToast('⚠️ Title, price & element type auto-populated! Product photo could not be extracted directly from this link — please attach or paste image URL.', 'warning');
+        } else {
+          showToast('⚡ Live product details, element type & price auto-populated!');
+        }
       }
     } catch (err) {
       showToast('Auto-fetch failed. Please enter details manually.');
@@ -3982,7 +3988,7 @@ const Admin: React.FC = () => {
                         disabled={autoFetching || !catalogFormData.affiliate_link.trim()}
                         className="text-[11px] font-extrabold text-blue-600 hover:text-blue-800 disabled:opacity-40 flex items-center gap-1"
                       >
-                        {autoFetching ? 'Fetching...' : '⚡ Auto-Fetch Title & Image'}
+                        {autoFetching ? 'Fetching Details & Type...' : '⚡ Auto-Fetch Title, Type & Price'}
                       </button>
                     </div>
                     <input
@@ -3993,7 +3999,10 @@ const Admin: React.FC = () => {
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="text-xs font-bold text-gray-600 block mb-1">Image URL *</label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-bold text-gray-600 block">Image URL *</label>
+                      <span className="text-[10px] text-gray-500 font-semibold">Auto-fetched, or paste/attach direct product image URL</span>
+                    </div>
                     <input
                       value={catalogFormData.image_url}
                       onChange={e => setCatalogFormData(f => ({ ...f, image_url: e.target.value }))}
