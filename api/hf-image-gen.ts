@@ -195,7 +195,7 @@ export async function generateWithHuggingFace(prompt: string, model: string): Pr
   if (!HF_API_KEY) return null;
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 55_000);
+  const timeout = setTimeout(() => controller.abort(), 10_000);
 
   try {
     const res = await fetch(model, {
@@ -246,6 +246,9 @@ export async function generateWithHuggingFace(prompt: string, model: string): Pr
 export async function generateWithCloudflare(prompt: string): Promise<string | null> {
   if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_API_TOKEN) return null;
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10_000);
+
   try {
     const url = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/black-forest-labs/flux-1-schnell`;
     const res = await fetch(url, {
@@ -258,7 +261,9 @@ export async function generateWithCloudflare(prompt: string): Promise<string | n
         prompt,
         num_steps: 4,
       }),
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
 
     if (!res.ok) {
       console.warn(`[hf-image-gen] Cloudflare Workers AI status: ${res.status}`);
@@ -288,7 +293,7 @@ export async function generateWithReplicate(prompt: string): Promise<string | nu
       headers: {
         'Authorization': `Bearer ${REPLICATE_API_TOKEN}`,
         'Content-Type': 'application/json',
-        'Prefer': 'wait=30', // Synchronous wait up to 30s
+        'Prefer': 'wait=10', // Synchronous wait up to 10s
       },
       body: JSON.stringify({
         input: {
@@ -334,7 +339,7 @@ export async function generateWithControlNet(prompt: string, sourceImageB64: str
       headers: {
         'Authorization': `Bearer ${REPLICATE_API_TOKEN}`,
         'Content-Type': 'application/json',
-        'Prefer': 'wait=60', // Synchronous wait up to 60s
+        'Prefer': 'wait=10', // Synchronous wait up to 10s
       },
       body: JSON.stringify({
         input: {

@@ -618,7 +618,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     const mimeType = (sourceImage as string).includes('data:image/png') ? 'image/png' : 'image/jpeg';
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 50_000);
+    const timeoutId = setTimeout(() => controller.abort(), 15_000);
 
     try {
       let generatedImageB64 = '';
