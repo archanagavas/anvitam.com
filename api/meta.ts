@@ -96,7 +96,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
   // ── GET ─────────────────────────────────────────────────────────────────
   if (req.method === 'GET') {
-    res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=3600');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     try {
       if (id) {
         let row = await getDoc(collectionName, id);
