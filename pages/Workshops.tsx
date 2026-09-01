@@ -73,31 +73,31 @@ const OFFERINGS = [
   {
     title: 'Tin Can Art',
     icon: '🥫',
-    image: '/workshops/offerings/upcycling.png',
+    image: '/workshops/offerings/tin can.jpeg',
     desc: 'Transforming discarded tin food cans into decorative lantern lights and desktop succulent planters.'
   },
   {
     title: 'Rainbow Twisters',
     icon: '🌈',
-    image: '/workshops/offerings/wind-chime.png',
+    image: '/workshops/offerings/rainbow twisters.jpeg',
     desc: 'Vibrant kinetic wind spinners crafted from eco-materials to bring dynamic color to school courtyards.'
   },
   {
     title: 'DIY Painted Small Rocks',
     icon: '🪨',
-    image: '/workshops/offerings/space-makeover.png',
+    image: '/workshops/offerings/Diy painted small rocks.jpeg',
     desc: 'Botanical rock painting to label herb gardens and create inspirational pathway borders.'
   },
   {
     title: 'DIY Straw Art',
     icon: '🌾',
-    image: '/workshops/offerings/bird-feeder.png',
+    image: '/workshops/offerings/Diy straw art.jpeg',
     desc: 'Crafting intricate bio-degradable straw geometries and traditional natural weaving patterns.'
   },
   {
     title: 'Glass Bulb Crafts',
     icon: '💡',
-    image: '/workshops/offerings/bird-house.png',
+    image: '/workshops/offerings/Glass bulb crafts.jpeg',
     desc: 'Repurposing fused lightbulbs into delicate hydroponic plant propagators and mini terrariums.'
   }
 ];

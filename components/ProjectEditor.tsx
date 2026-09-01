@@ -322,6 +322,7 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
       metaDescription: metaDescription.trim() || description.trim(),
       metaKeywords: metaKeywords.trim(),
       metaRobots: metaRobots.trim() || 'index, follow',
+      isDraft: initial?.isDraft,
     };
 
     setIsSaving(true);

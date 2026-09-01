@@ -285,6 +285,7 @@ const repairProject = (p: Project, def?: Project): Project => {
     metaDescription: p?.metaDescription || def?.metaDescription || '',
     metaKeywords: p?.metaKeywords || def?.metaKeywords || '',
     metaRobots: p?.metaRobots || def?.metaRobots || 'index, follow',
+    isDraft: p?.isDraft ?? def?.isDraft,
   };
 };
 
