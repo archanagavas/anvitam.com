@@ -7,9 +7,9 @@ import {
   Zap, Crown, LogOut, Search, Compass, CreditCard, ChevronRight,
   Sparkles, Home, Building, Trees, Wand2, Trash2, MapPin, Mountain,
   Sliders, CheckCircle2, ArrowUpRight, User, ShieldCheck, X, Filter,
-  MessageSquare, Send, Bot, Menu, Settings
+  MessageSquare, Send, Bot, Menu, Settings, History, Image as ImageIcon
 } from 'lucide-react';
-import { getToolUser, getOrCreateDefaultToolUser, logoutToolUser, type ToolUser } from '../utils/userAuth';
+import { getToolUser, getOrCreateDefaultToolUser, logoutToolUser, backgroundSyncCredits, type ToolUser } from '../utils/userAuth';
 import { TOOLS_SUITE, type ToolItem } from '../constants/toolsData';
 import { ToolsAuthModal } from '../components/tools/ToolsAuthModal';
 import { ToolsPaywallOverlay } from '../components/tools/ToolsPaywallOverlay';
@@ -25,6 +25,9 @@ export default function UserDashboard() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [showToolsDrawer, setShowToolsDrawer] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [historyData, setHistoryData] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   // Active Tool Selection from URL or default
   const activeToolParam = searchParams.get('tool') || 'ai-home-design';
@@ -43,13 +46,30 @@ export default function UserDashboard() {
 
   useEffect(() => {
     setUser(getOrCreateDefaultToolUser());
+    
+    // Initial sync
+    if (getToolUser() && !getToolUser()?.is_guest) {
+      backgroundSyncCredits();
+    }
+
     const handleUserUpdate = (e: Event) => {
       const customEvent = e as CustomEvent<ToolUser | null>;
       setUser(customEvent.detail);
     };
 
+    const handleFocus = () => {
+      if (getToolUser() && !getToolUser()?.is_guest) {
+        backgroundSyncCredits();
+      }
+    };
+
     window.addEventListener('anvitam-user-updated', handleUserUpdate);
-    return () => window.removeEventListener('anvitam-user-updated', handleUserUpdate);
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      window.removeEventListener('anvitam-user-updated', handleUserUpdate);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   useEffect(() => {
@@ -95,6 +115,25 @@ export default function UserDashboard() {
 
       setChatMessages(prev => [...prev, { sender: 'ai', text: aiResponse }]);
     }, 600);
+  };
+
+  const fetchHistory = async () => {
+    if (!user || user.is_guest) return;
+    setLoadingHistory(true);
+    try {
+      const token = localStorage.getItem('anvitam_tool_token');
+      const res = await fetch('/api/ai-design?action=history', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setHistoryData(data.history || []);
+      }
+    } catch (err) {
+      console.warn('Failed to fetch history', err);
+    } finally {
+      setLoadingHistory(false);
+    }
   };
 
   const totalCreditsAllocated = user?.is_subscribed ? 250 : 3;
@@ -186,6 +225,18 @@ export default function UserDashboard() {
                 className="px-3.5 py-1.5 rounded-full bg-[#CCFF00] text-black border border-black/10 text-xs font-semibold hover:bg-black hover:text-[#CCFF00] transition cursor-pointer shadow-2xs"
               >
                 Sign In / Register
+              </button>
+            )}
+
+            {user && !user.is_guest && (
+              <button
+                type="button"
+                onClick={() => { setShowHistoryModal(true); fetchHistory(); }}
+                className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-gray-400 text-gray-700 hover:text-black transition cursor-pointer shadow-2xs"
+                title="My Cloud History"
+                aria-label="My Cloud History"
+              >
+                <History size={17} />
               </button>
             )}
 
@@ -409,6 +460,71 @@ export default function UserDashboard() {
         onLogin={() => { setShowPaywall(false); setShowAuthModal(true); }}
         onRegister={() => { setShowPaywall(false); setShowAuthModal(true); }}
       />
+
+      {/* Basic Cloud History Modal */}
+      <AnimatePresence>
+        {showHistoryModal && (
+          <motion.div
+            className="fixed inset-0 z-[99999] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={(e) => e.target === e.currentTarget && setShowHistoryModal(false)}
+          >
+            <motion.div
+              className="bg-white rounded-3xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto relative shadow-2xl"
+              initial={{ opacity: 0, y: 15, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 15, scale: 0.95 }}
+            >
+              <button
+                onClick={() => setShowHistoryModal(false)}
+                className="absolute top-5 right-5 p-2 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-600 transition cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+              
+              <div className="flex items-center gap-2 pb-4 mb-4 border-b border-gray-200">
+                <div className="w-10 h-10 bg-[#111111] text-[#CCFF00] rounded-xl flex items-center justify-center">
+                  <History size={20} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-black text-gray-900">Cloud History</h2>
+                  <p className="text-xs text-gray-500 font-medium">Your recent AI generations synced across all devices.</p>
+                </div>
+              </div>
+
+              {loadingHistory ? (
+                <div className="flex flex-col items-center justify-center h-48 text-gray-400">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mb-3"></div>
+                  <p className="text-xs font-semibold">Loading generations...</p>
+                </div>
+              ) : historyData.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-48 text-gray-400">
+                  <ImageIcon size={32} className="mb-3 opacity-20" />
+                  <p className="text-xs font-semibold">No generations yet.</p>
+                  <p className="text-[10px]">Your designs will appear here automatically.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {historyData.map(item => (
+                    <div key={item.id} className="bg-gray-50 border border-gray-200 rounded-2xl overflow-hidden group">
+                      <img src={item.generated_image} alt="Generated" className="w-full h-48 object-cover group-hover:scale-105 transition duration-500" />
+                      <div className="p-3 bg-white border-t border-gray-200">
+                        <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1 flex items-center justify-between">
+                          <span>{item.module || 'Design'}</span>
+                          <span>{new Date(item.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <p className="text-xs text-gray-800 font-medium line-clamp-2">{item.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

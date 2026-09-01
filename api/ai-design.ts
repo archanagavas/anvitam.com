@@ -46,6 +46,9 @@ import {
   HF_MODELS,
 } from './hf-image-gen.js';
 
+// Rate Limiter for generate endpoint
+const generateRateLimit: Record<string, { count: number; until: number }> = {};
+
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
@@ -462,6 +465,35 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     }
   }
 
+  // ── 2f. CLOUD HISTORY DASHBOARD ──────────────────────────────────────
+  if (action === 'history') {
+    if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+    
+    const decoded = validateJWT(req);
+    if (!decoded) {
+      return res.status(401).json({ error: 'Unauthorized. You must be logged in to view history.' });
+    }
+
+    try {
+      const db = getDb();
+      const snap = await db.collection('ai_generations')
+        .where('user_id', '==', decoded.userId)
+        .orderBy('created_at', 'desc')
+        .limit(20)
+        .get();
+
+      const history = snap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      return res.status(200).json({ success: true, history });
+    } catch (err) {
+      console.error('[ai-design/history]', err);
+      return res.status(500).json({ error: 'Failed to fetch history.' });
+    }
+  }
+
   // ── 3. GENERATE IMAGE REDESIGN ───────────────────────────────────────
   if (action === 'generate') {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -500,6 +532,22 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
     if (!userDoc) {
       return res.status(401).json({ error: 'Unauthorized. You must log in or register to generate AI designs.' });
+    }
+
+    // ── Rate Limiting (5 per minute per user) ──
+    const limitKey = userId || (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.socket?.remoteAddress || 'unknown';
+    const now = Date.now();
+    
+    if (generateRateLimit[limitKey] && generateRateLimit[limitKey].count >= 5 && now < generateRateLimit[limitKey].until) {
+      const secs = Math.ceil((generateRateLimit[limitKey].until - now) / 1000);
+      return res.status(429).json({ error: `Too many generations. Please wait ${secs}s before trying again.` });
+    }
+
+    // Record attempt
+    if (!generateRateLimit[limitKey] || now >= generateRateLimit[limitKey].until) {
+      generateRateLimit[limitKey] = { count: 1, until: now + 60_000 };
+    } else {
+      generateRateLimit[limitKey].count++;
     }
 
     const isSubscribed: boolean = userDoc?.is_subscribed ?? false;
@@ -799,6 +847,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
             region,
             generated_image: finalOutputImage,
             description: textDescription,
+            created_at: new Date().toISOString()
           }).catch(err =>
             console.error('[ai-design/generate] Failed to store idempotency record:', generationId, err)
           );

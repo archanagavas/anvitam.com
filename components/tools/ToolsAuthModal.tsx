@@ -36,6 +36,9 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [forgotSent, setForgotSent] = useState(false);
+  const [requiresOtp, setRequiresOtp] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [pendingUserId, setPendingUserId] = useState('');
 
   useEffect(() => {
     if (isOpen) {
@@ -86,16 +89,36 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
       let token = 'mock_session_token_' + Date.now();
 
       try {
-        const endpoint = mode === 'register' ? '/api/tools/register' : '/api/tools/login';
-        const body = mode === 'register' ? { email, password, name, phone, countryCode } : { email, password };
-
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
-        if (res.ok) {
+        if (requiresOtp && mode === 'register') {
+          const res = await fetch('/api/tools/verify-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: pendingUserId, otp }),
+          });
           const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Invalid OTP');
+          authenticatedUser = data.user;
+          token = data.token;
+        } else {
+          const endpoint = mode === 'register' ? '/api/tools/register' : '/api/tools/login';
+          const body = mode === 'register' ? { email, password, name, phone, countryCode } : { email, password };
+
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+          const data = await res.json();
+          
+          if (!res.ok) throw new Error(data.error || 'Authentication failed');
+
+          if (data.requires_otp) {
+            setRequiresOtp(true);
+            setPendingUserId(data.user_id);
+            setLoading(false);
+            return;
+          }
+
           authenticatedUser = data.user;
           token = data.token;
         }
@@ -227,10 +250,18 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
                   <label className="auth-label">Email</label>
                   <input className="auth-input text-gray-900 bg-white placeholder-gray-400" type="email" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} required />
                 </div>
-                {mode !== 'forgot' && (
+                {mode !== 'forgot' && !requiresOtp && (
                   <div className="auth-field">
                     <label className="auth-label">Password</label>
                     <input className="auth-input text-gray-900 bg-white placeholder-gray-400" type="password" placeholder={mode === 'register' ? 'Min 8 characters' : '••••••••'} value={password} onChange={e => setPassword(e.target.value)} required minLength={mode === 'register' ? 8 : 1} />
+                  </div>
+                )}
+
+                {requiresOtp && (
+                  <div className="auth-field">
+                    <label className="auth-label">6-Digit Verification Code</label>
+                    <input className="auth-input text-gray-900 bg-white placeholder-gray-400 text-center tracking-widest text-lg" type="text" placeholder="------" value={otp} onChange={e => setOtp(e.target.value)} required maxLength={6} />
+                    <p className="text-[10px] text-gray-500 mt-1">Please check your email for the verification code.</p>
                   </div>
                 )}
 
@@ -238,25 +269,31 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
 
                 <button type="submit" className="auth-submit-btn" disabled={loading}>
                   {loading ? 'Please wait…' :
+                   requiresOtp ? 'Verify OTP & Start' :
                    mode === 'register' ? 'Start Free Trial (3 Credits) →' :
                    mode === 'forgot' ? 'Send Reset Request' :
                    'Sign In →'}
                 </button>
 
                 <div className="auth-footer-links">
-                  {mode === 'login' && (
+                  {mode === 'login' && !requiresOtp && (
                     <button type="button" className="auth-link" onClick={() => { setMode('forgot'); setError(''); }}>
                       Forgot password?
                     </button>
                   )}
-                  {mode === 'forgot' && (
+                  {mode === 'forgot' && !requiresOtp && (
                     <button type="button" className="auth-link" onClick={() => { setMode('login'); setError(''); }}>
                       ← Back to sign in
                     </button>
                   )}
+                  {requiresOtp && (
+                    <button type="button" className="auth-link" onClick={() => { setRequiresOtp(false); setError(''); }}>
+                      ← Back to register
+                    </button>
+                  )}
                 </div>
 
-                {mode === 'register' && (
+                {mode === 'register' && !requiresOtp && (
                   <p className="auth-terms">By creating an account you agree to our Terms of Service and Privacy Policy. Get 3 free credits on signup; top up 10 credits or get Pro Monthly when you need more.</p>
                 )}
               </form>

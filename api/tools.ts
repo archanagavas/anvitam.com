@@ -96,27 +96,10 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
         }
       }
 
-      const token = jwt.sign(
-        { userId: newUser.id, email: newUser.email, type: 'tool_user' },
-        process.env.JWT_SECRET || '',
-        { expiresIn: '30d' }
-      );
-
       return res.status(201).json({
-        token,
-        user: {
-          id: newUser.id,
-          email: newUser.email,
-          name: newUser.name,
-          country: newUser.country,
-          credits_remaining: newUser.credits_remaining,
-          credits_used: newUser.credits_used,
-          trial_started_at: newUser.trial_started_at,
-          is_subscribed: newUser.is_subscribed,
-          subscription_end: newUser.subscription_end,
-          trial_days_remaining: 15,
-          has_access: true,
-        },
+        requires_otp: true,
+        user_id: newUser.id,
+        message: 'OTP sent to email',
       });
     } catch (err) {
       console.error('[tools/register]', err);
@@ -208,6 +191,80 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       success: true,
       message: 'If an account exists for this email, password reset instructions have been sent.',
     });
+  }
+
+  // 3b. Verify OTP (/api/tools/verify-otp or action=verify-otp)
+  if (action === 'verify-otp' || urlPath.endsWith('/verify-otp')) {
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+    const { user_id, otp } = (typeof req.body === 'string' ? JSON.parse(req.body) : req.body) as { user_id?: string; otp?: string };
+    if (!user_id || !otp) return res.status(400).json({ error: 'User ID and OTP required' });
+    try {
+      const user = await getDoc('tool_users', user_id);
+      if (!user) return res.status(404).json({ error: 'User not found' });
+      if (user.verification_otp !== otp) return res.status(400).json({ error: 'Invalid OTP' });
+
+      await upsertDoc('tool_users', user_id, {
+        ...user,
+        email_verified: true,
+        verification_otp: null
+      });
+
+      const token = jwt.sign(
+        { userId: user.id, email: user.email, type: 'tool_user' },
+        process.env.JWT_SECRET || '',
+        { expiresIn: '30d' }
+      );
+
+      const trialMs = Date.now() - new Date(user.trial_started_at || user.created_at || Date.now()).getTime();
+      const trial_days_remaining = Math.max(0, Math.ceil(15 - (trialMs / (1000 * 60 * 60 * 24))));
+
+      return res.status(200).json({
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name || '',
+          country: user.country || 'IN',
+          credits_remaining: user.credits_remaining ?? 3,
+          credits_used: user.credits_used ?? 0,
+          trial_started_at: user.trial_started_at,
+          is_subscribed: user.is_subscribed || false,
+          subscription_end: user.subscription_end || null,
+          subscription_plan: user.subscription_plan || null,
+          trial_days_remaining,
+          has_access: true,
+        },
+      });
+    } catch (err) {
+      console.error('[tools/verify-otp]', err);
+      return res.status(500).json({ error: 'Verification failed.' });
+    }
+  }
+
+  // 3c. Get Current User Data (/api/tools/me or action=me)
+  if (action === 'me' || urlPath.endsWith('/me')) {
+    if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Authentication required' });
+    
+    try {
+      const token = authHeader.split(' ')[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as { userId: string };
+      const user = await getDoc('tool_users', decoded.userId);
+      if (!user) return res.status(404).json({ error: 'User not found' });
+      
+      return res.status(200).json({
+        id: user.id,
+        email: user.email,
+        credits_remaining: user.credits_remaining ?? 0,
+        credits_used: user.credits_used ?? 0,
+        is_subscribed: user.is_subscribed || false,
+        subscription_plan: user.subscription_plan,
+        subscription_end: user.subscription_end
+      });
+    } catch (err) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
   }
 
   // 4. Consume Credit (/api/tools/consume-credit or action=consume-credit)

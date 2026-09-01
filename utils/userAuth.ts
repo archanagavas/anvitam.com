@@ -161,6 +161,30 @@ export function deductUserCredit(cost: number = 1, modelTier: string = 'fast'): 
   return { success: true, user: updated };
 }
 
+export async function backgroundSyncCredits() {
+  if (typeof window === 'undefined') return;
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token) return;
+
+  try {
+    const res = await fetch('/api/tools/me', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      updateToolUser({
+        credits_remaining: data.credits_remaining,
+        credits_used: data.credits_used,
+        is_subscribed: data.is_subscribed,
+        subscription_end: data.subscription_end,
+        subscription_plan: data.subscription_plan
+      });
+    }
+  } catch (err) {
+    console.warn('[userAuth] background sync failed:', err);
+  }
+}
+
 export function logoutToolUser() {
   inMemoryUser = null;
   try {
