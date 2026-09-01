@@ -440,9 +440,29 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
         if (!base64Data) return res.status(400).json({ error: 'Invalid base64 image format' });
         imageBuffer = Buffer.from(base64Data, 'base64');
       } else if (image.startsWith('https://') || image.startsWith('http://')) {
-        const imgRes = await fetch(image, { headers: { 'User-Agent': 'AnvitamStudio/1.0' } });
-        if (!imgRes.ok) return res.status(400).json({ error: `Failed to fetch image: ${imgRes.statusText}` });
-        imageBuffer = Buffer.from(await imgRes.arrayBuffer());
+        try {
+          const parsedUrl = new URL(image);
+          const hostname = parsedUrl.hostname;
+          
+          // Basic SSRF protection: block private/local IP ranges and localhost
+          if (
+            hostname === 'localhost' ||
+            hostname.startsWith('127.') ||
+            hostname.startsWith('10.') ||
+            hostname.startsWith('192.168.') ||
+            hostname.startsWith('172.') || // Note: 172.16.0.0 - 172.31.255.255 is the actual private range, but blocking all 172. is safer
+            hostname.startsWith('169.254.')
+          ) {
+            return res.status(403).json({ error: 'Fetching from internal or private IP addresses is forbidden.' });
+          }
+          
+          const imgRes = await fetch(image, { headers: { 'User-Agent': 'AnvitamStudio/1.0' } });
+          if (!imgRes.ok) return res.status(400).json({ error: `Failed to fetch image: ${imgRes.statusText}` });
+
+          imageBuffer = Buffer.from(await imgRes.arrayBuffer());
+        } catch (e: any) {
+          return res.status(400).json({ error: 'Invalid image URL' });
+        }
       } else {
         return res.status(400).json({ error: 'Image must be base64 data URL or https URL' });
       }

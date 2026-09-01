@@ -39,6 +39,9 @@ export function createHandler(
       'access-control-allow-origin': '*',
       'access-control-allow-headers': 'Content-Type, Authorization, X-Requested-With',
       'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'x-frame-options': 'DENY',
+      'x-content-type-options': 'nosniff',
+      'content-security-policy': "default-src 'self'",
     };
 
     let statusCode = 200;
