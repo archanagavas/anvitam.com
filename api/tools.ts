@@ -4,6 +4,9 @@ import { createHandler } from '../lib/adapter.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { findWhere, getDoc, upsertDoc } from '../lib/db.js';
+import crypto from 'crypto';
+
+const loginAttempts: Record<string, { count: number; until: number }> = {};
 
 const DODO_CHECKOUT_MAP: Record<string, string> = {
   credits_10: 'https://checkout.dodopayments.com/buy/pdt_0NlZ5UEJiErzLixmkxbda?quantity=1',
@@ -127,13 +130,41 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     const { email, password } = (typeof req.body === 'string' ? JSON.parse(req.body) : req.body) as { email?: string; password?: string };
     if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
     const normalizedEmail = email.toLowerCase().trim();
+    const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.socket?.remoteAddress || 'unknown';
+    const now = Date.now();
+
+    if (loginAttempts[clientIp] && loginAttempts[clientIp].count >= 5 && now < loginAttempts[clientIp].until) {
+      const secs = Math.ceil((loginAttempts[clientIp].until - now) / 1000);
+      return res.status(429).json({ error: `Too many attempts. Try again in ${secs}s.` });
+    }
+
     try {
       const users = await findWhere('tool_users', 'email', normalizedEmail);
       const user = users[0];
-      if (!user) return res.status(401).json({ error: 'Invalid email or password' });
+      
+      const recordFailedAttempt = () => {
+        if (!loginAttempts[clientIp] || now >= loginAttempts[clientIp].until) {
+          loginAttempts[clientIp] = { count: 1, until: now + 30_000 };
+        } else {
+          loginAttempts[clientIp].count++;
+          if (loginAttempts[clientIp].count >= 5) {
+            loginAttempts[clientIp].until = now + 30_000;
+          }
+        }
+      };
+
+      if (!user) {
+        recordFailedAttempt();
+        return res.status(401).json({ error: 'Invalid email or password' });
+      }
 
       const valid = await bcrypt.compare(password, user.password_hash);
-      if (!valid) return res.status(401).json({ error: 'Invalid email or password' });
+      if (!valid) {
+        recordFailedAttempt();
+        return res.status(401).json({ error: 'Invalid email or password' });
+      }
+
+      delete loginAttempts[clientIp];
 
       const trialMs = Date.now() - new Date(user.trial_started_at || user.created_at || Date.now()).getTime();
       const trialDaysUsed = trialMs / (1000 * 60 * 60 * 24);
@@ -256,6 +287,31 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
   // 6. Dodo Webhook Listener (/api/tools/dodo-webhook or action=dodo-webhook)
   if (action === 'dodo-webhook' || urlPath.endsWith('/dodo-webhook')) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+    
+    // Validate Webhook Signature
+    const signature = req.headers['dodopayments-signature'];
+    const webhookSecret = process.env.DODO_WEBHOOK_SECRET;
+    
+    if (webhookSecret && typeof signature === 'string') {
+      const [timestampPart, sigPart] = signature.split(',');
+      const timestamp = timestampPart.split('=')[1];
+      const actualSig = sigPart.split('=')[1];
+      
+      const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+      const signedPayload = `${timestamp}.${rawBody}`;
+      
+      const expectedSig = crypto
+        .createHmac('sha256', webhookSecret)
+        .update(signedPayload)
+        .digest('hex');
+        
+      if (expectedSig !== actualSig) {
+        return res.status(401).json({ error: 'Invalid webhook signature' });
+      }
+    } else if (webhookSecret) {
+      return res.status(401).json({ error: 'Missing webhook signature' });
+    }
+
     try {
       const payload = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body ?? {});
       const eventType = payload.type || payload.event || '';

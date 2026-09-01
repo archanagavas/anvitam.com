@@ -429,6 +429,13 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
   // ── 2e. RAG LEARNING LOOP: LOG FEEDBACK ──────────────────────────────
   if (action === 'feedback') {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+    
+    // Auth Check: Require valid tool user JWT or admin JWT to log feedback
+    const decoded = validateJWT(req);
+    if (!decoded) {
+      return res.status(401).json({ error: 'Unauthorized. You must be logged in to submit feedback.' });
+    }
+
     const body = parseBody(req);
     const { module, style, originalImage, generatedImage, promptText, rating } = body as any;
 
@@ -439,6 +446,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     try {
       const db = getDb();
       await db.collection('ai_learning_memory').add({
+        user_id: decoded.userId,
         module,
         style: style || '',
         originalImage: originalImage || '',
