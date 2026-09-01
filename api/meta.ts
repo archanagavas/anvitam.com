@@ -201,6 +201,7 @@ function buildDoc(resource: string, b: any, id: string): any {
       documents: sanitizeDocuments(b.documents), status: b.status || 'published',
       metaTitle: b.metaTitle || '', metaDescription: b.metaDescription || '',
       metaKeywords: b.metaKeywords || '', metaRobots: b.metaRobots?.trim() ? b.metaRobots : 'index, follow',
+      isDraft: b.isDraft ?? false,
     };
   }
   if (resource === 'services') {
@@ -283,6 +284,7 @@ function normalizeItem(resource: string, r: any): any {
       metaDescription: r.metaDescription || r.meta_description || '',
       metaKeywords: r.metaKeywords || r.meta_keywords || '',
       metaRobots: r.metaRobots || r.meta_robots || '',
+      isDraft: r.isDraft ?? r.is_draft ?? false,
     };
   }
   if (resource === 'services') {
