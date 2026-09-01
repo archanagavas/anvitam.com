@@ -508,14 +508,27 @@ export default function UserDashboard() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {historyData.map(item => (
-                    <div key={item.id} className="bg-gray-50 border border-gray-200 rounded-2xl overflow-hidden group">
-                      <img src={item.generated_image} alt="Generated" className="w-full h-48 object-cover group-hover:scale-105 transition duration-500" />
-                      <div className="p-3 bg-white border-t border-gray-200">
+                    <div key={item.id} className="bg-gray-50 border border-gray-200 rounded-2xl overflow-hidden group flex flex-col">
+                      <div className="relative w-full h-48 bg-gray-200 animate-pulse">
+                        {item.generated_image && (
+                          <img 
+                            src={item.generated_image} 
+                            alt={item.description || 'Generated Design'} 
+                            loading="lazy"
+                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500 opacity-0"
+                            onLoad={(e) => {
+                              (e.target as HTMLImageElement).classList.remove('opacity-0');
+                              (e.target as HTMLImageElement).parentElement?.classList.remove('animate-pulse');
+                            }}
+                          />
+                        )}
+                      </div>
+                      <div className="p-3 bg-white border-t border-gray-200 flex-1">
                         <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1 flex items-center justify-between">
                           <span>{item.module || 'Design'}</span>
                           <span>{new Date(item.created_at).toLocaleDateString()}</span>
                         </div>
-                        <p className="text-xs text-gray-800 font-medium line-clamp-2">{item.description}</p>
+                        <p className="text-xs text-gray-800 font-medium line-clamp-2" title={item.description}>{item.description}</p>
                       </div>
                     </div>
                   ))}

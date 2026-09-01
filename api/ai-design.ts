@@ -500,6 +500,13 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
     const body = parseBody(req);
 
+    // ── 1. Payload Size Check (Security) ──
+    if (body.sourceImage && typeof body.sourceImage === 'string') {
+      if (body.sourceImage.length > 3_000_000) {
+        return res.status(413).json({ error: 'Payload Too Large. Source image exceeds 2.5MB maximum.' });
+      }
+    }
+
     // Auth & credits — resolve user from JWT, body.userId, or body.email
     let userId: string | null = null;
     let userDoc: any = null;
@@ -550,7 +557,12 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       generateRateLimit[limitKey].count++;
     }
 
-    const isSubscribed: boolean = userDoc?.is_subscribed ?? false;
+    let isSubscribed: boolean = userDoc?.is_subscribed ?? false;
+    if (isSubscribed && userDoc?.subscription_end) {
+      if (new Date(userDoc.subscription_end).getTime() < Date.now()) {
+        isSubscribed = false;
+      }
+    }
     const creditsRemaining: number = userDoc?.credits_remaining ?? 0;
 
     const modelTier = (body.modelTier || body.modelChoice || 'low-fast').toLowerCase();
@@ -830,6 +842,12 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
       // ── Deduct credit & store idempotency record atomically ──────────
       if (userDoc) {
+        // ── 2. Firestore Document Size Limit (Prevent 1MB crash) ──
+        let imageForDb = finalOutputImage;
+        if (imageForDb && imageForDb.length > 900_000) {
+          imageForDb = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="%23f3f4f6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%236b7280">High-Res Image (Stored Locally)</text></svg>';
+        }
+
         const newRemaining = isSubscribed ? creditsRemaining : Math.max(0, creditsRemaining - creditCost);
         const newUsed = (userDoc.credits_used ?? 0) + creditCost;
         // Write updated user doc
@@ -845,7 +863,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
             user_id: userId,
             module,
             region,
-            generated_image: finalOutputImage,
+            generated_image: imageForDb,
             description: textDescription,
             created_at: new Date().toISOString()
           }).catch(err =>

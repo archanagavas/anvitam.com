@@ -253,12 +253,20 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       const user = await getDoc('tool_users', decoded.userId);
       if (!user) return res.status(404).json({ error: 'User not found' });
       
+      let isSubscribed = user.is_subscribed || false;
+      if (isSubscribed && user.subscription_end) {
+        if (new Date(user.subscription_end).getTime() < Date.now()) {
+          isSubscribed = false;
+          await upsertDoc('tool_users', user.id, { ...user, is_subscribed: false });
+        }
+      }
+
       return res.status(200).json({
         id: user.id,
         email: user.email,
         credits_remaining: user.credits_remaining ?? 0,
         credits_used: user.credits_used ?? 0,
-        is_subscribed: user.is_subscribed || false,
+        is_subscribed: isSubscribed,
         subscription_plan: user.subscription_plan,
         subscription_end: user.subscription_end
       });
