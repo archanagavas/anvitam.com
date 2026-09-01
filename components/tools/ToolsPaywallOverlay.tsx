@@ -158,8 +158,8 @@ export const ToolsPaywallOverlay: React.FC<Props> = ({
               </div>
             ) : null}
 
-            {/* 3 Tier Pricing Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* 2 Tier Pricing Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Option 1: Starter Pack */}
               <div
                 onClick={() => handleSubscribe('credits_10')}
@@ -184,32 +184,6 @@ export const ToolsPaywallOverlay: React.FC<Props> = ({
                 </button>
               </div>
 
-              {/* Option 2: 50 Credits Pack (High Volume One-Time) */}
-              <div
-                onClick={() => handleSubscribe('credits_50')}
-                className="bg-gray-50/90 hover:bg-white border border-gray-300 hover:border-black rounded-2xl p-3 cursor-pointer transition-all flex flex-col justify-between group relative hover:shadow-md"
-              >
-                <div className="absolute -top-2 right-2.5 bg-black text-[#CCFF00] text-[8px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
-                  Popular
-                </div>
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-extrabold uppercase tracking-wider text-gray-700">Agency Pack</span>
-                    <span className="text-[9px] font-bold bg-gray-200 text-gray-900 px-1.5 py-0.5 rounded-full">50 Creds</span>
-                  </div>
-                  <div>
-                    <div className="text-xl font-black text-gray-900">{topup50Price}</div>
-                    <div className="text-xs font-bold text-gray-800">50 Credits Pack</div>
-                  </div>
-                  <p className="text-[10px] text-gray-500 leading-snug">Best one-time value for architects &amp; interior designers.</p>
-                </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleSubscribe('credits_50'); }}
-                  className="mt-3 w-full bg-black text-white font-bold text-xs py-1.5 rounded-xl group-hover:bg-[#CCFF00] group-hover:text-black transition cursor-pointer"
-                >
-                  Buy 50 ({topup50Price})
-                </button>
-              </div>
 
               {/* Option 3: Pro Monthly (120 Credits/mo) */}
               <div
