@@ -397,13 +397,13 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
       let updatedUser = { ...user };
 
-      if (productId === 'pdt_0NlZ5UEJiErzLixmkxbda' || productId.includes('topup')) {
-        // 10 Credits Top-Up Pack
+      if (productId === 'pdt_0NlZ5UEJiErzLixmkxbda' || productId === 'pdt_0NlZ5UEJiErzLixmkxbda_50') {
+        // 10 Credits or 50 Credits Top-Up Pack
         const currentCredits = user.credits_remaining ?? 0;
-        updatedUser.credits_remaining = currentCredits + 10;
-        updatedUser.subscription_plan = user.subscription_plan || 'topup_10';
+        updatedUser.credits_remaining = currentCredits + (productId.includes('50') ? 50 : 10);
+        updatedUser.subscription_plan = productId.includes('50') ? 'topup_50' : 'topup_10';
         updatedUser.credit_expiry = ninetyDaysLater;
-      } else if (productId === 'pdt_0NlZ5wDhqx68MxeHE06JE' || eventType.includes('subscription')) {
+      } else if (productId === 'pdt_0NlZ5wDhqx68MxeHE06JE') {
         // Pro Monthly Subscription (250 Credits / mo)
         updatedUser.is_subscribed = true;
         updatedUser.subscription_plan = 'pro_monthly';
@@ -411,7 +411,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
         updatedUser.credit_expiry = thirtyDaysLater;
         updatedUser.subscription_end = thirtyDaysLater;
       } else {
-        return res.status(200).json({ status: 'ignored', reason: 'Unrecognized product_id or event' });
+        return res.status(200).json({ status: 'ignored', reason: 'Unrecognized product_id for Anvitam' });
       }
 
       await upsertDoc('tool_users', user.id, updatedUser);
