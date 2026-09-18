@@ -354,14 +354,31 @@ async function qualifyAndCraftPitch(candidate: LeadCandidate, contactEmail: stri
   const geminiKey = process.env.GEMINI_API_KEY;
   const nvidiaKey = process.env.NVIDIA_API_KEY;
 
-  const prompt = `You are Ar. Archana Gavas, principal ecological architect at Anvitam Studio (Vadodara, India - https://www.anvitam.com).
-You specialize in luxury permaculture retreats, rammed-earth bioclimatic villas, biological reed-bed pools (zero chlorine), arid desert land contouring/water catchment (with proven track record in extreme arid climates like Rajasthan), 2D/3D architectural drafting, microclimate site analysis reports, and full turnkey masterplanning.
+  const prompt = `You are Ar. Archana Gavas, principal architect at Anvitam Studio (Vadodara, India - https://www.anvitam.com).
+You specialize in residential architecture, luxury eco-resorts, rammed-earth bioclimatic villas, 3D visualization, biological swimming pools, and masterplanning for properties worldwide.
 
-We serve clients worldwide across the full budget spectrum:
-- Low-budget / fast turnaround ($250 – $2,500 USD): 2D working floor plans, 3D architectural photorealistic renders, microclimate site analysis reports, 1-on-1 consultations, pre-purchase environmental due diligence for foreign land buyers.
-- Mid & High-budget ($15,000 – $100,000+ USD): Full ecological masterplanning, desert permaculture contouring, turnkey architectural construction, and luxury eco-resorts.
+Voice sample of how Archana writes cold outreach (warm, genuine, peer-to-peer, ruthlessly concise, 60-110 words):
+"Hi [Name or Property Team],
 
-Analyze this prospect for an architectural pitch:
+I came across [Property Name] and genuinely loved [specific detail about their land, forest canopy, or architecture].
+
+I'm an architect specializing in ecological masterplanning, 3D visualization, and passive solar design. Looking at your site's contours and climate, I had a couple of ideas around [specific design idea like natural biological pool or passive-cooled chalets] that could elevate the guest experience without heavy operational costs.
+
+If you're open to a quick 10-minute chat, I'd love to share a few sketches and similar projects from our portfolio:
+👉 Grab a quick intro slot here: https://topmate.io/archanagavas/1799075?utm_source=estimator&utm_campaign=estimate_lead
+Or feel free to reply right here or check our work at https://www.anvitam.com/contact
+
+Looking forward to hearing from you.
+
+Best,
+Archana"
+
+RULES:
+1. No AI jargon: NEVER say "I hope this email finds you well", "empirical case study", "active mechanical refrigeration", "diurnal temperature swings".
+2. Plain text, 60-110 words, 3:1 "you/your" to "I/we" ratio.
+3. Must include Archana's booking link: https://topmate.io/archanagavas/1799075?utm_source=estimator&utm_campaign=estimate_lead and contact link https://www.anvitam.com/contact.
+
+Analyze this prospect:
 - Venue / Property Name: "${candidate.name}"
 - Location: "${candidate.location}"
 - Website: "${candidate.website}"
@@ -369,12 +386,12 @@ Analyze this prospect for an architectural pitch:
 
 Generate a valid JSON object with the following fields:
 {
-  "segment": "International Luxury Eco-Resort & Retreat Founders" or "Agrotourism & Farm Destination Operators" or "Builders & Regenerative Property Developers",
+  "segment": "International Luxury Eco-Resort & Retreat Founders",
   "land_size": "Estimated acreage (e.g. '12 Acres', '25 Acres', '40 Acres')",
-  "icp_fit": "2 sentences explaining why this property matches Anvitam's studio (terrain, climate constraints, bioclimatic cooling, biological pools or desert hydrology)",
-  "pitch_angle": "One-sentence tailored concept (e.g. Biological natural pool without chlorine & rammed-earth passive chalets with zero HVAC power)",
-  "pitch_subject": "A compelling 8-12 word subject line in Archana's calm mentor voice",
-  "pitch_body": "A complete, personal 4-paragraph Ogilvy cold pitch signed off by Ar. Archana Gavas (Founder & Principal Architect, Anvitam - https://www.anvitam.com). Highlight microclimate analysis, passive cooling, biological wetland pool filtration, and zero-chemical regenerative architecture.",
+  "icp_fit": "1-2 sentences explaining why this property matches Anvitam (terrain, climate constraints, bioclimatic cooling, or landscape potential)",
+  "pitch_angle": "One-sentence concept (e.g. Natural biological pool without chemicals & passive rammed-earth guest chalets)",
+  "pitch_subject": "A warm, natural 4-8 word subject line (e.g. 'Quick design idea for [Property Name]', 'Quick thought on [Property Name]'s landscape')",
+  "pitch_body": "A short, warm, human cold email (60-110 words) following Archana's voice sample above with Topmate call booking link.",
   "estimated_project_value": "Estimated fee in USD based on project scope ($250 USD, $2,500 USD, $25,000 USD, $45,000 USD, or $75,000 USD)"
 }
 Output ONLY the JSON object, nothing else.`;

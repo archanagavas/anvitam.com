@@ -31,7 +31,8 @@ dist-ssr
 *.sw?
 
 .vercel
-.agents/
+.agents/*
+!.agents/skills/
 skills-lock.json
 tools/cmo-harness/
 tools/bora-skills/
