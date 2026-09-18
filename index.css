@@ -1048,3 +1048,54 @@ html {
   left: 0 !important;
 }
 
+/* ═══ CMS & Blog Prose Table Styling ═══ */
+.cms-table-wrapper {
+  margin: 1.75rem 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.cms-table-wrapper table,
+.prose table,
+article table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.cms-table-wrapper th,
+.prose th,
+article th {
+  background-color: #f8fafc;
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.cms-table-wrapper td,
+.prose td,
+article td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+}
+
+.cms-table-wrapper tr:nth-child(even),
+.prose tr:nth-child(even),
+article tr:nth-child(even) {
+  background-color: #fcfdfd;
+}
+
+.cms-table-wrapper tr:hover,
+.prose tr:hover,
+article tr:hover {
+  background-color: #f8fafc;
+}
+
+

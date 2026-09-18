@@ -34,3 +34,5 @@ dist-ssr
 .agents/
 skills-lock.json
 tools/cmo-harness/
+tools/bora-skills/
+tools/article-writing-skills/

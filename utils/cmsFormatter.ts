@@ -115,6 +115,15 @@ function convertMarkdownToHtml(text: string): string {
       continue;
     }
 
+    // 3.5 Markdown Table (| Col 1 | Col 2 |)
+    if (lines.length >= 2 && lines.some(l => l.trim().startsWith('|') && l.trim().endsWith('|'))) {
+      const tableHtml = parseMarkdownTable(lines);
+      if (tableHtml) {
+        resultBlocks.push(tableHtml);
+        continue;
+      }
+    }
+
     // 4. Standalone short section headers (e.g., "The Brief", "What We Found", "Our Approach — Six Zones")
     if (lines.length === 1 && block.length <= 70 && !/[.?!]$/.test(block) && !block.includes(':')) {
       resultBlocks.push(`<h3>${inlineFormat(block)}</h3>`);
@@ -127,6 +136,36 @@ function convertMarkdownToHtml(text: string): string {
   }
 
   return resultBlocks.join('\n');
+}
+
+/**
+ * Parses markdown table lines into clean, responsive HTML table
+ */
+function parseMarkdownTable(lines: string[]): string | null {
+  const tableLines = lines.map(l => l.trim()).filter(l => l.startsWith('|') && l.endsWith('|'));
+  if (tableLines.length < 2) return null;
+
+  // Split cells
+  const parseRow = (line: string) =>
+    line
+      .slice(1, -1)
+      .split('|')
+      .map(cell => inlineFormat(cell.trim()));
+
+  const headerCells = parseRow(tableLines[0]);
+  
+  // Find data rows, skipping separator line like |---|---|
+  const dataRows = tableLines.slice(1).filter(l => !/^[\|\s\-\:\+]+$/.test(l));
+
+  const theadHtml = `<thead><tr>${headerCells.map(c => `<th>${c}</th>`).join('')}</tr></thead>`;
+  const tbodyHtml = `<tbody>${dataRows
+    .map(row => {
+      const cells = parseRow(row);
+      return `<tr>${cells.map(c => `<td>${c}</td>`).join('')}</tr>`;
+    })
+    .join('')}</tbody>`;
+
+  return `<div class="cms-table-wrapper overflow-x-auto my-6 rounded-lg border border-gray-200"><table>${theadHtml}${tbodyHtml}</table></div>`;
 }
 
 /**

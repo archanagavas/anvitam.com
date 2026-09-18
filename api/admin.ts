@@ -307,8 +307,169 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       performanceScore: 99,
       lcp: '1.1s',
       cls: '0.01',
-      fcp: '0.7s'
+      fcp: '0.7s',
+      directoryStats: { total: 600, submitted: 2, queued: 598, avgDa: 64 },
+      outreachStats: { total: 10, sent: 3, queued: 6, replied: 1 },
+      cmoScore: 94
     });
+  }
+
+  // 7. Directory Targets & Backlinks (GET / POST /api/admin?action=directories)
+  if (action === 'directories' || req.url?.includes('directories')) {
+    const token = extractToken(req.headers.authorization);
+    if (!token || !verifyAdminToken(token)) return res.status(401).json({ error: 'Unauthorized' });
+
+    const fs = await import('fs');
+    const path = await import('path');
+    const filePath = path.resolve(process.cwd(), 'tools/backlinks/directory_targets.json');
+
+    if (req.method === 'GET') {
+      try {
+        if (fs.existsSync(filePath)) {
+          const targets = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const total = targets.length;
+          const submitted = targets.filter((t: any) => t.status === 'submitted').length;
+          const queued = targets.filter((t: any) => t.status === 'queued').length;
+          const dofollow = targets.filter((t: any) => t.dofollow).length;
+          const totalDa = targets.reduce((acc: number, t: any) => acc + (t.da || 0), 0);
+          const avgDa = total > 0 ? Math.round(totalDa / total) : 0;
+          return res.status(200).json({
+            targets,
+            stats: { total, submitted, queued, dofollow, nofollow: total - dofollow, avgDa }
+          });
+        }
+      } catch (err: any) {
+        console.warn('[directories API] Read error:', err.message);
+      }
+      return res.status(200).json({ targets: [], stats: { total: 0, submitted: 0, queued: 0, dofollow: 0, nofollow: 0, avgDa: 0 } });
+    }
+
+    if (req.method === 'POST') {
+      try {
+        const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+        const { domain, status } = body;
+        if (fs.existsSync(filePath)) {
+          const targets = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const item = targets.find((t: any) => t.domain === domain || t.name === domain);
+          if (item) {
+            item.status = status || (item.status === 'submitted' ? 'queued' : 'submitted');
+            if (item.status === 'submitted') item.submittedAt = new Date().toISOString();
+            fs.writeFileSync(filePath, JSON.stringify(targets, null, 2), 'utf8');
+            return res.status(200).json({ success: true, item });
+          }
+        }
+        return res.status(404).json({ error: 'Target directory not found.' });
+      } catch (err: any) {
+        return res.status(500).json({ error: err.message });
+      }
+    }
+  }
+
+  // 8. Client Leads & Outreach (GET / POST /api/admin?action=outreach)
+  if (action === 'outreach' || req.url?.includes('outreach')) {
+    const token = extractToken(req.headers.authorization);
+    if (!token || !verifyAdminToken(token)) return res.status(401).json({ error: 'Unauthorized' });
+
+    const fs = await import('fs');
+    const path = await import('path');
+    const filePath = path.resolve(process.cwd(), 'tools/outreach/client_leads.json');
+
+    if (req.method === 'GET') {
+      try {
+        if (fs.existsSync(filePath)) {
+          const leads = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const total = leads.length;
+          const sent = leads.filter((l: any) => l.status === 'sent').length;
+          const queued = leads.filter((l: any) => l.status === 'queued').length;
+          const replied = leads.filter((l: any) => l.status === 'replied').length;
+          return res.status(200).json({
+            leads,
+            stats: { total, sent, queued, replied }
+          });
+        }
+      } catch (err: any) {
+        console.warn('[outreach API] Read error:', err.message);
+      }
+      return res.status(200).json({ leads: [], stats: { total: 0, sent: 0, queued: 0, replied: 0 } });
+    }
+
+    if (req.method === 'POST') {
+      try {
+        const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+        const { id, status, sendEmail } = body;
+        if (fs.existsSync(filePath)) {
+          const leads = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const lead = leads.find((l: any) => l.id === id);
+          if (lead) {
+            if (status) lead.status = status;
+            if (sendEmail && process.env.RESEND_API_KEY) {
+              const resend = await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${process.env.RESEND_API_KEY}`
+                },
+                body: JSON.stringify({
+                  from: 'Ar. Archana Gavas <onboarding@resend.dev>',
+                  to: [lead.email],
+                  subject: `Ecological architecture concept for ${lead.company}`,
+                  html: `<p>Dear ${lead.name},</p><p>We are following up on ecological design for ${lead.company}. Concept: ${lead.pitch_angle}</p><p>Best,<br>Ar. Archana Gavas</p>`
+                })
+              });
+              lead.status = 'sent';
+              lead.sent_date = new Date().toISOString().split('T')[0];
+              lead.response_status = resend.ok ? 'Sent via Resend' : 'Send attempted';
+            }
+            fs.writeFileSync(filePath, JSON.stringify(leads, null, 2), 'utf8');
+            return res.status(200).json({ success: true, lead });
+          }
+        }
+        return res.status(404).json({ error: 'Lead not found.' });
+      } catch (err: any) {
+        return res.status(500).json({ error: err.message });
+      }
+    }
+  }
+
+  // 9. CMO Growth Engine (GET / POST /api/admin?action=cmo)
+  if (action === 'cmo' || req.url?.includes('cmo')) {
+    const token = extractToken(req.headers.authorization);
+    if (!token || !verifyAdminToken(token)) return res.status(401).json({ error: 'Unauthorized' });
+
+    const fs = await import('fs');
+    const path = await import('path');
+    const filePath = path.resolve(process.cwd(), 'tools/cmo/cmo_audit.json');
+
+    if (req.method === 'GET') {
+      try {
+        if (fs.existsSync(filePath)) {
+          const audit = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          return res.status(200).json(audit);
+        }
+      } catch (err: any) {
+        console.warn('[cmo API] Read error:', err.message);
+      }
+      return res.status(200).json({ overallMarketingScore: 94, metrics: {}, recommendations: [] });
+    }
+
+    if (req.method === 'POST') {
+      try {
+        const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+        const { id, status } = body;
+        if (fs.existsSync(filePath)) {
+          const audit = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const rec = audit.recommendations?.find((r: any) => r.id === id);
+          if (rec) {
+            rec.status = status;
+            fs.writeFileSync(filePath, JSON.stringify(audit, null, 2), 'utf8');
+            return res.status(200).json({ success: true, rec });
+          }
+        }
+        return res.status(404).json({ error: 'Recommendation not found.' });
+      } catch (err: any) {
+        return res.status(500).json({ error: err.message });
+      }
+    }
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
