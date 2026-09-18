@@ -1368,13 +1368,14 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
         try { tagsArr = JSON.parse(tagsArr); } catch (e) {}
       }
       keywords = blog.meta_keywords || blog.metaKeywords || (Array.isArray(tagsArr) && tagsArr.length > 0 ? tagsArr.join(', ') : keywords);
-      robots = blog.meta_robots || blog.metaRobots || robots;
+      robots = blog.meta_robots || blog.metaRobots || 'index, follow, max-image-preview:large';
     } else {
-      // Blog not found in DB — serve generic indexable metadata so Google can crawl the client-rendered page
-      console.warn(`[ssr-seo] Blog not found in DB for id/slug: ${idOrSlug} — serving generic metadata`);
-      title = `Blog | Anvitam Sustainable Architecture`;
-      desc = 'Read articles and insights on sustainable architecture, permaculture, eco-design, and biophilic living by Anvitam.';
-      canonicalUrl = 'https://www.anvitam.com/blog';
+      // Strictly maintain self-referencing canonical to avoid GSC "Google chose different canonical than user"
+      const formattedTitle = idOrSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      title = `${formattedTitle} | Anvitam Sustainable Architecture`;
+      desc = `Read article insights on ${formattedTitle} by Ar. Archana Gavas at Anvitam Architecture & Permaculture Studio.`;
+      canonicalUrl = `https://www.anvitam.com/blog/${idOrSlug}`;
+      robots = 'index, follow, max-image-preview:large';
     }
   } else if (section === 'projects' && idOrSlug) {
     if (isDbConfigured) {
@@ -1390,9 +1391,31 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       }
     }
     if (!project) {
+      const projectAliases: Record<string, string> = {
+        'vanvagado-food-forest-design': 'vanvagado-farm',
+        'vanvagado': 'vanvagado-farm',
+        'vanvagado-farm-eco-forest-retreat': 'vanvagado-farm',
+        'shalimar-terrace-garden-design': 'shalimar',
+        'unique-school-of-science-nadiad': 'unique-school',
+        'unique-school-of-science': 'unique-school',
+        'terrace-garden-vadodara-organic-balcony-garden': 'terrace-garden-vadodara-organic-balcony-garden',
+        'terrace-garden-vadodara': 'terrace-garden-vadodara-organic-balcony-garden',
+        'kusum-vilas-palace': 'kusum-vilas-palace-heritage-destination-development',
+        'kusum-vilas-palace-heritage-destination-development': 'kusum-vilas-palace-heritage-destination-development',
+        'kamba-agrotourism': 'kamba-agrotourism-vardhaman-royal-organic-agri-farm',
+        'kamba-agrotourism-vardhaman-royal-organic-agri-farm': 'kamba-agrotourism-vardhaman-royal-organic-agri-farm',
+        'ramgarh-nainital': 'ramgarh-nainital-interior-project-shiloh-experiences-hotel',
+        'ramgarh-nainital-interior-project-shiloh-experiences-hotel': 'ramgarh-nainital-interior-project-shiloh-experiences-hotel',
+        'tattoo-studio-interior-design': 'tattoo-studio-interior-design',
+        'mahavir-ice-cream-commercial-interior-redesign-space-optimization': 'mahavir-ice-cream-commercial-interior-redesign-space-optimization',
+        'odiyar-farm-and-homestay-permaculture': 'odiyar-farm-and-homestay-permaculture',
+      };
+      const mappedId = projectAliases[idOrSlug] || idOrSlug;
       project = INITIAL_PROJECTS.find(p => 
-        p.slug === idOrSlug || 
-        p.id === idOrSlug || 
+        p.slug === mappedId || 
+        p.id === mappedId || 
+        p.slug === idOrSlug ||
+        p.id === idOrSlug ||
         (p.slug && (idOrSlug.includes(p.slug) || p.slug.includes(idOrSlug))) || 
         idOrSlug.includes(p.id) || 
         p.id.includes(idOrSlug)
@@ -1409,13 +1432,14 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
         try { tagsArr = JSON.parse(tagsArr); } catch (e) {}
       }
       keywords = project.meta_keywords || project.metaKeywords || (Array.isArray(tagsArr) && tagsArr.length > 0 ? tagsArr.join(', ') : keywords);
-      robots = project.meta_robots || project.metaRobots || robots;
+      robots = project.meta_robots || project.metaRobots || 'index, follow, max-image-preview:large';
     } else {
-      // Project not found in DB — serve generic indexable metadata so Google can crawl the client-rendered page
-      console.warn(`[ssr-seo] Project not found in DB for id/slug: ${idOrSlug} — serving generic metadata`);
-      title = `Project | Anvitam Sustainable Architecture`;
-      desc = 'Explore sustainable architecture projects by Anvitam — farm retreats, eco-resorts, permaculture landscapes, and biophilic homes.';
-      canonicalUrl = 'https://www.anvitam.com/projects';
+      // Strictly maintain self-referencing canonical to avoid GSC "Google chose different canonical than user"
+      const formattedTitle = idOrSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      title = `${formattedTitle} | Projects | Anvitam`;
+      desc = `Explore sustainable architecture project ${formattedTitle} by Anvitam — farm retreats, eco-resorts, permaculture landscapes, and biophilic homes.`;
+      canonicalUrl = `https://www.anvitam.com/projects/${idOrSlug}`;
+      robots = 'index, follow, max-image-preview:large';
     }
   } else if (section === 'services' && idOrSlug) {
     if (isDbConfigured) {
@@ -1435,8 +1459,10 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
         'resort-design': 'eco-resort',
         'eco-resort': 'eco-resort',
         'natural-building': 'farm-retreat',
-        'agroforestry': 'food-forest',
-        'food-forest': 'food-forest',
+        'agroforestry': 'permaculture-design',
+        'food-forest': 'permaculture-design',
+        'architecture-design-consultation-report': 'architecture-consultation',
+        'architecture-consultation': 'architecture-consultation',
         'airbnb': 'airbnb',
         'airbnb-design': 'airbnb',
         'homestay': 'homestay',
@@ -1444,7 +1470,8 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
         'community-center': 'community-center',
         'terrace-garden': 'terrace-garden',
         'backyard-design': 'backyard-design',
-        'weekend-villa': 'weekend-villa'
+        'weekend-villa': 'weekend-villa',
+        'interior-design': 'interior-design'
       };
       const mappedId = serviceAliases[idOrSlug] || idOrSlug;
       service = SERVICES.find(s => 
@@ -1466,13 +1493,14 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
         try { props = JSON.parse(props); } catch (e) {}
       }
       keywords = service.meta_keywords || service.metaKeywords || [service.title, 'sustainable architecture', 'eco design', 'permaculture', ...(Array.isArray(props) ? props : [])].join(', ');
-      robots = service.meta_robots || service.metaRobots || robots;
+      robots = service.meta_robots || service.metaRobots || 'index, follow, max-image-preview:large';
     } else {
-      // Service not found in DB — serve generic indexable metadata so Google can crawl the client-rendered page
-      console.warn(`[ssr-seo] Service not found in DB for id/slug: ${idOrSlug} — serving generic metadata`);
-      title = `Service | Anvitam Sustainable Architecture`;
-      desc = 'Explore sustainable design services by Anvitam — permaculture, farm retreats, eco-resorts, biophilic architecture, and more.';
-      canonicalUrl = 'https://www.anvitam.com/services';
+      // Strictly maintain self-referencing canonical to avoid GSC "Google chose different canonical than user"
+      const formattedTitle = idOrSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      title = `${formattedTitle} | Services | Anvitam`;
+      desc = `Explore ${formattedTitle} sustainable design services by Anvitam — permaculture, farm retreats, eco-resorts, biophilic architecture, and more.`;
+      canonicalUrl = `https://www.anvitam.com/services/${idOrSlug}`;
+      robots = 'index, follow, max-image-preview:large';
     }
   } else if (section === 'workshops') {
     if (idOrSlug) {

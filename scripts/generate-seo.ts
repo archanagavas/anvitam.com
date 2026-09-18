@@ -8,6 +8,7 @@ import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'fs';
 import { join, resolve } from 'path';
 import { neon } from '@neondatabase/serverless';
 import postgres from 'postgres';
+import { INITIAL_PROJECTS, INITIAL_BLOGS } from '../constants';
 
 const SITE_URL = 'https://www.anvitam.com';
 const TODAY = new Date().toISOString().split('T')[0];
@@ -58,9 +59,11 @@ const STATIC_ROUTES = [
   { path: '/services',   priority: '0.9', changefreq: 'weekly'  },
   { path: '/projects',   priority: '0.9', changefreq: 'weekly'  },
   { path: '/blog',       priority: '0.9', changefreq: 'daily'   },
+  { path: '/workshops',  priority: '0.8', changefreq: 'weekly'  },
   { path: '/shop',       priority: '0.8', changefreq: 'weekly'  },
   { path: '/contact',    priority: '0.8', changefreq: 'monthly' },
-  { path: '/team',       priority: '0.7', changefreq: 'monthly' },
+  { path: '/privacy',    priority: '0.5', changefreq: 'yearly'  },
+  { path: '/terms',      priority: '0.5', changefreq: 'yearly'  },
   { path: '/seo/farm-retreat-architecture', priority: '0.8', changefreq: 'monthly' },
   { path: '/seo/weekend-villas',            priority: '0.8', changefreq: 'monthly' },
   { path: '/seo/airbnb-homestay',           priority: '0.8', changefreq: 'monthly' },
@@ -78,10 +81,18 @@ const SERVICE_IDS = [
   'landscape-design', 'terrace-garden', 'backyard-design',
 ];
 
-// Project IDs from constants
-const PROJECT_IDS = [
+// Project IDs from constants (deduplicated with INITIAL_PROJECTS)
+const PROJECT_IDS = Array.from(new Set([
   'carpa-lupa', 'vanvagado-farm', 'batukaru-yurt', 'shalimar', 'unique-school', 'yourweb3guy',
-];
+  'kamba-agrotourism-vardhaman-royal-organic-agri-farm',
+  'kusum-vilas-palace-heritage-destination-development',
+  'ramgarh-nainital-himalayan-homestay-design',
+  'terrace-garden-vadodara-organic-balcony-garden',
+  'tattoo-studio-interior-design',
+  'mahavir-ice-cream-commercial-interior-redesign-space-optimization',
+  'odiyar-farm-and-homestay-permaculture',
+  ...INITIAL_PROJECTS.map(p => p.id)
+]));
 
 interface BlogSeoItem {
   slug: string;
@@ -94,14 +105,21 @@ interface ProjectSeoItem {
 }
 
 async function fetchBlogsFromDB(): Promise<BlogSeoItem[]> {
+  const fallbackBlogs: BlogSeoItem[] = INITIAL_BLOGS.map(b => ({
+    slug: b.slug,
+    lastmod: (b.date && /^\d{4}-\d{2}-\d{2}$/.test(b.date) ? b.date : TODAY)
+  }));
+
   if (!process.env.DATABASE_URL) {
-    return [];
+    return fallbackBlogs;
   }
   try {
     const rows = await queryDb("SELECT slug, date, updated_at, created_at FROM blogs WHERE status = 'published'");
-    return rows.map((r: any) => {
+    if (!rows || rows.length === 0) {
+      return fallbackBlogs;
+    }
+    const dbBlogs = rows.map((r: any) => {
       let lastmod = TODAY;
-      // Helper: parse and verify a date value is actually valid before using it
       const tryDate = (val: any): string | null => {
         if (!val) return null;
         const d = new Date(val);
@@ -111,19 +129,25 @@ async function fetchBlogsFromDB(): Promise<BlogSeoItem[]> {
       lastmod = tryDate(r.updated_at) || tryDate(r.created_at) || (r.date && /^\d{4}-\d{2}-\d{2}$/.test(r.date) ? r.date : null) || TODAY;
       return { slug: r.slug, lastmod };
     }).filter(b => Boolean(b.slug));
+
+    const blogMap = new Map<string, BlogSeoItem>();
+    fallbackBlogs.forEach(b => blogMap.set(b.slug, b));
+    dbBlogs.forEach(b => blogMap.set(b.slug, b));
+    return Array.from(blogMap.values());
   } catch (error) {
-    return [];
+    return fallbackBlogs;
   }
 }
 
 async function fetchProjectsFromDB(): Promise<ProjectSeoItem[]> {
+  const fallbackProjects: ProjectSeoItem[] = PROJECT_IDS.map(id => ({ path: id, lastmod: TODAY }));
   if (!process.env.DATABASE_URL) {
-    return PROJECT_IDS.map(id => ({ path: id, lastmod: TODAY }));
+    return fallbackProjects;
   }
   try {
     const rows = await queryDb("SELECT id, slug, updated_at, created_at FROM projects");
-    if (rows.length === 0) return PROJECT_IDS.map(id => ({ path: id, lastmod: TODAY }));
-    return rows.map((r: any) => {
+    if (rows.length === 0) return fallbackProjects;
+    const dbProjects = rows.map((r: any) => {
       const tryDate = (val: any): string | null => {
         if (!val) return null;
         const d = new Date(val);
@@ -133,8 +157,13 @@ async function fetchProjectsFromDB(): Promise<ProjectSeoItem[]> {
       const lastmod = tryDate(r.updated_at) || tryDate(r.created_at) || TODAY;
       return { path: r.slug || r.id, lastmod };
     }).filter(p => Boolean(p.path));
+
+    const projMap = new Map<string, ProjectSeoItem>();
+    fallbackProjects.forEach(p => projMap.set(p.path, p));
+    dbProjects.forEach(p => projMap.set(p.path, p));
+    return Array.from(projMap.values());
   } catch (error) {
-    return PROJECT_IDS.map(id => ({ path: id, lastmod: TODAY }));
+    return fallbackProjects;
   }
 }
 

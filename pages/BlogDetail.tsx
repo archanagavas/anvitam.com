@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
+import { INITIAL_BLOGS } from '../constants';
 import { ArrowRight, Calendar, Link as LinkIcon, Tag, Linkedin, Instagram, Facebook } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { formatCMSContent } from '../utils/cmsFormatter';
@@ -67,9 +68,15 @@ const BlogDetail: React.FC = () => {
     window.scrollTo(0, 0);
   }, [id]);
 
-  // Match by id OR slug
-  const blogIndex = blogs.findIndex(b => b.id === id || b.slug === id);
-  const blog = blogs[blogIndex];
+  // Match by id OR slug, with immediate fallback to INITIAL_BLOGS
+  let blogIndex = blogs.findIndex(b => b.id === id || b.slug === id);
+  let blog = blogs[blogIndex];
+  if (!blog) {
+    const initBlog = INITIAL_BLOGS.find(b => b.id === id || b.slug === id);
+    if (initBlog) {
+      blog = initBlog;
+    }
+  }
 
   if (!isInitialSyncDone && !blog) {
     return (
@@ -98,6 +105,7 @@ const BlogDetail: React.FC = () => {
           <title>Article | Anvitam Sustainable Architecture</title>
           <meta name="description" content="Read articles and insights on sustainable architecture by Anvitam." />
           <meta name="robots" content="index, follow" />
+          <link rel="canonical" href={`https://www.anvitam.com/blog/${id}`} />
         </Helmet>
         <p className="text-xl font-medium mb-6">Article not found.</p>
         <Link to="/blog" className="text-sm font-semibold uppercase tracking-wider underline">Back to Journal</Link>
@@ -105,14 +113,19 @@ const BlogDetail: React.FC = () => {
     );
   }
 
-  // Guard drafts — redirect public readers
-  if (blog.status === 'draft') {
+  // Check if this post is a verified published initial blog
+  const isHardcodedLive = INITIAL_BLOGS.some(b => b.id === blog.id || b.slug === blog.slug || b.slug === id);
+  const isEffectivePublished = blog.status !== 'draft' || isHardcodedLive;
+
+  // Guard drafts — only redirect unauthenticated users for genuine non-published drafts
+  if (!isEffectivePublished) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white text-[#111]">
         <Helmet>
           <title>Draft | Anvitam</title>
           <meta name="description" content="This post is not yet published." />
           <meta name="robots" content="noindex, nofollow" />
+          <link rel="canonical" href={`https://www.anvitam.com/blog/${blog.slug || blog.id || id}`} />
         </Helmet>
         <span className="text-xs font-bold bg-amber-100 text-amber-700 px-3 py-1 rounded-full mb-4 uppercase tracking-wider">Draft</span>
         <p className="text-xl font-medium mb-6">This post is not yet published.</p>

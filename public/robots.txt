@@ -5,6 +5,9 @@ User-agent: Googlebot
 Allow: /
 Disallow: /admin
 Disallow: /api/
+Disallow: /*?tool=*
+Disallow: /*?module=*
+Disallow: /*?ref=*
 Crawl-delay: 2
 
 # Google AI Training
@@ -82,6 +85,9 @@ User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /api/
+Disallow: /*?tool=*
+Disallow: /*?module=*
+Disallow: /*?ref=*
 Crawl-delay: 5
 
 # ─── Sitemap ──────────────────────────────────────────────────────────────────

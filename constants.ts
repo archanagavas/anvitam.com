@@ -1202,10 +1202,290 @@ export const INITIAL_PROJECTS: Project[] = [
       { label: 'Typology', value: 'Terrace Garden' },
       { label: 'Materials', value: 'Upcycled Waste' }
     ]
+  },
+  {
+    id: 'kamba-agrotourism-vardhaman-royal-organic-agri-farm',
+    slug: 'kamba-agrotourism-vardhaman-royal-organic-agri-farm',
+    title: 'Kamba Agrotourism & Vardhaman Royal Agri Farm',
+    category: 'Hospitality',
+    location: 'Gujarat, India',
+    year: '2024',
+    image: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=80&w=1200&auto=format&fit=crop',
+    description: 'A 45-acre regenerative agrotourism masterplan integrating organic farming, guest eco-villas, and water harvesting.',
+    fullDescription: 'Comprehensive ecological masterplanning for a 45-acre agrotourism destination. Features include passive contour swales, multi-species food forest zones, zero-waste visitor cottages, and farm-to-table experiential tourism infrastructure.',
+    isFeatured: true,
+    specs: [
+      { label: 'Area', value: '45 Acres' },
+      { label: 'Focus', value: 'Agrotourism & Organic Agroforestry' },
+      { label: 'Location', value: 'Gujarat, India' }
+    ]
+  },
+  {
+    id: 'kusum-vilas-palace-heritage-destination-development',
+    slug: 'kusum-vilas-palace-heritage-destination-development',
+    title: 'Kusum Vilas Palace Heritage Destination',
+    category: 'Heritage',
+    location: 'Chhota Udepur, Gujarat',
+    year: '2024',
+    image: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=1200&auto=format&fit=crop',
+    description: 'Adaptive reuse and ecological landscape masterplanning for the historic Kusum Vilas Palace grounds.',
+    fullDescription: 'Sensitive heritage restoration and landscape masterplanning transforming historic royal palace grounds into a sustainable cultural destination, incorporating traditional lime mortars, indigenous garden revival, and eco-hospitality zones.',
+    isFeatured: true,
+    specs: [
+      { label: 'Typology', value: 'Heritage Adaptive Reuse & Masterplan' },
+      { label: 'Location', value: 'Chhota Udepur, Gujarat' },
+      { label: 'Techniques', value: 'Heritage Lime Plasters, Vernacular Restoration' }
+    ]
+  },
+  {
+    id: 'ramgarh-nainital-interior-project-shiloh-experiences-hotel',
+    slug: 'ramgarh-nainital-interior-project-shiloh-experiences-hotel',
+    title: 'Ramgarh Nainital Boutique Retreat (Shiloh Experiences)',
+    category: 'Hospitality',
+    location: 'Ramgarh, Nainital, Uttarakhand',
+    year: '2024',
+    image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1200&auto=format&fit=crop',
+    description: 'Biophilic interior architecture and Himalayan stone styling for a luxury boutique mountain hotel.',
+    fullDescription: 'Interior architecture and spatial styling for Shiloh Experiences in Ramgarh, Nainital. Built with local slate stone, pinewood joinery, and passive solar sunspaces designed to maximize valley views and thermal retention.',
+    isFeatured: false,
+    specs: [
+      { label: 'Typology', value: 'Boutique Mountain Hotel' },
+      { label: 'Location', value: 'Ramgarh, Nainital' },
+      { label: 'Materials', value: 'Local Slate Stone & Reclaimed Pine' }
+    ]
+  },
+  {
+    id: 'terrace-garden-vadodara-organic-balcony-garden',
+    slug: 'terrace-garden-vadodara-organic-balcony-garden',
+    title: 'Terrace Garden Vadodara Organic Balcony Sanctuary',
+    category: 'Residential',
+    location: 'Vadodara, Gujarat',
+    year: '2023',
+    image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=1200&auto=format&fit=crop',
+    description: 'Lightweight urban rooftop edible garden and microclimate cooling sanctuary.',
+    fullDescription: 'Custom rooftop garden installation in central Vadodara utilizing lightweight cocopeat-biochar substrate, drip irrigation, and native pollinator flora to drop upper-floor temperatures by 4°C naturally.',
+    isFeatured: false,
+    specs: [
+      { label: 'Type', value: 'Urban Rooftop Food & Herb Sanctuary' },
+      { label: 'Location', value: 'Vadodara, Gujarat' }
+    ]
+  },
+  {
+    id: 'tattoo-studio-interior-design',
+    slug: 'tattoo-studio-interior-design',
+    title: 'Minimalist Tattoo Studio & Creative Lounge',
+    category: 'Commercial',
+    location: 'Vadodara, Gujarat',
+    year: '2023',
+    image: 'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?q=80&w=1200&auto=format&fit=crop',
+    description: 'Industrial-biophilic interior design optimizing hygienic spatial layout and warm organic lighting.',
+    fullDescription: 'A commercial interior redesign converting a compact retail unit into a moody, welcoming creative studio featuring micro-cement finishes, indoor green accents, and bespoke ergonomic workstations.',
+    isFeatured: false,
+    specs: [
+      { label: 'Typology', value: 'Commercial Interior & Studio' },
+      { label: 'Location', value: 'Vadodara, Gujarat' }
+    ]
+  },
+  {
+    id: 'mahavir-ice-cream-commercial-interior-redesign-space-optimization',
+    slug: 'mahavir-ice-cream-commercial-interior-redesign-space-optimization',
+    title: 'Mahavir Ice Cream Space Optimization & Commercial Redesign',
+    category: 'Commercial',
+    location: 'Nadiad, Gujarat',
+    year: '2023',
+    image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=1200&auto=format&fit=crop',
+    description: 'High-efficiency customer flow and commercial interior redesign for an iconic local dessert brand.',
+    fullDescription: 'Complete spatial overhaul increasing seating capacity by 35% while streamlining customer queuing, refrigerated display cases, and warm timber-textured ceiling elements.',
+    isFeatured: false,
+    specs: [
+      { label: 'Typology', value: 'Commercial Food & Retail' },
+      { label: 'Location', value: 'Nadiad, Gujarat' }
+    ]
+  },
+  {
+    id: 'odiyar-farm-and-homestay-permaculture',
+    slug: 'odiyar-farm-and-homestay-permaculture',
+    title: 'Odiyar Farm & Homestay Permaculture Masterplan',
+    category: 'Hospitality',
+    location: 'Gujarat, India',
+    year: '2024',
+    image: 'https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=1200&auto=format&fit=crop',
+    description: 'Eco-homestay masterplan integrating syntropic food forests, guest cottages, and natural ponds.',
+    fullDescription: 'Regenerative farm stay masterplan combining private host residence, 4 guest eco-cottages, decentralized greywater reedbeds, and an edible agroforestry orchard.',
+    isFeatured: false,
+    specs: [
+      { label: 'Typology', value: 'Farm Stay & Permaculture Masterplan' },
+      { label: 'Location', value: 'Gujarat, India' }
+    ]
   }
 ];
 
-export const INITIAL_BLOGS: BlogPost[] = [];
+export const INITIAL_BLOGS: BlogPost[] = [
+  {
+    id: 'b-rainwater-harvesting',
+    slug: 'why-rainwater-harvesting-systems-worked-better-than-modern-systems',
+    title: 'Why Traditional Rainwater Harvesting Systems Worked Better Than Modern Systems',
+    date: 'August 14, 2024',
+    author: 'Archana Gavas',
+    status: 'published',
+    excerpt: 'Ancient Indian stepwells, kunds, and tankas captured 100% of monsoon precipitation with zero electricity. Here is the engineering science of passive hydrology.',
+    content: `<h2>The Genius of Ancient Indian Water Engineering</h2><p>Long before electric borewell pumps drained underground aquifers across Gujarat and Rajasthan, traditional Indian communities developed architectural water systems that lasted for centuries. In arid regions with only 300 to 500 mm of annual rainfall, settlements thrived because every single drop was captured at the exact point of contact.</p><h3>Vavs, Kunds, and Tankas: Passive Gravity Systems</h3><p>Traditional rainwater harvesting worked because it operated entirely by gravity and geological filtration. Below-ground tankas built into traditional courtyard houses in Vadodara and Ahmedabad stored tens of thousands of liters of lime-purified drinking water that remained cool through scorching 45°C summers.</p><h3>Why Modern Stormwater Systems Fail</h3><p>Modern municipal storm drains treat rainwater as a nuisance waste product to be flushed into rivers as fast as possible through concrete conduits. This causes urban flash floods followed immediately by groundwater depletion. At Anvitam, we integrate ancient swale and tanka design principles into modern farm retreats and residences.</p>`,
+    image: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=1200&auto=format&fit=crop',
+    tags: ['Water Harvesting', 'Permaculture', 'Hydrology', 'Ancient Architecture'],
+    faqs: [
+      { question: 'What is a traditional tanka?', answer: 'A tanka is an underground rainwater cistern lined with natural hydraulic lime plaster, traditionally built underneath central courtyards to store pure rainwater for drinking.' },
+      { question: 'Can modern farmhouses integrate passive water harvesting?', answer: 'Yes, by combining rooftop diverters with bioswales and groundwater recharge ponds, a farmhouse can capture 100% of monsoon runoff without electric pumps.' }
+    ]
+  },
+  {
+    id: 'b-cement-walls',
+    slug: 'why-cement-walls-are-quietly-making-buildings-hotter-costlier-and-unhealthier',
+    title: 'Why Cement Walls Are Quietly Making Buildings Hotter, Costlier, and Unhealthier',
+    date: 'August 15, 2024',
+    author: 'Archana Gavas',
+    status: 'published',
+    excerpt: 'RCC and cement plasters trap heat, off-gas trapped moisture, and force massive AC electric bills. The thermal science behind breathable lime and rammed earth walls.',
+    content: `<h2>The Heat Trap of Portland Cement</h2><p>Modern building construction in India has become synonymous with Portland cement and concrete blocks. Yet in hot-dry and composite climate zones like Gujarat, cement acts like a giant thermal battery that absorbs high solar radiation during the day and radiates it into living bedrooms throughout the night.</p><h3>The Myth of Low Maintenance</h3><p>While marketed as permanent and maintenance-free, cement plaster is rigid and brittle. It develops microcracks that suck in moisture, trap it against structural steel, and cause damp patches and black mold that trigger respiratory ailments in occupants.</p><h3>The Breathable Alternative: Lime and Earth</h3><p>Unlike cement, slaked lime plasters and stabilized earth blocks are vapor-permeable. They absorb ambient indoor humidity when moisture levels rise and release it when the air dries out, acting as a natural evaporative cooling system.</p>`,
+    image: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=1200&auto=format&fit=crop',
+    tags: ['Natural Building', 'Thermal Comfort', 'Lime Plaster', 'Sustainable Architecture'],
+    faqs: [
+      { question: 'Why do cement buildings stay hotter at night?', answer: 'Portland cement has high thermal conductivity and high thermal mass without breathability. It stores heat throughout daytime sun exposure and slowly re-radiates it indoors after dark.' },
+      { question: 'How does lime plaster prevent wall dampness?', answer: 'Lime plaster allows microscopic water vapor molecules to breathe through the wall fabric while blocking bulk liquid water, preventing moisture from trapping inside.' }
+    ]
+  },
+  {
+    id: 'b-natural-materials',
+    slug: 'natural-building-materials-modern-engineering',
+    title: 'Natural Building Materials in Modern Engineering: Mud, Lime, and Bamboo',
+    date: 'August 14, 2024',
+    author: 'Archana Gavas',
+    status: 'published',
+    excerpt: 'How natural building materials outperform industrial concrete in seismic flexibility, thermal comfort, and carbon reduction when engineered with modern precision.',
+    content: `<h2>Reviving Vernacular Craft with Modern Physics</h2><p>Natural building is not about returning to primitive living; it is about applying modern structural engineering to time-tested, carbon-neutral materials. Mud, slaked lime, stone, and treated bamboo offer structural performance and biophilic beauty that mass-produced synthetic materials cannot match.</p><h3>Engineered Bamboo: The Green Steel</h3><p>Treated bamboo has a tensile strength comparable to mild steel and a strength-to-weight ratio superior to reinforced concrete. When designed with proper joinery and protected from direct ground contact, bamboo structures endure for decades while absorbing carbon from the atmosphere.</p>`,
+    image: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=80&w=1200&auto=format&fit=crop',
+    tags: ['Natural Materials', 'Bamboo Architecture', 'Eco Engineering', 'Sustainability']
+  },
+  {
+    id: 'b-traditional-tiles',
+    slug: 'traditional-indian-tiles-guide',
+    title: 'Traditional Indian Tiles: Types, Cost, and Restoration Guide',
+    date: 'August 20, 2024',
+    author: 'Archana Gavas',
+    status: 'published',
+    excerpt: 'A complete guide to Bharat floor tiles, Athangudi handmade tiles, terracotta roofing, and natural stone flooring across Indian climates.',
+    content: `<h2>The Enduring Beauty of Handcrafted Indian Floors</h2><p>Before vitrified ceramic tiles dominated the market, Indian buildings were paved with handcrafted tiles made from natural pigments, marble powder, and kiln-fired clay. These tiles are naturally cool underfoot, non-slippery, and develop a rich patina that grows more beautiful with each passing decade.</p><h3>Athangudi, Bharat, and Terracotta Tiles</h3><p>From the sun-dried patterned tiles of Chettinad to the durable cement-sand tiles of Bharat Heritage, we examine how each variety is made, cost per square foot, and proper laying techniques.</p>`,
+    image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1200&auto=format&fit=crop',
+    tags: ['Flooring', 'Traditional Tiles', 'Interior Design', 'Heritage Architecture']
+  },
+  {
+    id: 'b-red-oxide',
+    slug: 'i-stopped-recommending-red-oxide',
+    title: 'Why I Stopped Recommending Chemical Red Oxide: The Shift to Genuine Lime Plasters',
+    date: 'August 3, 2024',
+    author: 'Archana Gavas',
+    status: 'published',
+    excerpt: 'Modern chemical red oxide often cracks or fades due to synthetic binders. Why we use traditional egg-white, jaggery, and lime polished oxide floors.',
+    content: `<h2>The Reality of Modern Red Oxide Flooring</h2><p>Red oxide floors have become hugely trendy on Instagram and Pinterest. However, many clients who attempt red oxide with modern cement mixes end up with uneven blotches, surface flaking, and dull finishes within two years.</p><h3>The Lost Recipe of Traditional Polish</h3><p>Traditional oxide flooring required days of continuous troweling and curing with fermented jaggery water, neem extracts, and beeswax. Without skilled artisans who understand the chemistry of mineral pigments, modern epoxy-backed substitutes fail quickly.</p>`,
+    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1200&auto=format&fit=crop',
+    tags: ['Red Oxide', 'Flooring', 'Natural Craft', 'Material Selection']
+  },
+  {
+    id: 'b-three-layer',
+    slug: 'three-layer-planting-scheme-low-maintenance-garden',
+    title: '3-Layer Planting Scheme for Low-Maintenance Indian Gardens',
+    date: 'August 2, 2024',
+    author: 'Archana Gavas',
+    status: 'published',
+    excerpt: 'Canopy, shrub, and groundcover zoning to eliminate weed growth, preserve soil moisture, and slash watering requirements by 70%.',
+    content: `<h2>Designing Resilient, Weed-Free Gardens</h2><p>Most home gardens in India fail because they require constant weeding, synthetic fertilizers, and daily watering. By mimicking the structure of native Indian scrub forests with a three-layer planting scheme, you create a self-sustaining ecological community.</p><h3>Layer 1: The Protective Canopy</h3><p>Medium-sized native shade trees like Moringa, Curry Leaf, and Jamun create dappled shade that prevents scorching of smaller plants underneath.</p><h3>Layer 2: Productive Shrubs</h3><p>Hardy flowering and medicinal shrubs like Tulsi, Lemongrass, and Hibiscus attract pollinators and repel pests naturally.</p><h3>Layer 3: Living Mulch Groundcover</h3><p>Creeping perennial groundcovers like Sweet Potato vine, Brahmi, and Mint cover every square inch of soil, preventing weeds from sprouting and conserving 70% of irrigation water.</p>`,
+    image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=1200&auto=format&fit=crop',
+    tags: ['Garden Design', 'Permaculture', 'Native Plants', 'Landscape Planning']
+  },
+  {
+    id: 'b-food-forest',
+    slug: 'how-to-design-a-food-forest-using-syntropic-agroforestry-step-by-step-guide',
+    title: 'How to Design a Food Forest Using Syntropic Agroforestry: Step-by-Step Guide',
+    date: 'July 28, 2024',
+    author: 'Archana Gavas',
+    status: 'published',
+    excerpt: 'Replicate natural forest succession to grow high-density organic fruit, timber, and medicinal herbs with minimal external inputs.',
+    content: `<h2>What is Syntropic Agroforestry?</h2><p>Pioneered by Ernst Götsch, syntropic farming accelerates natural plant succession to produce abundance while regenerating degraded soil. Instead of fighting pests and clearing trees, syntropic agriculture stacks plants of varying life spans and light requirements in dense polycultures.</p><h3>Step-by-Step Food Forest Masterplan</h3><p>From initial biomass pioneer planting (banana, castor, glyricidia) to fruit climax trees (mango, sapota, jackfruit), learn how to lay out productive syntropic tree lines on your land.</p>`,
+    image: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=80&w=1200&auto=format&fit=crop',
+    tags: ['Food Forest', 'Syntropic Agroforestry', 'Permaculture', 'Organic Farming']
+  },
+  {
+    id: 'b-centuryply',
+    slug: 'why-i-stopped-buying-centuryply-greenply-doors',
+    title: 'Why I Stopped Buying CenturyPly & Greenply Doors for Sustainable Homes',
+    date: 'August 29, 2024',
+    author: 'Archana Gavas',
+    status: 'published',
+    excerpt: 'Plywood doors off-gas formaldehyde and rot in humidity. Why reclaimed teak, seasoned country wood, and framed bamboo outlast commercial ply.',
+    content: `<h2>The Hidden Chemicals in Flush Doors</h2><p>Commercial flush doors and plywood rely heavily on urea-formaldehyde and phenol-formaldehyde resins. In tropical climates, these resins continuously off-gas VOCs into closed bedrooms, degrading indoor air quality.</p><h3>Reclaimed Wood and Solid Joinery</h3><p>Instead of disposable factory flush doors, sustainable architectural projects utilize reclaimed teak from old dismantled houses, seasoned country timber, or framed bamboo shutters that last for generations without toxic glues.</p>`,
+    image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=1200&auto=format&fit=crop',
+    tags: ['Building Materials', 'Doors', 'Wood Joinery', 'Healthy Homes']
+  },
+  {
+    id: 'b-bamboo-vs-brick',
+    slug: 'bamboo-cottages-vs-brick-eco-cottages-what-actually-costs-less-over-15-years',
+    title: 'Bamboo Cottages vs Brick Eco-Cottages: What Actually Costs Less Over 15 Years?',
+    date: 'September 5, 2024',
+    author: 'Archana Gavas',
+    status: 'published',
+    excerpt: 'A real-world lifecycle cost comparison of treated bamboo versus brick cottages for farm stays, eco-resorts, and weekend retreats.',
+    content: `<h2>The Economics of Eco-Retreat Construction</h2><p>Farm stay developers often assume bamboo cottages are dramatically cheaper than brick cottages. While initial construction of bamboo can be 25% lower, long-term maintenance, roof thatch replacement, and insect protection affect total cost of ownership over a 15-year lifecycle.</p><h3>Comparing Capital vs Operating Expenses</h3><p>We analyze real financial data from our hospitality projects across Gujarat and Kerala to help landowners choose the optimal building typology for their budget and target guest demographic.</p>`,
+    image: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=1200&auto=format&fit=crop',
+    tags: ['Cost Analysis', 'Bamboo Cottages', 'Eco Resort', 'Hospitality Architecture']
+  },
+  {
+    id: 'b-homestay-pricing',
+    slug: 'the-homestay-pricing-guide-nobodys-telling-you',
+    title: 'The Homestay Pricing Guide Nobody\'s Telling You: RevPAR, Seasonality & Profit',
+    date: 'August 14, 2024',
+    author: 'Archana Gavas',
+    status: 'published',
+    excerpt: 'How to price your eco-homestay or farm retreat for maximum occupancy without cannibalizing profit margins. A guide for property owners.',
+    content: `<h2>Why Most Farm Stays Underprice Their Experience</h2><p>Most first-time homestay hosts price their rooms by looking at nearby budget hotels on MakeMyTrip or Airbnb. This is a fatal mistake. A sustainable farm retreat offers an experience—quietude, organic food, clean air, and nature trails—that commands premium pricing when positioned properly.</p><h3>The RevPAR Equation for Boutique Sanctuaries</h3><p>Learn how to calculate your break-even guest numbers, factor in seasonal monsoon dips, and structure package pricing around architectural tours and workshops.</p>`,
+    image: 'https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=1200&auto=format&fit=crop',
+    tags: ['Homestay Pricing', 'Airbnb Revenue', 'Farm Stays', 'Business Strategy']
+  },
+  {
+    id: 'b-earthquake-design',
+    slug: 'indias-forgotten-earthquake-resistant-house-design',
+    title: 'India\'s Forgotten Earthquake-Resistant House Design: Dhajji Dewari & Koti Banal',
+    date: 'August 14, 2024',
+    author: 'Archana Gavas',
+    status: 'published',
+    excerpt: 'Centuries before RCC seismic codes, vernacular Himalayan and Gujarati architecture survived massive earthquakes through flexible timber joinery.',
+    content: `<h2>The Wisdom of Flexible Timber Architecture</h2><p>In seismic zones across the Himalayas and Western India, traditional builders knew that rigid brittle structures shatter under seismic waves. Traditional building styles like Dhajji Dewari in Kashmir, Koti Banal in Uttarakhand, and Bhunga houses in Kutch used timber framing and lightweight stone infill to dissipate earthquake energy.</p><h3>Why Rigid Concrete Collapses</h3><p>We analyze the structural dynamics of vernacular timber joinery and demonstrate how modern eco-architecture adapts these principles for high-resilience residences.</p>`,
+    image: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=1200&auto=format&fit=crop',
+    tags: ['Earthquake Resistance', 'Vernacular Architecture', 'Seismic Design', 'Structural Engineering']
+  },
+  {
+    id: 'b-soil-degradation',
+    slug: 'soil-degradation-is-killing-indian-farms-and-how-permaculture-actually-fixes-it',
+    title: 'Soil Degradation Is Killing Indian Farms — And How Permaculture Actually Fixes It',
+    date: 'August 14, 2024',
+    author: 'Archana Gavas',
+    status: 'published',
+    excerpt: 'Chemical monoculture has stripped organic carbon from Indian topsoil. How syntropic succession, cover cropping, and bioswales regenerate farmland in 24 months.',
+    content: `<h2>The Crisis of Depleted Agricultural Topsoil</h2><p>Over 30% of India\'s agricultural land is currently undergoing severe degradation. Decades of heavy synthetic NPK fertilizers, flood irrigation, and deep mechanized plowing have killed mycorrhizal fungal networks and depleted organic carbon to under 0.3%.</p><h3>The 24-Month Biological Soil Reset</h3><p>By stopping chemical applications, introducing high-biomass cover crops, establishing contour bioswales to eliminate erosion, and planting multi-tiered syntropic food forests, soil organic matter can be rebuilt rapidly without commercial chemicals.</p>`,
+    image: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=80&w=1200&auto=format&fit=crop',
+    tags: ['Soil Regeneration', 'Permaculture', 'Soil Health', 'Regenerative Farming']
+  },
+  {
+    id: 'b-terrace-mistakes',
+    slug: 'the-biggest-mistakes-indians-make-when-starting-a-terrace-garden',
+    title: 'The Biggest Mistakes Indians Make When Starting a Terrace Garden',
+    date: 'July 25, 2024',
+    author: 'Archana Gavas',
+    status: 'published',
+    excerpt: 'Structural load calculations, waterproofing failures, and soil weight traps that destroy rooftops — and how to design a lightweight bio-sanctuary.',
+    content: `<h2>The Structural Pitfalls of Rooftop Gardens</h2><p>Urban terrace gardens are one of the most rewarding additions to an Indian home, but when installed without architectural foresight, they frequently cause severe structural damage. Wet garden soil weighs up to 1.8 tonnes per cubic meter—far exceeding standard residential roof load allowances.</p><h3>Three Non-Negotiable Engineering Rules</h3><p>We break down structural slab load limits, root barrier membrane requirements, and why high-porosity lightweight growth mediums must replace heavy garden mud.</p>`,
+    image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=1200&auto=format&fit=crop',
+    tags: ['Terrace Garden', 'Rooftop Design', 'Structural Engineering', 'Urban Permaculture']
+  }
+];
 
 export const TEAM_MEMBERS: TeamMember[] = [
   {

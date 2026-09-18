@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
+import { INITIAL_PROJECTS } from '../constants';
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, HelpCircle, FileText } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import FlowButton from '../components/ui/flow-button';
@@ -42,9 +43,37 @@ const ProjectDetail: React.FC = () => {
     setOpenFaq(null);
   }, [id]);
 
-  // Find project by slug or ID
-  const projectIndex = projects.findIndex(p => p.id === id || p.slug === id);
-  const project = projects[projectIndex];
+  // Project aliases for historical and legacy URLs
+  const projectAliases: Record<string, string> = {
+    'vanvagado-food-forest-design': 'vanvagado-farm',
+    'vanvagado': 'vanvagado-farm',
+    'vanvagado-farm-eco-forest-retreat': 'vanvagado-farm',
+    'shalimar-terrace-garden-design': 'shalimar',
+    'unique-school-of-science-nadiad': 'unique-school',
+    'unique-school-of-science': 'unique-school',
+    'terrace-garden-vadodara-organic-balcony-garden': 'terrace-garden-vadodara-organic-balcony-garden',
+    'terrace-garden-vadodara': 'terrace-garden-vadodara-organic-balcony-garden',
+    'kusum-vilas-palace': 'kusum-vilas-palace-heritage-destination-development',
+    'kusum-vilas-palace-heritage-destination-development': 'kusum-vilas-palace-heritage-destination-development',
+    'kamba-agrotourism': 'kamba-agrotourism-vardhaman-royal-organic-agri-farm',
+    'kamba-agrotourism-vardhaman-royal-organic-agri-farm': 'kamba-agrotourism-vardhaman-royal-organic-agri-farm',
+    'ramgarh-nainital': 'ramgarh-nainital-interior-project-shiloh-experiences-hotel',
+    'ramgarh-nainital-interior-project-shiloh-experiences-hotel': 'ramgarh-nainital-interior-project-shiloh-experiences-hotel',
+    'tattoo-studio-interior-design': 'tattoo-studio-interior-design',
+    'mahavir-ice-cream-commercial-interior-redesign-space-optimization': 'mahavir-ice-cream-commercial-interior-redesign-space-optimization',
+    'odiyar-farm-and-homestay-permaculture': 'odiyar-farm-and-homestay-permaculture',
+  };
+  const targetId = (id && projectAliases[id]) || id;
+
+  // Find project by slug or ID, falling back to INITIAL_PROJECTS
+  let projectIndex = projects.findIndex(p => p.id === targetId || p.slug === targetId || p.id === id || p.slug === id);
+  let project = projects[projectIndex];
+  if (!project) {
+    const initProj = INITIAL_PROJECTS.find(p => p.id === targetId || p.slug === targetId || p.id === id || p.slug === id);
+    if (initProj) {
+      project = initProj;
+    }
+  }
 
   if (!isInitialSyncDone && !project) {
     return (
@@ -73,6 +102,7 @@ const ProjectDetail: React.FC = () => {
           <title>Project | Anvitam Sustainable Architecture</title>
           <meta name="description" content="Explore sustainable architecture projects by Anvitam." />
           <meta name="robots" content="index, follow" />
+          <link rel="canonical" href={`https://www.anvitam.com/projects/${id}`} />
         </Helmet>
         <p className="text-xl mb-6">Project not found.</p>
         <Link to="/projects" className="text-sm font-semibold uppercase tracking-wider underline">Back to Projects</Link>

@@ -4,9 +4,52 @@
   "outputDirectory": "dist",
   "functions": {
     "api/*.ts": {
-      "includeFiles": "tools/**"
+      "includeFiles": "{tools/**,dist/index.html,index.html}"
     }
   },
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "anvitam.com"
+        }
+      ],
+      "destination": "https://www.anvitam.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/projects/vanvagado-food-forest-design",
+      "destination": "https://www.anvitam.com/projects/vanvagado-farm",
+      "permanent": true
+    },
+    {
+      "source": "/projects/shalimar-terrace-garden-design",
+      "destination": "https://www.anvitam.com/projects/shalimar",
+      "permanent": true
+    },
+    {
+      "source": "/projects/unique-school-of-science-nadiad",
+      "destination": "https://www.anvitam.com/projects/unique-school",
+      "permanent": true
+    },
+    {
+      "source": "/projects/terrace-garden-vadodara-organic-balcony-garden",
+      "destination": "https://www.anvitam.com/projects/shalimar",
+      "permanent": true
+    },
+    {
+      "source": "/services/agroforestry",
+      "destination": "https://www.anvitam.com/services/permaculture-design",
+      "permanent": true
+    },
+    {
+      "source": "/services/architecture-design-consultation-report",
+      "destination": "https://www.anvitam.com/services/architecture-consultation",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/seo?action=sitemap" },
     { "source": "/rss.xml", "destination": "/api/seo?action=rss" },
@@ -54,6 +97,26 @@
 
     { "source": "/api/ai-design/:splat*", "destination": "/api/ai-design?action=:splat*" },
     { "source": "/api/ai-design", "destination": "/api/ai-design" },
+
+    { "source": "/", "destination": "/api/ssr-seo?path=/" },
+    { "source": "/blog/:splat*", "destination": "/api/ssr-seo?path=/blog/:splat*" },
+    { "source": "/blog", "destination": "/api/ssr-seo?path=/blog" },
+    { "source": "/projects/:splat*", "destination": "/api/ssr-seo?path=/projects/:splat*" },
+    { "source": "/projects", "destination": "/api/ssr-seo?path=/projects" },
+    { "source": "/services/:splat*", "destination": "/api/ssr-seo?path=/services/:splat*" },
+    { "source": "/services", "destination": "/api/ssr-seo?path=/services" },
+    { "source": "/workshops/:splat*", "destination": "/api/ssr-seo?path=/workshops/:splat*" },
+    { "source": "/workshops", "destination": "/api/ssr-seo?path=/workshops" },
+    { "source": "/seo/:splat*", "destination": "/api/ssr-seo?path=/seo/:splat*" },
+    { "source": "/why", "destination": "/api/ssr-seo?path=/why" },
+    { "source": "/about", "destination": "/api/ssr-seo?path=/about" },
+    { "source": "/contact", "destination": "/api/ssr-seo?path=/contact" },
+    { "source": "/team", "destination": "/api/ssr-seo?path=/team" },
+    { "source": "/shop", "destination": "/api/ssr-seo?path=/shop" },
+    { "source": "/process/:splat*", "destination": "/api/ssr-seo?path=/process/:splat*" },
+    { "source": "/process", "destination": "/api/ssr-seo?path=/process" },
+    { "source": "/privacy", "destination": "/api/ssr-seo?path=/privacy" },
+    { "source": "/terms", "destination": "/api/ssr-seo?path=/terms" },
 
     { "source": "/((?!api/|assets/|.*\\..*).*)", "destination": "/index.html" }
   ]
