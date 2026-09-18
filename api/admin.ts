@@ -314,8 +314,6 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       lcp: '1.1s',
       cls: '0.01',
       fcp: '0.7s',
-      directoryStats: { total: 600, submitted: 2, queued: 598, avgDa: 64 },
-      outreachStats: { total: 10, sent: 3, queued: 6, replied: 1 },
       cmoScore: 94
     });
   }
@@ -422,9 +420,19 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
                   html: `<p>Dear ${lead.name},</p><p>We are following up on ecological design for ${lead.company}. Concept: ${lead.pitch_angle}</p><p>Best,<br>Ar. Archana Gavas</p>`
                 })
               });
-              lead.status = 'sent';
-              lead.sent_date = new Date().toISOString().split('T')[0];
-              lead.response_status = resend.ok ? 'Sent via Resend' : 'Send attempted';
+              const resendData = await resend.json().catch(() => ({}));
+              if (resend.ok) {
+                lead.status = 'sent';
+                lead.sent_date = new Date().toISOString().split('T')[0];
+                lead.response_status = 'Delivered via Resend';
+              } else {
+                lead.response_status = `Failed: ${resendData.message || 'Resend Free sandbox only delivers to owner (ar.archanagavas@gmail.com). Use Open in Gmail for 100% direct inbox delivery.'}`;
+                fs.writeFileSync(filePath, JSON.stringify(leads, null, 2), 'utf8');
+                return res.status(400).json({
+                  error: `Resend sandbox restriction: Free test API can only send to your own registered email. Please use the "Open in Gmail" button to dispatch directly from your personal inbox with 100% deliverability!`,
+                  lead
+                });
+              }
             }
             fs.writeFileSync(filePath, JSON.stringify(leads, null, 2), 'utf8');
             return res.status(200).json({ success: true, lead });

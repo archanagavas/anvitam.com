@@ -1448,6 +1448,8 @@ const Admin: React.FC = () => {
   const [loadingDirectories, setLoadingDirectories] = useState(false);
   const [directorySearch, setDirectorySearch] = useState('');
   const [directoryFilter, setDirectoryFilter] = useState<'all' | 'queued' | 'submitted' | 'dofollow'>('all');
+  const [directoryPage, setDirectoryPage] = useState(1);
+  const [directoryPageSize, setDirectoryPageSize] = useState<number | 'all'>(50);
 
   const fetchDirectories = React.useCallback(async () => {
     const token = getAuthToken();
@@ -1523,10 +1525,14 @@ const Admin: React.FC = () => {
     }
   }, []);
 
-  const triggerLeadOutreach = async (id: string, sendEmail = false) => {
-    // Optimistic UI update
-    setOutreachLeads(prev => prev.map(l => l.id === id ? { ...l, status: 'sent', sent_date: new Date().toISOString().split('T')[0] } : l));
-    showToast(sendEmail ? 'Dispatched pitch! Check email logs.' : 'Lead marked as sent');
+  const toggleLeadStatus = async (id: string) => {
+    const lead = outreachLeads.find(l => l.id === id);
+    if (!lead) return;
+    const nextStatus = lead.status === 'draft' || lead.status === 'queued' ? 'sent' : lead.status === 'sent' ? 'replied' : 'draft';
+    const nextSentDate = nextStatus === 'sent' ? new Date().toISOString().split('T')[0] : (nextStatus === 'replied' ? (lead.sent_date || new Date().toISOString().split('T')[0]) : null);
+
+    setOutreachLeads(prev => prev.map(l => l.id === id ? { ...l, status: nextStatus, sent_date: nextSentDate } : l));
+    showToast(`Lead status updated to ${nextStatus.toUpperCase()}`);
 
     const token = getAuthToken();
     if (!token) return;
@@ -1534,7 +1540,7 @@ const Admin: React.FC = () => {
       await fetch('/api/admin?action=outreach', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ id, sendEmail, status: 'sent' })
+        body: JSON.stringify({ id, status: nextStatus })
       });
     } catch (err) {
       console.warn('Failed to sync lead status with server');
@@ -2350,6 +2356,27 @@ const Admin: React.FC = () => {
     if (directoryFilter === 'dofollow') return !!t.dofollow;
     return true;
   });
+
+  const totalDirectoryPages = directoryPageSize === 'all' ? 1 : Math.max(1, Math.ceil(filteredDirectories.length / directoryPageSize));
+  const paginatedDirectories = directoryPageSize === 'all' 
+    ? filteredDirectories 
+    : filteredDirectories.slice((directoryPage - 1) * directoryPageSize, directoryPage * directoryPageSize);
+
+  const getTailoredPitch = (t: any) => {
+    if (t.generatedPitch && t.generatedPitch.length > 25) return t.generatedPitch;
+    const nameLower = (t.name || '').toLowerCase();
+    const typeLower = (t.type || '').toLowerCase();
+    if (t.submissionMethod === 'manual' || nameLower.includes('github') || typeLower.includes('developer')) {
+      return `Open-source bioclimatic site analysis algorithms and solar shadow simulation models for sustainable architecture in tropical climates: https://github.com/archanagavas/anvitam.com`;
+    }
+    if (nameLower.includes('reddit') || typeLower.includes('social') || typeLower.includes('community')) {
+      return `We built 16+ free calculators for estimating solar cooling, swale hydrology, and food forest layers in Indian conditions: https://www.anvitam.com/tools`;
+    }
+    if (typeLower.includes('review') || nameLower.includes('trustpilot') || nameLower.includes('yelp')) {
+      return `Anvitam is an architecture and ecological design studio founded by Ar. Archana Gavas in Vadodara, specializing in luxury farm retreats, permaculture homestays, and sustainable residential architecture. https://www.anvitam.com`;
+    }
+    return `Anvitam | Boutique Sustainable Architecture & Permaculture Design Studio. Zero-cost ecological site intelligence calculators for bioclimatic retreats, food forests, and passive homes. URL: https://www.anvitam.com`;
+  };
 
   const filteredOutreach = outreachLeads.filter(l => {
     if (outreachFilter === 'queued') return l.status === 'queued';
@@ -4728,7 +4755,7 @@ const Admin: React.FC = () => {
                 </button>
                 <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  GitHub Action Active (06:00 UTC)
+                  Manual & Direct Drip Queue Active
                 </span>
               </div>
             </div>
@@ -4737,72 +4764,114 @@ const Admin: React.FC = () => {
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
               <div className="bg-white p-4 rounded-2xl border border-gray-200/80 shadow-xs">
                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Total In Queue</p>
-                <p className="text-2xl font-black text-gray-900 mt-1">{directoryStats?.total || directoryTargets.length || 600}</p>
-                <p className="text-[10px] text-gray-500 mt-0.5">Curated free directories</p>
+                <p className="text-2xl font-black text-gray-900 mt-1">{directoryStats?.total ?? directoryTargets.length}</p>
+                <p className="text-[10px] text-gray-500 mt-0.5">Curated platforms & directories</p>
               </div>
               <div className="bg-white p-4 rounded-2xl border border-emerald-200 bg-emerald-50/20 shadow-xs">
                 <p className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Submitted / Live</p>
-                <p className="text-2xl font-black text-emerald-600 mt-1">{directoryStats?.submitted || directoryTargets.filter(t => t.status === 'submitted').length || 2}</p>
-                <p className="text-[10px] text-emerald-600 mt-0.5">Active signals sent</p>
+                <p className="text-2xl font-black text-emerald-600 mt-1">{directoryStats?.submitted ?? directoryTargets.filter(t => t.status === 'submitted').length}</p>
+                <p className="text-[10px] text-emerald-600 mt-0.5">Active verified submissions</p>
               </div>
               <div className="bg-white p-4 rounded-2xl border border-amber-200 bg-amber-50/20 shadow-xs">
                 <p className="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Remaining Drip</p>
-                <p className="text-2xl font-black text-amber-600 mt-1">{directoryStats?.queued || directoryTargets.filter(t => t.status === 'queued').length || 598}</p>
-                <p className="text-[10px] text-amber-600 mt-0.5">1-3 dripped daily</p>
+                <p className="text-2xl font-black text-amber-600 mt-1">{directoryStats?.queued ?? directoryTargets.filter(t => t.status === 'queued').length}</p>
+                <p className="text-[10px] text-amber-600 mt-0.5">Queued for submission</p>
               </div>
               <div className="bg-white p-4 rounded-2xl border border-blue-200 bg-blue-50/20 shadow-xs">
                 <p className="text-[11px] font-bold text-blue-700 uppercase tracking-wider">Dofollow Links</p>
-                <p className="text-2xl font-black text-blue-600 mt-1">{directoryStats?.dofollow || directoryTargets.filter(t => t.dofollow).length || 240}</p>
-                <p className="text-[10px] text-blue-600 mt-0.5">Direct PageRank boost</p>
+                <p className="text-2xl font-black text-blue-600 mt-1">{directoryStats?.dofollow ?? directoryTargets.filter(t => t.dofollow).length}</p>
+                <p className="text-[10px] text-blue-600 mt-0.5">Direct PageRank targets</p>
               </div>
               <div className="bg-white p-4 rounded-2xl border border-purple-200 bg-purple-50/20 shadow-xs">
                 <p className="text-[11px] font-bold text-purple-700 uppercase tracking-wider">Avg Domain Authority</p>
-                <p className="text-2xl font-black text-purple-600 mt-1">{directoryStats?.avgDa || 64}</p>
-                <p className="text-[10px] text-purple-600 mt-0.5">Target: 30–50 DA</p>
+                <p className="text-2xl font-black text-purple-600 mt-1">{directoryStats?.avgDa ?? 64}</p>
+                <p className="text-[10px] text-purple-600 mt-0.5">Target: 30–96 DA</p>
               </div>
             </div>
 
-            {/* Verification Banner */}
-            <div className="bg-gradient-to-r from-emerald-900 to-slate-900 text-white p-5 rounded-2xl shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            {/* Verification & Reciprocal Badge Reality Guide */}
+            <div className="bg-gradient-to-r from-slate-900 to-indigo-950 text-white p-5 rounded-2xl shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-slate-800">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <CheckCircle size={16} className="text-[#CCFF00]" />
-                  <h3 className="text-sm font-bold">12/12 Live Homepage Reciprocal Badges Verified</h3>
+                  <Shield size={16} className="text-[#CCFF00]" />
+                  <h3 className="text-sm font-bold">Directory Submission & Verification Guide</h3>
                 </div>
                 <p className="text-xs text-gray-300 leading-relaxed max-w-2xl">
-                  Reciprocal badges (SubmitForBacklinks, EarlyHunt, Fazier, Uneed, IndieHunt, Nick Launches, etc.) are embedded directly on anvitam.com to unlock 100% free instant verification without manual review fees.
+                  <strong>High-DA Platforms</strong> (GitHub, Reddit, Trustpilot, SourceForge) never use reciprocal badges — they require authentic manual account registration or profile claims.
+                  <strong>Free Web Directories</strong> (Uneed, Betalist, LaunchingNext) allow instant submission via their web forms. No reciprocal badges are placed on anvitam.com to preserve clean luxury branding.
                 </p>
               </div>
               <div className="flex items-center gap-2 text-xs font-mono bg-black/40 px-3 py-2 rounded-xl border border-white/10 shrink-0">
-                <span className="text-[#CCFF00]">Status:</span> Crawlers Approved
+                <span className="text-[#CCFF00]">Mode:</span> High-Integrity Manual & Direct Drip
               </div>
             </div>
 
-            {/* Search & Filter Controls */}
+            {/* Search, Filter & Pagination Controls */}
             <div className="bg-white p-4 rounded-2xl border border-gray-200/80 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2 flex-1">
                 <input
                   type="text"
                   value={directorySearch}
-                  onChange={e => setDirectorySearch(e.target.value)}
+                  onChange={e => {
+                    setDirectorySearch(e.target.value);
+                    setDirectoryPage(1);
+                  }}
                   placeholder="Search directory by name, domain, category..."
                   className="w-full sm:max-w-md px-3.5 py-2 text-xs border border-gray-200 rounded-xl focus:border-black outline-none"
                 />
               </div>
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-                {(['all', 'queued', 'submitted', 'dofollow'] as const).map(f => (
-                  <button
-                    key={f}
-                    onClick={() => setDirectoryFilter(f)}
-                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition capitalize shrink-0 ${
-                      directoryFilter === f
-                        ? 'bg-black text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-1">
+                  {(['all', 'queued', 'submitted', 'dofollow'] as const).map(f => (
+                    <button
+                      key={f}
+                      onClick={() => {
+                        setDirectoryFilter(f);
+                        setDirectoryPage(1);
+                      }}
+                      className={`px-3 py-1.5 text-xs font-bold rounded-lg transition capitalize shrink-0 ${
+                        directoryFilter === f
+                          ? 'bg-black text-white'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+                <div className="h-4 w-px bg-gray-200 mx-1 hidden sm:block"></div>
+                <div className="flex items-center gap-1.5 text-xs">
+                  <select
+                    value={directoryPageSize}
+                    onChange={e => {
+                      setDirectoryPageSize(e.target.value === 'all' ? 'all' : Number(e.target.value));
+                      setDirectoryPage(1);
+                    }}
+                    className="border border-gray-200 rounded-lg px-2 py-1 bg-white text-xs font-medium"
                   >
-                    {f}
+                    <option value={25}>25 / page</option>
+                    <option value={50}>50 / page</option>
+                    <option value={100}>100 / page</option>
+                    <option value="all">All ({filteredDirectories.length})</option>
+                  </select>
+                  <span className="text-gray-400 text-[11px] font-mono whitespace-nowrap">
+                    {directoryPageSize === 'all' ? `1-${filteredDirectories.length}` : `${(directoryPage - 1) * (directoryPageSize as number) + 1}-${Math.min(directoryPage * (directoryPageSize as number), filteredDirectories.length)}`} of {filteredDirectories.length}
+                  </span>
+                  <button
+                    disabled={directoryPage <= 1 || directoryPageSize === 'all'}
+                    onClick={() => setDirectoryPage(p => Math.max(1, p - 1))}
+                    className="px-2 py-1 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 disabled:opacity-30 text-xs font-bold"
+                  >
+                    ←
                   </button>
-                ))}
+                  <button
+                    disabled={directoryPage >= totalDirectoryPages || directoryPageSize === 'all'}
+                    onClick={() => setDirectoryPage(p => Math.min(totalDirectoryPages, p + 1))}
+                    className="px-2 py-1 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 disabled:opacity-30 text-xs font-bold"
+                  >
+                    →
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -4816,86 +4885,94 @@ const Admin: React.FC = () => {
                       <th className="py-3.5 px-4">Directory Platform</th>
                       <th className="py-3.5 px-4 text-center">DA</th>
                       <th className="py-3.5 px-4">Backlink Type</th>
-                      <th className="py-3.5 px-4">Category</th>
+                      <th className="py-3.5 px-4">Submission Method</th>
                       <th className="py-3.5 px-4">Status</th>
                       <th className="py-3.5 px-4">Submitted Date</th>
                       <th className="py-3.5 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {filteredDirectories.slice(0, 100).map((t, idx) => (
-                      <tr key={t.domain || t.name + idx} className="hover:bg-slate-50/60 transition">
-                        <td className="py-3 px-4 text-gray-400 font-mono">{idx + 1}</td>
-                        <td className="py-3 px-4">
-                          <div className="font-bold text-gray-900 flex items-center gap-1.5">
-                            <span>{t.name}</span>
-                            <a
-                              href={t.url?.startsWith('http') ? t.url : `https://${t.url || ''}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-gray-400 hover:text-black"
-                            >
-                              <ExternalLink size={12} />
-                            </a>
-                          </div>
-                          <div className="text-[11px] text-gray-500 font-mono">{t.domain}</div>
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <span className={`inline-block font-black px-2 py-0.5 rounded-md text-[11px] ${
-                            (t.da || 0) >= 80 ? 'bg-emerald-100 text-emerald-800' :
-                            (t.da || 0) >= 60 ? 'bg-blue-100 text-blue-800' :
-                            'bg-gray-100 text-gray-700'
-                          }`}>
-                            {t.da || 50}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className={`inline-block font-bold px-2 py-0.5 rounded-full text-[10px] ${
-                            t.dofollow ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-gray-50 text-gray-600 border border-gray-200'
-                          }`}>
-                            {t.dofollow ? 'Dofollow' : 'Nofollow'}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-gray-600 text-[11px] max-w-[160px] truncate">
-                          {t.type || 'Tech / Sustainable Design'}
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className={`inline-flex items-center gap-1 font-bold px-2.5 py-1 rounded-full text-[10px] ${
-                            t.status === 'submitted'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-amber-50 text-amber-800 border border-amber-200'
-                          }`}>
-                            {t.status === 'submitted' ? <Check size={11} /> : <Clock size={11} />}
-                            {t.status === 'submitted' ? 'Submitted' : 'Queued (Drip)'}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-gray-500 text-[11px] font-mono">
-                          {t.submittedAt ? new Date(t.submittedAt).toLocaleDateString() : 'Pending'}
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => {
-                                const pitch = t.generatedPitch || 'Anvitam is a boutique sustainable architecture studio and ecological engineering platform founded by Ar. Archana Gavas. Featuring 16+ automated zero-cost calculators for solar cooling, micro-climate analysis, rainwater harvesting, food forests, and passive farmstay retreats. URL: https://www.anvitam.com';
-                                navigator.clipboard.writeText(pitch);
-                                showToast(`Copied submission pitch for ${t.name}!`);
-                              }}
-                              className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 hover:underline"
-                              title="Copy tailored submission pitch"
-                            >
-                              Copy Pitch
-                            </button>
-                            <span className="text-gray-300">|</span>
-                            <button
-                              onClick={() => toggleDirectoryStatus(t.domain || t.name, t.status)}
-                              className="text-[11px] font-bold text-gray-700 hover:text-black hover:underline"
-                            >
-                              {t.status === 'submitted' ? 'Requeue' : 'Mark Done'}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                    {paginatedDirectories.map((t, idx) => {
+                      const actualIdx = directoryPageSize === 'all' ? idx + 1 : (directoryPage - 1) * (directoryPageSize as number) + idx + 1;
+                      const isManual = t.submissionMethod === 'manual' || (t.da || 0) >= 90;
+                      return (
+                        <tr key={t.domain || t.name + idx} className="hover:bg-slate-50/60 transition">
+                          <td className="py-3 px-4 text-gray-400 font-mono">{actualIdx}</td>
+                          <td className="py-3 px-4">
+                            <div className="font-bold text-gray-900 flex items-center gap-1.5">
+                              <span>{t.name}</span>
+                              <a
+                                href={t.url?.startsWith('http') ? t.url : `https://${t.url || ''}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-gray-400 hover:text-black"
+                              >
+                                <ExternalLink size={12} />
+                              </a>
+                            </div>
+                            <div className="text-[11px] text-gray-500 font-mono">{t.domain}</div>
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <span className={`inline-block font-black px-2 py-0.5 rounded-md text-[11px] ${
+                              (t.da || 0) >= 80 ? 'bg-emerald-100 text-emerald-800' :
+                              (t.da || 0) >= 60 ? 'bg-blue-100 text-blue-800' :
+                              'bg-gray-100 text-gray-700'
+                            }`}>
+                              {t.da || 50}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`inline-block font-bold px-2 py-0.5 rounded-full text-[10px] ${
+                              t.dofollow ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-gray-50 text-gray-600 border border-gray-200'
+                            }`}>
+                              {t.dofollow ? 'Dofollow' : 'Nofollow'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`inline-flex items-center gap-1 font-semibold px-2 py-0.5 rounded-md text-[10px] ${
+                              isManual ? 'bg-purple-50 text-purple-800 border border-purple-200' : 'bg-slate-100 text-slate-700'
+                            }`}>
+                              {isManual ? 'Manual Account / Claim' : 'Direct Web Form'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`inline-flex items-center gap-1 font-bold px-2.5 py-1 rounded-full text-[10px] ${
+                              t.status === 'submitted'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : 'bg-amber-50 text-amber-800 border border-amber-200'
+                            }`}>
+                              {t.status === 'submitted' ? <Check size={11} /> : <Clock size={11} />}
+                              {t.status === 'submitted' ? 'Submitted' : 'Queued (Drip)'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-gray-500 text-[11px] font-mono">
+                            {t.submittedAt ? new Date(t.submittedAt).toLocaleDateString() : 'Pending'}
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => {
+                                  const pitch = getTailoredPitch(t);
+                                  navigator.clipboard.writeText(pitch);
+                                  showToast(`Copied tailored pitch for ${t.name}!`);
+                                }}
+                                className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                                title="Copy tailored submission pitch"
+                              >
+                                Copy Pitch
+                              </button>
+                              <span className="text-gray-300">|</span>
+                              <button
+                                onClick={() => toggleDirectoryStatus(t.domain || t.name, t.status)}
+                                className="text-[11px] font-bold text-gray-700 hover:text-black hover:underline"
+                              >
+                                {t.status === 'submitted' ? 'Requeue' : 'Mark Done'}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -4929,26 +5006,27 @@ const Admin: React.FC = () => {
                   <RefreshCw size={13} className={loadingOutreach ? 'animate-spin' : ''} />
                   <span>Refresh</span>
                 </button>
-                <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                  Resend Free API Active
+                <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Personal Inbox Channel (100% Deliverability)
                 </span>
               </div>
             </div>
 
             {/* Delivery Guide Notice */}
-            <div className="bg-gradient-to-r from-blue-900 to-indigo-950 text-white p-5 rounded-2xl shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="bg-gradient-to-r from-blue-950 to-slate-900 text-white p-5 rounded-2xl shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-blue-900/40">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <Mail size={16} className="text-[#CCFF00]" />
-                  <h3 className="text-sm font-bold">Direct Client Outreach Engine (Zero Spam, High Deliverability)</h3>
+                  <h3 className="text-sm font-bold">Executive Direct Outreach (100% Verified Inbox Delivery)</h3>
                 </div>
                 <p className="text-xs text-gray-300 leading-relaxed max-w-2xl">
-                  Each pitch is tailored using the Ogilvy formula for the owner's exact land acreage and microclimate. Use <strong>&quot;Open in Gmail&quot;</strong> to dispatch directly from your personal inbox with 100% deliverability, or use automated Resend dispatch.
+                  Click <strong>&quot;Open in Gmail&quot;</strong> to dispatch high-converting Ogilvy pitches directly from your personal inbox (<code>ar.archanagavas@gmail.com</code>). 
+                  This completely prevents spam filter blocks, and when a prospect replies, their response lands directly in your Gmail inbox so you can converse naturally.
                 </p>
               </div>
               <div className="text-xs font-mono bg-black/40 px-3 py-2 rounded-xl border border-white/10 shrink-0 text-gray-300">
-                <span className="text-[#CCFF00]">Channel:</span> Direct Executive Reach
+                <span className="text-[#CCFF00]">Channel:</span> Direct Personal Gmail
               </div>
             </div>
 
@@ -4956,23 +5034,27 @@ const Admin: React.FC = () => {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-xs">
                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">HNI Pipeline Target</p>
-                <p className="text-3xl font-black text-gray-900 mt-1">{outreachStats?.total || outreachLeads.length || 10}</p>
-                <p className="text-[10px] text-gray-500 mt-0.5">Pre-qualified high-ticket owners</p>
+                <p className="text-3xl font-black text-gray-900 mt-1">{outreachStats?.total ?? outreachLeads.length}</p>
+                <p className="text-[10px] text-gray-500 mt-0.5">Pre-qualified target opportunities</p>
               </div>
               <div className="bg-white p-5 rounded-2xl border border-blue-200 bg-blue-50/20 shadow-xs">
                 <p className="text-[11px] font-bold text-blue-700 uppercase tracking-wider">Outreach Sent</p>
-                <p className="text-3xl font-black text-blue-600 mt-1">{outreachStats?.sent || outreachLeads.filter(l => l.status === 'sent').length || 3}</p>
-                <p className="text-[10px] text-blue-600 mt-0.5">Delivered / Dispatched</p>
+                <p className="text-3xl font-black text-blue-600 mt-1">{outreachStats?.sent ?? outreachLeads.filter(l => l.status === 'sent').length}</p>
+                <p className="text-[10px] text-blue-600 mt-0.5">Dispatched from personal inbox</p>
               </div>
               <div className="bg-white p-5 rounded-2xl border border-emerald-200 bg-emerald-50/20 shadow-xs">
                 <p className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Replied / Consultation</p>
-                <p className="text-3xl font-black text-emerald-600 mt-1">{outreachStats?.replied || outreachLeads.filter(l => l.status === 'replied').length || 1}</p>
-                <p className="text-[10px] text-emerald-600 mt-0.5">High conversion interest</p>
+                <p className="text-3xl font-black text-emerald-600 mt-1">{outreachStats?.replied ?? outreachLeads.filter(l => l.status === 'replied').length}</p>
+                <p className="text-[10px] text-emerald-600 mt-0.5">Direct replies in personal inbox</p>
               </div>
               <div className="bg-white p-5 rounded-2xl border border-purple-200 bg-purple-50/20 shadow-xs">
-                <p className="text-[11px] font-bold text-purple-700 uppercase tracking-wider">Est. Pipeline Value</p>
-                <p className="text-3xl font-black text-purple-600 mt-1">₹3.5 Cr+</p>
-                <p className="text-[10px] text-purple-600 mt-0.5">Average ticket ₹25L–₹75L</p>
+                <p className="text-[11px] font-bold text-purple-700 uppercase tracking-wider">Active Pipeline Value</p>
+                <p className="text-3xl font-black text-purple-600 mt-1">
+                  {outreachLeads.filter(l => l.status === 'replied').length > 0 
+                    ? `₹${(outreachLeads.filter(l => l.status === 'replied').length * 35).toLocaleString('en-IN')} L`
+                    : '₹0'}
+                </p>
+                <p className="text-[10px] text-purple-600 mt-0.5">Based on active prospect replies</p>
               </div>
             </div>
 
@@ -4995,9 +5077,9 @@ const Admin: React.FC = () => {
                       <strong className="text-gray-900 font-semibold">Ogilvy Concept Angle:</strong> &quot;{lead.pitch_angle}&quot;
                     </p>
                     <div className="flex items-center gap-4 text-[11px] text-gray-400">
-                      <span>Email: <strong className="text-gray-700 font-mono">{lead.email}</strong></span>
-                      <span>Value: <strong className="text-emerald-700 font-bold">{lead.estimated_project_value}</strong></span>
-                      {lead.sent_date && <span>Sent: <strong className="text-gray-600 font-mono">{lead.sent_date}</strong></span>}
+                      <span>Target: <strong className="text-gray-700 font-mono">{lead.email}</strong></span>
+                      <span>Estimated Ticket: <strong className="text-emerald-700 font-bold">{lead.estimated_project_value}</strong></span>
+                      {lead.sent_date && <span>Sent Date: <strong className="text-gray-600 font-mono">{lead.sent_date}</strong></span>}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -5012,19 +5094,19 @@ const Admin: React.FC = () => {
                     {/* 1-Click Open in Gmail */}
                     <a
                       href={`mailto:${lead.email}?subject=${encodeURIComponent(`Ecological architecture & masterplanning concept for ${lead.company}`)}&body=${encodeURIComponent(`Dear ${lead.name},\n\nI came across your work with ${lead.company} in ${lead.location}.\n\nAs an architect specializing in ecological master-planning and permaculture retreats in India, I noticed you are developing land with unique microclimatic potential.\n\nTailored Concept: ${lead.pitch_angle}\n\nWe build our designs around passive cooling, zero-chemical water harvesting, and vernacular materials, keeping long-term maintenance virtually zero.\n\nI would be delighted to share a few site sketches and contour concepts if you have 10 minutes next week.\n\nWarm regards,\nAr. Archana Gavas\nFounder & Principal Architect, Anvitam\nhttps://www.anvitam.com | Vadodara, Gujarat`)}`}
-                      className="bg-white hover:bg-gray-50 text-gray-800 border border-gray-250 text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-xs"
-                      title="Open in your mail client for 100% inbox delivery"
+                      className="bg-black hover:bg-gray-800 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-xs"
+                      title="Open pre-drafted email in your mail client for 100% direct inbox delivery"
                     >
-                      <Mail size={12} className="text-rose-500" />
+                      <Mail size={12} className="text-[#CCFF00]" />
                       <span>Open in Gmail</span>
                     </a>
 
                     <button
-                      onClick={() => triggerLeadOutreach(lead.id, true)}
-                      className="bg-black hover:bg-gray-800 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-xs"
+                      onClick={() => toggleLeadStatus(lead.id)}
+                      className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-250 text-xs font-semibold px-3 py-2 rounded-xl transition shadow-xs"
+                      title="Update lead progress in your tracker"
                     >
-                      <Send size={12} />
-                      <span>{lead.status === 'sent' ? 'Resend Pitch' : 'Send Pitch'}</span>
+                      {lead.status === 'sent' ? 'Mark as Replied' : lead.status === 'replied' ? 'Reset to Draft' : 'Mark as Sent'}
                     </button>
                   </div>
                 </div>
