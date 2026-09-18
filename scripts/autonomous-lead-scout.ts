@@ -99,7 +99,7 @@ const SEARCH_ZONES = [
   { region: 'Trancoso & Bahia Coast, Brazil', bbox: '-16.8,-39.3,-16.3,-39.0' }
 ];
 
-async function fetchOverpassResorts(zone: typeof SEARCH_ZONES[0], limit = 4): Promise<LeadCandidate[]> {
+async function fetchOverpassResorts(zone: typeof SEARCH_ZONES[0], limit = 10): Promise<LeadCandidate[]> {
   const query = `[out:json][timeout:25];
     (
       node["tourism"="resort"](${zone.bbox});
@@ -432,7 +432,7 @@ async function main() {
 
   const isDryRun = process.argv.includes('--dry-run');
   const limitArg = process.argv.indexOf('--limit');
-  const limit = limitArg !== -1 && process.argv[limitArg + 1] ? parseInt(process.argv[limitArg + 1], 10) : 3;
+  const limit = limitArg !== -1 && process.argv[limitArg + 1] ? parseInt(process.argv[limitArg + 1], 10) : 15;
 
   console.log(`Target: Discover & qualify ${limit} high-value leads. Dry run: ${isDryRun}`);
 

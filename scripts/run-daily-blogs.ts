@@ -22,14 +22,12 @@
 import './load-env';
 import { isDbConfigured, upsertDoc, getCollection } from '../lib/db';
 
-// ── Seed Themes for High-Net-Worth Target Audience & Search Intent Discovery ──
-// Explicitly targeting high-paying global clients across US, Europe, UK, Australia, Costa Rica, UAE, Bali:
-// 1. Luxury Eco-Resort & Glamping Developers ($1M–$5M builds, high-RevPAR hospitality)
-// 2. High-Net-Worth Off-Grid Estate Owners ($1.5M–$4M private luxury sanctuaries)
-// 3. Commercial Living Pool & Wellness Retreat Founders (chemical-free biological water architecture)
-// 4. Regenerative Agrotourism & Large Farmland Developers (15–100+ acre masterplanning)
-// 5. Arid & Tropical Passive Solar Villa Builders (extreme heat passive cooling, zero energy bills)
+// ── Seed Themes for Global & Regional Clients ($250 USD to $100,000+ USD) ──
+// Covers the full spectrum of architectural and ecological services:
+// - Low/Mid Tier ($250 – $2,500 USD): 2D/3D Renders, Site Analysis Reports, 1-on-1 Consultations, Pre-Purchase Land Research
+// - High/Enterprise Tier ($15,000 – $100,000+ USD): Turnkey Architecture, Eco-Resorts, Arid Permaculture, Regenerative Estates
 const SEED_NICHES = [
+  // ── High-Ticket Masterplanning & Architecture ($15,000 – $100,000+ USD) ──
   {
     seed: 'cost of building 5 acre luxury eco resort glamping masterplan',
     niche: 'International Luxury Eco-Resort & Glamping Developers (Costa Rica, Portugal, Bali, US)',
@@ -43,6 +41,13 @@ const SEED_NICHES = [
     targetPersona: 'Ultra-high-net-worth families, entrepreneurs, and tech executives commissioning 4,000–12,000 sq.ft biophilic private estates built with stabilized rammed earth, mass timber, solar microgrids, and passive cooling ($1.5M–$4M construction)',
     primaryService: 'https://www.anvitam.com/services/weekend-villa',
     serviceAnchor: 'off-grid biophilic villa and luxury estate architecture',
+  },
+  {
+    seed: 'turnkey sustainable architecture construction management cost per sq ft',
+    niche: 'Turnkey Sustainable Architecture & Construction Management (Design-to-Delivery)',
+    targetPersona: 'Property owners and developers seeking end-to-end turnkey architectural delivery ($25k–$100k+ fee) from initial soil/site testing and 3D modeling to contractor supervision and final handover',
+    primaryService: 'https://www.anvitam.com/services/weekend-villa',
+    serviceAnchor: 'turnkey sustainable architectural design and construction management',
   },
   {
     seed: 'natural biological swimming pool vs chlorine resort cost maintenance roi',
@@ -65,40 +70,51 @@ const SEED_NICHES = [
     primaryService: 'https://www.anvitam.com/services/permaculture-design',
     serviceAnchor: 'keyline water hydrology and permaculture estate zoning',
   },
+
+  // ── Arid & Desert Climate Expertise (Rajasthan, UAE, Arizona, Mediterranean) ──
   {
-    seed: 'syntropic agroforestry food forest design cost per acre layout guide',
-    niche: 'Farmland Owners & Permaculture Estate Developers (Syntropic Food Forests)',
-    targetPersona: 'Estate builders and regenerative landowners transforming 5 to 50 acres of land into resilient, drought-proof 7-layer syntropic food forests that produce organic food, high-value timber, and privacy windbreaks without chemical fertilizers',
-    primaryService: 'https://www.anvitam.com/services/food-forest',
-    serviceAnchor: 'syntropic agroforestry and food forest masterplanning',
-  },
-  {
-    seed: 'passive cooling architecture extreme heat zero energy villa design',
-    niche: 'Arid & Tropical Passive Solar Villa Builders (UAE, Arizona, Mediterranean, Bali)',
-    targetPersona: 'Commercial resort developers and luxury homeowners building in hot desert or tropical zones seeking zero-energy passive cooling through 450mm thermal mass, venturi airflow wind catchers, and bioclimatic shading cantilevers',
-    primaryService: 'https://www.anvitam.com/services/weekend-villa',
-    serviceAnchor: 'passive solar bioclimatic cooling architecture',
-  },
-  {
-    seed: 'wellness retreat masterplan architect yoga shala sound healing pavilion cost',
-    niche: 'Boutique Wellness & Yoga Sanctuary Founders (Bali, Costa Rica, Thailand, Europe)',
-    targetPersona: 'International wellness entrepreneurs building 10–30 key retreat centers featuring sacred geometry yoga shalas, sound healing pavilions, natural hot-spring thermal spas, and biophilic lodging commanding $350–$800/night per guest',
-    primaryService: 'https://www.anvitam.com/services/wellness-retreat',
-    serviceAnchor: 'wellness retreat masterplanning and yoga sanctuary design',
-  },
-  {
-    seed: 'boutique glamping cabins architectural design cost roi per unit',
-    niche: 'High-Yield Boutique Glamping & Vacation Rental Investors (UK, US, Canada, Australia)',
-    targetPersona: 'Hospitality entrepreneurs and landowners developing clusters of 6–15 luxury nature cabins (mass timber, panoramic glass, outdoor soaking tubs) achieving 75%+ year-round occupancy and $350–$650 average daily rate (ADR)',
-    primaryService: 'https://www.anvitam.com/services/airbnb',
-    serviceAnchor: 'boutique nature cabin and luxury vacation rental architecture',
-  },
-  {
-    seed: 'permaculture masterplanner vs landscape architect estate design cost',
-    niche: 'Estate Owners & Land Buyers (Commercial Decision: Permaculture vs Landscape)',
-    targetPersona: 'Discerning property owners choosing between an ecological permaculture masterplanner (focusing on hydrology, soil regeneration, windbreak physics, passive microclimate) and a conventional landscape architect',
+    seed: 'arid desert land permaculture water harvesting rajasthan arizona uae',
+    niche: 'Dryland & Arid Property Owners (Desert Permaculture & Contour Water Catchment)',
+    targetPersona: 'Landowners and investors in extreme arid climates (Rajasthan, UAE, Arizona, Mediterranean) needing specialized desert contouring, saline water mitigation, keyline dams, and heat-tolerant biological windbreaks ($2,500–$25,000)',
     primaryService: 'https://www.anvitam.com/services/permaculture-design',
-    serviceAnchor: 'ecological land masterplanning and permaculture zoning',
+    serviceAnchor: 'arid climate permaculture masterplanning and desert hydrology',
+  },
+
+  // ── Accessible Commercial Services ($250 to $2,500 USD Fast-Turnaround Gigs) ──
+  {
+    seed: 'architectural site analysis solar shadow contour report cost',
+    niche: 'Land Buyers & Builders (Site Analysis & Sun-Shadow Feasibility Reports)',
+    targetPersona: 'Property buyers, builders, and architects needing an urgent, comprehensive microclimate site analysis report ($250–$750 USD) covering 3D solar shadow angles, wind rose vectors, SoilGrids foundation data, and slope contours',
+    primaryService: 'https://www.anvitam.com/site-analysis',
+    serviceAnchor: 'architectural site intelligence and environmental microclimate analysis',
+  },
+  {
+    seed: '3d architectural rendering and 2d floor plan design cost per sq ft',
+    niche: 'Homeowners & Commercial Developers (2D Floor Planning & 3D Visualization)',
+    targetPersona: 'Clients seeking precision 2D working floor plans, CAD layouts, and photorealistic 3D exterior/interior architectural renders ($250–$1,500 USD) for residential villas, homestays, or commercial fit-outs',
+    primaryService: 'https://www.anvitam.com/tools/ai-home-design',
+    serviceAnchor: '2D architectural floor plans and 3D photorealistic visualization',
+  },
+  {
+    seed: 'hire architect for 1 on 1 land planning consultation fee',
+    niche: 'Property Owners & Investors (1-on-1 Architectural Strategy Consultation)',
+    targetPersona: 'Landowners, NRI investors, and retreat builders seeking a high-value 60–90 minute strategic consultation ($250–$500 USD) with Ar. Archana Gavas to review site plans, verify zoning, solve microclimate bottlenecks, and vet contractor estimates',
+    primaryService: 'https://www.anvitam.com/contact',
+    serviceAnchor: '1-on-1 architectural and land masterplanning consultation',
+  },
+  {
+    seed: 'land due diligence architectural feasibility study before buying property',
+    niche: 'Foreign & NRI Land Investors (Pre-Purchase Environmental Research)',
+    targetPersona: 'Foreign buyers, diaspora families, and commercial syndicates conducting pre-purchase architectural due diligence ($500–$3,500 USD) to assess water tables, road access, bioclimatic suitability, and legal layout viability before buying acreage',
+    primaryService: 'https://www.anvitam.com/services/permaculture-design',
+    serviceAnchor: 'pre-purchase land due diligence and architectural feasibility research',
+  },
+  {
+    seed: 'biophilic interior design cost per sq ft residential commercial',
+    niche: 'Interior Design Clients (Biophilic Space Optimization & Natural Finishes)',
+    targetPersona: 'Homeowners and boutique commercial operators redesigning interiors ($1,500–$8,000 USD) using natural lime plasters, local stone, passive airflow, ergonomic joinery, and biophilic space optimization',
+    primaryService: 'https://www.anvitam.com/services/homestay',
+    serviceAnchor: 'biophilic interior design and architectural space optimization',
   },
 ];
 
@@ -169,22 +185,24 @@ async function generateArchanaBlog(nicheInfo: typeof SEED_NICHES[0], targetQueri
 
   const systemPrompt = `You are Ar. Archana Gavas — principal architect, ecological engineer, and founder of Anvitam Architecture & Ecological Design Studio, serving high-net-worth estate clients and luxury eco-resorts worldwide.
 
-ROLE & AUTHENTIC VOICE ("RAW MENTOR FOR GLOBAL CLIENTS"):
-- You write to educate, build trust, and win high-paying international clients with capital ($500k to $5M+ build budgets).
+ROLE & AUTHENTIC VOICE ("RAW MENTOR FOR GLOBAL & REGIONAL CLIENTS"):
+- You write to educate, build trust, and win clients across the entire architectural spectrum ($250 USD quick advisory reports up to $100,000+ USD turnkey masterplans).
 - Target Persona: ${nicheInfo.targetPersona}. Treat them as sophisticated, intelligent peers. Speak with calm authority, mathematical precision, and zero corporate fluff.
 - You are sitting across a solid timber table over espresso, explaining complex bioclimatic architecture and permaculture engineering so clearly that an investor immediately sees the commercial ROI.
+- Highlight Archana's proven track record: complete masterplanning across extreme microclimates (such as her recent comprehensive permaculture and water catchment masterplan for lands in Rajasthan's extreme arid climate, directly applicable to desert ranches in Texas, Arizona, UAE, and the Mediterranean), deep pre-purchase environmental research for foreign investors, 2D CAD floor plans, photorealistic 3D visualization, biophilic interior design, and full turnkey sustainable delivery.
 - Ground every section in real construction physics: diurnal thermal mass damping, rammed-earth compressive strength (8–14 MPa), timber joinery, gravel-root reed-bed biological filtration, keyline swales, and natural solar shading angles.
 
-CURRENCY & FINANCIAL BENCHMARKS (GLOBAL INTERNATIONAL STANDARDS):
-- Always state costs, budgets, and financial metrics in USD ($) or EUR (€):
-  * Construction costs: e.g. $180 to $350 per sq.ft for stabilized rammed earth, mass timber, or vernacular stone vs $220 to $450 per sq.ft for conventional luxury builds.
-  * Architectural masterplanning fees: e.g. $35,000 to $85,000 for comprehensive regenerative estate zoning and bioclimatic design.
-  * Hospitality RevPAR: e.g. $350 to $1,200 per night for high-occupancy biophilic retreats.
-  * Operational savings: e.g. 60% to 80% reduction in mechanical HVAC cooling bills and zero chemical pool maintenance costs.
+CURRENCY & FINANCIAL BENCHMARKS (FLEXIBLE $250 TO $100,000+ USD RANGE):
+- Tailor pricing and financial metrics according to the scale of service:
+  * Quick Advisory & Reports ($250 – $750 USD): Microclimate site analysis reports, 3D sun-shadow simulations, and pre-purchase land environmental due diligence.
+  * Architectural Visuals & Planning ($250 – $1,500 USD): 2D working floor plans, CAD layouts, and photorealistic 3D interior/exterior architectural renders.
+  * Direct 1-on-1 Consultation ($250 – $500 USD): Strategic advisory sessions on Topmate for site review, zoning, and contractor checks.
+  * Arid Permaculture & Landscape ($2,500 – $15,000 USD): Desert swale design, contour hydrology, soil regeneration, and drought-proof food forests.
+  * Turnkey Masterplanning & Architecture ($15,000 – $100,000+ USD): Full-scale luxury eco-resorts, glamping retreats, passive cooling villas, and sustainable community masterplans ($180–$350/sq.ft build costs, $350–$1,200/night RevPAR).
 
 COMMERCIAL CONVERSION INTENT:
 - Demonstrate how smart ecological masterplanning from day one prevents costly site mistakes (e.g. wrong building orientation causing overheating, failed borewells, soil erosion, high energy bills).
-- Position Anvitam's architectural studio as the indispensable global partner for sustainable retreats, private estates, and luxury nature hospitality.
+- Position Anvitam's architectural studio as the indispensable partner for any scale: from a fast $250 site feasibility report before purchasing acreage to a multi-million-dollar turnkey eco-resort development.
 
 S-TIER INFORMATION GAIN (PRINCETON GEO RESEARCH PROVEN: 41% CITATION BOOST):
 - Every single section MUST include proprietary empirical benchmarks and calculated numbers never found in generic top-10 search results.
