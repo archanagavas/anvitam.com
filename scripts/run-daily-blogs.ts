@@ -130,6 +130,30 @@ const SEED_NICHES = [
     primaryService: 'https://www.anvitam.com/services/permaculture-design',
     serviceAnchor: 'desert contour mapping and arid climate permaculture engineering',
   },
+
+  // ── Proprietary Architectural Software & Intelligence Tools ──
+  // Target ICP: Practicing Architects, Architecture Students & End-Clients looking for zero-cost precision tools
+  {
+    seed: 'free architectural site analysis tool sun path wind shadow simulation online',
+    niche: 'Architectural Intelligence Software (For Practicing Architects, Students & Clients)',
+    targetPersona: 'Practicing architects, architecture university students, and property owners seeking automated, zero-cost microclimate site analysis (3D sun shadows, wind rose vectors, and SoilGrids soil profile data) to model climate responsiveness before drafting',
+    primaryService: 'https://www.anvitam.com/site-analysis',
+    serviceAnchor: 'our zero-cost architectural site analysis and microclimate simulation suite',
+  },
+  {
+    seed: 'rainwater harvesting tank sizing calculator online tool for architects and builders',
+    niche: 'Hydrology & Rainwater Harvesting Engineering Tools (Designers & Builders)',
+    targetPersona: 'Architects, engineering students, and rural estate owners calculating rooftop runoff coefficients, monsoon retention swale volumes, and underground cistern sizing without expensive proprietary civil software',
+    primaryService: 'https://www.anvitam.com/site-analysis?tool=hydrology-rainwater',
+    serviceAnchor: 'our interactive rainwater tank and stormwater hydrology calculator',
+  },
+  {
+    seed: 'embodied carbon calculator building materials rammed earth vs concrete tool',
+    niche: 'Sustainable Material Economics & Carbon Intelligence (Architects & Students)',
+    targetPersona: 'Eco-conscious architects, university researchers, and green home builders quantifying lifecycle carbon offsets, CSEB block savings, and thermal mass performance against conventional RCC construction',
+    primaryService: 'https://www.anvitam.com/site-analysis?tool=embodied-carbon',
+    serviceAnchor: 'our green building material cost and embodied carbon calculator',
+  },
 ];
 
 // Curated internal links strictly from verified recent live anvitam.com assets
@@ -214,12 +238,21 @@ async function generateArchanaBlog(nicheInfo: typeof SEED_NICHES[0], targetQueri
 
   const top5Keywords = targetQueries.slice(0, 5);
 
-  const systemPrompt = `You are Ar. Archana Gavas — principal architect, ecological engineer, and founder of Anvitam Architecture & Ecological Design Studio, serving high-net-worth estate clients and luxury eco-resorts worldwide.
+  const systemPrompt = `You are Ar. Archana Gavas — principal architect, ecological engineer, and founder of Anvitam Architecture & Ecological Design Studio (https://www.anvitam.com).
 
-ROLE & AUTHENTIC VOICE ("RAW MENTOR FOR GLOBAL & REGIONAL CLIENTS"):
-- You write to educate, build trust, and win clients across the entire architectural spectrum ($250 USD quick advisory reports up to $100,000+ USD turnkey masterplans).
+DUAL STUDIO & PLATFORM IDENTITY:
+1. PRACTICING ARCHITECTURAL FIRM & AGENCY:
+   - Providing services across the spectrum ($250 USD to $100,000+ USD) for landowners, resort founders, and private estate clients: 2D drafting, 3D photorealistic visualization, microclimate site analysis, 1-on-1 consultations, arid permaculture (with proven Rajasthan arid climate track record), and turnkey delivery.
+2. IN-HOUSE ARCHITECTURAL TOOL & SOFTWARE DEVELOPER:
+   - We develop proprietary algorithmic, zero-cost tools and calculators (solar shadow simulation, wind rose vectors, SoilGrids foundation checks, rainwater tank sizing, embodied carbon) built specifically for three core user groups:
+     * Fellow Practicing Architects: To accelerate real environmental microclimate modeling without expensive proprietary civil software.
+     * Architecture & Engineering Students: For thesis research, bioclimatic simulations, and academic coursework.
+     * Property Owners & End-Clients: For preliminary feasibility testing before commissioning full architectural services.
+   - We believe in accessible, transparent architectural intelligence that elevates the entire design community.
+
+ROLE & AUTHENTIC VOICE ("RAW MENTOR FOR GLOBAL & REGIONAL AUDIENCES"):
 - Target Persona: ${nicheInfo.targetPersona}. Treat them as sophisticated, intelligent peers. Speak with calm authority, mathematical precision, and zero corporate fluff.
-- You are sitting across a solid timber table over espresso, explaining complex bioclimatic architecture and permaculture engineering so clearly that an investor immediately sees the commercial ROI.
+- You are sitting across a solid timber table over espresso, explaining complex bioclimatic architecture, software tools, and permaculture engineering so clearly that the reader immediately sees the practical value.
 - Highlight Archana's proven track record: complete masterplanning across extreme microclimates (such as her recent comprehensive permaculture and water catchment masterplan for lands in Rajasthan's extreme arid climate, directly applicable to desert ranches in Texas, Arizona, UAE, and the Mediterranean), deep pre-purchase environmental research for foreign investors, 2D CAD floor plans, photorealistic 3D visualization, biophilic interior design, and full turnkey sustainable delivery.
 - Ground every section in real construction physics: diurnal thermal mass damping, rammed-earth compressive strength (8–14 MPa), timber joinery, gravel-root reed-bed biological filtration, keyline swales, and natural solar shading angles.
 
