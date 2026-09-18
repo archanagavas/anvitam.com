@@ -394,14 +394,14 @@ async function main() {
   const countArg = args.find((a, i) => args[i - 1] === '--count');
   const targetCount = countArg ? parseInt(countArg, 10) : 3;
 
-  console.log('=' * 65);
+  console.log('='.repeat(65));
   console.log(`🌿 ANVITAM AUTONOMOUS DAILY BLOG AGENT`);
   console.log(`   Target Output: ${targetCount} deep-dive drafts (STARVE framework)`);
   console.log(`   Voice:         Archana Gavas ("Raw Mentor" - coffee with peer)`);
   console.log(`   Image Gen:     DISABLED (User adds curated images manually)`);
   console.log(`   Storage:       Firestore 'draft' mode`);
   console.log(`   Execution:     100% Free / Zero Vercel Function Credits`);
-  console.log('=' * 65);
+  console.log('='.repeat(65));
 
   if (isDryRun) {
     console.log('🧪 DRY-RUN: Testing Google Suggest Intent Discovery...');
