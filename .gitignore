@@ -33,3 +33,4 @@ dist-ssr
 .vercel
 .agents/
 skills-lock.json
+tools/cmo-harness/

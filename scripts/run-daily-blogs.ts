@@ -210,19 +210,56 @@ RETURN ONLY A VALID JSON OBJECT (no markdown ticks, no commentary):
 
   const userPrompt = `Target Niche: ${nicheInfo.niche}\nLive Google Intent Queries: ${targetQueries.join(', ')}\n\nWrite this complete, unfiltered deep-dive article now in Archana's voice.`;
 
-  // 1. Primary: NVIDIA NIM API (Llama 3.1 70B - ultra fast, free)
-  const nvidiaKey = process.env.NVIDIA_API_KEY || process.env.VITE_NVIDIA_API_KEY;
-  if (nvidiaKey) {
+  // 1. Primary: Google Gemini 3.6 Flash with retry loop & backoff
+  const geminiKey = process.env.GEMINI_API_KEY;
+  if (geminiKey) {
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        console.log(`[daily-blog] Calling Gemini 3.6 Flash (attempt ${attempt}/3) for: "${nicheInfo.niche}"...`);
+        const resp = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${geminiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }],
+              generationConfig: { temperature: 0.65, responseMimeType: 'application/json' },
+            }),
+          }
+        );
+
+        if (resp.ok) {
+          const data = await resp.json();
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '{}';
+          return JSON.parse(text);
+        } else if (resp.status === 503 || resp.status === 429) {
+          console.warn(`[daily-blog] Gemini busy (HTTP ${resp.status}). Retrying in ${attempt * 3}s...`);
+          await new Promise((resolve) => setTimeout(resolve, attempt * 3000));
+        } else {
+          const errBody = await resp.text();
+          console.warn(`[daily-blog] Gemini HTTP ${resp.status}: ${errBody.slice(0, 200)}`);
+          break;
+        }
+      } catch (err: any) {
+        console.warn(`[daily-blog] Gemini attempt ${attempt} failed: ${err.message}`);
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+    }
+  }
+
+  // 2. Fallback 1: Groq
+  const groqKey = process.env.GROQ_API_KEY;
+  if (groqKey) {
     try {
-      console.log(`[daily-blog] Calling NVIDIA NIM (Llama 3.1 70B) for: "${nicheInfo.niche}"...`);
-      const resp = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+      console.log(`[daily-blog] Calling Groq fallback...`);
+      const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${nvidiaKey}`,
+          Authorization: `Bearer ${groqKey}`,
         },
         body: JSON.stringify({
-          model: 'meta/llama-3.1-70b-instruct',
+          model: 'llama-3.3-70b-specdec',
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt },
@@ -238,68 +275,7 @@ RETURN ONLY A VALID JSON OBJECT (no markdown ticks, no commentary):
         const cleaned = rawContent.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
         return JSON.parse(cleaned);
       }
-    } catch (err: any) {
-      console.warn(`[daily-blog] NVIDIA NIM failed: ${err.message}. Trying Gemini...`);
-    }
-  }
-
-  // 2. Fallback 1: Groq (Llama 3.3 70B - Free, Ultra Fast)
-  const groqKey = process.env.GROQ_API_KEY;
-  if (groqKey) {
-    try {
-      console.log(`[daily-blog] Calling Groq (Llama 3.3 70B) fallback...`);
-      const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${groqKey}`,
-        },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          temperature: 0.65,
-          max_tokens: 4096,
-          response_format: { type: 'json_object' },
-        }),
-      });
-
-      if (resp.ok) {
-        const data = await resp.json();
-        const rawContent = data.choices?.[0]?.message?.content?.trim() || '';
-        return JSON.parse(rawContent);
-      }
-    } catch (err: any) {
-      console.warn(`[daily-blog] Groq fallback failed: ${err.message}. Trying Gemini...`);
-    }
-  }
-
-  // 3. Fallback 2: Google Gemini 2.5 Flash
-  const geminiKey = process.env.GEMINI_API_KEY;
-  if (geminiKey) {
-    try {
-      console.log(`[daily-blog] Calling Gemini Flash fallback...`);
-      const resp = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }],
-            generationConfig: { temperature: 0.65, responseMimeType: 'application/json' },
-          }),
-        }
-      );
-      if (resp.ok) {
-        const data = await resp.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '{}';
-        return JSON.parse(text);
-      }
-    } catch (err: any) {
-      console.warn(`[daily-blog] Gemini fallback failed: ${err.message}`);
-    }
+    } catch (err: any) {}
   }
 
   throw new Error(`Failed to generate article for niche: ${nicheInfo.niche}`);

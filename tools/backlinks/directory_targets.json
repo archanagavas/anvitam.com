@@ -7,9 +7,10 @@
     "dofollow": false,
     "type": "Startup Directory",
     "pricing": "Free",
-    "status": "queued",
-    "submittedAt": null,
-    "notes": "World's largest developer platform for version control, collaboration, and open-source software hosting and discovery."
+    "status": "submitted",
+    "submittedAt": "2026-09-18T09:41:20.320Z",
+    "notes": "World's largest developer platform for version control, collaboration, and open-source software hosting and discovery.",
+    "generatedPitch": "Anvitam is a boutique sustainable architecture studio and ecological engineering platform founded by Ar. Archana Gavas. Featuring 16+ automated zero-cost calculators for solar cooling, micro-climate analysis, rainwater harvesting, food forests, and passive farmstay retreats."
   },
   {
     "name": "Reddit",
@@ -19,9 +20,10 @@
     "dofollow": true,
     "type": "Social Media",
     "pricing": "Free",
-    "status": "queued",
-    "submittedAt": null,
-    "notes": "The front page of the internet - diverse communities and discussions."
+    "status": "submitted",
+    "submittedAt": "2026-09-18T09:41:21.034Z",
+    "notes": "The front page of the internet - diverse communities and discussions.",
+    "generatedPitch": "Anvitam is a boutique sustainable architecture studio and ecological engineering platform founded by Ar. Archana Gavas. Featuring 16+ automated zero-cost calculators for solar cooling, micro-climate analysis, rainwater harvesting, food forests, and passive farmstay retreats."
   },
   {
     "name": "Sourceforge",
