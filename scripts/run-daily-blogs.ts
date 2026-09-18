@@ -276,7 +276,7 @@ RETURN ONLY A VALID JSON OBJECT (no markdown ticks, no commentary):
   const groqKey = process.env.GROQ_API_KEY;
   if (groqKey) {
     try {
-      console.log(`[daily-blog] Calling Groq fallback...`);
+      console.log(`[daily-blog] Calling Groq fallback (llama-3.3-70b-versatile)...`);
       const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -284,7 +284,7 @@ RETURN ONLY A VALID JSON OBJECT (no markdown ticks, no commentary):
           Authorization: `Bearer ${groqKey}`,
         },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-specdec',
+          model: 'llama-3.3-70b-versatile',
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt },
@@ -299,8 +299,13 @@ RETURN ONLY A VALID JSON OBJECT (no markdown ticks, no commentary):
         const rawContent = data.choices?.[0]?.message?.content?.trim() || '';
         const cleaned = rawContent.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
         return JSON.parse(cleaned);
+      } else {
+        const err = await resp.text();
+        console.warn(`[daily-blog] Groq error ${resp.status}: ${err.slice(0, 200)}`);
       }
-    } catch (err: any) {}
+    } catch (err: any) {
+      console.warn(`[daily-blog] Groq fallback failed: ${err.message}`);
+    }
   }
 
   throw new Error(`Failed to generate article for niche: ${nicheInfo.niche}`);
