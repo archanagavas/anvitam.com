@@ -453,21 +453,43 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
                 ${(lead.pitch_body || '').split('\n\n').map((p: string) => `<p style="margin-bottom: 16px;">${p.replace(/\n/g, '<br/>')}</p>`).join('')}
               </div>
             `;
-            const resend = await fetch('https://api.resend.com/emails', {
+            const fromEmail = process.env.RESEND_FROM_EMAIL || 'Ar. Archana Gavas <ar.archanagavas@anvitam.com>';
+            let resend = await fetch('https://api.resend.com/emails', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${process.env.RESEND_API_KEY}`
               },
               body: JSON.stringify({
-                from: 'Ar. Archana Gavas <onboarding@resend.dev>',
+                from: fromEmail,
                 to: [lead.email],
+                reply_to: 'ar.archanagavas@gmail.com',
                 cc: ['ar.archanagavas@gmail.com'],
                 bcc: ['anvitamarchitects@gmail.com'],
                 subject: subject,
                 html: emailHtml
               })
             });
+
+            // If custom domain fails, fallback to sandbox address
+            if (!resend.ok && resend.status === 403 && fromEmail.includes('@anvitam.com')) {
+              resend = await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${process.env.RESEND_API_KEY}`
+                },
+                body: JSON.stringify({
+                  from: 'Ar. Archana Gavas <onboarding@resend.dev>',
+                  to: [lead.email],
+                  reply_to: 'ar.archanagavas@gmail.com',
+                  cc: ['ar.archanagavas@gmail.com'],
+                  bcc: ['anvitamarchitects@gmail.com'],
+                  subject: subject,
+                  html: emailHtml
+                })
+              });
+            }
             const resendData = await resend.json().catch(() => ({}));
             if (resend.ok) {
               lead.status = 'sent';

@@ -1,0 +1,43 @@
+name: Autonomous Overnight Lead Scout (Zero-Cost Discovery)
+
+on:
+  schedule:
+    # Runs bi-weekly on Sunday & Wednesday at 02:00 AM UTC (07:30 AM IST) overnight
+    - cron: '0 2 * * 0,3'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions anytime
+
+permissions:
+  contents: write
+
+jobs:
+  scout-leads:
+    name: Discover & Qualify High-Value Client Prospects
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Execute Autonomous Lead Scout (Zero-Cost Discovery)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+        run: |
+          npx tsx scripts/autonomous-lead-scout.ts --limit 3
+
+      - name: Commit & Push Discovered Prospects
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add tools/outreach/client_leads.json
+          git commit -m "chore(growth): autonomous prospect discovery & ICP qualification [skip ci]" || echo "No new leads to commit"
+          git push origin main || true

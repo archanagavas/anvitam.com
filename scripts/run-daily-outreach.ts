@@ -82,6 +82,7 @@ async function main() {
         </div>
       `;
 
+      const fromEmail = process.env.RESEND_FROM_EMAIL || 'Ar. Archana Gavas <ar.archanagavas@anvitam.com>';
       let res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -89,14 +90,36 @@ async function main() {
           Authorization: `Bearer ${resendKey}`,
         },
         body: JSON.stringify({
-          from: 'Ar. Archana Gavas <onboarding@resend.dev>',
+          from: fromEmail,
           to: [targetLead.email],
+          reply_to: 'ar.archanagavas@gmail.com',
           cc: ['ar.archanagavas@gmail.com'],
           bcc: ['anvitamarchitects@gmail.com'],
           subject: subject,
           html: emailHtml,
         }),
       });
+
+      // If custom domain rejected (e.g. DNS still propagating), retry with sandbox onboarding@resend.dev
+      if (!res.ok && res.status === 403 && fromEmail.includes('@anvitam.com')) {
+        console.warn(`⚠️ Custom domain sender ${fromEmail} returned 403. Retrying with onboarding@resend.dev...`);
+        res = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${resendKey}`,
+          },
+          body: JSON.stringify({
+            from: 'Ar. Archana Gavas <onboarding@resend.dev>',
+            to: [targetLead.email],
+            reply_to: 'ar.archanagavas@gmail.com',
+            cc: ['ar.archanagavas@gmail.com'],
+            bcc: ['anvitamarchitects@gmail.com'],
+            subject: subject,
+            html: emailHtml,
+          }),
+        });
+      }
 
       if (res.ok) {
         console.log(`✅ Successfully dispatched outreach email directly to ${targetLead.email} (CC: ar.archanagavas@gmail.com, BCC: anvitamarchitects@gmail.com)`);
