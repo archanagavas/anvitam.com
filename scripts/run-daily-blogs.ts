@@ -116,6 +116,20 @@ const SEED_NICHES = [
     primaryService: 'https://www.anvitam.com/services/homestay',
     serviceAnchor: 'biophilic interior design and architectural space optimization',
   },
+  {
+    seed: 'landscape architecture masterplan contour grading planting plan cost',
+    niche: 'Landscape Architecture & Urban Ecological Design (Parks, Estates & Communities)',
+    targetPersona: 'Estate owners, developers, and municipal planners commissioning regenerative landscape architecture ($2,500–$35,000 USD) including native plant matrices, contour grading, permeable pedestrian trails, and urban biodiversity corridors',
+    primaryService: 'https://www.anvitam.com/services/landscape',
+    serviceAnchor: 'ecological landscape architecture and regenerative urban design',
+  },
+  {
+    seed: 'desert arid land contour mapping water catchment rajasthan foreign investors',
+    niche: 'Arid Climate & Desert Contouring (Rajasthan Proven Track Record & Global Drylands)',
+    targetPersona: 'Foreign investors and landowners researching arid land (in Rajasthan, Arizona, Texas, UAE, Saudi Arabia, Spain, or Australia) seeking remote site intelligence, contour mapping, saline mitigation, and dryland permaculture ($500–$15,000 USD)',
+    primaryService: 'https://www.anvitam.com/services/permaculture-design',
+    serviceAnchor: 'desert contour mapping and arid climate permaculture engineering',
+  },
 ];
 
 // Curated internal links strictly from verified recent live anvitam.com assets
