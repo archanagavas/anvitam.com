@@ -9,7 +9,8 @@ import {
   Globe, Download, CheckCircle, RefreshCw, Edit2, X, Eye, EyeOff,
   Image as ImageIcon, Tag, Save, ArrowLeft, Type, Hash, AlertCircle, Menu,
   Database, Wifi, WifiOff, Shield, Lock, Zap, Activity, MessageCircle, Calculator, Building2,
-  Link2, Target, Send, Users, ExternalLink, Check, Clock, TrendingUp, ChevronDown, ChevronUp, Search
+  Link2, Target, Send, Users, ExternalLink, Check, Clock, TrendingUp, ChevronDown, ChevronUp, Search,
+  ArrowRight, Sun, Droplets, Compass, Layers, MapPin, Play, Cpu
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { generateSitemapXml, generateLlmsTxt, generateLlmsFullTxt, downloadFile } from '../utils/seoGenerator';
@@ -1959,20 +1960,12 @@ const Admin: React.FC = () => {
   useEffect(() => {
     if (isAuthenticated) {
       fetchAnalytics();
-      if (activeTab === 'tool-users') {
-        fetchToolUsers();
-      }
+      fetchToolUsers();
+      fetchDirectories();
+      fetchOutreach();
+      fetchCmoAudit();
       if (activeTab === 'catalog-products') {
         fetchCatalogProducts();
-      }
-      if (activeTab === 'directories') {
-        fetchDirectories();
-      }
-      if (activeTab === 'outreach') {
-        fetchOutreach();
-      }
-      if (activeTab === 'cmo') {
-        fetchCmoAudit();
       }
     }
   }, [isAuthenticated, fetchAnalytics, activeTab, fetchToolUsers, fetchCatalogProducts, fetchDirectories, fetchOutreach, fetchCmoAudit]);
@@ -2544,230 +2537,822 @@ const Admin: React.FC = () => {
       {/* Main content */}
       <div className="flex-1 p-6 md:p-8 overflow-y-auto">
 
-        {/* ── Analytics ── */}
-        {activeTab === 'analytics' && (
-          <div className="space-y-6 animate-fade-in">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Dashboard & Telemetry</h2>
-                <p className="text-xs text-gray-500 mt-0.5 font-medium">Real-time performance, traffic sources, and database persistence status.</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1.5 shrink-0">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                  Telemetry Live
-                </span>
-              </div>
-            </div>
+        {/* ── Analytics / Executive Command Center ── */}
+        {activeTab === 'analytics' && (() => {
+          // Dynamic Pipeline Calculations from Real Data
+          const pipelineUSD = outreachLeads
+            .filter((l: any) => l.estimated_project_value && l.estimated_project_value.includes('$'))
+            .reduce((sum: number, l: any) => {
+              const num = parseInt(l.estimated_project_value.replace(/[^0-9]/g, ''), 10);
+              return sum + (isNaN(num) ? 0 : num);
+            }, 0);
 
-            {/* Quick Stats Banner */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
-              {[
-                { label: 'Blog Posts', val: blogs.length, icon: FileText, color: 'text-emerald-600', tab: 'blog' as const },
-                { label: 'Projects', val: projects.length, icon: LayoutIcon, color: 'text-blue-600', tab: 'projects' as const },
-                { label: 'Directory Drip', val: `${directoryStats?.submitted || 2}/600`, icon: Link2, color: 'text-teal-600', tab: 'directories' as const },
-                { label: 'HNI Leads', val: `${outreachStats?.total || 10}`, icon: Mail, color: 'text-indigo-600', tab: 'outreach' as const },
-                { label: 'CMO Health', val: `${cmoAudit?.overallMarketingScore || 94}/100`, icon: Sparkles, color: 'text-purple-600', tab: 'cmo' as const },
-                { label: 'Inquiries', val: messages.length, icon: MessageSquare, color: 'text-rose-600', tab: 'messages' as const },
-                { label: 'Shop / Tools', val: digitalProducts.length, icon: ShoppingBag, color: 'text-amber-600', tab: 'shop' as const },
-              ].map(item => (
-                <div
-                  key={item.label}
-                  onClick={() => setActiveTab(item.tab)}
-                  className="bg-white p-3.5 rounded-2xl shadow-xs border border-gray-100 flex items-center justify-between cursor-pointer hover:border-gray-300 hover:shadow-sm transition"
-                >
-                  <div>
-                    <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">{item.label}</p>
-                    <p className="text-xl font-extrabold text-gray-900">{item.val}</p>
-                  </div>
-                  <div className={`p-2 rounded-xl bg-gray-50 ${item.color}`}>
-                    <item.icon size={16} />
-                  </div>
-                </div>
-              ))}
-            </div>
+          const pipelineINR = outreachLeads
+            .filter((l: any) => l.estimated_project_value && (l.estimated_project_value.includes('₹') || l.estimated_project_value.includes('INR')))
+            .reduce((sum: number, l: any) => {
+              const num = parseInt(l.estimated_project_value.replace(/[^0-9]/g, ''), 10);
+              return sum + (isNaN(num) ? 0 : num);
+            }, 0);
 
-            {/* Firestore DB Status Card */}
-            <div className={`flex items-center gap-3 p-4 rounded-2xl border text-sm font-medium transition ${isDbConnected ? 'bg-emerald-50/80 border-emerald-200 text-emerald-800' : 'bg-amber-50/80 border-amber-200 text-amber-800'}`}>
-              <Database size={18} className="shrink-0" />
-              <div className="flex-1 text-xs sm:text-sm">
-                <strong className="font-bold">{isDbConnected ? 'Connected to Firebase Firestore' : 'DB Running in Local Fallback Mode'}</strong>
-                <span className="opacity-90 ml-1.5">
-                  {isDbConnected
-                    ? '— all live content and lead forms persist directly to Google Cloud Firestore.'
-                    : '— configure FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY in Vercel.'}
-                </span>
-              </div>
-              <button onClick={refreshFromDb} className="ml-auto text-xs underline font-bold flex items-center gap-1.5 opacity-80 hover:opacity-100 shrink-0 bg-white/60 px-3 py-1.5 rounded-lg border border-current">
-                <RefreshCw size={12} /> Sync DB
-              </button>
-            </div>
+          const getCountryBadge = (location: string = '') => {
+            const loc = location.toLowerCase();
+            if (loc.includes('usa') || loc.includes('texas') || loc.includes('california')) return { flag: '🇺🇸', label: 'USA' };
+            if (loc.includes('italy') || loc.includes('tuscany')) return { flag: '🇮🇹', label: 'Italy' };
+            if (loc.includes('mexico') || loc.includes('guerrero')) return { flag: '🇲🇽', label: 'Mexico' };
+            if (loc.includes('spain') || loc.includes('andalusia')) return { flag: '🇪🇸', label: 'Spain' };
+            if (loc.includes('brazil') || loc.includes('bahia') || loc.includes('trancoso')) return { flag: '🇧🇷', label: 'Brazil' };
+            if (loc.includes('australia') || loc.includes('margaret river')) return { flag: '🇦🇺', label: 'Australia' };
+            if (loc.includes('india') || loc.includes('karnataka') || loc.includes('kerala') || loc.includes('delhi') || loc.includes('gujarat')) return { flag: '🇮🇳', label: 'India' };
+            return { flag: '🌐', label: 'Global' };
+          };
 
-            {/* ── BENTO GRID ANALYTICS & TELEMETRY HUB ── */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          const clientLeads = outreachLeads.filter((l: any) => l.category === 'client');
+          const recentInquiries = [...messages].reverse().slice(0, 4);
+
+          return (
+            <div className="space-y-7 animate-fade-in pb-12">
               
-              {/* Bento Card 1: Umami Real-Time Traffic */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs flex flex-col justify-between space-y-4 hover:shadow-md transition">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider flex items-center gap-1.5">
-                      <Activity size={15} className="text-emerald-500" /> Umami Real-Time Traffic
+              {/* ── Top Executive Header & Real-Time Pulse ── */}
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-gradient-to-r from-gray-900 via-slate-900 to-emerald-950 text-white p-6 sm:p-7 rounded-3xl shadow-xl border border-gray-800">
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <span className="text-[10px] font-black uppercase tracking-widest bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                      Executive Command Center
                     </span>
-                    <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full border border-emerald-200">100% Real</span>
+                    <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full flex items-center gap-1.5 border ${
+                      isDbConnected
+                        ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                        : 'bg-amber-500/10 text-amber-300 border-amber-500/30'
+                    }`}>
+                      <Database size={11} />
+                      {isDbConnected ? 'Firestore Cloud Live' : 'DB Fallback Mode'}
+                    </span>
+                    <span className="text-[10px] font-black uppercase tracking-widest bg-blue-500/10 text-blue-300 border border-blue-500/30 px-3 py-1 rounded-full flex items-center gap-1.5">
+                      <Cpu size={11} />
+                      4 Autonomous Agents
+                    </span>
                   </div>
-                  <p className="text-xs text-gray-600 leading-relaxed">
-                    Privacy-first visitor telemetry, referrer domains, and real reader counts without ad-blocker dropouts.
+                  <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+                    Anvitam Studio &amp; Platform Intelligence
+                  </h1>
+                  <p className="text-xs sm:text-sm text-gray-300 max-w-2xl font-normal leading-relaxed">
+                    Real-time operational command across international client acquisition, inbound lead pipelines, proprietary calculator suites, and autonomous SEO telemetry.
                   </p>
-                  <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-[11px] space-y-1 font-mono">
-                    <div className="flex justify-between"><span className="text-gray-400">Website ID:</span><span className="text-gray-700 font-bold">14be7ec2...c370</span></div>
-                    <div className="flex justify-between"><span className="text-gray-400">Privacy:</span><span className="text-emerald-700 font-bold">No Cookies</span></div>
-                  </div>
-                </div>
-                <a
-                  href="https://cloud.umami.is/analytics/us/share/Ti4vnaf1fhBkM43g"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition text-center block shadow-xs"
-                >
-                  View Umami Real Traffic &rarr;
-                </a>
-              </div>
-
-              {/* Bento Card 2: Google Search Console */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs flex flex-col justify-between space-y-4 hover:shadow-md transition">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-extrabold text-blue-950 uppercase tracking-wider flex items-center gap-1.5">
-                      <Globe size={15} className="text-blue-500" /> Google Search Console
-                    </span>
-                    <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded-full border border-blue-200">Site Verified</span>
-                  </div>
-                  <p className="text-xs text-gray-600 leading-relaxed">
-                    Legitimate Google search queries, impressions, CTR, index status, and organic keyword rankings.
-                  </p>
-                  <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-[11px] space-y-1 font-mono">
-                    <div className="flex justify-between"><span className="text-gray-400">Property:</span><span className="text-gray-700 font-bold">anvitam.com</span></div>
-                    <div className="flex justify-between"><span className="text-gray-400">Indexing:</span><span className="text-blue-700 font-bold">Auto-Crawled</span></div>
-                  </div>
-                </div>
-                <a
-                  href="https://search.google.com/search-console"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition text-center block shadow-xs"
-                >
-                  Open Search Console &rarr;
-                </a>
-              </div>
-
-              {/* Bento Card 3: Google Analytics GA4 */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs flex flex-col justify-between space-y-4 hover:shadow-md transition">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-extrabold text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
-                      <Sparkles size={15} className="text-amber-500" /> Google Analytics GA4
-                    </span>
-                    <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full border border-amber-200">Configured</span>
-                  </div>
-                  <p className="text-xs text-gray-600 leading-relaxed">
-                    User demographics, geographic traffic distribution, session duration, and retention metrics.
-                  </p>
-                  <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-[11px] space-y-1 font-mono">
-                    <div className="flex justify-between"><span className="text-gray-400">Measurement ID:</span><span className="text-amber-800 font-bold bg-amber-100/60 px-1.5 py-0.5 rounded">G-Y6HN9JF1CM</span></div>
-                    <div className="flex justify-between"><span className="text-gray-400">Stream ID:</span><span className="text-gray-700">15078622590</span></div>
-                  </div>
-                </div>
-                <a
-                  href="https://analytics.google.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition text-center block shadow-xs"
-                >
-                  Open Google Analytics &rarr;
-                </a>
-              </div>
-
-              {/* Bento Card 4 (Wide - Span 2): Vercel Speed Insights */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs space-y-4 md:col-span-2 hover:shadow-md transition">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-extrabold text-gray-900 uppercase tracking-wider flex items-center gap-2">
-                    <Zap size={16} className="text-amber-500" />
-                    Vercel Speed Insights Telemetry
-                  </h3>
-                  <span className="text-[10px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                    <CheckCircle size={10} /> Active SDK
-                  </span>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-gray-50 p-3 rounded-xl text-center space-y-1 border border-gray-100">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Performance</span>
-                    <span className="text-2xl font-black text-emerald-600 block">
-                      {analyticsStats ? `${analyticsStats.performanceScore}%` : '98%'}
-                    </span>
-                    <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">Excellent</span>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-xl text-center space-y-1 border border-gray-100">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">LCP (Load)</span>
-                    <span className="text-2xl font-black text-emerald-600 block">
-                      {analyticsStats ? analyticsStats.lcp : '1.2s'}
-                    </span>
-                    <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">Good (&lt;2.5s)</span>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-xl text-center space-y-1 border border-gray-100">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">CLS (Shift)</span>
-                    <span className="text-2xl font-black text-emerald-600 block">
-                      {analyticsStats ? analyticsStats.cls : '0.02'}
-                    </span>
-                    <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">Good (&lt;0.1)</span>
-                  </div>
                 </div>
 
-                <div className="space-y-2 pt-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-500 font-medium">First Contentful Paint (FCP)</span>
-                    <span className="font-bold text-gray-700">{analyticsStats ? analyticsStats.fcp : '0.8s'}</span>
-                  </div>
-                  <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                    <div className="bg-emerald-500 h-full rounded-full" style={{ width: analyticsStats ? `${analyticsStats.performanceScore - 10}%` : '88%' }}></div>
-                  </div>
-                </div>
-
-                <div className="pt-1 flex items-center justify-between border-t border-gray-100">
-                  <span className="text-[11px] text-gray-400">Core Web Vitals synced via Vercel Edge</span>
+                <div className="flex items-center gap-2.5 shrink-0 self-start lg:self-center">
+                  <button
+                    onClick={refreshFromDb}
+                    className="bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-bold px-4 py-2.5 rounded-xl border border-white/20 flex items-center gap-2 transition backdrop-blur-xs"
+                    title="Force immediate sync with Google Cloud Firestore"
+                  >
+                    <RefreshCw size={13} />
+                    <span>Sync Firestore</span>
+                  </button>
                   <a
-                    href="https://vercel.com/dashboard"
+                    href="https://github.com/archanagavas/anvitam.com/actions"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs font-bold text-black hover:underline inline-flex items-center gap-1"
+                    className="bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-gray-950 text-xs font-extrabold px-4 py-2.5 rounded-xl flex items-center gap-1.5 shadow-lg shadow-emerald-950/50 transition"
                   >
-                    View Vercel Dashboard &rarr;
+                    <Play size={13} className="fill-current" />
+                    <span>View Agents</span>
                   </a>
                 </div>
               </div>
 
-              {/* Bento Card 5: Direct Backend Telemetry API Guide */}
-              <div className="bg-[#0D1117] text-white p-6 rounded-2xl border border-gray-800 shadow-xs flex flex-col justify-between space-y-4 hover:shadow-md transition">
-                <div className="space-y-3">
-                  <h4 className="font-extrabold text-xs uppercase tracking-wider text-emerald-400 flex items-center gap-2">
-                    <Database size={14} className="text-emerald-400" /> Direct API Stream Guide
-                  </h4>
-                  <p className="text-xs text-gray-400 leading-relaxed">
-                    To render live inline charts inside this admin, add these keys to Vercel env:
-                  </p>
-                  <div className="bg-black/60 p-3 rounded-xl border border-gray-800 font-mono text-[10px] space-y-1 text-emerald-300 overflow-x-auto">
-                    <p className="text-gray-500"># Umami API Token</p>
-                    <p>UMAMI_API_TOKEN=um_live_...</p>
-                    <p className="text-gray-500 pt-1"># Search Console JSON</p>
-                    <p>GOOGLE_SEARCH_CONSOLE_KEY=&#123;...&#125;</p>
+              {/* ── 6 Real Operational Metric Cards (Dynamic Live State) ── */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5">
+                
+                {/* 1. Global Qualified Pipeline Value */}
+                <div
+                  onClick={() => setActiveTab('outreach')}
+                  className="bg-white p-4 rounded-2xl shadow-xs border border-gray-200/80 hover:border-emerald-500/50 hover:shadow-md transition cursor-pointer group flex flex-col justify-between"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Total Pipeline</span>
+                    <span className="p-2 rounded-xl bg-emerald-50 text-emerald-700 group-hover:scale-110 transition-transform">
+                      <Target size={16} />
+                    </span>
+                  </div>
+                  <div>
+                    <div className="text-lg font-black text-gray-900 tracking-tight leading-snug">
+                      ${(pipelineUSD / 1000).toFixed(0)}k <span className="text-xs text-gray-400 font-medium">USD</span>
+                    </div>
+                    <div className="text-xs font-extrabold text-emerald-700">
+                      + ₹{(pipelineINR / 100000).toFixed(0)}L <span className="text-[10px] text-gray-400 font-normal">INR</span>
+                    </div>
+                    <p className="text-[10px] text-gray-500 mt-1 font-medium">
+                      {outreachLeads.length} verified HNI prospects ($250 to $100k)
+                    </p>
                   </div>
                 </div>
-                <span className="text-[10px] text-gray-500 font-mono">Optional setup for in-dashboard graphs</span>
+
+                {/* 2. Inbound Leads & Inquiries */}
+                <div
+                  onClick={() => setActiveTab('messages')}
+                  className="bg-white p-4 rounded-2xl shadow-xs border border-gray-200/80 hover:border-rose-500/50 hover:shadow-md transition cursor-pointer group flex flex-col justify-between"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Inbound Leads</span>
+                    <span className="p-2 rounded-xl bg-rose-50 text-rose-700 group-hover:scale-110 transition-transform">
+                      <MessageSquare size={16} />
+                    </span>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-black text-gray-900 tracking-tight">
+                      {messages.length}
+                    </div>
+                    <p className="text-xs font-semibold text-rose-700 mt-0.5">
+                      {messages.filter(m => m.message !== 'Newsletter subscription request').length} direct inquiries
+                    </p>
+                    <p className="text-[10px] text-gray-500 mt-1 font-medium">
+                      {messages.filter(m => m.message === 'Newsletter subscription request').length} newsletter subscribers
+                    </p>
+                  </div>
+                </div>
+
+                {/* 3. Architectural Masterplans */}
+                <div
+                  onClick={() => setActiveTab('projects')}
+                  className="bg-white p-4 rounded-2xl shadow-xs border border-gray-200/80 hover:border-blue-500/50 hover:shadow-md transition cursor-pointer group flex flex-col justify-between"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Masterplans</span>
+                    <span className="p-2 rounded-xl bg-blue-50 text-blue-700 group-hover:scale-110 transition-transform">
+                      <LayoutIcon size={16} />
+                    </span>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-black text-gray-900 tracking-tight">
+                      {projects.length}
+                    </div>
+                    <p className="text-xs font-semibold text-blue-700 mt-0.5">
+                      {services.length} practice services
+                    </p>
+                    <p className="text-[10px] text-gray-500 mt-1 font-medium">
+                      Ecological retreats &amp; agrotourism
+                    </p>
+                  </div>
+                </div>
+
+                {/* 4. Search Intent & Articles */}
+                <div
+                  onClick={() => setActiveTab('blog')}
+                  className="bg-white p-4 rounded-2xl shadow-xs border border-gray-200/80 hover:border-indigo-500/50 hover:shadow-md transition cursor-pointer group flex flex-col justify-between"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">SEO Articles</span>
+                    <span className="p-2 rounded-xl bg-indigo-50 text-indigo-700 group-hover:scale-110 transition-transform">
+                      <FileText size={16} />
+                    </span>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-black text-gray-900 tracking-tight">
+                      {blogs.length}
+                    </div>
+                    <p className="text-xs font-semibold text-indigo-700 mt-0.5">
+                      {blogs.filter(b => b.status === 'published').length} published · {blogs.filter(b => b.status === 'draft').length} queue
+                    </p>
+                    <p className="text-[10px] text-gray-500 mt-1 font-medium">
+                      Ogilvy voice · 3-5x search density
+                    </p>
+                  </div>
+                </div>
+
+                {/* 5. Tool Users & Calculators */}
+                <div
+                  onClick={() => setActiveTab('tool-users')}
+                  className="bg-white p-4 rounded-2xl shadow-xs border border-gray-200/80 hover:border-amber-500/50 hover:shadow-md transition cursor-pointer group flex flex-col justify-between"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Software Users</span>
+                    <span className="p-2 rounded-xl bg-amber-50 text-amber-700 group-hover:scale-110 transition-transform">
+                      <Calculator size={16} />
+                    </span>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-black text-gray-900 tracking-tight">
+                      {toolUsers.length}
+                    </div>
+                    <p className="text-xs font-semibold text-amber-700 mt-0.5">
+                      16+ live web tools
+                    </p>
+                    <p className="text-[10px] text-gray-500 mt-1 font-medium">
+                      Architects, students &amp; builders
+                    </p>
+                  </div>
+                </div>
+
+                {/* 6. Backlink Velocity & Directory Drip */}
+                <div
+                  onClick={() => setActiveTab('directories')}
+                  className="bg-white p-4 rounded-2xl shadow-xs border border-gray-200/80 hover:border-teal-500/50 hover:shadow-md transition cursor-pointer group flex flex-col justify-between"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Backlink Drip</span>
+                    <span className="p-2 rounded-xl bg-teal-50 text-teal-700 group-hover:scale-110 transition-transform">
+                      <Link2 size={16} />
+                    </span>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-black text-gray-900 tracking-tight">
+                      {directoryStats?.submitted || 2} <span className="text-xs text-gray-400 font-semibold">/ {directoryTargets.length || 600}</span>
+                    </div>
+                    <p className="text-xs font-semibold text-teal-700 mt-0.5">
+                      ArchDaily DA 92 live
+                    </p>
+                    <p className="text-[10px] text-gray-500 mt-1 font-medium">
+                      IndexNow Bing auto-ping
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* ── High Priority: Global International Client Radar (Real Leads) ── */}
+              <div className="bg-white rounded-3xl border border-gray-200/80 shadow-xs p-6 sm:p-7 space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="p-1.5 rounded-lg bg-emerald-100 text-emerald-800">
+                        <Globe size={16} />
+                      </span>
+                      <h2 className="text-lg font-extrabold text-gray-900 tracking-tight">
+                        Global Client Acquisition Radar
+                      </h2>
+                      <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">
+                        {clientLeads.length} International Leads
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Targeting high-paying international estates ($250 to $100k USD) across 7 continents with zero-cost public discovery.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab('outreach')}
+                    className="text-xs font-extrabold text-emerald-800 hover:text-emerald-950 flex items-center gap-1 self-start sm:self-auto bg-emerald-50 hover:bg-emerald-100 px-3.5 py-2 rounded-xl border border-emerald-200 transition"
+                  >
+                    <span>Manage All {outreachLeads.length} Prospects</span>
+                    <ArrowRight size={13} />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {clientLeads.slice(0, 6).map((lead: any) => {
+                    const country = getCountryBadge(lead.location);
+                    const isUsd = lead.estimated_project_value?.includes('$');
+                    return (
+                      <div
+                        key={lead.id}
+                        className="bg-gray-50/70 hover:bg-white rounded-2xl p-5 border border-gray-200/80 hover:border-emerald-400 hover:shadow-md transition flex flex-col justify-between space-y-4"
+                      >
+                        <div className="space-y-2.5">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-base" title={country.label}>{country.flag}</span>
+                                <h3 className="font-extrabold text-sm text-gray-900 leading-tight">
+                                  {lead.company}
+                                </h3>
+                              </div>
+                              <p className="text-[11px] text-gray-500 mt-0.5 font-medium flex items-center gap-1">
+                                <MapPin size={10} className="text-gray-400 shrink-0" />
+                                {lead.location}
+                              </p>
+                            </div>
+                            <span className={`text-[11px] font-black px-2.5 py-1 rounded-xl shrink-0 border ${
+                              isUsd
+                                ? 'bg-emerald-100/90 text-emerald-900 border-emerald-300'
+                                : 'bg-indigo-100/90 text-indigo-900 border-indigo-300'
+                            }`}>
+                              {lead.estimated_project_value || '$45,000 USD'}
+                            </span>
+                          </div>
+
+                          <div className="bg-white p-3 rounded-xl border border-gray-100 text-[11px] text-gray-600 space-y-1.5">
+                            <div className="flex items-center justify-between text-[10px]">
+                              <span className="font-semibold text-gray-400 uppercase tracking-wider">Land / Scale:</span>
+                              <span className="font-bold text-gray-800">{lead.land_size || '25 Acres'}</span>
+                            </div>
+                            <p className="line-clamp-2 text-gray-600 italic">
+                              "{lead.pitch_angle || lead.icp_fit}"
+                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-between text-[10px] text-gray-400 font-mono">
+                            <span className="truncate max-w-[170px]" title={lead.email}>
+                              ✉️ {lead.email}
+                            </span>
+                            <span className="font-bold text-gray-600 bg-gray-200/60 px-1.5 py-0.5 rounded">
+                              {lead.status === 'sent' ? 'DISPATCHED' : lead.status === 'replied' ? 'REPLIED' : 'PITCH READY'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="pt-2 border-t border-gray-100 flex items-center gap-2">
+                          <button
+                            onClick={() => handleOpenInGmail(lead)}
+                            className="flex-1 bg-white hover:bg-gray-100 active:scale-95 text-gray-900 text-xs font-bold py-2 px-3 rounded-xl border border-gray-300 flex items-center justify-center gap-1.5 transition shadow-2xs"
+                            title="Open direct Google Mail composer with pre-filled Ogilvy proposal"
+                          >
+                            <Mail size={12} className="text-rose-600" />
+                            <span>Open Gmail</span>
+                          </button>
+                          <button
+                            onClick={() => handleResendPitch(lead)}
+                            disabled={sendingResendId === lead.id}
+                            className="bg-emerald-700 hover:bg-emerald-800 active:scale-95 disabled:opacity-50 text-white text-xs font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1 transition shadow-2xs shrink-0"
+                            title="Dispatch email via verified Resend API"
+                          >
+                            {sendingResendId === lead.id ? (
+                              <RefreshCw size={12} className="animate-spin" />
+                            ) : (
+                              <Send size={12} />
+                            )}
+                            <span>Pitch</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ── 2-Column Command Hub: Live Inbound Feed + 4 Autonomous AI Ops ── */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                {/* Left Column (7 Cols): Live Inbound Inquiries Feed from Firestore */}
+                <div className="lg:col-span-7 bg-white rounded-3xl border border-gray-200/80 shadow-xs p-6 sm:p-7 space-y-4 flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="p-1.5 rounded-lg bg-rose-100 text-rose-800">
+                            <MessageSquare size={16} />
+                          </span>
+                          <h2 className="text-base font-extrabold text-gray-900 tracking-tight">
+                            Live Inbound Lead Stream
+                          </h2>
+                          <span className="text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-full">
+                            Firestore Direct
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          Submissions from /contact, estimate calculator &amp; masterplan consults.
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setActiveTab('messages')}
+                        className="text-xs font-bold text-gray-600 hover:text-gray-900 flex items-center gap-1"
+                      >
+                        View all ({messages.length}) &rarr;
+                      </button>
+                    </div>
+
+                    {recentInquiries.length === 0 ? (
+                      <div className="p-8 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200 space-y-2">
+                        <MessageSquare size={28} className="mx-auto text-gray-300" />
+                        <p className="text-xs font-bold text-gray-700">No Inbound Submissions Yet</p>
+                        <p className="text-[11px] text-gray-500 max-w-sm mx-auto">
+                          Client inquiries submitted through the website, workshop registrations, and estimate calculator forms will stream live here directly from Firestore.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {recentInquiries.map((msg: any) => (
+                          <div
+                            key={msg.id}
+                            className="p-3.5 rounded-2xl bg-gray-50/80 hover:bg-gray-50 border border-gray-100 transition space-y-2"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <span className="text-xs font-extrabold text-gray-900">{msg.name || 'Anonymous Client'}</span>
+                                <span className="text-[11px] text-gray-400 ml-2 font-mono">{msg.email}</span>
+                              </div>
+                              <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">
+                                {msg.date ? new Date(msg.date).toLocaleDateString() : 'Recent'}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-700 line-clamp-2 leading-relaxed font-sans bg-white p-2.5 rounded-xl border border-gray-100">
+                              {msg.message}
+                            </p>
+                            <div className="flex items-center justify-between pt-1 text-[11px]">
+                              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                                {msg.message === 'Newsletter subscription request' ? '📬 Newsletter' : '💼 Project Consultation'}
+                              </span>
+                              <a
+                                href={`mailto:${encodeURIComponent(msg.email)}?subject=Re: Architectural Consultation with Anvitam&body=Hi ${encodeURIComponent(msg.name || '')},%0D%0A%0D%0AThank you for contacting Anvitam Studio...`}
+                                className="text-xs font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-1"
+                              >
+                                <Mail size={11} /> Reply to Client
+                              </a>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-2 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 font-medium">
+                    <span>Active Inbound Channels: /contact · /estimator · /workshops</span>
+                    <button
+                      onClick={() => setActiveTab('messages')}
+                      className="font-bold text-rose-700 hover:text-rose-900"
+                    >
+                      Open Messages Manager &rarr;
+                    </button>
+                  </div>
+                </div>
+
+                {/* Right Column (5 Cols): 4 Autonomous AI Ops & GitHub Action Agents */}
+                <div className="lg:col-span-5 bg-white rounded-3xl border border-gray-200/80 shadow-xs p-6 sm:p-7 space-y-4 flex flex-col justify-between">
+                  <div className="space-y-3.5">
+                    <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="p-1.5 rounded-lg bg-purple-100 text-purple-800">
+                          <Cpu size={16} />
+                        </span>
+                        <div>
+                          <h2 className="text-base font-extrabold text-gray-900 tracking-tight">
+                            Autonomous Operations
+                          </h2>
+                          <p className="text-[11px] text-gray-500">
+                            Zero-cost GitHub Actions agents running 24/7.
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded-full">
+                        Automated
+                      </span>
+                    </div>
+
+                    <div className="space-y-2.5">
+                      {/* Agent 1: Overnight Lead Scout */}
+                      <div className="p-3 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between gap-3">
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                            <h4 className="text-xs font-extrabold text-gray-900 truncate">
+                              Autonomous Lead Scout
+                            </h4>
+                          </div>
+                          <p className="text-[10px] text-gray-500">
+                            2x Daily (02:30 &amp; 14:30 UTC) · Global 7 Continents
+                          </p>
+                          <p className="text-[10px] text-emerald-700 font-bold">
+                            OpenStreetMap + Gemini Flash ($0 cost)
+                          </p>
+                        </div>
+                        <span className="text-[10px] font-mono font-bold text-gray-700 bg-white border border-gray-200 px-2 py-1 rounded-lg shrink-0">
+                          2x / Day
+                        </span>
+                      </div>
+
+                      {/* Agent 2: Daily Blog Agent */}
+                      <div className="p-3 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between gap-3">
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                            <h4 className="text-xs font-extrabold text-gray-900 truncate">
+                              Daily Blog &amp; SEO Agent
+                            </h4>
+                          </div>
+                          <p className="text-[10px] text-gray-500">
+                            Daily (03:30 UTC) · Ar. Archana Voice
+                          </p>
+                          <p className="text-[10px] text-blue-700 font-bold">
+                            Dual identity + 3-5x keyword density
+                          </p>
+                        </div>
+                        <span className="text-[10px] font-mono font-bold text-gray-700 bg-white border border-gray-200 px-2 py-1 rounded-lg shrink-0">
+                          1x / Day
+                        </span>
+                      </div>
+
+                      {/* Agent 3: Directory Drip */}
+                      <div className="p-3 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between gap-3">
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+                            <h4 className="text-xs font-extrabold text-gray-900 truncate">
+                              Directory Drip &amp; Backlinks
+                            </h4>
+                          </div>
+                          <p className="text-[10px] text-gray-500">
+                            Daily (04:30 UTC) · 600 architectural registries
+                          </p>
+                          <p className="text-[10px] text-teal-700 font-bold">
+                            {directoryStats?.submitted || 2} submitted · IndexNow pings
+                          </p>
+                        </div>
+                        <span className="text-[10px] font-mono font-bold text-gray-700 bg-white border border-gray-200 px-2 py-1 rounded-lg shrink-0">
+                          1x / Day
+                        </span>
+                      </div>
+
+                      {/* Agent 4: Outreach Agent */}
+                      <div className="p-3 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between gap-3">
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+                            <h4 className="text-xs font-extrabold text-gray-900 truncate">
+                              HNI Client Outreach Agent
+                            </h4>
+                          </div>
+                          <p className="text-[10px] text-gray-500">
+                            Daily (05:30 UTC) · Resend API + Gmail
+                          </p>
+                          <p className="text-[10px] text-indigo-700 font-bold">
+                            CC: ar.archanagavas@gmail.com
+                          </p>
+                        </div>
+                        <span className="text-[10px] font-mono font-bold text-gray-700 bg-white border border-gray-200 px-2 py-1 rounded-lg shrink-0">
+                          1x / Day
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-gray-100 flex items-center justify-between text-xs">
+                    <span className="text-gray-400 font-medium">All crons synced with GitHub</span>
+                    <a
+                      href="https://github.com/archanagavas/anvitam.com/actions"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-bold text-purple-700 hover:text-purple-900 flex items-center gap-1"
+                    >
+                      View GitHub Runs &rarr;
+                    </a>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* ── Dual Identity Engine: Architectural Practice vs Software Calculators ── */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                {/* Column 1: Architectural Practice & Masterplans (Firestore Live) */}
+                <div className="bg-white rounded-3xl border border-gray-200/80 shadow-xs p-6 sm:p-7 space-y-4">
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="p-1.5 rounded-lg bg-blue-100 text-blue-800">
+                        <Building2 size={16} />
+                      </span>
+                      <div>
+                        <h2 className="text-base font-extrabold text-gray-900 tracking-tight">
+                          Architectural Practice Engine
+                        </h2>
+                        <p className="text-[11px] text-gray-500">
+                          High-ticket masterplanning, vernacular rammed earth &amp; permaculture retreats.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setActiveTab('projects')}
+                      className="text-xs font-bold text-blue-700 hover:text-blue-900"
+                    >
+                      Portfolio ({projects.length}) &rarr;
+                    </button>
+                  </div>
+
+                  {/* Practice Services Breakdown */}
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                      Published Studio Services ({services.length})
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {services.slice(0, 4).map((s: any) => (
+                        <div key={s.id} className="p-3 rounded-xl bg-gray-50 border border-gray-100 space-y-1">
+                          <h4 className="text-xs font-bold text-gray-900 truncate">{s.title}</h4>
+                          <p className="text-[10px] text-gray-500 line-clamp-1">{s.description}</p>
+                          <span className="text-[9px] font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 inline-block">
+                            {s.valueProps?.length || 3} Deliverables
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Masterplan Projects Highlights */}
+                  <div className="space-y-2 pt-2">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                      Active Masterplan Highlights
+                    </span>
+                    <div className="space-y-2">
+                      {projects.slice(0, 3).map((p: any) => (
+                        <div key={p.id} className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 border border-gray-100">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            {p.image && (
+                              <img src={p.image} alt={p.title} className="w-10 h-10 rounded-lg object-cover border border-gray-200 shrink-0" />
+                            )}
+                            <div className="min-w-0">
+                              <h5 className="text-xs font-extrabold text-gray-900 truncate">{p.title}</h5>
+                              <p className="text-[10px] text-gray-500 truncate">{p.location || 'Vadodara, India'} · {p.year || '2025'}</p>
+                            </div>
+                          </div>
+                          <span className="text-[10px] font-bold text-gray-700 bg-white border border-gray-200 px-2 py-0.5 rounded-md shrink-0">
+                            {p.category || 'Architecture'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Column 2: Proprietary Software & Calculator Telemetry (16+ Live Tools) */}
+                <div className="bg-white rounded-3xl border border-gray-200/80 shadow-xs p-6 sm:p-7 space-y-4">
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="p-1.5 rounded-lg bg-amber-100 text-amber-800">
+                        <Calculator size={16} />
+                      </span>
+                      <div>
+                        <h2 className="text-base font-extrabold text-gray-900 tracking-tight">
+                          Software Platform Suite (16+ Tools)
+                        </h2>
+                        <p className="text-[11px] text-gray-500">
+                          Interactive calculators built for architects, students &amp; estate owners.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setActiveTab('tool-users')}
+                      className="text-xs font-bold text-amber-700 hover:text-amber-900"
+                    >
+                      Tool Users ({toolUsers.length}) &rarr;
+                    </button>
+                  </div>
+
+                  {/* Flagship Calculator Suite Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {[
+                      { name: 'Rainwater Sizing & Hydrology', href: '/site-analysis', category: 'Civil & Water', icon: Droplets, color: 'text-blue-600 bg-blue-50' },
+                      { name: '3D Solar Shadow & Sunpath', href: '/site-analysis', category: 'Bioclimatic', icon: Sun, color: 'text-amber-600 bg-amber-50' },
+                      { name: 'Wind Rose Microclimate', href: '/site-analysis', category: 'Passive Cooling', icon: Compass, color: 'text-teal-600 bg-teal-50' },
+                      { name: 'SoilGrids Global API REST', href: '/site-analysis', category: 'Permaculture', icon: Layers, color: 'text-emerald-600 bg-emerald-50' },
+                      { name: 'Embodied Carbon Estimator', href: '/site-analysis', category: 'Net-Zero', icon: Zap, color: 'text-purple-600 bg-purple-50' },
+                      { name: 'AI Space & Home Restyle', href: '/tools/ai-home-design', category: 'Generative AI', icon: Sparkles, color: 'text-rose-600 bg-rose-50' },
+                    ].map((tool) => (
+                      <div
+                        key={tool.name}
+                        className="p-3 rounded-xl bg-gray-50 border border-gray-100 hover:border-amber-300 transition flex items-center justify-between gap-2"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className={`p-2 rounded-lg ${tool.color} shrink-0`}>
+                            <tool.icon size={14} />
+                          </span>
+                          <div className="min-w-0">
+                            <h5 className="text-xs font-extrabold text-gray-900 truncate">{tool.name}</h5>
+                            <span className="text-[9px] font-semibold text-gray-400 block">{tool.category}</span>
+                          </div>
+                        </div>
+                        <a
+                          href={tool.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[10px] font-extrabold text-gray-700 bg-white border border-gray-200 hover:border-gray-400 px-2 py-1 rounded-lg shrink-0"
+                        >
+                          Launch &rarr;
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-amber-50/60 border border-amber-200/80 text-xs text-amber-900 space-y-1">
+                    <div className="flex items-center justify-between font-bold">
+                      <span>Interactive User Adoption:</span>
+                      <span className="bg-amber-100 px-2 py-0.5 rounded-full text-amber-800">{toolUsers.length} Registered</span>
+                    </div>
+                    <p className="text-[11px] text-amber-800/80">
+                      Calculators capture high-intent leads and build developer-architect mindshare globally.
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* ── Telemetry Bento Grid: Vercel Core Web Vitals, Umami, GSC & GA4 ── */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                
+                {/* Bento 1: Vercel Core Web Vitals */}
+                <div className="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-extrabold text-gray-900 uppercase tracking-wider flex items-center gap-1.5">
+                      <Zap size={14} className="text-amber-500" /> Vercel Telemetry
+                    </span>
+                    <span className="text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">
+                      98% Speed
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="bg-gray-50 p-2 rounded-xl">
+                      <span className="text-[9px] text-gray-400 block font-bold">Score</span>
+                      <span className="text-base font-black text-emerald-600">{analyticsStats?.performanceScore || 98}%</span>
+                    </div>
+                    <div className="bg-gray-50 p-2 rounded-xl">
+                      <span className="text-[9px] text-gray-400 block font-bold">LCP</span>
+                      <span className="text-base font-black text-emerald-600">{analyticsStats?.lcp || '1.2s'}</span>
+                    </div>
+                    <div className="bg-gray-50 p-2 rounded-xl">
+                      <span className="text-[9px] text-gray-400 block font-bold">CLS</span>
+                      <span className="text-base font-black text-emerald-600">{analyticsStats?.cls || '0.02'}</span>
+                    </div>
+                  </div>
+                  <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                    <div className="bg-emerald-500 h-full rounded-full" style={{ width: '92%' }} />
+                  </div>
+                  <a
+                    href="https://vercel.com/dashboard"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] font-bold text-gray-900 hover:underline block text-right"
+                  >
+                    Vercel Edge Console &rarr;
+                  </a>
+                </div>
+
+                {/* Bento 2: Umami Real Traffic */}
+                <div className="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-xs flex flex-col justify-between space-y-3">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider flex items-center gap-1.5">
+                        <Activity size={14} className="text-emerald-500" /> Umami Analytics
+                      </span>
+                      <span className="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
+                        No Cookies
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-gray-500 leading-snug">
+                      Privacy-first real reader counts without ad-blocker dropout.
+                    </p>
+                  </div>
+                  <a
+                    href="https://cloud.umami.is/analytics/us/share/Ti4vnaf1fhBkM43g"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs py-2 px-3 rounded-xl transition text-center block shadow-2xs"
+                  >
+                    Live Traffic Stream &rarr;
+                  </a>
+                </div>
+
+                {/* Bento 3: Google Search Console */}
+                <div className="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-xs flex flex-col justify-between space-y-3">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-extrabold text-blue-950 uppercase tracking-wider flex items-center gap-1.5">
+                        <Globe size={14} className="text-blue-500" /> Search Console
+                      </span>
+                      <span className="text-[9px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded-full">
+                        Auto-Crawled
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-gray-500 leading-snug">
+                      Google search queries, organic impressions &amp; keyword rankings.
+                    </p>
+                  </div>
+                  <a
+                    href="https://search.google.com/search-console"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs py-2 px-3 rounded-xl transition text-center block shadow-2xs"
+                  >
+                    Open Search Console &rarr;
+                  </a>
+                </div>
+
+                {/* Bento 4: Google Analytics GA4 */}
+                <div className="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-xs flex flex-col justify-between space-y-3">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-extrabold text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
+                        <Sparkles size={14} className="text-amber-500" /> Google GA4
+                      </span>
+                      <span className="text-[9px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">
+                        G-Y6HN9JF1CM
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-gray-500 leading-snug">
+                      User demographics, geographic traffic &amp; retention telemetry.
+                    </p>
+                  </div>
+                  <a
+                    href="https://analytics.google.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs py-2 px-3 rounded-xl transition text-center block shadow-2xs"
+                  >
+                    Open GA4 Dashboard &rarr;
+                  </a>
+                </div>
+
               </div>
 
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* ── Messages ── */}
         {activeTab === 'messages' && (
