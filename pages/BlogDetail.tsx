@@ -5,6 +5,7 @@ import { useContent } from '../context/ContentContext';
 import { ArrowRight, Calendar, Link as LinkIcon, Tag, Linkedin, Instagram, Facebook } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { formatCMSContent } from '../utils/cmsFormatter';
+import StickyConsultationBar from '../components/StickyConsultationBar';
 import '../blog-prose.css';
 
 // Strict DOMPurify allowlist for rendering blog content.
@@ -132,6 +133,17 @@ const BlogDetail: React.FC = () => {
 
   const mockAvatar = "/archana.png";
 
+  const rawFaqs = blog.faqs;
+  let parsedFaqs: Array<{ question: string; answer: string }> = [];
+  if (Array.isArray(rawFaqs)) {
+    parsedFaqs = rawFaqs;
+  } else if (typeof rawFaqs === 'string') {
+    try {
+      const parsed = JSON.parse(rawFaqs);
+      if (Array.isArray(parsed)) parsedFaqs = parsed;
+    } catch {}
+  }
+
   const ctaButton = (
     <a
       href="https://topmate.io/archanagavas"
@@ -157,12 +169,12 @@ const BlogDetail: React.FC = () => {
         <meta property="og:image" content={blog.image} />
         <meta property="og:type" content="article" />
         {/* FAQ Schema Markup (AEO/SEO/GEO Engine) */}
-        {blog.faqs && blog.faqs.length > 0 && (
+        {parsedFaqs.length > 0 && (
           <script type="application/ld+json">
             {JSON.stringify({
               "@context": "https://schema.org",
               "@type": "FAQPage",
-              "mainEntity": blog.faqs.map(faq => ({
+              "mainEntity": parsedFaqs.map(faq => ({
                 "@type": "Question",
                 "name": faq.question,
                 "acceptedAnswer": {
@@ -223,13 +235,13 @@ const BlogDetail: React.FC = () => {
         />
 
         {/* Visible FAQ Section */}
-        {blog.faqs && blog.faqs.length > 0 && (
+        {parsedFaqs.length > 0 && (
           <div className="mt-12 pt-8 border-t border-gray-100 text-left">
             <h3 className="text-xl font-bold text-[#111] mb-6 tracking-tight flex items-center gap-2">
               <span>💡</span> Frequently Asked Questions
             </h3>
             <div className="space-y-4">
-              {blog.faqs.map((faq, i) => (
+              {parsedFaqs.map((faq, i) => (
                 <div key={i} className="border border-gray-100 rounded-lg p-5 bg-gray-50/50">
                   <h4 className="font-bold text-[#111] text-sm md:text-base mb-2">{faq.question}</h4>
                   <p className="text-gray-600 text-xs md:text-sm leading-relaxed">{faq.answer}</p>
@@ -328,6 +340,13 @@ const BlogDetail: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Sticky High-Converting Consultation Bar for Architects & Property Owners */}
+      <StickyConsultationBar 
+        customHeadline="Planning a regenerative estate, boutique homestay, or passive villa?"
+        customSubtext="Review your site contours, zoning, and microclimate directly with Ar. Archana Gavas."
+        customButtonText="Book 1-on-1 Review"
+      />
 
     </div>
   );

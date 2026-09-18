@@ -204,6 +204,27 @@ function generateSchemas(section: string, idOrSlug: string, data: { blog?: any, 
       };
       schemas.push(howToSchema);
     }
+
+    // Dynamic FAQPage schema for AEO/GEO/Rich Snippets
+    let faqsArr = blog.faqs;
+    if (typeof faqsArr === 'string') {
+      try { faqsArr = JSON.parse(faqsArr); } catch (e) {}
+    }
+    if (Array.isArray(faqsArr) && faqsArr.length > 0) {
+      const faqPageSchema = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": faqsArr.map((faq: any) => ({
+          "@type": "Question",
+          "name": faq.question,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": faq.answer
+          }
+        }))
+      };
+      schemas.push(faqPageSchema);
+    }
   }
 
   // CreativeWork/Project schema for projects detail/case study pages

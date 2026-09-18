@@ -114,6 +114,27 @@ const SEED_NICHES = [
     primaryService: 'https://www.anvitam.com/services/community-center',
     serviceAnchor: 'managed farmland masterplanning and community activity center design',
   },
+  {
+    seed: 'rammed earth vs rcc concrete construction cost india',
+    niche: 'High-Net-Worth Villa Builders (Material Comparison: Earth vs RCC)',
+    targetPersona: 'Eco-conscious estate owners deciding between conventional RCC concrete frame and stabilized rammed earth or CSEB blocks for their private countryside retreat',
+    primaryService: 'https://www.anvitam.com/services/weekend-villas',
+    serviceAnchor: 'natural earth construction and passive villa architecture',
+  },
+  {
+    seed: 'natural swimming pool vs chemical chlorine pool resort cost india',
+    niche: 'Luxury Hospitality & Resort Founders (Water Typology: Living Pool vs Chemical)',
+    targetPersona: 'Boutique resort founders and luxury farm owners calculating the long-term ROI, filtration ecology, and operational savings of chemical-free natural living pools vs chlorinated concrete pools',
+    primaryService: 'https://www.anvitam.com/services/wellness-retreat',
+    serviceAnchor: 'natural biological swimming pool and wellness sanctuary design',
+  },
+  {
+    seed: 'permaculture farm masterplanner vs landscape architect india',
+    niche: 'Farmland Owners & Estate Buyers (Role Distinction: Permaculture vs Landscape)',
+    targetPersona: 'Agricultural estate owners and developers choosing between an ecological permaculture masterplanner (focusing on hydrology, soil, windbreaks, food production) and a conventional nursery landscape architect',
+    primaryService: 'https://www.anvitam.com/services/permaculture-design',
+    serviceAnchor: 'regenerative permaculture farm masterplanning',
+  },
 ];
 
 // Curated internal links strictly from verified recent live anvitam.com assets

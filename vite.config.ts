@@ -45,4 +45,50 @@ export default defineConfig({
       '@': path.resolve(__dirname, '.'),
     },
   },
+  build: {
+    target: 'esnext',
+    cssCodeSplit: true,
+    chunkSizeWarningLimit: 1500,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router') || id.includes('react-helmet')) {
+              return 'vendor-react';
+            }
+            if (id.includes('three')) {
+              return 'vendor-three';
+            }
+            if (id.includes('mapbox-gl')) {
+              return 'vendor-mapbox';
+            }
+            if (id.includes('maplibre-gl')) {
+              return 'vendor-maplibre';
+            }
+            if (id.includes('leaflet') || id.includes('osmtogeojson')) {
+              return 'vendor-leaflet';
+            }
+            if (id.includes('motion') || id.includes('gsap') || id.includes('lenis')) {
+              return 'vendor-motion';
+            }
+            if (id.includes('recharts')) {
+              return 'vendor-charts';
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
+            }
+            if (id.includes('firebase')) {
+              return 'vendor-firebase';
+            }
+            if (id.includes('dompurify')) {
+              return 'vendor-purify';
+            }
+            if (id.includes('@google/genai')) {
+              return 'vendor-ai';
+            }
+          }
+        },
+      },
+    },
+  },
 });

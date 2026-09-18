@@ -17,6 +17,7 @@ import { AllToolsDrawer } from '../components/tools/AllToolsDrawer';
 import { ToolsSettingsModal } from '../components/tools/ToolsSettingsModal';
 import { getToolUser, getOrCreateDefaultToolUser, logoutToolUser, deductUserCredit, type ToolUser } from '../utils/userAuth';
 import { TOOLS_SUITE } from '../constants/toolsData';
+import StickyConsultationBar from '../components/StickyConsultationBar';
 import {
   MapPin, Layers, Zap, Box, Search, Check, Share2, Globe,
   Menu, ArrowLeft, Home, Building, Trees, Wand2, Trash2, Sliders, LogOut, Settings
@@ -977,6 +978,13 @@ export default function SiteAnalysis() {
           }}
           onLogin={() => { setShowPaywall(false); setAuthMode('login'); setShowAuth(true); }}
           onRegister={() => { setShowPaywall(false); setAuthMode('register'); setShowAuth(true); }}
+        />
+
+        {/* Sticky CRO Consultation Dock */}
+        <StickyConsultationBar
+          title="Analyzed your plot? Review your solar & wind data with an expert."
+          subtitle="Ar. Archana Gavas reviews your micro-climate report to optimize building orientation and water harvesting."
+          ctaText="Book Site Review →"
         />
       </div>
     </>

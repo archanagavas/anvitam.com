@@ -29,6 +29,8 @@ import Permaculture from './pages/seo/Permaculture';
 import TerraceGarden from './pages/seo/TerraceGarden';
 import YardLandscape from './pages/seo/YardLandscape';
 import CommunityCentre from './pages/seo/CommunityCentre';
+import DestinationDetail from './pages/DestinationDetail';
+import ComparisonDetail from './pages/ComparisonDetail';
 import Loader from './components/Loader';
 import { ContentProvider } from './context/ContentContext';
 
@@ -175,6 +177,8 @@ const App: React.FC = () => {
                           <Route path="/seo/terrace-garden" element={<TerraceGarden />} />
                           <Route path="/seo/yard-landscape" element={<YardLandscape />} />
                           <Route path="/seo/community-centre" element={<CommunityCentre />} />
+                          <Route path="/destinations/:destination" element={<DestinationDetail />} />
+                          <Route path="/compare/:slug" element={<ComparisonDetail />} />
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       </PageTransition>

@@ -12,6 +12,7 @@ import { TOOLS_SUITE, type ToolItem } from '../constants/toolsData';
 import { getToolUser } from '../utils/userAuth';
 import { ToolsAuthModal } from '../components/tools/ToolsAuthModal';
 import { DODO_PRODUCTS } from '../constants/dodoConfig';
+import StickyConsultationBar from '../components/StickyConsultationBar';
 
 export default function Tools() {
   const navigate = useNavigate();
@@ -467,6 +468,13 @@ export default function Tools() {
             }
           }}
           initialMode="login"
+        />
+
+        {/* Sticky CRO Consultation Dock */}
+        <StickyConsultationBar
+          title="Planning an eco-resort, farm retreat, or passive villa?"
+          subtitle="Have Ar. Archana Gavas review your land contours, climate data, and water harvesting plan."
+          ctaText="Book 1-on-1 Review →"
         />
 
       </div>
