@@ -1448,6 +1448,7 @@ const Admin: React.FC = () => {
   const [loadingDirectories, setLoadingDirectories] = useState(false);
   const [directorySearch, setDirectorySearch] = useState('');
   const [directoryFilter, setDirectoryFilter] = useState<'all' | 'queued' | 'submitted' | 'dofollow'>('all');
+  const [directoryMethodFilter, setDirectoryMethodFilter] = useState<'all' | 'automated' | 'manual'>('all');
   const [directoryPage, setDirectoryPage] = useState(1);
   const [directoryPageSize, setDirectoryPageSize] = useState<number | 'all'>(50);
 
@@ -2394,6 +2395,10 @@ const Admin: React.FC = () => {
   };
 
   const filteredDirectories = directoryTargets.filter(t => {
+    const isManual = t.submissionMethod === 'manual' || (t.da || 0) >= 90;
+    if (directoryMethodFilter === 'automated' && isManual) return false;
+    if (directoryMethodFilter === 'manual' && !isManual) return false;
+
     const matchesSearch = !directorySearch || 
       (t.name && t.name.toLowerCase().includes(directorySearch.toLowerCase())) ||
       (t.domain && t.domain.toLowerCase().includes(directorySearch.toLowerCase())) ||
@@ -4847,20 +4852,70 @@ const Admin: React.FC = () => {
               </div>
             </div>
 
-            {/* Verification & Reciprocal Badge Reality Guide */}
+            {/* Method Segmentation Subtabs */}
+            <div className="flex flex-wrap items-center gap-2 p-1.5 bg-gray-100 rounded-2xl w-fit">
+              <button
+                onClick={() => {
+                  setDirectoryMethodFilter('all');
+                  setDirectoryPage(1);
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+                  directoryMethodFilter === 'all'
+                    ? 'bg-white text-gray-900 shadow-xs'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                All Platforms ({directoryTargets.length})
+              </button>
+              <button
+                onClick={() => {
+                  setDirectoryMethodFilter('automated');
+                  setDirectoryPage(1);
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                  directoryMethodFilter === 'automated'
+                    ? 'bg-white text-emerald-700 shadow-xs'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <span>🤖 Autonomous GitHub Agent Drip</span>
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800">
+                  {directoryTargets.filter(t => t.submissionMethod !== 'manual' && (t.da || 0) < 90).length}
+                </span>
+              </button>
+              <button
+                onClick={() => {
+                  setDirectoryMethodFilter('manual');
+                  setDirectoryPage(1);
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                  directoryMethodFilter === 'manual'
+                    ? 'bg-white text-purple-700 shadow-xs'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <span>✍️ Manual High-DA Authority Placements</span>
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-purple-100 text-purple-800">
+                  {directoryTargets.filter(t => t.submissionMethod === 'manual' || (t.da || 0) >= 90).length}
+                </span>
+              </button>
+            </div>
+
+            {/* Verification & Submission Reality Guide */}
             <div className="bg-gradient-to-r from-slate-900 to-indigo-950 text-white p-5 rounded-2xl shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-slate-800">
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
                   <Shield size={16} className="text-[#CCFF00]" />
-                  <h3 className="text-sm font-bold">Directory Submission & Verification Guide</h3>
+                  <h3 className="text-sm font-bold">Separation of Automated vs. Manual Authority Listings</h3>
                 </div>
-                <p className="text-xs text-gray-300 leading-relaxed max-w-2xl">
-                  <strong>High-DA Platforms</strong> (GitHub, Reddit, Trustpilot, SourceForge) never use reciprocal badges — they require authentic manual account registration or profile claims.
-                  <strong>Free Web Directories</strong> (Uneed, Betalist, LaunchingNext) allow instant submission via their web forms. No reciprocal badges are placed on anvitam.com to preserve clean luxury branding.
+                <p className="text-xs text-gray-300 leading-relaxed max-w-3xl">
+                  <strong>🤖 Autonomous Agent Drip:</strong> Free directories that accept programmatic ping/form submission without CAPTCHAs. Submitted 2x/day by GitHub Actions (`daily-directory-submit.yml`) with zero human effort.
+                  <br />
+                  <strong>✍️ Manual High-DA Authority Platforms:</strong> Prestigious DA 80–96 platforms (GitHub, Reddit, Trustpilot, SourceForge) that forbid automated bots. Use the <strong>&quot;Copy Pitch&quot;</strong> button to paste our pre-engineered pitch into the platform in 15 seconds.
                 </p>
               </div>
-              <div className="flex items-center gap-2 text-xs font-mono bg-black/40 px-3 py-2 rounded-xl border border-white/10 shrink-0">
-                <span className="text-[#CCFF00]">Mode:</span> High-Integrity Manual & Direct Drip
+              <div className="flex items-center gap-2 text-xs font-mono bg-black/40 px-3 py-2 rounded-xl border border-white/10 shrink-0 text-gray-300">
+                <span className="text-[#CCFF00]">Mode:</span> Dual-Track Execution
               </div>
             </div>
 
@@ -4987,10 +5042,10 @@ const Admin: React.FC = () => {
                             </span>
                           </td>
                           <td className="py-3 px-4">
-                            <span className={`inline-flex items-center gap-1 font-semibold px-2 py-0.5 rounded-md text-[10px] ${
-                              isManual ? 'bg-purple-50 text-purple-800 border border-purple-200' : 'bg-slate-100 text-slate-700'
+                            <span className={`inline-flex items-center gap-1 font-bold px-2.5 py-1 rounded-md text-[10px] ${
+                              isManual ? 'bg-purple-100 text-purple-800 border border-purple-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                             }`}>
-                              {isManual ? 'Manual Account / Claim' : 'Direct Web Form'}
+                              {isManual ? '✍️ Manual Authority Claim' : '🤖 GitHub Action Drip'}
                             </span>
                           </td>
                           <td className="py-3 px-4">
@@ -5007,7 +5062,19 @@ const Admin: React.FC = () => {
                             {t.submittedAt ? new Date(t.submittedAt).toLocaleDateString() : 'Pending'}
                           </td>
                           <td className="py-3 px-4 text-right">
-                            <div className="flex items-center justify-end gap-2">
+                            <div className="flex items-center justify-end gap-2.5">
+                              {/* Direct External Link to verify or submit */}
+                              <a
+                                href={t.url?.startsWith('http') ? t.url : `https://${t.url || ''}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-[11px] font-bold text-gray-700 hover:text-black hover:underline"
+                                title="Open live platform page in a new tab"
+                              >
+                                <span>{isManual ? 'Open Form' : 'Verify'}</span>
+                                <ExternalLink size={11} />
+                              </a>
+                              <span className="text-gray-300">|</span>
                               <button
                                 onClick={() => {
                                   const pitch = getTailoredPitch(t);
