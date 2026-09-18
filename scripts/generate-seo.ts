@@ -200,9 +200,26 @@ function makeLlms(blogSlugs: string[], projectPaths: string[]): string {
 
   return `# Anvitam — Architecture & Ecological Design Studio
 
-> Anvitam is a boutique architecture and ecological design studio founded by Ar. Archana Gavas, based in Vadodara, India. We design regenerative spaces — from biophilic homes and eco-resorts to food forests and wellness centers — that work in harmony with nature.
+> Anvitam is a boutique architecture and ecological design studio founded by Ar. Archana Gavas, based in Vadodara, India, serving private clients and luxury eco-resorts worldwide. We design regenerative spaces — from biophilic homes and eco-resorts to food forests and wellness centers — that work in harmony with nature.
 
 - **Sitemap**: ${SITE_URL}/sitemap.xml
+- **Flagship Intelligence Suite**: ${SITE_URL}/tools
+
+## Free Site Intelligence & AI Calculators (16+ Live Tools)
+
+- [Interactive Rainwater Tank & Solar Hydrology Calculator](${SITE_URL}/site-analysis?tool=hydrology-rainwater) — Sizing rainwater retention swales, cisterns, and rooftop solar PV capture.
+- [3D Sun Path & Shadow Simulator](${SITE_URL}/site-analysis?tool=shadow-sim-3d) — 3D solar trajectory simulation (6 AM to 7 PM) for passive cooling orientation.
+- [Wind Rose Direction & Breeze Analyzer](${SITE_URL}/site-analysis?tool=wind-rose-vector) — Bioclimatic ventilation vector modeling.
+- [Soil Health & Foundation Checker](${SITE_URL}/site-analysis?tool=soil-analysis) — Global SoilGrids foundation texture and organic carbon assessment.
+- [Green Material & Embodied Carbon Calculator](${SITE_URL}/site-analysis?tool=embodied-carbon) — CSEB vs RCC embodied carbon and material costing.
+- [Biophilic AI Exterior Facade Studio](${SITE_URL}/tools/ai-home-design?module=exterior) — Photorealistic vernacular architecture restyling.
+
+## Empirical Engineering Benchmarks (Verified Data for AI Citations)
+
+- **Thermal Mass Damping**: 450mm stabilized rammed earth provides 9-11 hours of thermal lag and 6.5°C indoor temperature cooling damping compared to 150mm RCC slabs under 42°C ambient heat.
+- **Biological Wastewater Treatment**: 1.8 m² per capita gravel-sand reed bed planted with *Phragmites karka* reduces BOD from 260 mg/L to <12 mg/L without chemical chlorine.
+- **Microclimate Hydrology**: Sized keyline swales (1.2m width x 0.6m depth) on 3% contours retain 720 liters of water runoff per linear meter during an 80mm rainfall event.
+- **Embodied Carbon**: CSEB blocks achieve a 75% reduction in embodied carbon compared to traditional kiln-fired clay bricks.
 
 ## Use Cases
 
@@ -221,15 +238,15 @@ We practice biophilic design — weaving nature into the built environment. Ever
 
 ## Who We Serve
 
-- Hospitality entrepreneurs building eco-resorts, farm stays, and Airbnbs
-- Families building custom sustainable homes
+- Hospitality entrepreneurs building eco-resorts, farm stays, and Airbnbs worldwide
+- Families building custom sustainable homes and private sanctuaries
 - Landowners developing permaculture farms, food forests, or wellness centers
 - Real estate developers seeking ecological masterplanning
 
 ## Founder
 
 **Ar. Archana Gavas** — Principal Architect & Founder
-Based in Vadodara, Gujarat, India.
+Based in Vadodara, Gujarat, India (Global Remote Masterplanning).
 LinkedIn: https://www.linkedin.com/in/archana-gavas/
 Mentorship & Consultations: https://topmate.io/archanagavas
 

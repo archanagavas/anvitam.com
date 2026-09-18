@@ -2,8 +2,8 @@ name: Autonomous Overnight Lead Scout (Zero-Cost Discovery)
 
 on:
   schedule:
-    # Runs bi-weekly on Sunday & Wednesday at 02:00 AM UTC (07:30 AM IST) overnight
-    - cron: '0 2 * * 0,3'
+    # Runs twice daily at 02:00 UTC (07:30 AM IST) and 14:00 UTC (07:30 PM IST)
+    - cron: '0 2,14 * * *'
   workflow_dispatch: # Allows manual trigger from GitHub Actions anytime
 
 permissions:

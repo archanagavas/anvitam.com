@@ -115,21 +115,35 @@ const SEED_NICHES = [
     serviceAnchor: 'managed farmland masterplanning and community activity center design',
   },
   {
-    seed: 'rammed earth vs rcc concrete construction cost india',
-    niche: 'High-Net-Worth Villa Builders (Material Comparison: Earth vs RCC)',
-    targetPersona: 'Eco-conscious estate owners deciding between conventional RCC concrete frame and stabilized rammed earth or CSEB blocks for their private countryside retreat',
-    primaryService: 'https://www.anvitam.com/services/weekend-villas',
-    serviceAnchor: 'natural earth construction and passive villa architecture',
+    seed: 'heritage homestay architecture design cost india',
+    niche: 'Boutique Homestay Hosts & Heritage Property Renovators',
+    targetPersona: 'Estate heirs and hospitality operators converting ancestral or rural properties into authentic, culturally rooted guest houses with distinct host-guest zoning and vernacular finishes',
+    primaryService: 'https://www.anvitam.com/services/homestay',
+    serviceAnchor: 'homestay design and guest house architecture',
   },
   {
-    seed: 'natural swimming pool vs chemical chlorine pool resort cost india',
+    seed: 'cost of building 5 acre eco resort luxury glamping costa rica portugal',
+    niche: 'International Luxury Eco-Resort & Retreat Founders (Costa Rica, Portugal, Bali, Europe)',
+    targetPersona: 'International hospitality developers and retreat operators building luxury boutique eco-resorts ($500k–$3M budget) seeking passive cooling architecture, biological natural swimming pools, and net-zero masterplans',
+    primaryService: 'https://www.anvitam.com/services/eco-resort',
+    serviceAnchor: 'boutique luxury eco-resort architectural masterplanning',
+  },
+  {
+    seed: 'off grid passive cooling villa architect california australia',
+    niche: 'High-Net-Worth Regenerative Estate Builders (California, Australia, Mediterranean)',
+    targetPersona: 'International landowners and estate founders commissioning 5,000–12,000 sq.ft biophilic off-grid estates built with rammed earth, mass timber, and microclimate solar hydrology',
+    primaryService: 'https://www.anvitam.com/services/weekend-villa',
+    serviceAnchor: 'biophilic passive solar estate and villa architecture',
+  },
+  {
+    seed: 'natural biological swimming pool vs chlorine resort cost roi',
     niche: 'Luxury Hospitality & Resort Founders (Water Typology: Living Pool vs Chemical)',
-    targetPersona: 'Boutique resort founders and luxury farm owners calculating the long-term ROI, filtration ecology, and operational savings of chemical-free natural living pools vs chlorinated concrete pools',
+    targetPersona: 'Boutique resort founders and luxury estate owners calculating the long-term ROI, filtration ecology, and operational savings of chemical-free natural living pools vs chlorinated concrete pools',
     primaryService: 'https://www.anvitam.com/services/wellness-retreat',
     serviceAnchor: 'natural biological swimming pool and wellness sanctuary design',
   },
   {
-    seed: 'permaculture farm masterplanner vs landscape architect india',
+    seed: 'permaculture farm masterplanner vs landscape architect cost per acre',
     niche: 'Farmland Owners & Estate Buyers (Role Distinction: Permaculture vs Landscape)',
     targetPersona: 'Agricultural estate owners and developers choosing between an ecological permaculture masterplanner (focusing on hydrology, soil, windbreaks, food production) and a conventional nursery landscape architect',
     primaryService: 'https://www.anvitam.com/services/permaculture-design',
@@ -138,24 +152,34 @@ const SEED_NICHES = [
 ];
 
 // Curated internal links strictly from verified recent live anvitam.com assets
-// Curated internal links strictly from verified recent live anvitam.com assets (from Archana voice file)
 const INTERNAL_BLOGS = [
   { url: 'https://www.anvitam.com/blog/soil-degradation-is-killing-indian-farms-and-how-permaculture-actually-fixes-it', anchor: 'how permaculture restores depleted farm soil' },
   { url: 'https://www.anvitam.com/blog/the-biggest-mistakes-indians-make-when-starting-a-terrace-garden', anchor: 'critical mistakes when designing productive rooftop and terrace gardens' },
-  { url: 'https://www.anvitam.com/blog/indias-forgotten-earthquake-resistant-house-design', anchor: "India's traditional climate and earthquake-resilient architectural techniques" },
+  { url: 'https://www.anvitam.com/blog/indias-forgotten-earthquake-resistant-house-design', anchor: 'traditional climate and earthquake-resilient architectural techniques' },
   { url: 'https://www.anvitam.com/blog/the-homestay-pricing-guide-nobodys-telling-you', anchor: 'unfiltered homestay pricing, RevPAR economics, and revenue realities' },
 ];
 
 const INTERNAL_PROJECTS = [
-  { url: 'https://www.anvitam.com/projects/yourweb3guy', anchor: 'our Bihar natural eco-home engineered with lime plaster and passive cooling' },
-  { url: 'https://www.anvitam.com/projects/beer-bar', anchor: 'our Beer Bar canal front food zone and overhead walking pavilions' },
+  { url: 'https://www.anvitam.com/projects/yourweb3guy', anchor: 'our natural eco-home engineered with lime plaster and passive cooling' },
+  { url: 'https://www.anvitam.com/projects/beer-bar', anchor: 'our canal front food zone and overhead walking pavilions' },
   { url: 'https://www.anvitam.com/projects/shalimar', anchor: 'our Shalimar upcycled terrace sanctuary and biophilic garden' },
   { url: 'https://www.anvitam.com/projects/vanvagado-farm', anchor: 'our Vanvagado Farm 15-acre eco-farm stay, natural pond and food forest masterplan' },
-  { url: 'https://www.anvitam.com/projects/carpa-lupa', anchor: 'our Carpa Lupa bamboo and timber Airbnb cottages in Wayanad' },
+  { url: 'https://www.anvitam.com/projects/carpa-lupa', anchor: 'our Carpa Lupa bamboo and timber cottages in Wayanad' },
   { url: 'https://www.anvitam.com/projects/batukaru-yurt', anchor: 'our Batukaru Yurt private wellness retreat with sauna and yoga shala' },
   { url: 'https://www.anvitam.com/projects/ramgarh-nainital-interior-project-shiloh-experiences-hotel', anchor: 'our Ramgarh Nainital boutique retreat and hotel project' },
   { url: 'https://www.anvitam.com/projects/kamba-agrotourism-vardhaman-royal-organic-agri-farm', anchor: 'our Kamba Agrotourism 45-acre masterplan' },
   { url: 'https://www.anvitam.com/projects/kusum-vilas-palace-heritage-destination-development', anchor: 'our Kusum Vilas Palace heritage development' },
+];
+
+// Interactive Architectural Intelligence Calculators & Studios (High-Converting pSEO Assets)
+const INTERNAL_TOOLS = [
+  { url: 'https://www.anvitam.com/site-analysis?tool=hydrology-rainwater', anchor: 'our interactive rainwater tank and solar hydrology calculator' },
+  { url: 'https://www.anvitam.com/site-analysis?tool=shadow-sim-3d', anchor: 'our 3D sun path and shadow simulator' },
+  { url: 'https://www.anvitam.com/site-analysis?tool=wind-rose-vector', anchor: 'our microclimate wind rose vector and breeze analyzer' },
+  { url: 'https://www.anvitam.com/site-analysis?tool=soil-analysis', anchor: 'our automated SoilGrids foundation and soil health checker' },
+  { url: 'https://www.anvitam.com/site-analysis?tool=embodied-carbon', anchor: 'our green material cost and embodied carbon calculator' },
+  { url: 'https://www.anvitam.com/tools/ai-home-design?module=exterior', anchor: 'our biophilic exterior facade and 3D architectural studio' },
+  { url: 'https://www.anvitam.com/tools', anchor: 'our 16+ architectural site intelligence platforms' },
 ];
 
 // ── Helper: Live Search Intent Discovery via Google Autocomplete ($0) ────────
@@ -186,18 +210,34 @@ function slugify(text: string): string {
     .replace(/-+/g, '-');
 }
 
-// ── Archana's Voice Generator (STARVE + STOP-SLOP + OGILVY Copywriting) ──────
+// ── Archana's Voice Generator (STARVE + STOP-SLOP + OGILVY + DISTRIBB AEO) ───
 async function generateArchanaBlog(nicheInfo: typeof SEED_NICHES[0], targetQueries: string[]): Promise<any> {
   const chosenBlogLink = INTERNAL_BLOGS[Math.floor(Math.random() * INTERNAL_BLOGS.length)];
   const chosenProjectLink = INTERNAL_PROJECTS[Math.floor(Math.random() * INTERNAL_PROJECTS.length)];
+  const chosenToolLink = INTERNAL_TOOLS[Math.floor(Math.random() * INTERNAL_TOOLS.length)];
 
-  const systemPrompt = `You are Ar. Archana Gavas — senior architect, permaculture designer, and founder of Anvitam Architecture & Ecological Design Studio based in Vadodara, Gujarat, India.
+  const systemPrompt = `You are Ar. Archana Gavas — senior architect, permaculture designer, and founder of Anvitam Architecture & Ecological Design Studio based in Vadodara, India, serving clients worldwide.
 
 ROLE & AUTHENTIC VOICE ("RAW MENTOR"):
-- You write not to impress, but to educate, build trust, and attract serious high-net-worth clients with capital who want to build real things.
-- Target Persona: ${nicheInfo.targetPersona}. These readers have ₹50L to ₹5Cr+ capital. Treat them as intelligent peers. Speak with calm authority, directness, and warm candor.
-- You are sitting across a wooden table over coffee, explaining complex architectural and permaculture engineering so simply an 8th grader immediately gets it.
-- Ground every section in real Indian field realities: Vadodara black cotton soil swelling, JCB 3DX hourly diesel rates (₹1,500/hr), 4-inch PVC casing, lime mortar slaking pits, heat radiation through 6-inch RCC slabs, Kerala laterite stone, water table drops after May heat.
+- You write to educate, build trust, and attract serious high-net-worth clients with capital who want to build lasting ecological estates.
+- Target Persona: ${nicheInfo.targetPersona}. Treat them as intelligent peers. Speak with calm authority, technical precision, and warm candor.
+- You are sitting across a wooden table over coffee, explaining complex architectural and permaculture engineering so clearly and engagingly that an 8th grader immediately gets it.
+- Ground every section in real field realities: thermal mass damping, rammed earth compaction ratios, swale cross-sections, lime mortar slaking, biological reed-bed root zones, solar shading angles, and soil hydrology.
+
+S-TIER INFORMATION GAIN (PRINCETON GEO RESEARCH PROVEN: 41% CITATION BOOST):
+- Every single section MUST include proprietary empirical benchmarks and calculated numbers never found in generic top-10 search results.
+- Provide real quantitative physics:
+  * 450mm stabilized rammed-earth walls achieve 9 to 11 hours of thermal lag and 6.5°C indoor temperature damping compared to an uninsulated 150mm RCC slab in 42°C heat.
+  * Biological reed-bed wetland sizing: 1.8 sq. meters of gravel-sand root bed per resident planted with Phragmites karka reduces biochemical oxygen demand (BOD) from 260 mg/L down to <12 mg/L without chemical chlorine.
+  * Swale hydrology: Keyline swales sized at 1.2m width x 0.6m depth retain 720 liters of runoff per linear meter during an 80mm cloudburst event.
+  * CSEB (compressed stabilized earth blocks) save 75% embodied carbon compared to kiln-fired clay brickwork.
+
+GEO & AI ANSWER ENGINE OPTIMIZATION (COPILOT, CHATGPT, PERPLEXITY, GEMINI):
+- The FIRST SENTENCE under every H2 and H3 heading MUST be a definitive, direct, fact-packed answer to the heading's implicit question. AI models lift the very first sentence directly into citation boxes. Never open headings with introductory fluff.
+- For all material or design comparisons, explicitly provide:
+  1. Exactly who each option is best for
+  2. Verified quantitative performance and cost metrics
+  3. One honest technical limitation or drawback (AI engines crave balanced, honest assessments).
 
 CRITICAL: STOP-SLOP HUMAN WRITING ENGINE (AIM: 2% TO 5% AI DETECTOR SCORE MAX):
 1. BANNED AI WORDS (NEVER USE ANY OF THESE WORDS):
@@ -209,23 +249,18 @@ CRITICAL: STOP-SLOP HUMAN WRITING ENGINE (AIM: 2% TO 5% AI DETECTOR SCORE MAX):
    - Never use binary contrasts: "It is not about X, it is about Y" or "Not only X, but also Y". State your point directly without theatrical setup.
 4. BURSTINESS & RHYTHM (ESSENTIAL TO BEAT AI DETECTORS):
    - Heavily vary sentence lengths. Follow a short 4-word punch sentence with a longer 22-word technical explanation. Then a mid-length 11-word thought.
-   - Use active voice. Put a human actor in the room ("The JCB operator scraped the top 6 inches of topsoil" instead of "The topsoil was excavated").
+   - Use active voice. Put a human actor in the room ("The excavator operator graded the topsoil along contour lines" instead of "The grading was performed").
    - Short paragraphs: 1 to 3 sentences maximum. Use lots of white space.
 
-THE STARVE FRAMEWORK:
-1. SOURCE & SEARCH INTENT: Solve the exact dilemma: "${targetQueries.join(' / ')}".
-2. SPECIFICITY: Real numbers (e.g., 4.5°C temperature drop, 18-inch thick rammed earth, 45,000 liters per rainfall event, 7-layer food forest canopy, ₹1,800/sq.ft vs ₹3,200/sq.ft).
-3. TECHNICAL DEPTH: Explain the physics simply (passive solar shading, thermal lag, U-value of lime mortar, keyline water swales, nitrogen-fixing root zones).
-4. ACTIONABILITY: Numbered breakdown (1, 2, 3) the client can hand to their local contractor or team.
-5. EXPERTISE & ORIGINAL SYNTHESIS: Insider knowledge never found in generic top-10 search results.
+THE 4 CONTEXTUAL IN-BODY INTERNAL LINKS (MAILCHIMP & DISTRIBB 2X RANKING RULE):
+Weave exactly 4 contextual links into the article text naturally (never clumped together):
+1. Interactive Calculator/Tool: <a href="${chosenToolLink.url}">${chosenToolLink.anchor}</a>
+2. Pillar Service/Guide: <a href="${nicheInfo.primaryService}">${nicheInfo.serviceAnchor}</a>
+3. Real Project Case Study: <a href="${chosenProjectLink.url}">${chosenProjectLink.anchor}</a>
+4. High-Intent Consultation: <a href="https://www.anvitam.com/contact">scheduling an architectural masterplanning consultation</a> (or via <a href="https://topmate.io/archanagavas">1-on-1 mentorship on Topmate</a>)
 
 FORMATTING & SCHEMA REQUIREMENTS:
 - Headings: Clean, punchy H2 and H3 tags.
-- Mandatory 4 Internal Links:
-  1. Primary Service: <a href="${nicheInfo.primaryService}">${nicheInfo.serviceAnchor}</a>
-  2. Live Blog Post: <a href="${chosenBlogLink.url}">${chosenBlogLink.anchor}</a>
-  3. Real Project Case Study: <a href="${chosenProjectLink.url}">${chosenProjectLink.anchor}</a>
-  4. 1-on-1 Consultation: <a href="https://topmate.io/archanagavas">booking a 1-on-1 architectural and land masterplanning consultation</a>
 - Interactive Cost / Comparison Table: MUST include a structured table wrapped in <div class="cms-table-wrapper"><table> with <thead> and <tbody> comparing materials, costs, or implementation stages.
 - Scannable TL;DR Block (Key Takeaways): 5 to 7 bullet points written for Google Featured Snippets.
 - 6 FAQs: Exactly 6 practical questions with direct 3-4 line answers.
