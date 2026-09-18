@@ -23,131 +23,82 @@ import './load-env';
 import { isDbConfigured, upsertDoc, getCollection } from '../lib/db';
 
 // ── Seed Themes for High-Net-Worth Target Audience & Search Intent Discovery ──
-// Explicitly targeting high-paying earners with capital ready to build:
-// 1. Software Developers & Tech Founders (escaping city burnout, building off-grid retreats)
-// 2. Merchant Navy Officers & Chief Engineers (high USD savings, investing in farmland retreats)
-// 3. CXO-Level Executives & Business Leaders (luxury weekend villas, generational family estates)
-// 4. Real Estate Builders & Resort Founders (eco-resort masterplans, high-RevPAR farmstays)
-// 5. High-Net-Worth Landowners (2–50+ acres ready for regenerative masterplanning)
+// Explicitly targeting high-paying global clients across US, Europe, UK, Australia, Costa Rica, UAE, Bali:
+// 1. Luxury Eco-Resort & Glamping Developers ($1M–$5M builds, high-RevPAR hospitality)
+// 2. High-Net-Worth Off-Grid Estate Owners ($1.5M–$4M private luxury sanctuaries)
+// 3. Commercial Living Pool & Wellness Retreat Founders (chemical-free biological water architecture)
+// 4. Regenerative Agrotourism & Large Farmland Developers (15–100+ acre masterplanning)
+// 5. Arid & Tropical Passive Solar Villa Builders (extreme heat passive cooling, zero energy bills)
 const SEED_NICHES = [
   {
-    seed: 'tech founder off grid farmhouse design india',
-    niche: 'Tech Founders & Software Engineers (Off-Grid Farm Retreats & Remote Work Sanctuary)',
-    targetPersona: 'Senior Software Engineers, Tech Founders, and CXOs with ₹1Cr–₹3Cr+ budget seeking quiet, off-grid solar farm retreats with high-speed satellite internet, permaculture food zones, and zero city noise',
-    primaryService: 'https://www.anvitam.com/services/weekend-villa',
-    serviceAnchor: 'luxury weekend villa & off-grid farmhouse architecture',
-  },
-  {
-    seed: 'merchant navy farmland investment eco retreat india',
-    niche: 'Merchant Navy Officers & NRI Seafarers (Generational Farmland & Agro-Retreats)',
-    targetPersona: 'Merchant Navy Captains and Chief Engineers earning high tax-free USD packages seeking secure, self-sustaining 5–20 acre farm retreats, managed food forests, and passive-income homestay masterplans',
-    primaryService: 'https://www.anvitam.com/services/farm-retreat',
-    serviceAnchor: 'farm retreat architecture and land masterplanning',
-  },
-  {
-    seed: 'cxo luxury weekend villa architect maharashtra gujarat',
-    niche: 'CXO & Business Leaders (Passive Solar Luxury Villas & Private Family Sanctuaries)',
-    targetPersona: 'Corporate CXOs, Directors, and High-Net-Worth Families commissioning 4,000–10,000 sq.ft biophilic weekend villas built with rammed earth, passive cooling, and natural private swimming pools',
-    primaryService: 'https://www.anvitam.com/services/weekend-villa',
-    serviceAnchor: 'passive solar weekend villa design',
-  },
-  {
-    seed: 'cost of building 5 acre eco resort india',
-    niche: 'Resort Founders & Hospitality Developers (Boutique Eco-Resorts & High-RevPAR Stays)',
-    targetPersona: 'Hospitality investors and boutique resort founders developing eco-resorts, wellness glamping retreats, and agrotourism hubs commanding ₹15,000 to ₹35,000 per night RevPAR',
+    seed: 'cost of building 5 acre luxury eco resort glamping masterplan',
+    niche: 'International Luxury Eco-Resort & Glamping Developers (Costa Rica, Portugal, Bali, US)',
+    targetPersona: 'Hospitality investors and boutique resort developers commissioning 10–35 key luxury eco-resorts ($1M–$5M build budget) commanding $400–$1,200/night RevPAR, seeking bioclimatic zoning, passive cooling chalets, and chemical-free biological pools',
     primaryService: 'https://www.anvitam.com/services/eco-resort',
-    serviceAnchor: 'eco-resort masterplanning and zoning',
+    serviceAnchor: 'luxury eco-resort masterplanning and bioclimatic hospitality architecture',
   },
   {
-    seed: 'permaculture food forest zoning cost per acre india',
-    niche: 'Farmland Owners & Builders (Food Forests & Syntropic Agroforestry)',
-    targetPersona: 'Estate builders and landowners transforming 5 to 50 acres of degraded agricultural soil into high-yield, drought-proof 7-layer syntropic food forests and natural water retention systems',
-    primaryService: 'https://www.anvitam.com/services/food-forest',
-    serviceAnchor: 'food forest and syntropic agroforestry design',
+    seed: 'off grid luxury rammed earth villa architect modern biophilic design cost',
+    niche: 'High-Net-Worth Off-Grid Estate Builders (California, Mediterranean, Texas, Australia)',
+    targetPersona: 'Ultra-high-net-worth families, entrepreneurs, and tech executives commissioning 4,000–12,000 sq.ft biophilic private estates built with stabilized rammed earth, mass timber, solar microgrids, and passive cooling ($1.5M–$4M construction)',
+    primaryService: 'https://www.anvitam.com/services/weekend-villa',
+    serviceAnchor: 'off-grid biophilic villa and luxury estate architecture',
   },
   {
-    seed: 'groundwater recharge borewell swale cost per acre',
-    niche: 'Water Hydrology & Swale Earthworks (Drought-Proofing Large Estates)',
-    targetPersona: 'Farm retreat developers and rural property owners fixing dry borewells, stopping soil erosion, and capturing millions of liters of rainwater through keyline swales and percolation ponds',
-    primaryService: 'https://www.anvitam.com/services/permaculture-design',
-    serviceAnchor: 'permaculture zoning and water hydrology design',
-  },
-  {
-    seed: 'boutique homestay architectural design guide roi',
-    niche: 'Boutique Homestay & Agrotourism Entrepreneurs (Commercial Feasibility & Stays)',
-    targetPersona: 'High-income individuals and rural heritage property owners monetizing scenic estates into profitable boutique homestays and farm-to-table visitor experiences',
-    primaryService: 'https://www.anvitam.com/services/homestay',
-    serviceAnchor: 'boutique homestay and Airbnb architectural design',
-  },
-  {
-    seed: 'airbnb cottage design cost wayanad goa lonavala',
-    niche: 'Airbnb & Vacation Rental Investors (High-Yield Biophilic Cottages)',
-    targetPersona: 'Property investors and Airbnb superhosts looking to build high-occupancy 4-8 cottage nature stays with bamboo, wood, waterfront views, and vernacular biophilic aesthetics that command ₹12k–₹25k nightly tariffs',
-    primaryService: 'https://www.anvitam.com/services/airbnb',
-    serviceAnchor: 'Airbnb and vacation rental cottage architecture',
-  },
-  {
-    seed: 'heritage homestay architecture design cost india',
-    niche: 'Boutique Homestay Hosts & Heritage Property Renovators',
-    targetPersona: 'Estate heirs and hospitality operators converting ancestral or rural properties into authentic, culturally rooted guest houses with distinct host-guest zoning and vernacular finishes',
-    primaryService: 'https://www.anvitam.com/services/homestay',
-    serviceAnchor: 'homestay design and guest house architecture',
-  },
-  {
-    seed: 'wellness resort yoga retreat masterplan cost bali india',
-    niche: 'Luxury Eco-Resort & Wellness Sanctuary Founders',
-    targetPersona: 'Global investors and wellness entrepreneurs building 10–30 key eco-sanctuaries featuring meditation pavilions, healing shalas, yurts, and biological natural pools for international retreats',
+    seed: 'natural biological swimming pool vs chlorine resort cost maintenance roi',
+    niche: 'Luxury Hospitality & Estate Founders (Water Architecture: Living Pool vs Chemical)',
+    targetPersona: 'Boutique resort founders and luxury estate owners calculating the long-term ROI, filtration biology, and operational savings of chemical-free natural living pools filtered through gravel-root wetland reed beds vs chlorinated concrete pools',
     primaryService: 'https://www.anvitam.com/services/wellness-retreat',
-    serviceAnchor: 'wellness and yoga retreat masterplanning',
+    serviceAnchor: 'natural biological swimming pool and wellness sanctuary engineering',
   },
   {
-    seed: 'agrotourism farm setup cost profit business model india',
-    niche: 'Agrotourism & Working Farm Destination Operators',
-    targetPersona: 'Forward-thinking orchardists, organic farm cooperatives, and agricultural landowners monetizing 20–50 acre farms with guided harvest trails, farm-to-table dining pavilions, and rustic stay cottages',
+    seed: 'regenerative farmstay masterplan design agrotourism business model roi',
+    niche: 'Regenerative Farmstay & Agrotourism Entrepreneurs (Europe, US, New Zealand, Australia)',
+    targetPersona: 'Agricultural estate owners, rural heritage property investors, and vineyard operators transforming 20–100+ acres into high-margin farm-to-table guest lodges, boutique tasting pavilions, and working agroforestry stays ($35k–$75k masterplan fee)',
     primaryService: 'https://www.anvitam.com/services/agrotourism',
-    serviceAnchor: 'agrotourism masterplanning and farm visit destination design',
+    serviceAnchor: 'regenerative agrotourism and farmstay masterplanning',
   },
   {
-    seed: 'gated farmland community masterplan architect developer india',
-    niche: 'Luxury Farmland Developers & High-End Realtors (Managed Communities)',
-    targetPersona: 'Real estate syndicates, luxury brokers, and land aggregators developing 20–100 acre managed gated farmland communities with shared clubhouses, internal roads, ecological hydrology, and high appreciation rates',
-    primaryService: 'https://www.anvitam.com/services/community-center',
-    serviceAnchor: 'managed farmland masterplanning and community activity center design',
-  },
-  {
-    seed: 'heritage homestay architecture design cost india',
-    niche: 'Boutique Homestay Hosts & Heritage Property Renovators',
-    targetPersona: 'Estate heirs and hospitality operators converting ancestral or rural properties into authentic, culturally rooted guest houses with distinct host-guest zoning and vernacular finishes',
-    primaryService: 'https://www.anvitam.com/services/homestay',
-    serviceAnchor: 'homestay design and guest house architecture',
-  },
-  {
-    seed: 'cost of building 5 acre eco resort luxury glamping costa rica portugal',
-    niche: 'International Luxury Eco-Resort & Retreat Founders (Costa Rica, Portugal, Bali, Europe)',
-    targetPersona: 'International hospitality developers and retreat operators building luxury boutique eco-resorts ($500k–$3M budget) seeking passive cooling architecture, biological natural swimming pools, and net-zero masterplans',
-    primaryService: 'https://www.anvitam.com/services/eco-resort',
-    serviceAnchor: 'boutique luxury eco-resort architectural masterplanning',
-  },
-  {
-    seed: 'off grid passive cooling villa architect california australia',
-    niche: 'High-Net-Worth Regenerative Estate Builders (California, Australia, Mediterranean)',
-    targetPersona: 'International landowners and estate founders commissioning 5,000–12,000 sq.ft biophilic off-grid estates built with rammed earth, mass timber, and microclimate solar hydrology',
-    primaryService: 'https://www.anvitam.com/services/weekend-villa',
-    serviceAnchor: 'biophilic passive solar estate and villa architecture',
-  },
-  {
-    seed: 'natural biological swimming pool vs chlorine resort cost roi',
-    niche: 'Luxury Hospitality & Resort Founders (Water Typology: Living Pool vs Chemical)',
-    targetPersona: 'Boutique resort founders and luxury estate owners calculating the long-term ROI, filtration ecology, and operational savings of chemical-free natural living pools vs chlorinated concrete pools',
-    primaryService: 'https://www.anvitam.com/services/wellness-retreat',
-    serviceAnchor: 'natural biological swimming pool and wellness sanctuary design',
-  },
-  {
-    seed: 'permaculture farm masterplanner vs landscape architect cost per acre',
-    niche: 'Farmland Owners & Estate Buyers (Role Distinction: Permaculture vs Landscape)',
-    targetPersona: 'Agricultural estate owners and developers choosing between an ecological permaculture masterplanner (focusing on hydrology, soil, windbreaks, food production) and a conventional nursery landscape architect',
+    seed: 'keyline design swale water retention dam cost per acre large estate',
+    niche: 'Large Acreage Estate Hydrology & Swale Earthworks (Drought-Proofing 10–100+ Acres)',
+    targetPersona: 'Acreage buyers and ranch owners in arid or Mediterranean climates (Texas, California, Portugal, Spain, Australia) designing passive rainwater harvesting swales, keyline dams, and deep subterranean aquifers for permanent water sovereignty',
     primaryService: 'https://www.anvitam.com/services/permaculture-design',
-    serviceAnchor: 'regenerative permaculture farm masterplanning',
+    serviceAnchor: 'keyline water hydrology and permaculture estate zoning',
+  },
+  {
+    seed: 'syntropic agroforestry food forest design cost per acre layout guide',
+    niche: 'Farmland Owners & Permaculture Estate Developers (Syntropic Food Forests)',
+    targetPersona: 'Estate builders and regenerative landowners transforming 5 to 50 acres of land into resilient, drought-proof 7-layer syntropic food forests that produce organic food, high-value timber, and privacy windbreaks without chemical fertilizers',
+    primaryService: 'https://www.anvitam.com/services/food-forest',
+    serviceAnchor: 'syntropic agroforestry and food forest masterplanning',
+  },
+  {
+    seed: 'passive cooling architecture extreme heat zero energy villa design',
+    niche: 'Arid & Tropical Passive Solar Villa Builders (UAE, Arizona, Mediterranean, Bali)',
+    targetPersona: 'Commercial resort developers and luxury homeowners building in hot desert or tropical zones seeking zero-energy passive cooling through 450mm thermal mass, venturi airflow wind catchers, and bioclimatic shading cantilevers',
+    primaryService: 'https://www.anvitam.com/services/weekend-villa',
+    serviceAnchor: 'passive solar bioclimatic cooling architecture',
+  },
+  {
+    seed: 'wellness retreat masterplan architect yoga shala sound healing pavilion cost',
+    niche: 'Boutique Wellness & Yoga Sanctuary Founders (Bali, Costa Rica, Thailand, Europe)',
+    targetPersona: 'International wellness entrepreneurs building 10–30 key retreat centers featuring sacred geometry yoga shalas, sound healing pavilions, natural hot-spring thermal spas, and biophilic lodging commanding $350–$800/night per guest',
+    primaryService: 'https://www.anvitam.com/services/wellness-retreat',
+    serviceAnchor: 'wellness retreat masterplanning and yoga sanctuary design',
+  },
+  {
+    seed: 'boutique glamping cabins architectural design cost roi per unit',
+    niche: 'High-Yield Boutique Glamping & Vacation Rental Investors (UK, US, Canada, Australia)',
+    targetPersona: 'Hospitality entrepreneurs and landowners developing clusters of 6–15 luxury nature cabins (mass timber, panoramic glass, outdoor soaking tubs) achieving 75%+ year-round occupancy and $350–$650 average daily rate (ADR)',
+    primaryService: 'https://www.anvitam.com/services/airbnb',
+    serviceAnchor: 'boutique nature cabin and luxury vacation rental architecture',
+  },
+  {
+    seed: 'permaculture masterplanner vs landscape architect estate design cost',
+    niche: 'Estate Owners & Land Buyers (Commercial Decision: Permaculture vs Landscape)',
+    targetPersona: 'Discerning property owners choosing between an ecological permaculture masterplanner (focusing on hydrology, soil regeneration, windbreak physics, passive microclimate) and a conventional landscape architect',
+    primaryService: 'https://www.anvitam.com/services/permaculture-design',
+    serviceAnchor: 'ecological land masterplanning and permaculture zoning',
   },
 ];
 
@@ -216,13 +167,24 @@ async function generateArchanaBlog(nicheInfo: typeof SEED_NICHES[0], targetQueri
   const chosenProjectLink = INTERNAL_PROJECTS[Math.floor(Math.random() * INTERNAL_PROJECTS.length)];
   const chosenToolLink = INTERNAL_TOOLS[Math.floor(Math.random() * INTERNAL_TOOLS.length)];
 
-  const systemPrompt = `You are Ar. Archana Gavas — senior architect, permaculture designer, and founder of Anvitam Architecture & Ecological Design Studio based in Vadodara, India, serving clients worldwide.
+  const systemPrompt = `You are Ar. Archana Gavas — principal architect, ecological engineer, and founder of Anvitam Architecture & Ecological Design Studio, serving high-net-worth estate clients and luxury eco-resorts worldwide.
 
-ROLE & AUTHENTIC VOICE ("RAW MENTOR"):
-- You write to educate, build trust, and attract serious high-net-worth clients with capital who want to build lasting ecological estates.
-- Target Persona: ${nicheInfo.targetPersona}. Treat them as intelligent peers. Speak with calm authority, technical precision, and warm candor.
-- You are sitting across a wooden table over coffee, explaining complex architectural and permaculture engineering so clearly and engagingly that an 8th grader immediately gets it.
-- Ground every section in real field realities: thermal mass damping, rammed earth compaction ratios, swale cross-sections, lime mortar slaking, biological reed-bed root zones, solar shading angles, and soil hydrology.
+ROLE & AUTHENTIC VOICE ("RAW MENTOR FOR GLOBAL CLIENTS"):
+- You write to educate, build trust, and win high-paying international clients with capital ($500k to $5M+ build budgets).
+- Target Persona: ${nicheInfo.targetPersona}. Treat them as sophisticated, intelligent peers. Speak with calm authority, mathematical precision, and zero corporate fluff.
+- You are sitting across a solid timber table over espresso, explaining complex bioclimatic architecture and permaculture engineering so clearly that an investor immediately sees the commercial ROI.
+- Ground every section in real construction physics: diurnal thermal mass damping, rammed-earth compressive strength (8–14 MPa), timber joinery, gravel-root reed-bed biological filtration, keyline swales, and natural solar shading angles.
+
+CURRENCY & FINANCIAL BENCHMARKS (GLOBAL INTERNATIONAL STANDARDS):
+- Always state costs, budgets, and financial metrics in USD ($) or EUR (€):
+  * Construction costs: e.g. $180 to $350 per sq.ft for stabilized rammed earth, mass timber, or vernacular stone vs $220 to $450 per sq.ft for conventional luxury builds.
+  * Architectural masterplanning fees: e.g. $35,000 to $85,000 for comprehensive regenerative estate zoning and bioclimatic design.
+  * Hospitality RevPAR: e.g. $350 to $1,200 per night for high-occupancy biophilic retreats.
+  * Operational savings: e.g. 60% to 80% reduction in mechanical HVAC cooling bills and zero chemical pool maintenance costs.
+
+COMMERCIAL CONVERSION INTENT:
+- Demonstrate how smart ecological masterplanning from day one prevents costly site mistakes (e.g. wrong building orientation causing overheating, failed borewells, soil erosion, high energy bills).
+- Position Anvitam's architectural studio as the indispensable global partner for sustainable retreats, private estates, and luxury nature hospitality.
 
 S-TIER INFORMATION GAIN (PRINCETON GEO RESEARCH PROVEN: 41% CITATION BOOST):
 - Every single section MUST include proprietary empirical benchmarks and calculated numbers never found in generic top-10 search results.
