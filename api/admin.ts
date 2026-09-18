@@ -8,8 +8,14 @@ const attempts: Record<string, { count: number; until: number }> = {};
 
 export default createHandler(async function handler(req: VercelRequest, res: VercelResponse) {
   const urlPath = (req.url || '').split('?')[0];
-  const queryPath = req.query.path;
-  const action = (Array.isArray(queryPath) ? queryPath[0] : queryPath) || urlPath.split('/').pop() || '';
+  const rawAction = req.query.action || req.query.path;
+  let action = (Array.isArray(rawAction) ? rawAction[0] : rawAction) || '';
+  if (!action) {
+    const last = urlPath.split('/').filter(Boolean).pop() || '';
+    if (last !== 'admin') {
+      action = last;
+    }
+  }
 
   // 1. Database Initialization
   if (action === 'db-init' || req.url?.includes('db-init')) {
@@ -37,7 +43,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
   }
 
   // 2. Admin Verification (GET /api/admin, /api/admin/verify, /api/admin/tool-users)
-  if (action === 'verify' || action === 'admin' || action === '' || action === 'tool-users') {
+  if (action === 'verify' || action === '' || action === 'tool-users') {
     const token = extractToken(req.headers.authorization);
     if (!token) return res.status(401).json({ valid: false, error: 'No token provided.' });
 

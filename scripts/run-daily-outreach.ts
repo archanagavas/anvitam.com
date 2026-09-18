@@ -94,7 +94,7 @@ async function main() {
         </div>
       `;
 
-      const res = await fetch('https://api.resend.com/emails', {
+      let res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -109,14 +109,49 @@ async function main() {
       });
 
       if (res.ok) {
-        console.log(`✅ Successfully dispatched outreach email to ${targetLead.email}`);
+        console.log(`✅ Successfully dispatched outreach email directly to ${targetLead.email}`);
         targetLead.status = 'sent';
         targetLead.sent_date = new Date().toISOString().split('T')[0];
         targetLead.response_status = 'Delivered via Resend';
       } else {
-        const err = await res.text();
-        console.warn(`⚠️ Resend response ${res.status}: ${err}`);
-        targetLead.status = 'queued';
+        const errText = await res.text();
+        // Resend Sandbox restriction: If unverified custom domain, route preview to verified owner email
+        if (res.status === 403 && errText.includes('testing emails')) {
+          console.log(`ℹ️ Resend sandbox active (domain anvitam.com pending DNS verification at resend.com/domains).`);
+          console.log(`📨 Routing client pitch preview to verified owner inbox: anvitamarchitects@gmail.com...`);
+          const fallbackRes = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${resendKey}`,
+            },
+            body: JSON.stringify({
+              from: 'Anvitam Outreach Agent <onboarding@resend.dev>',
+              to: ['anvitamarchitects@gmail.com'],
+              subject: `[Client Pitch Preview for ${targetLead.name}] Ecological architecture for ${targetLead.company}`,
+              html: `
+                <div style="background: #fdf8e6; padding: 12px 16px; border-left: 4px solid #f59e0b; margin-bottom: 20px; font-family: sans-serif;">
+                  <strong>⚠️ Resend Sandbox Delivery:</strong> This pitch was prepared for <strong>${targetLead.name}</strong> (&lt;${targetLead.email}&gt;).<br/>
+                  To enable direct autonomous dispatch to client inboxes, verify <code>anvitam.com</code> at <a href="https://resend.com/domains">resend.com/domains</a>.<br/>
+                  In the meantime, you can forward this email directly or click <strong>"Open in Gmail"</strong> from your Anvitam Admin dashboard!
+                </div>
+                ${emailHtml}
+              `,
+            }),
+          });
+          if (fallbackRes.ok) {
+            console.log(`✅ Pitch successfully delivered to anvitamarchitects@gmail.com!`);
+            targetLead.status = 'sent';
+            targetLead.sent_date = new Date().toISOString().split('T')[0];
+            targetLead.response_status = 'Delivered to Owner Inbox (Sandbox)';
+          } else {
+            console.warn(`⚠️ Sandbox dispatch failed: ${await fallbackRes.text()}`);
+            targetLead.status = 'queued';
+          }
+        } else {
+          console.warn(`⚠️ Resend response ${res.status}: ${errText}`);
+          targetLead.status = 'queued';
+        }
       }
     } catch (e: any) {
       console.error(`❌ Dispatch error: ${e.message}`);

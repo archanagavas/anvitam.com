@@ -37,14 +37,58 @@ export async function generateCustomDirectoryBio(directoryName: string, maxWords
   const prompt = `Write a compelling, professional ${maxWords}-word submission pitch for Anvitam to be listed on "${directoryName}". 
 Product: Anvitam (Sustainable architecture studio + 16+ free calculators for eco-resorts, farmstays, passive solar villas).
 Founder: Ar. Archana Gavas. URL: https://www.anvitam.com.
-Return ONLY the text.`;
+Return ONLY the text paragraph.`;
 
-  // 1. Primary: Google Gemini 3.6 Flash (Fast & reliable)
+  // 1. Primary: NVIDIA NIM (Free, 70B model)
+  const nvidiaKey = process.env.NVIDIA_API_KEY;
+  if (nvidiaKey) {
+    try {
+      const resp = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${nvidiaKey}` },
+        body: JSON.stringify({
+          model: 'meta/llama-3.1-70b-instruct',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.5,
+          max_tokens: 150,
+        }),
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        const text = data.choices?.[0]?.message?.content?.trim();
+        if (text && text.length >= 30) return text;
+      }
+    } catch (e) {}
+  }
+
+  // 2. Groq (Fast & Free)
+  const groqKey = process.env.GROQ_API_KEY;
+  if (groqKey) {
+    try {
+      const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${groqKey}` },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.5,
+          max_tokens: 150,
+        }),
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        const text = data.choices?.[0]?.message?.content?.trim();
+        if (text && text.length >= 30) return text;
+      }
+    } catch (e) {}
+  }
+
+  // 3. Google Gemini 2.5 Flash
   const geminiKey = process.env.GEMINI_API_KEY;
   if (geminiKey) {
     try {
       const resp = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -56,28 +100,8 @@ Return ONLY the text.`;
       );
       if (resp.ok) {
         const data = await resp.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || ANVITAM_PROFILE.description;
-      }
-    } catch (e) {}
-  }
-
-  // 2. Fallback: Groq
-  const groqKey = process.env.GROQ_API_KEY;
-  if (groqKey) {
-    try {
-      const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${groqKey}` },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-specdec',
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0.5,
-          max_tokens: 150,
-        }),
-      });
-      if (resp.ok) {
-        const data = await resp.json();
-        return data.choices?.[0]?.message?.content?.trim() || ANVITAM_PROFILE.description;
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+        if (text && text.length >= 30) return text;
       }
     } catch (e) {}
   }
