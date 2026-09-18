@@ -165,21 +165,36 @@ const INTERNAL_TOOLS = [
 
 // ── Helper: Live Search Intent Discovery via Google Autocomplete ($0) ────────
 async function fetchGoogleAutocompleteQueries(seed: string): Promise<string[]> {
+  const discovered = new Set<string>();
+  discovered.add(seed);
   try {
-    const url = `https://suggestqueries.google.com/complete/search?client=chrome&q=${encodeURIComponent(seed)}`;
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data) && Array.isArray(data[1]) && data[1].length > 0) {
-        return data[1].slice(0, 4);
+    const seedsToQuery = [seed, seed.split(' ').slice(0, 4).join(' ')];
+    for (const q of seedsToQuery) {
+      const url = `https://suggestqueries.google.com/complete/search?client=chrome&q=${encodeURIComponent(q)}`;
+      const res = await fetch(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+        signal: AbortSignal.timeout(4000)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && Array.isArray(data[1])) {
+          data[1].forEach((item: string) => {
+            if (item && item.trim()) discovered.add(item.trim());
+          });
+        }
       }
     }
   } catch (e) {
     // Graceful fallback
   }
-  return [seed];
+
+  const list = Array.from(discovered);
+  while (list.length < 5) {
+    list.push(`${seed} cost`);
+    list.push(`${seed} roi`);
+    list.push(`${seed} guide`);
+  }
+  return list.slice(0, 6);
 }
 
 function slugify(text: string): string {
@@ -196,6 +211,8 @@ async function generateArchanaBlog(nicheInfo: typeof SEED_NICHES[0], targetQueri
   const chosenBlogLink = INTERNAL_BLOGS[Math.floor(Math.random() * INTERNAL_BLOGS.length)];
   const chosenProjectLink = INTERNAL_PROJECTS[Math.floor(Math.random() * INTERNAL_PROJECTS.length)];
   const chosenToolLink = INTERNAL_TOOLS[Math.floor(Math.random() * INTERNAL_TOOLS.length)];
+
+  const top5Keywords = targetQueries.slice(0, 5);
 
   const systemPrompt = `You are Ar. Archana Gavas — principal architect, ecological engineer, and founder of Anvitam Architecture & Ecological Design Studio, serving high-net-worth estate clients and luxury eco-resorts worldwide.
 
@@ -217,6 +234,20 @@ CURRENCY & FINANCIAL BENCHMARKS (FLEXIBLE $250 TO $100,000+ USD RANGE):
 COMMERCIAL CONVERSION INTENT:
 - Demonstrate how smart ecological masterplanning from day one prevents costly site mistakes (e.g. wrong building orientation causing overheating, failed borewells, soil erosion, high energy bills).
 - Position Anvitam's architectural studio as the indispensable partner for any scale: from a fast $250 site feasibility report before purchasing acreage to a multi-million-dollar turnkey eco-resort development.
+
+MANDATORY KEYWORD DENSITY & SEARCH ENGINE RANKING RULES:
+You are targeting these 5 specific high-intent search queries:
+1. "${top5Keywords[0] || nicheInfo.seed}" (Primary Keyword)
+2. "${top5Keywords[1] || nicheInfo.seed + ' cost'}"
+3. "${top5Keywords[2] || nicheInfo.seed + ' design'}"
+4. "${top5Keywords[3] || nicheInfo.seed + ' return on investment'}"
+5. "${top5Keywords[4] || nicheInfo.seed + ' calculator'}"
+
+EXACT KEYWORD REPETITION RULE:
+- Each of these 5 keywords MUST naturally appear 3 to 5 times across the article text.
+- Primary keyword (${top5Keywords[0]}): Must appear in the Title, metaTitle, the very first 80 words of the introduction, and at least one H2 heading.
+- Secondary keywords (2-5): Weave them naturally across subheadings (H2/H3), the cost comparison table descriptions, body paragraphs, and FAQ questions/answers.
+- Maintain seamless, natural flow in Archana's calm, authoritative mentor voice (never awkward or stuffed).
 
 S-TIER INFORMATION GAIN (PRINCETON GEO RESEARCH PROVEN: 41% CITATION BOOST):
 - Every single section MUST include proprietary empirical benchmarks and calculated numbers never found in generic top-10 search results.
