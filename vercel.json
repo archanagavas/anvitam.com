@@ -4,12 +4,18 @@
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/seo?action=sitemap" },
+    { "source": "/rss.xml", "destination": "/api/seo?action=rss" },
+    { "source": "/feed.xml", "destination": "/api/seo?action=rss" },
+    { "source": "/atom.xml", "destination": "/api/seo?action=atom" },
+    { "source": "/feed.json", "destination": "/api/seo?action=feed-json" },
     { "source": "/llms.txt", "destination": "/api/seo?action=llms" },
     { "source": "/llms-full.txt", "destination": "/api/seo?action=llms-full" },
     { "source": "/api/indexnow", "destination": "/api/seo?action=indexnow" },
 
     { "source": "/api/admin/:splat*", "destination": "/api/admin?path=:splat*" },
     { "source": "/api/admin", "destination": "/api/admin" },
+
+    { "source": "/api/blog-agent", "destination": "/api/blog-agent" },
 
     { "source": "/api/tools/:splat*", "destination": "/api/tools?action=:splat*" },
     { "source": "/api/tools", "destination": "/api/tools" },

@@ -1545,7 +1545,7 @@ const Admin: React.FC = () => {
           style_tags: data.style_tags || prev.style_tags
         }));
         if (data.image_extracted === false) {
-          showToast('⚠️ Title, price, styles & element type auto-populated! Product photo could not be extracted directly from this link — please attach or paste image URL.', 'warning');
+          showToast('⚠️ Title, price, styles & element type auto-populated! Please attach or paste image URL.');
         } else {
           showToast('⚡ Live product details, element type, styles & price auto-populated!');
         }
@@ -1639,6 +1639,13 @@ const Admin: React.FC = () => {
 
   const [workshopView, setWorkshopView] = useState<'list' | 'editor'>('list');
   const [editingWorkshop, setEditingWorkshop] = useState<Workshop | null>(null);
+
+  // ── Autonomous SEO Blog Agent State ──
+  const [agentModalOpen, setAgentModalOpen] = useState(false);
+  const [agentTopic, setAgentTopic] = useState('');
+  const [agentDrive, setAgentDrive] = useState('Wealth & Escape');
+  const [isAgentGenerating, setIsAgentGenerating] = useState(false);
+  const [agentStatusText, setAgentStatusText] = useState('');
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -1913,6 +1920,41 @@ const Admin: React.FC = () => {
       console.error('[Admin] Blog save failed:', err);
       showToast(`⚠️ DB sync issue: ${err.message || 'Check connection'}`);
       throw err;
+    }
+  };
+
+  const handleRunBlogAgent = async () => {
+    setIsAgentGenerating(true);
+    setAgentStatusText('Forging article with NVIDIA NIM Llama 3.1 70B & SEO-Forge psychology...');
+    try {
+      const token = getAuthToken();
+      const res = await fetch('/api/blog-agent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          topic: agentTopic.trim() || undefined,
+          drive: agentDrive,
+          generateImage: true,
+          notify: true
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast('🎉 Autonomous Blog Draft created & notification email sent!');
+        await refreshFromDb();
+        setAgentModalOpen(false);
+        setAgentTopic('');
+      } else {
+        showToast(`Error: ${data.error || 'Agent generation failed'}`);
+      }
+    } catch (err: any) {
+      showToast(`Network error: ${err.message}`);
+    } finally {
+      setIsAgentGenerating(false);
+      setAgentStatusText('');
     }
   };
 
@@ -2901,18 +2943,128 @@ const Admin: React.FC = () => {
           <div className="animate-fade-in">
             {blogView === 'list' ? (
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <h2 className="text-2xl font-bold">Journal / Blog CMS</h2>
                     <p className="text-sm text-gray-400 mt-0.5">{blogs.filter(b => b.status === 'published').length} published · {blogs.filter(b => b.status === 'draft').length} drafts</p>
                   </div>
-                  <button
-                    onClick={() => { setEditingBlog(null); setBlogView('editor'); }}
-                    className="flex items-center gap-2 bg-black text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-800 transition"
-                  >
-                    <Plus size={15} /> New Post
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setAgentModalOpen(true)}
+                      className="flex items-center gap-2 bg-gradient-to-r from-emerald-800 to-teal-900 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:opacity-95 transition shadow-sm border border-emerald-600/30"
+                    >
+                      <Sparkles size={15} className="text-[#CCFF00]" /> Autonomous Blog Agent
+                    </button>
+                    <button
+                      onClick={() => { setEditingBlog(null); setBlogView('editor'); }}
+                      className="flex items-center gap-2 bg-black text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-800 transition"
+                    >
+                      <Plus size={15} /> New Post
+                    </button>
+                  </div>
                 </div>
+
+                {/* ── Autonomous Blog Agent Modal ── */}
+                {agentModalOpen && (
+                  <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-100 relative">
+                      <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center">
+                            <Sparkles size={18} className="text-emerald-700" />
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-gray-900 text-base">Autonomous AI Blog Agent</h3>
+                            <p className="text-xs text-gray-500">SEO-Forge Psychology + Zero-Cost FLUX.1 + Resend Notify</p>
+                          </div>
+                        </div>
+                        <button
+                          disabled={isAgentGenerating}
+                          onClick={() => setAgentModalOpen(false)}
+                          className="text-gray-400 hover:text-gray-700 p-1.5 rounded-lg hover:bg-gray-100 transition disabled:opacity-30"
+                        >
+                          <X size={18} />
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                            Article Topic / Focus (Optional)
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Swale Hydrology for Dying Farm Wells (or leave blank to auto-pick)"
+                            value={agentTopic}
+                            disabled={isAgentGenerating}
+                            onChange={e => setAgentTopic(e.target.value)}
+                            className="w-full text-sm px-3.5 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-emerald-600 transition"
+                          />
+                          <p className="text-[11px] text-gray-400 mt-1">
+                            Leave blank to let the agent pick from high-intent architectural &amp; permaculture strike-zone topics.
+                          </p>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                            Core Human Drive (Puppet Strings)
+                          </label>
+                          <select
+                            value={agentDrive}
+                            disabled={isAgentGenerating}
+                            onChange={e => setAgentDrive(e.target.value)}
+                            className="w-full text-sm px-3.5 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-emerald-600 transition bg-white"
+                          >
+                            <option value="Wealth & Escape">Wealth &amp; Escape (ROI, cooling savings, farm retreat sanctuary)</option>
+                            <option value="Health & Legacy">Health &amp; Legacy (Non-toxic materials, multi-generational soil health)</option>
+                            <option value="Wealth & Status">Wealth &amp; Status (High occupancy Airbnb resort, boutique prestige)</option>
+                          </select>
+                        </div>
+
+                        <div className="p-3 bg-emerald-50/70 border border-emerald-200/60 rounded-xl space-y-1.5 text-xs text-emerald-900">
+                          <div className="font-semibold flex items-center gap-1.5 text-emerald-800">
+                            <span>🛡️ Zero-Risk Guarantee:</span>
+                          </div>
+                          <p className="leading-relaxed">
+                            • Post is saved strictly in <strong>Draft Mode</strong> (never published live without your review).<br />
+                            • Automatically generates high-res cover image via <strong>FLUX.1-schnell</strong> on Cloudinary.<br />
+                            • Dispatches an instant preview email via <strong>Resend</strong> to your inbox with a 1-click review link.
+                          </p>
+                        </div>
+
+                        {isAgentGenerating && (
+                          <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl flex items-center gap-3 animate-pulse">
+                            <RefreshCw size={16} className="text-emerald-700 animate-spin shrink-0" />
+                            <span className="text-xs text-gray-700 font-medium">{agentStatusText || 'Agent is working...'}</span>
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-end gap-2.5 pt-2">
+                          <button
+                            type="button"
+                            disabled={isAgentGenerating}
+                            onClick={() => setAgentModalOpen(false)}
+                            className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition disabled:opacity-40"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            disabled={isAgentGenerating}
+                            onClick={handleRunBlogAgent}
+                            className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl shadow-md transition disabled:opacity-50"
+                          >
+                            {isAgentGenerating ? (
+                              <><RefreshCw size={13} className="animate-spin" /> Drafting Post...</>
+                            ) : (
+                              <><Sparkles size={13} className="text-[#CCFF00]" /> Generate Draft &amp; Notify</>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                   {blogs.length === 0 ? (
                     <div className="text-center py-20 text-gray-400">

@@ -1148,6 +1148,28 @@ function AsSeenOnSection() {
       height: 60,
       imgClass: 'h-9 sm:h-11 w-auto object-contain',
     },
+    {
+      id: 'fazier',
+      href: 'https://fazier.com/launches/anvitam',
+      target: '_blank',
+      rel: 'noopener',
+      imgSrc: 'https://fazier.com/assets/badges/featured-on-light.svg',
+      alt: 'Featured on Fazier',
+      width: 200,
+      height: 50,
+      imgClass: 'h-8 sm:h-10 w-auto object-contain',
+    },
+    {
+      id: 'toolpilot',
+      href: 'https://www.toolpilot.net/project/anvitam',
+      target: '_blank',
+      rel: 'noopener',
+      imgSrc: 'https://www.toolpilot.net/badges/toolpilot-badge-light.svg',
+      alt: 'Featured on ToolPilot',
+      width: 200,
+      height: 50,
+      imgClass: 'h-8 sm:h-10 w-auto object-contain',
+    },
   ];
 
   return (

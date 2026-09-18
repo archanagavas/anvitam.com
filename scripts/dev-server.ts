@@ -14,6 +14,7 @@ import metaHandler from '../api/meta';
 import messagesHandler from '../api/messages';
 import seoHandler from '../api/seo';
 import toolsHandler from '../api/tools';
+import blogAgentHandler from '../api/blog-agent';
 
 const PORT = 3005;
 
@@ -81,6 +82,8 @@ const server = createServer(async (req, res) => {
 
     if (pathname.startsWith('/api/admin') || pathname === '/api/db-init' || pathname === '/api/upload' || pathname === '/api/analytics') {
       await adminHandler(vercelReq, vercelRes);
+    } else if (pathname === '/api/blog-agent' || pathname === '/api/blog-agent/') {
+      await blogAgentHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/blogs' || pathname === '/api/blogs/') {
       vercelReq.query.resource = 'blogs';
       await metaHandler(vercelReq, vercelRes);
@@ -170,6 +173,27 @@ const server = createServer(async (req, res) => {
     ) {
       vercelReq.query.action = 'llms';
       vercelReq.query.mode = 'full';
+      await seoHandler(vercelReq, vercelRes);
+    } else if (
+      pathname === '/rss.xml' ||
+      pathname === '/feed.xml' ||
+      pathname === '/api/rss' ||
+      pathname === '/api/feed'
+    ) {
+      vercelReq.query.action = 'rss';
+      await seoHandler(vercelReq, vercelRes);
+    } else if (
+      pathname === '/atom.xml' ||
+      pathname === '/api/atom'
+    ) {
+      vercelReq.query.action = 'atom';
+      await seoHandler(vercelReq, vercelRes);
+    } else if (
+      pathname === '/feed.json' ||
+      pathname === '/api/feed.json' ||
+      pathname === '/api/feed-json'
+    ) {
+      vercelReq.query.action = 'feed-json';
       await seoHandler(vercelReq, vercelRes);
     } else if (pathname.startsWith('/api/tools/')) {
       await toolsHandler(vercelReq, vercelRes);

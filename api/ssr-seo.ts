@@ -533,6 +533,8 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
           <a href="https://www.uneed.best/tool/anvitam" target="_blank"><img src="https://www.uneed.best/EMBED3B.png" alt="Launching Soon on Uneed" width="250" /></a>
           <a href="https://nicklaunches.com/products/anvitam/?utm_source=anvitam.com&utm_medium=badge&utm_campaign=featured" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Anvitam on Nick Launches" width="244" height="56" /></a>
           <a href="https://noonlaunch.com/product/anvitam" target="_blank" rel="dofollow"><img src="https://noonlaunch.com/badges/anvitam.svg" alt="Featured on Noonlaunch" width="220" height="60" /></a>
+          <a href="https://fazier.com/launches/anvitam" target="_blank" rel="noopener"><img src="https://fazier.com/assets/badges/featured-on-light.svg" alt="Featured on Fazier" width="200" height="50" /></a>
+          <a href="https://www.toolpilot.net/project/anvitam" target="_blank" rel="noopener"><img src="https://www.toolpilot.net/badges/toolpilot-badge-light.svg" alt="Featured on ToolPilot" width="200" height="50" /></a>
         </div>
       </div>
       <p>&copy; ${new Date().getFullYear()} Anvitam. All rights reserved. <a href="/privacy" style="color: #A3B8AF;">Privacy Policy</a> | <a href="/terms" style="color: #A3B8AF;">Terms of Service</a></p>
@@ -1219,6 +1221,8 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
             <a href="https://www.uneed.best/tool/anvitam" target="_blank"><img src="https://www.uneed.best/EMBED3B.png" alt="Launching Soon on Uneed" width="250" /></a>
             <a href="https://nicklaunches.com/products/anvitam/?utm_source=anvitam.com&utm_medium=badge&utm_campaign=featured" target="_blank" rel="noopener"><img src="https://nicklaunches.com/badges/featured.png" alt="Anvitam on Nick Launches" width="244" height="56" /></a>
             <a href="https://noonlaunch.com/product/anvitam" target="_blank" rel="dofollow"><img src="https://noonlaunch.com/badges/anvitam.svg" alt="Featured on Noonlaunch" width="220" height="60" /></a>
+            <a href="https://fazier.com/launches/anvitam" target="_blank" rel="noopener"><img src="https://fazier.com/assets/badges/featured-on-light.svg" alt="Featured on Fazier" width="200" height="50" /></a>
+            <a href="https://www.toolpilot.net/project/anvitam" target="_blank" rel="noopener"><img src="https://www.toolpilot.net/badges/toolpilot-badge-light.svg" alt="Featured on ToolPilot" width="200" height="50" /></a>
           </div>
         </section>
       </main>

@@ -235,20 +235,21 @@ This file follows the llms.txt standard (https://llmstxt.org). Last updated: ${T
 
 // ── Main Execution ────────────────────────────────────────────────────
 async function main() {
-  // Ensure physical static files in public/ are removed so Vercel & Vite always route to /api/seo.ts
-  const sitemapPath = join(PUBLIC_DIR, 'sitemap.xml');
-  const llmsPath = join(PUBLIC_DIR, 'llms.txt');
-
-  if (existsSync(sitemapPath)) {
-    try { writeFileSync(sitemapPath, ''); } catch (e) {}
-  }
-  if (existsSync(llmsPath)) {
-    try { writeFileSync(llmsPath, ''); } catch (e) {}
+  const feedFiles = ['sitemap.xml', 'rss.xml', 'feed.xml', 'atom.xml', 'feed.json', 'llms.txt', 'llms-full.txt'];
+  for (const f of feedFiles) {
+    const p = join(PUBLIC_DIR, f);
+    if (existsSync(p)) {
+      try { writeFileSync(p, ''); } catch (e) {}
+    }
   }
 
-  console.log('⚡ Dynamic SEO & AEO routes active via /api/seo.ts');
-  console.log('   /sitemap.xml -> Live DB sitemap generator');
-  console.log('   /llms.txt -> Live AEO summary generator');
+  console.log('⚡ Dynamic SEO, AEO & Syndication Feeds active via /api/seo.ts');
+  console.log('   /sitemap.xml   -> Live DB sitemap generator');
+  console.log('   /rss.xml       -> Live RSS 2.0 feed generator');
+  console.log('   /feed.xml      -> Live RSS 2.0 feed alias');
+  console.log('   /atom.xml      -> Live Atom 1.0 feed generator');
+  console.log('   /feed.json     -> Live JSON Feed 1.1 generator');
+  console.log('   /llms.txt      -> Live AEO summary generator');
   console.log('   /llms-full.txt -> Live AEO full repository generator');
   console.log(`   Validated at: ${TODAY}`);
   

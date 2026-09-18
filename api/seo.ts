@@ -200,6 +200,142 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     return res.status(200).send(sitemapXml);
   }
 
+  // Helper for XML escaping
+  const escapeXml = (str: string) => {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
+  };
+
+  // 3.1. RSS 2.0 Feed (/rss.xml & /feed.xml)
+  if (action === 'rss' || action === 'feed' || url.includes('rss.xml') || url.includes('feed.xml')) {
+    const feedItems = blogs.map((b: any) => {
+      const postUrl = `https://www.anvitam.com/blog/${b.slug || b.id}`;
+      const pubDate = b.date ? new Date(b.date).toUTCString() : (b.created_at ? new Date(b.created_at).toUTCString() : new Date().toUTCString());
+      const desc = b.excerpt || stripHtml(b.content || '').slice(0, 240) + '...';
+      const imageUrl = b.cover_image || b.coverImage || b.image || '';
+      const imageTag = imageUrl ? `\n      <enclosure url="${escapeXml(imageUrl)}" type="image/jpeg" length="0" />\n      <media:content url="${escapeXml(imageUrl)}" medium="image" />` : '';
+
+      return `    <item>
+      <title>${escapeXml(b.title || 'Untitled')}</title>
+      <link>${postUrl}</link>
+      <guid isPermaLink="true">${postUrl}</guid>
+      <pubDate>${pubDate}</pubDate>
+      <dc:creator><![CDATA[${b.author || 'Ar. Archana Gavas'}]]></dc:creator>
+      <description><![CDATA[${desc}]]></description>
+      <content:encoded><![CDATA[${b.content || desc}]]></content:encoded>${imageTag}
+    </item>`;
+    });
+
+    const rssXml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:atom="http://www.w3.org/2005/Atom"
+  xmlns:media="http://search.yahoo.com/mrss/">
+  <channel>
+    <title>Anvitam — Architecture &amp; Ecological Design Journal</title>
+    <link>https://www.anvitam.com/blog</link>
+    <description>Articles, sustainable design research, permaculture insights, and architectural knowledge by Ar. Archana Gavas.</description>
+    <language>en</language>
+    <copyright>© ${new Date().getFullYear()} Anvitam Architects</copyright>
+    <atom:link href="https://www.anvitam.com/rss.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+${feedItems.join('\n')}
+  </channel>
+</rss>`;
+
+    res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=21600, stale-while-revalidate=86400');
+    return res.status(200).send(rssXml);
+  }
+
+  // 3.2. Atom 1.0 Feed (/atom.xml)
+  if (action === 'atom' || url.includes('atom.xml')) {
+    const feedUpdated = blogs.length > 0 && blogs[0].updated_at
+      ? new Date(blogs[0].updated_at).toISOString()
+      : new Date().toISOString();
+
+    const atomEntries = blogs.map((b: any) => {
+      const postUrl = `https://www.anvitam.com/blog/${b.slug || b.id}`;
+      const published = b.date ? new Date(b.date).toISOString() : (b.created_at ? new Date(b.created_at).toISOString() : new Date().toISOString());
+      const updated = b.updated_at ? new Date(b.updated_at).toISOString() : published;
+      const desc = b.excerpt || stripHtml(b.content || '').slice(0, 240) + '...';
+
+      return `  <entry>
+    <title>${escapeXml(b.title || 'Untitled')}</title>
+    <link rel="alternate" href="${postUrl}" />
+    <id>${postUrl}</id>
+    <published>${published}</published>
+    <updated>${updated}</updated>
+    <summary type="html"><![CDATA[${desc}]]></summary>
+    <content type="html"><![CDATA[${b.content || desc}]]></content>
+    <author>
+      <name>${escapeXml(b.author || 'Ar. Archana Gavas')}</name>
+      <uri>https://www.anvitam.com/why</uri>
+    </author>
+  </entry>`;
+    });
+
+    const atomXml = `<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Anvitam — Architecture &amp; Ecological Design Journal</title>
+  <subtitle>Articles, sustainable design research, permaculture insights, and architectural knowledge by Ar. Archana Gavas.</subtitle>
+  <link rel="alternate" href="https://www.anvitam.com/blog" />
+  <link rel="self" href="https://www.anvitam.com/atom.xml" />
+  <id>https://www.anvitam.com/blog</id>
+  <updated>${feedUpdated}</updated>
+  <rights>© ${new Date().getFullYear()} Anvitam Architects</rights>
+${atomEntries.join('\n')}
+</feed>`;
+
+    res.setHeader('Content-Type', 'application/atom+xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=21600, stale-while-revalidate=86400');
+    return res.status(200).send(atomXml);
+  }
+
+  // 3.3. JSON Feed 1.1 (/feed.json)
+  if (action === 'feed-json' || action === 'json' || url.includes('feed.json')) {
+    const jsonFeed = {
+      version: 'https://jsonfeed.org/version/1.1',
+      title: 'Anvitam — Architecture & Ecological Design Journal',
+      home_page_url: 'https://www.anvitam.com/blog',
+      feed_url: 'https://www.anvitam.com/feed.json',
+      description: 'Articles, sustainable design research, permaculture insights, and architectural knowledge by Ar. Archana Gavas.',
+      icon: 'https://www.anvitam.com/favicon.ico',
+      favicon: 'https://www.anvitam.com/favicon.ico',
+      authors: [
+        {
+          name: 'Ar. Archana Gavas',
+          url: 'https://www.anvitam.com/why',
+          avatar: 'https://www.anvitam.com/archana%20gavas%20image%20png.png'
+        }
+      ],
+      items: blogs.map((b: any) => {
+        const postUrl = `https://www.anvitam.com/blog/${b.slug || b.id}`;
+        return {
+          id: postUrl,
+          url: postUrl,
+          title: b.title || 'Untitled',
+          content_html: b.content || '',
+          summary: b.excerpt || stripHtml(b.content || '').slice(0, 240) + '...',
+          image: b.cover_image || b.coverImage || b.image || undefined,
+          date_published: b.date ? new Date(b.date).toISOString() : (b.created_at ? new Date(b.created_at).toISOString() : undefined),
+          date_modified: b.updated_at ? new Date(b.updated_at).toISOString() : undefined,
+          tags: Array.isArray(b.tags) ? b.tags : (b.category ? [b.category] : [])
+        };
+      })
+    };
+
+    res.setHeader('Content-Type', 'application/feed+json; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=21600, stale-while-revalidate=86400');
+    return res.status(200).json(jsonFeed);
+  }
+
   // 4. AI Crawlers Context (/llms.txt & /llms-full.txt)
   const isFullMode = action === 'llms-full' || req.query.mode === 'full' || url.includes('llms-full') || url.includes('llmsfull');
   let output = `# Anvitam — Architecture & Ecological Design Studio
