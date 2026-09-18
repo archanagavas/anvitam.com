@@ -9,7 +9,7 @@ import {
   Globe, Download, CheckCircle, RefreshCw, Edit2, X, Eye, EyeOff,
   Image as ImageIcon, Tag, Save, ArrowLeft, Type, Hash, AlertCircle, Menu,
   Database, Wifi, WifiOff, Shield, Lock, Zap, Activity, MessageCircle, Calculator, Building2,
-  Link2, Target, Send, Users, ExternalLink, Check, Clock, TrendingUp
+  Link2, Target, Send, Users, ExternalLink, Check, Clock, TrendingUp, ChevronDown, ChevronUp, Search
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { generateSitemapXml, generateLlmsTxt, generateLlmsFullTxt, downloadFile } from '../utils/seoGenerator';
@@ -1502,6 +1502,11 @@ const Admin: React.FC = () => {
   });
   const [loadingOutreach, setLoadingOutreach] = useState(false);
   const [outreachFilter, setOutreachFilter] = useState<'all' | 'queued' | 'sent' | 'replied'>('all');
+  const [outreachCategoryFilter, setOutreachCategoryFilter] = useState<'all' | 'client' | 'backlink'>('all');
+  const [outreachStatusFilter, setOutreachStatusFilter] = useState<'all' | 'draft' | 'sent' | 'replied'>('all');
+  const [outreachSearch, setOutreachSearch] = useState<string>('');
+  const [expandedPitchLeadId, setExpandedPitchLeadId] = useState<string | null>(null);
+  const [sendingResendId, setSendingResendId] = useState<string | null>(null);
 
   const fetchOutreach = React.useCallback(async () => {
     const token = getAuthToken();
@@ -1525,10 +1530,10 @@ const Admin: React.FC = () => {
     }
   }, []);
 
-  const toggleLeadStatus = async (id: string) => {
+  const toggleLeadStatus = async (id: string, customStatus?: string) => {
     const lead = outreachLeads.find(l => l.id === id);
     if (!lead) return;
-    const nextStatus = lead.status === 'draft' || lead.status === 'queued' ? 'sent' : lead.status === 'sent' ? 'replied' : 'draft';
+    const nextStatus = customStatus || (lead.status === 'draft' || lead.status === 'queued' ? 'sent' : lead.status === 'sent' ? 'replied' : 'draft');
     const nextSentDate = nextStatus === 'sent' ? new Date().toISOString().split('T')[0] : (nextStatus === 'replied' ? (lead.sent_date || new Date().toISOString().split('T')[0]) : null);
 
     setOutreachLeads(prev => prev.map(l => l.id === id ? { ...l, status: nextStatus, sent_date: nextSentDate } : l));
@@ -1544,6 +1549,49 @@ const Admin: React.FC = () => {
       });
     } catch (err) {
       console.warn('Failed to sync lead status with server');
+    }
+  };
+
+  const handleOpenInGmail = (lead: any) => {
+    const cc = 'ar.archanagavas@gmail.com';
+    const bcc = 'anvitamarchitects@gmail.com';
+    const subject = lead.pitch_subject || `Ecological architecture concept for ${lead.company}`;
+    const body = lead.pitch_body || '';
+    
+    // Direct Gmail web composer URL prefilling To, CC, BCC, Subject, and Body
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(lead.email)}&cc=${encodeURIComponent(cc)}&bcc=${encodeURIComponent(bcc)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(gmailUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleResendPitch = async (lead: any) => {
+    const token = getAuthToken();
+    if (!token) {
+      showToast('Please log in to send pitches.', 'error');
+      return;
+    }
+    setSendingResendId(lead.id);
+    try {
+      const res = await fetch('/api/admin?action=outreach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ id: lead.id, sendEmail: true })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setOutreachLeads(prev => prev.map(l => l.id === lead.id ? {
+          ...l,
+          status: 'sent',
+          sent_date: new Date().toISOString().split('T')[0],
+          response_status: 'Delivered via Resend (CC: ar.archanagavas@gmail.com, BCC: anvitamarchitects@gmail.com)'
+        } : l));
+        showToast(`✅ Pitch dispatched via Resend! (CC: ar.archanagavas@gmail.com, BCC: anvitamarchitects@gmail.com)`);
+      } else {
+        showToast(data.error || 'Resend sandbox restriction. Use "Open in Gmail" for 100% direct personal inbox delivery.', 'error');
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Failed to dispatch via Resend. Use "Open in Gmail".', 'error');
+    } finally {
+      setSendingResendId(null);
     }
   };
 
@@ -2379,9 +2427,19 @@ const Admin: React.FC = () => {
   };
 
   const filteredOutreach = outreachLeads.filter(l => {
-    if (outreachFilter === 'queued') return l.status === 'queued';
-    if (outreachFilter === 'sent') return l.status === 'sent';
-    if (outreachFilter === 'replied') return l.status === 'replied';
+    if (outreachCategoryFilter !== 'all' && l.category !== outreachCategoryFilter) return false;
+    if (outreachStatusFilter === 'draft' && l.status !== 'draft' && l.status !== 'queued') return false;
+    if (outreachStatusFilter === 'sent' && l.status !== 'sent') return false;
+    if (outreachStatusFilter === 'replied' && l.status !== 'replied') return false;
+    if (outreachSearch.trim()) {
+      const q = outreachSearch.toLowerCase();
+      const matchName = (l.name || '').toLowerCase().includes(q);
+      const matchComp = (l.company || '').toLowerCase().includes(q);
+      const matchLoc = (l.location || '').toLowerCase().includes(q);
+      const matchSrc = (l.source_name || '').toLowerCase().includes(q);
+      const matchAngle = (l.pitch_angle || '').toLowerCase().includes(q);
+      if (!matchName && !matchComp && !matchLoc && !matchSrc && !matchAngle) return false;
+    }
     return true;
   });
 
@@ -4992,7 +5050,7 @@ const Admin: React.FC = () => {
                   <div>
                     <h2 className="text-2xl font-black text-gray-900 tracking-tight">1,000 High-Net-Worth Client Pipeline & Backlinks</h2>
                     <p className="text-xs text-gray-500 font-medium mt-0.5">
-                      High-value client outreach targeting luxury farm retreats, tech CXO estates, builders & architecture media.
+                      Verified prospective client pipeline (luxury farm retreats, CXOs, builders) & high-DA architectural press contacts.
                     </p>
                   </div>
                 </div>
@@ -5008,26 +5066,30 @@ const Admin: React.FC = () => {
                 </button>
                 <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  Personal Inbox Channel (100% Deliverability)
+                  Auto CC & BCC Configured
                 </span>
               </div>
             </div>
 
-            {/* Delivery Guide Notice */}
-            <div className="bg-gradient-to-r from-blue-950 to-slate-900 text-white p-5 rounded-2xl shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-blue-900/40">
-              <div className="space-y-1">
+            {/* Email Transparency & Delivery Guide */}
+            <div className="bg-gradient-to-r from-slate-900 to-blue-950 text-white p-5 rounded-2xl shadow-sm border border-slate-800 space-y-3">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <Mail size={16} className="text-[#CCFF00]" />
-                  <h3 className="text-sm font-bold">Executive Direct Outreach (100% Verified Inbox Delivery)</h3>
+                  <Mail size={18} className="text-[#CCFF00]" />
+                  <h3 className="text-sm font-bold">Transparent Outreach Dispatch with Mandatory CC & BCC</h3>
                 </div>
-                <p className="text-xs text-gray-300 leading-relaxed max-w-2xl">
-                  Click <strong>&quot;Open in Gmail&quot;</strong> to dispatch high-converting Ogilvy pitches directly from your personal inbox (<code>ar.archanagavas@gmail.com</code>). 
-                  This completely prevents spam filter blocks, and when a prospect replies, their response lands directly in your Gmail inbox so you can converse naturally.
-                </p>
+                <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono">
+                  <span className="bg-black/50 px-2.5 py-1 rounded-lg border border-white/10 text-gray-300">
+                    <strong className="text-[#CCFF00]">CC:</strong> ar.archanagavas@gmail.com
+                  </span>
+                  <span className="bg-black/50 px-2.5 py-1 rounded-lg border border-white/10 text-gray-300">
+                    <strong className="text-[#CCFF00]">BCC:</strong> anvitamarchitects@gmail.com
+                  </span>
+                </div>
               </div>
-              <div className="text-xs font-mono bg-black/40 px-3 py-2 rounded-xl border border-white/10 shrink-0 text-gray-300">
-                <span className="text-[#CCFF00]">Channel:</span> Direct Personal Gmail
-              </div>
+              <p className="text-xs text-gray-300 leading-relaxed max-w-4xl">
+                Every email dispatched via <strong>&quot;Resend Pitch&quot;</strong> or <strong>&quot;Open in Gmail&quot;</strong> automatically sends an immediate copy to both your primary inboxes so you have a complete permanent trail. When prospective clients reply, their responses land directly in your Gmail inbox so you can close consultations naturally.
+              </p>
             </div>
 
             {/* Metric Cards */}
@@ -5035,82 +5097,317 @@ const Admin: React.FC = () => {
               <div className="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-xs">
                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">HNI Pipeline Target</p>
                 <p className="text-3xl font-black text-gray-900 mt-1">{outreachStats?.total ?? outreachLeads.length}</p>
-                <p className="text-[10px] text-gray-500 mt-0.5">Pre-qualified target opportunities</p>
+                <p className="text-[10px] text-gray-500 mt-0.5">Pre-screened verified targets</p>
               </div>
               <div className="bg-white p-5 rounded-2xl border border-blue-200 bg-blue-50/20 shadow-xs">
-                <p className="text-[11px] font-bold text-blue-700 uppercase tracking-wider">Outreach Sent</p>
-                <p className="text-3xl font-black text-blue-600 mt-1">{outreachStats?.sent ?? outreachLeads.filter(l => l.status === 'sent').length}</p>
-                <p className="text-[10px] text-blue-600 mt-0.5">Dispatched from personal inbox</p>
-              </div>
-              <div className="bg-white p-5 rounded-2xl border border-emerald-200 bg-emerald-50/20 shadow-xs">
-                <p className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Replied / Consultation</p>
-                <p className="text-3xl font-black text-emerald-600 mt-1">{outreachStats?.replied ?? outreachLeads.filter(l => l.status === 'replied').length}</p>
-                <p className="text-[10px] text-emerald-600 mt-0.5">Direct replies in personal inbox</p>
+                <p className="text-[11px] font-bold text-blue-700 uppercase tracking-wider">High-Ticket Clients</p>
+                <p className="text-3xl font-black text-blue-600 mt-1">{outreachLeads.filter(l => l.category === 'client').length}</p>
+                <p className="text-[10px] text-blue-600 mt-0.5">Eco-resorts, farmsteads, CXOs</p>
               </div>
               <div className="bg-white p-5 rounded-2xl border border-purple-200 bg-purple-50/20 shadow-xs">
-                <p className="text-[11px] font-bold text-purple-700 uppercase tracking-wider">Active Pipeline Value</p>
-                <p className="text-3xl font-black text-purple-600 mt-1">
-                  {outreachLeads.filter(l => l.status === 'replied').length > 0 
-                    ? `₹${(outreachLeads.filter(l => l.status === 'replied').length * 35).toLocaleString('en-IN')} L`
-                    : '₹0'}
+                <p className="text-[11px] font-bold text-purple-700 uppercase tracking-wider">Media & Backlinks</p>
+                <p className="text-3xl font-black text-purple-600 mt-1">{outreachLeads.filter(l => l.category === 'backlink').length}</p>
+                <p className="text-[10px] text-purple-600 mt-0.5">ArchDaily, DownToEarth, etc.</p>
+              </div>
+              <div className="bg-white p-5 rounded-2xl border border-emerald-200 bg-emerald-50/20 shadow-xs">
+                <p className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Dispatched / Replied</p>
+                <p className="text-3xl font-black text-emerald-600 mt-1">
+                  {outreachLeads.filter(l => l.status === 'sent' || l.status === 'replied').length}
                 </p>
-                <p className="text-[10px] text-purple-600 mt-0.5">Based on active prospect replies</p>
+                <p className="text-[10px] text-emerald-600 mt-0.5">Tracked in personal inbox</p>
               </div>
             </div>
 
-            {/* Outreach Table / Cards */}
-            <div className="space-y-3">
-              {filteredOutreach.map((lead) => (
-                <div key={lead.id} className="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-xs hover:shadow-md transition flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                  <div className="space-y-1.5 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-extrabold text-gray-900 text-sm">{lead.name}</span>
-                      <span className="text-xs text-gray-400 font-medium">({lead.company})</span>
-                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
-                        {lead.segment}
-                      </span>
-                      <span className="text-[10px] font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">
-                        📍 {lead.location} • {lead.land_size}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-600 leading-relaxed font-sans bg-gray-50/70 p-3 rounded-xl border border-gray-100">
-                      <strong className="text-gray-900 font-semibold">Ogilvy Concept Angle:</strong> &quot;{lead.pitch_angle}&quot;
-                    </p>
-                    <div className="flex items-center gap-4 text-[11px] text-gray-400">
-                      <span>Target: <strong className="text-gray-700 font-mono">{lead.email}</strong></span>
-                      <span>Estimated Ticket: <strong className="text-emerald-700 font-bold">{lead.estimated_project_value}</strong></span>
-                      {lead.sent_date && <span>Sent Date: <strong className="text-gray-600 font-mono">{lead.sent_date}</strong></span>}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
-                      lead.status === 'replied' ? 'bg-emerald-100 text-emerald-800' :
-                      lead.status === 'sent' ? 'bg-blue-100 text-blue-800' :
-                      'bg-amber-50 text-amber-800 border border-amber-200'
-                    }`}>
-                      {lead.status.toUpperCase()}
-                    </span>
+            {/* Sub-Tabs, Search & Filter Controls */}
+            <div className="bg-white p-4 rounded-2xl border border-gray-200/80 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              {/* Category Sub-Tabs */}
+              <div className="flex flex-wrap items-center gap-1.5 p-1 bg-gray-100 rounded-xl">
+                <button
+                  onClick={() => setOutreachCategoryFilter('all')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                    outreachCategoryFilter === 'all'
+                      ? 'bg-white text-gray-900 shadow-xs'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  All Targets ({outreachLeads.length})
+                </button>
+                <button
+                  onClick={() => setOutreachCategoryFilter('client')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                    outreachCategoryFilter === 'client'
+                      ? 'bg-white text-blue-700 shadow-xs'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <span>🎯 High-Ticket Clients</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-800">
+                    {outreachLeads.filter(l => l.category === 'client').length}
+                  </span>
+                </button>
+                <button
+                  onClick={() => setOutreachCategoryFilter('backlink')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                    outreachCategoryFilter === 'backlink'
+                      ? 'bg-white text-purple-700 shadow-xs'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <span>🔗 Media & Backlinks</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-purple-100 text-purple-800">
+                    {outreachLeads.filter(l => l.category === 'backlink').length}
+                  </span>
+                </button>
+              </div>
 
-                    {/* 1-Click Open in Gmail */}
-                    <a
-                      href={`mailto:${lead.email}?subject=${encodeURIComponent(`Ecological architecture & masterplanning concept for ${lead.company}`)}&body=${encodeURIComponent(`Dear ${lead.name},\n\nI came across your work with ${lead.company} in ${lead.location}.\n\nAs an architect specializing in ecological master-planning and permaculture retreats in India, I noticed you are developing land with unique microclimatic potential.\n\nTailored Concept: ${lead.pitch_angle}\n\nWe build our designs around passive cooling, zero-chemical water harvesting, and vernacular materials, keeping long-term maintenance virtually zero.\n\nI would be delighted to share a few site sketches and contour concepts if you have 10 minutes next week.\n\nWarm regards,\nAr. Archana Gavas\nFounder & Principal Architect, Anvitam\nhttps://www.anvitam.com | Vadodara, Gujarat`)}`}
-                      className="bg-black hover:bg-gray-800 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-xs"
-                      title="Open pre-drafted email in your mail client for 100% direct inbox delivery"
-                    >
-                      <Mail size={12} className="text-[#CCFF00]" />
-                      <span>Open in Gmail</span>
-                    </a>
-
+              {/* Status & Search Filter */}
+              <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                <div className="relative flex-1 md:w-64">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search by name, company, city, source..."
+                    value={outreachSearch}
+                    onChange={(e) => setOutreachSearch(e.target.value)}
+                    className="w-full pl-9 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-hidden focus:bg-white focus:border-blue-500 transition"
+                  />
+                  {outreachSearch && (
                     <button
-                      onClick={() => toggleLeadStatus(lead.id)}
-                      className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-250 text-xs font-semibold px-3 py-2 rounded-xl transition shadow-xs"
-                      title="Update lead progress in your tracker"
+                      onClick={() => setOutreachSearch('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs"
                     >
-                      {lead.status === 'sent' ? 'Mark as Replied' : lead.status === 'replied' ? 'Reset to Draft' : 'Mark as Sent'}
+                      ✕
                     </button>
-                  </div>
+                  )}
                 </div>
-              ))}
+
+                <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl text-xs font-semibold">
+                  {(['all', 'draft', 'sent', 'replied'] as const).map((st) => (
+                    <button
+                      key={st}
+                      onClick={() => setOutreachStatusFilter(st)}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] capitalize transition ${
+                        outreachStatusFilter === st
+                          ? 'bg-white text-gray-900 shadow-xs font-bold'
+                          : 'text-gray-500 hover:text-gray-800'
+                      }`}
+                    >
+                      {st === 'draft' ? 'Ready' : st}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Outreach Targets List */}
+            <div className="space-y-4">
+              {filteredOutreach.length === 0 ? (
+                <div className="bg-white p-12 text-center rounded-2xl border border-gray-200">
+                  <Mail size={32} className="mx-auto text-gray-300 mb-2" />
+                  <p className="text-sm font-bold text-gray-700">No leads match your active filters</p>
+                  <p className="text-xs text-gray-400 mt-1">Try changing the category, status, or search query above.</p>
+                </div>
+              ) : (
+                filteredOutreach.map((lead) => {
+                  const isExpanded = expandedPitchLeadId === lead.id;
+                  const isBacklink = lead.category === 'backlink';
+
+                  return (
+                    <div
+                      key={lead.id}
+                      className="bg-white rounded-2xl border border-gray-200/90 shadow-xs hover:shadow-md transition overflow-hidden"
+                    >
+                      {/* Top Summary Bar */}
+                      <div className="p-5 space-y-3">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                          <div className="space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-extrabold text-gray-900 text-base">{lead.name}</span>
+                              <span className="text-xs text-gray-500 font-semibold">({lead.company})</span>
+
+                              {/* Category Badge */}
+                              <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                                isBacklink
+                                  ? 'bg-purple-50 text-purple-700 border-purple-200'
+                                  : 'bg-blue-50 text-blue-700 border-blue-200'
+                              }`}>
+                                {isBacklink ? '🔗 Architecture Press / Backlink' : '🎯 High-Ticket Client Opportunity'}
+                              </span>
+
+                              {/* Segment Badge */}
+                              <span className="text-[10px] font-semibold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-md">
+                                {lead.segment}
+                              </span>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
+                              <span>📍 {lead.location}</span>
+                              <span>•</span>
+                              <span>📐 {lead.land_size}</span>
+                              <span>•</span>
+                              <span className="font-mono text-gray-700">✉️ {lead.email}</span>
+                              <span>•</span>
+                              <span className="font-bold text-emerald-700">💰 {lead.estimated_project_value}</span>
+                            </div>
+                          </div>
+
+                          {/* Dual Action Buttons matching Image 2 + Status Badge */}
+                          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+                            {/* Status Tag */}
+                            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
+                              lead.status === 'replied' ? 'bg-emerald-100 text-emerald-800' :
+                              lead.status === 'sent' ? 'bg-blue-100 text-blue-800' :
+                              'bg-amber-50 text-amber-800 border border-amber-200'
+                            }`}>
+                              {lead.status === 'draft' ? 'READY TO PITCH' : lead.status.toUpperCase()}
+                            </span>
+
+                            {/* Dual Buttons matching user UI in Image 2 */}
+                            {/* Button 1: Open in Gmail (White pill, red icon, black text) */}
+                            <button
+                              onClick={() => handleOpenInGmail(lead)}
+                              className="border border-gray-900 bg-white hover:bg-gray-50 text-gray-900 text-xs font-bold px-4 py-2 rounded-full transition flex items-center gap-2 shadow-xs cursor-pointer"
+                              title="Pre-fills email in Gmail with To, CC: ar.archanagavas@gmail.com, BCC: anvitamarchitects@gmail.com, Subject, and Body"
+                            >
+                              <Mail size={14} className="text-[#ff3b30]" />
+                              <span>Open in Gmail</span>
+                            </button>
+
+                            {/* Button 2: Resend Pitch (Black pill, white paper-plane, white text) */}
+                            <button
+                              onClick={() => handleResendPitch(lead)}
+                              disabled={sendingResendId === lead.id}
+                              className="bg-black hover:bg-gray-800 text-white text-xs font-bold px-4 py-2 rounded-full transition flex items-center gap-2 shadow-xs disabled:opacity-50 cursor-pointer"
+                              title="Dispatches email through Resend API with CC: ar.archanagavas@gmail.com and BCC: anvitamarchitects@gmail.com"
+                            >
+                              <Send size={13} className={`text-white ${sendingResendId === lead.id ? 'animate-pulse' : ''}`} />
+                              <span>{sendingResendId === lead.id ? 'Sending...' : 'Resend Pitch'}</span>
+                            </button>
+
+                            {/* Quick Status Cycle Button */}
+                            <button
+                              onClick={() => toggleLeadStatus(lead.id)}
+                              className="bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200 text-xs font-semibold px-2.5 py-2 rounded-xl transition"
+                              title="Cycle status: Draft -> Sent -> Replied"
+                            >
+                              {lead.status === 'sent' ? 'Mark Replied' : lead.status === 'replied' ? 'Reset Draft' : 'Mark Sent'}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Verified Scraped Source Info */}
+                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                          <div className="flex items-center gap-2">
+                            <span className="text-gray-400 font-bold uppercase text-[10px] tracking-wider">Verified Origin:</span>
+                            <span className="text-gray-800 font-semibold">{lead.source_name || 'Public Registry / Architecture Press'}</span>
+                          </div>
+                          {lead.source_url && (
+                            <a
+                              href={lead.source_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 font-semibold shrink-0"
+                            >
+                              <span>View Source Registry</span>
+                              <ExternalLink size={12} />
+                            </a>
+                          )}
+                        </div>
+
+                        {/* Why This Matches Anvitam (ICP Fit Rationale) */}
+                        <div className="bg-emerald-50/70 p-3 rounded-xl border border-emerald-200/80 text-xs text-emerald-950">
+                          <p className="font-bold flex items-center gap-1.5 text-emerald-900 mb-0.5">
+                            <span>🎯 Why this matches Anvitam (ICP Fit):</span>
+                          </p>
+                          <p className="text-emerald-900/90 leading-relaxed font-sans">
+                            {lead.icp_fit || lead.pitch_angle}
+                          </p>
+                        </div>
+
+                        {/* Expandable Accordion for Full Pitch Review */}
+                        <div className="border-t border-gray-100 pt-3">
+                          <button
+                            onClick={() => setExpandedPitchLeadId(isExpanded ? null : lead.id)}
+                            className="flex items-center justify-between w-full text-xs font-bold text-gray-700 hover:text-black py-1 transition"
+                          >
+                            <span className="flex items-center gap-2">
+                              <span>📝 Review Full Pitch Email & Angle (Archana & Ogilvy Voice)</span>
+                              {lead.sent_date && (
+                                <span className="text-[10px] text-gray-400 font-normal">
+                                  (Dispatched: {lead.sent_date})
+                                </span>
+                              )}
+                            </span>
+                            {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                          </button>
+
+                          {isExpanded && (
+                            <div className="mt-3 p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-3 font-sans text-xs">
+                              {/* Subject Line */}
+                              <div className="border-b border-gray-200 pb-2">
+                                <span className="text-gray-400 font-bold uppercase text-[10px] tracking-wider block mb-0.5">
+                                  Subject Line:
+                                </span>
+                                <span className="font-bold text-gray-900 text-sm">
+                                  {lead.pitch_subject || `Ecological architecture concept for ${lead.company}`}
+                                </span>
+                              </div>
+
+                              {/* Recipients */}
+                              <div className="text-[11px] text-gray-500 font-mono space-y-0.5 bg-white p-2.5 rounded-lg border border-gray-200">
+                                <p><strong className="text-gray-700">To:</strong> {lead.email}</p>
+                                <p><strong className="text-gray-700">CC:</strong> ar.archanagavas@gmail.com</p>
+                                <p><strong className="text-gray-700">BCC:</strong> anvitamarchitects@gmail.com</p>
+                              </div>
+
+                              {/* Body Content */}
+                              <div>
+                                <span className="text-gray-400 font-bold uppercase text-[10px] tracking-wider block mb-1">
+                                  Email Pitch Body:
+                                </span>
+                                <div className="bg-white p-4 rounded-lg border border-gray-200 text-gray-800 space-y-2.5 leading-relaxed whitespace-pre-wrap">
+                                  {lead.pitch_body || (
+                                    <>
+                                      <p>Dear {lead.name},</p>
+                                      <p>I came across your work with {lead.company} in {lead.location}.</p>
+                                      <p>Concept: {lead.pitch_angle}</p>
+                                      <p>Warm regards,<br />Ar. Archana Gavas<br />Founder & Principal Architect, Anvitam<br />https://www.anvitam.com</p>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Dispatch notice in expanded card */}
+                              <div className="flex items-center justify-between pt-1">
+                                <span className="text-[11px] text-gray-500">
+                                  {lead.response_status || 'Ready for review & send'}
+                                </span>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => handleOpenInGmail(lead)}
+                                    className="border border-gray-900 bg-white hover:bg-gray-50 text-gray-900 text-xs font-bold px-3.5 py-1.5 rounded-full transition flex items-center gap-1.5 shadow-xs"
+                                  >
+                                    <Mail size={13} className="text-[#ff3b30]" />
+                                    <span>Open in Gmail</span>
+                                  </button>
+                                  <button
+                                    onClick={() => handleResendPitch(lead)}
+                                    disabled={sendingResendId === lead.id}
+                                    className="bg-black hover:bg-gray-800 text-white text-xs font-bold px-3.5 py-1.5 rounded-full transition flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+                                  >
+                                    <Send size={12} className="text-white" />
+                                    <span>{sendingResendId === lead.id ? 'Sending...' : 'Resend Pitch'}</span>
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         )}

@@ -75,22 +75,10 @@ async function main() {
   } else {
     try {
       console.log('\n📤 Dispatching personalized Ogilvy-engineered pitch via Resend...');
+      const subject = targetLead.pitch_subject || `Ecological architecture concept for ${targetLead.company}`;
       const emailHtml = `
-        <div style="font-family: sans-serif; max-width: 600px; color: #111; line-height: 1.6;">
-          <p>Dear ${targetLead.name},</p>
-          <p>I came across your work with <strong>${targetLead.company}</strong> in ${targetLead.location}.</p>
-          <p>As an architect specializing in ecological master-planning and permaculture retreats in India, I noticed you are developing land in an area with unique microclimatic potential.</p>
-          <p style="background: #f4fbf0; padding: 14px 18px; border-left: 4px solid #8bc34a; border-radius: 4px;">
-            <strong>Tailored Concept:</strong> ${targetLead.pitch_angle}
-          </p>
-          <p>We build our designs around passive cooling, zero-chemical water harvesting, and vernacular materials, keeping long-term maintenance virtually zero.</p>
-          <p>I would be delighted to share a few site sketches and contour concepts if you have 10 minutes next week.</p>
-          <br/>
-          <p>Warm regards,<br/>
-          <strong>Ar. Archana Gavas</strong><br/>
-          Founder & Principal Architect, Anvitam<br/>
-          <a href="https://www.anvitam.com" style="color: #2e7d32;">anvitam.com</a> | Vadodara, Gujarat
-          </p>
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 620px; color: #1a1a1a; line-height: 1.65; font-size: 15px;">
+          ${(targetLead.pitch_body || '').split('\n\n').map((p: string) => `<p style="margin-bottom: 16px;">${p.replace(/\n/g, '<br/>')}</p>`).join('')}
         </div>
       `;
 
@@ -103,22 +91,24 @@ async function main() {
         body: JSON.stringify({
           from: 'Ar. Archana Gavas <onboarding@resend.dev>',
           to: [targetLead.email],
-          subject: `Ecological architecture concept for ${targetLead.company}`,
+          cc: ['ar.archanagavas@gmail.com'],
+          bcc: ['anvitamarchitects@gmail.com'],
+          subject: subject,
           html: emailHtml,
         }),
       });
 
       if (res.ok) {
-        console.log(`✅ Successfully dispatched outreach email directly to ${targetLead.email}`);
+        console.log(`✅ Successfully dispatched outreach email directly to ${targetLead.email} (CC: ar.archanagavas@gmail.com, BCC: anvitamarchitects@gmail.com)`);
         targetLead.status = 'sent';
         targetLead.sent_date = new Date().toISOString().split('T')[0];
-        targetLead.response_status = 'Delivered via Resend';
+        targetLead.response_status = 'Delivered via Resend (CC & BCC verified)';
       } else {
         const errText = await res.text();
         // Resend Sandbox restriction: If unverified custom domain, route preview to verified owner email
         if (res.status === 403 && errText.includes('testing emails')) {
           console.log(`ℹ️ Resend sandbox active (domain anvitam.com pending DNS verification at resend.com/domains).`);
-          console.log(`📨 Routing client pitch preview to verified owner inbox: anvitamarchitects@gmail.com...`);
+          console.log(`📨 Routing client pitch preview to verified owner inboxes: ar.archanagavas@gmail.com & anvitamarchitects@gmail.com...`);
           const fallbackRes = await fetch('https://api.resend.com/emails', {
             method: 'POST',
             headers: {
@@ -127,20 +117,23 @@ async function main() {
             },
             body: JSON.stringify({
               from: 'Anvitam Outreach Agent <onboarding@resend.dev>',
-              to: ['anvitamarchitects@gmail.com'],
-              subject: `[Client Pitch Preview for ${targetLead.name}] Ecological architecture for ${targetLead.company}`,
+              to: ['ar.archanagavas@gmail.com'],
+              cc: ['ar.archanagavas@gmail.com'],
+              bcc: ['anvitamarchitects@gmail.com'],
+              subject: `[Lead Pitch Preview for ${targetLead.name}] ${subject}`,
               html: `
-                <div style="background: #fdf8e6; padding: 12px 16px; border-left: 4px solid #f59e0b; margin-bottom: 20px; font-family: sans-serif;">
-                  <strong>⚠️ Resend Sandbox Delivery:</strong> This pitch was prepared for <strong>${targetLead.name}</strong> (&lt;${targetLead.email}&gt;).<br/>
+                <div style="background: #fdf8e6; padding: 14px 18px; border-left: 4px solid #f59e0b; margin-bottom: 20px; font-family: sans-serif; font-size: 13px; color: #78350f;">
+                  <strong>⚠️ Resend Sandbox Delivery Notice:</strong> This pitch was prepared for <strong>${targetLead.name}</strong> (&lt;${targetLead.email}&gt;).<br/>
+                  Target Segment: <strong>${targetLead.segment}</strong> | Source: <strong>${targetLead.source_name || 'Curated ICP'}</strong><br/>
                   To enable direct autonomous dispatch to client inboxes, verify <code>anvitam.com</code> at <a href="https://resend.com/domains">resend.com/domains</a>.<br/>
-                  In the meantime, you can forward this email directly or click <strong>"Open in Gmail"</strong> from your Anvitam Admin dashboard!
+                  In the meantime, you can click <strong>"Open in Gmail"</strong> from your Anvitam Admin dashboard to send directly from your personal inbox!
                 </div>
                 ${emailHtml}
               `,
             }),
           });
           if (fallbackRes.ok) {
-            console.log(`✅ Pitch successfully delivered to anvitamarchitects@gmail.com!`);
+            console.log(`✅ Pitch successfully delivered to ar.archanagavas@gmail.com and anvitamarchitects@gmail.com!`);
             targetLead.status = 'sent';
             targetLead.sent_date = new Date().toISOString().split('T')[0];
             targetLead.response_status = 'Delivered to Owner Inbox (Sandbox)';

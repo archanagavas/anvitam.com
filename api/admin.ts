@@ -255,30 +255,30 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     if (!token || !verifyAdminToken(token)) return res.status(401).json({ error: 'Unauthorized' });
     if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
-    let blogCount = 5;
-    let projectCount = 6;
-    let serviceCount = 4;
-    let messageCount = 12;
-    let testimonialCount = 3;
+    let blogCount = 0;
+    let projectCount = 0;
+    let serviceCount = 0;
+    let messageCount = 0;
+    let testimonialCount = 0;
 
     if (isDbConfigured) {
       try {
         const blogs = await getCollection('blogs', 'desc');
-        blogCount = blogs.length || 5;
+        blogCount = blogs.length;
 
         const projects = await getCollection('projects', 'desc');
-        projectCount = projects.length || 6;
+        projectCount = projects.length;
 
         const services = await getCollection('services', 'asc');
-        serviceCount = services.length || 4;
+        serviceCount = services.length;
 
         const messages = await getCollection('messages', 'desc');
-        messageCount = messages.length || 12;
+        messageCount = messages.length;
 
         const testimonials = await getCollection('testimonials', 'desc');
-        testimonialCount = testimonials.length || 3;
+        testimonialCount = testimonials.length;
       } catch (err) {
-        console.error('[analytics API] Error fetching counts:', err);
+        console.error('[analytics API] Error fetching counts from Firestore:', err);
       }
     }
 
@@ -329,19 +329,29 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
     if (req.method === 'GET') {
       try {
-        if (fs.existsSync(filePath)) {
-          const targets = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-          const total = targets.length;
-          const submitted = targets.filter((t: any) => t.status === 'submitted').length;
-          const queued = targets.filter((t: any) => t.status === 'queued').length;
-          const dofollow = targets.filter((t: any) => t.dofollow).length;
-          const totalDa = targets.reduce((acc: number, t: any) => acc + (t.da || 0), 0);
-          const avgDa = total > 0 ? Math.round(totalDa / total) : 0;
-          return res.status(200).json({
-            targets,
-            stats: { total, submitted, queued, dofollow, nofollow: total - dofollow, avgDa }
-          });
+        let targets: any[] = [];
+        if (isDbConfigured) {
+          try {
+            targets = await getCollection('directory_targets', 'asc');
+          } catch (dbErr) {
+            console.warn('[directories API] Firestore read fallback:', dbErr);
+          }
         }
+        if (!targets || targets.length === 0) {
+          if (fs.existsSync(filePath)) {
+            targets = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          }
+        }
+        const total = targets.length;
+        const submitted = targets.filter((t: any) => t.status === 'submitted').length;
+        const queued = targets.filter((t: any) => t.status === 'queued').length;
+        const dofollow = targets.filter((t: any) => t.dofollow).length;
+        const totalDa = targets.reduce((acc: number, t: any) => acc + (t.da || 0), 0);
+        const avgDa = total > 0 ? Math.round(totalDa / total) : 0;
+        return res.status(200).json({
+          targets,
+          stats: { total, submitted, queued, dofollow, nofollow: total - dofollow, avgDa }
+        });
       } catch (err: any) {
         console.warn('[directories API] Read error:', err.message);
       }
@@ -359,6 +369,17 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
             item.status = status || (item.status === 'submitted' ? 'queued' : 'submitted');
             if (item.status === 'submitted') item.submittedAt = new Date().toISOString();
             fs.writeFileSync(filePath, JSON.stringify(targets, null, 2), 'utf8');
+
+            if (isDbConfigured) {
+              try {
+                const { upsertDoc } = await import('../lib/db.js');
+                const docId = (item.domain || item.name || '').replace(/[^a-zA-Z0-9_-]/g, '_');
+                await upsertDoc('directory_targets', docId, item);
+              } catch (fsErr) {
+                console.warn('[directories API] Firestore sync error:', fsErr);
+              }
+            }
+
             return res.status(200).json({ success: true, item });
           }
         }
@@ -380,17 +401,27 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
     if (req.method === 'GET') {
       try {
-        if (fs.existsSync(filePath)) {
-          const leads = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-          const total = leads.length;
-          const sent = leads.filter((l: any) => l.status === 'sent').length;
-          const queued = leads.filter((l: any) => l.status === 'queued').length;
-          const replied = leads.filter((l: any) => l.status === 'replied').length;
-          return res.status(200).json({
-            leads,
-            stats: { total, sent, queued, replied }
-          });
+        let leads: any[] = [];
+        if (isDbConfigured) {
+          try {
+            leads = await getCollection('client_leads', 'desc');
+          } catch (dbErr) {
+            console.warn('[outreach API] Firestore read fallback:', dbErr);
+          }
         }
+        if (!leads || leads.length === 0) {
+          if (fs.existsSync(filePath)) {
+            leads = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          }
+        }
+        const total = leads.length;
+        const sent = leads.filter((l: any) => l.status === 'sent').length;
+        const queued = leads.filter((l: any) => l.status === 'queued' || l.status === 'draft').length;
+        const replied = leads.filter((l: any) => l.status === 'replied').length;
+        return res.status(200).json({
+          leads,
+          stats: { total, sent, queued, replied }
+        });
       } catch (err: any) {
         console.warn('[outreach API] Read error:', err.message);
       }
@@ -401,42 +432,73 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       try {
         const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
         const { id, status, sendEmail } = body;
+        let leads: any[] = [];
         if (fs.existsSync(filePath)) {
-          const leads = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-          const lead = leads.find((l: any) => l.id === id);
-          if (lead) {
-            if (status) lead.status = status;
-            if (sendEmail && process.env.RESEND_API_KEY) {
-              const resend = await fetch('https://api.resend.com/emails', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${process.env.RESEND_API_KEY}`
-                },
-                body: JSON.stringify({
-                  from: 'Ar. Archana Gavas <onboarding@resend.dev>',
-                  to: [lead.email],
-                  subject: `Ecological architecture concept for ${lead.company}`,
-                  html: `<p>Dear ${lead.name},</p><p>We are following up on ecological design for ${lead.company}. Concept: ${lead.pitch_angle}</p><p>Best,<br>Ar. Archana Gavas</p>`
-                })
-              });
-              const resendData = await resend.json().catch(() => ({}));
-              if (resend.ok) {
-                lead.status = 'sent';
-                lead.sent_date = new Date().toISOString().split('T')[0];
-                lead.response_status = 'Delivered via Resend';
-              } else {
-                lead.response_status = `Failed: ${resendData.message || 'Resend Free sandbox only delivers to owner (ar.archanagavas@gmail.com). Use Open in Gmail for 100% direct inbox delivery.'}`;
+          leads = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        }
+        if (isDbConfigured) {
+          try {
+            const dbLeads = await getCollection('client_leads');
+            if (dbLeads.length > 0) leads = dbLeads;
+          } catch (_) {}
+        }
+
+        const lead = leads.find((l: any) => l.id === id);
+        if (lead) {
+          if (status) lead.status = status;
+          if (sendEmail && process.env.RESEND_API_KEY) {
+            const subject = lead.pitch_subject || `Ecological architecture concept for ${lead.company}`;
+            const emailHtml = `
+              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 620px; color: #1a1a1a; line-height: 1.65; font-size: 15px;">
+                ${(lead.pitch_body || '').split('\n\n').map((p: string) => `<p style="margin-bottom: 16px;">${p.replace(/\n/g, '<br/>')}</p>`).join('')}
+              </div>
+            `;
+            const resend = await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${process.env.RESEND_API_KEY}`
+              },
+              body: JSON.stringify({
+                from: 'Ar. Archana Gavas <onboarding@resend.dev>',
+                to: [lead.email],
+                cc: ['ar.archanagavas@gmail.com'],
+                bcc: ['anvitamarchitects@gmail.com'],
+                subject: subject,
+                html: emailHtml
+              })
+            });
+            const resendData = await resend.json().catch(() => ({}));
+            if (resend.ok) {
+              lead.status = 'sent';
+              lead.sent_date = new Date().toISOString().split('T')[0];
+              lead.response_status = 'Delivered via Resend (CC: ar.archanagavas@gmail.com, BCC: anvitamarchitects@gmail.com)';
+            } else {
+              lead.response_status = `Failed: ${resendData.message || 'Resend test API restriction'}`;
+              if (fs.existsSync(filePath)) {
                 fs.writeFileSync(filePath, JSON.stringify(leads, null, 2), 'utf8');
-                return res.status(400).json({
-                  error: `Resend sandbox restriction: Free test API can only send to your own registered email. Please use the "Open in Gmail" button to dispatch directly from your personal inbox with 100% deliverability!`,
-                  lead
-                });
               }
+              return res.status(400).json({
+                error: `Resend restriction: ${resendData.message || 'Free sandbox can only deliver to verified domain/email'}. Please use "Open in Gmail" for instant 100% personal delivery!`,
+                lead
+              });
             }
-            fs.writeFileSync(filePath, JSON.stringify(leads, null, 2), 'utf8');
-            return res.status(200).json({ success: true, lead });
           }
+
+          if (fs.existsSync(filePath)) {
+            fs.writeFileSync(filePath, JSON.stringify(leads, null, 2), 'utf8');
+          }
+
+          if (isDbConfigured) {
+            try {
+              const { upsertDoc } = await import('../lib/db.js');
+              await upsertDoc('client_leads', String(lead.id), lead);
+            } catch (fsErr) {
+              console.warn('[outreach API] Firestore sync error:', fsErr);
+            }
+          }
+
+          return res.status(200).json({ success: true, lead });
         }
         return res.status(404).json({ error: 'Lead not found.' });
       } catch (err: any) {
