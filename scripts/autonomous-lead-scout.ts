@@ -298,7 +298,7 @@ Generate a valid JSON object with the following fields:
   "pitch_angle": "One-sentence tailored concept (e.g. Biological natural pool without chlorine & rammed earth villas with 0 HVAC power)",
   "pitch_subject": "A compelling 8-12 word subject line in Archana's voice",
   "pitch_body": "A complete, personal 4-paragraph Ogilvy cold pitch signed off by Ar. Archana Gavas (Founder & Principal Architect, Anvitam - https://www.anvitam.com). Highlight microclimate bioclimatic analysis, passive cooling, biological wetland swimming pools, and zero-chemical regenerative architecture.",
-  "estimated_project_value": "Estimated architectural masterplanning fee in USD (e.g. '$35,000 USD' or '$65,000 USD')"
+  "estimated_project_value": "Estimated fee in USD based on project scope (e.g. '$250 USD' for microclimate site analysis report, '$2,500 USD' for concept layout, up to '$45,000 USD' or '$95,000 USD' for full architectural masterplanning)"
 }
 Output ONLY the JSON object, nothing else.`;
 

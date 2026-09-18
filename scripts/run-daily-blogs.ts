@@ -253,14 +253,55 @@ RETURN ONLY A VALID JSON OBJECT (no markdown ticks, no commentary):
 
   const userPrompt = `Target Niche: ${nicheInfo.niche}\nLive Google Intent Queries: ${targetQueries.join(', ')}\n\nWrite this complete, unfiltered deep-dive article now in Archana's voice.`;
 
-  // 1. Primary: Google Gemini 3.6 Flash with retry loop & backoff
+  // 1. Primary: Groq (Ultra-Fast 120B / 27B Parameters)
+  const groqKey = process.env.GROQ_API_KEY;
+  if (groqKey) {
+    const groqModels = ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b', 'groq/compound'];
+    for (const model of groqModels) {
+      try {
+        console.log(`[daily-blog] Calling Groq (${model}) for: "${nicheInfo.niche}"...`);
+        const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${groqKey}`,
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt },
+            ],
+            temperature: 0.65,
+            max_tokens: 4096,
+            response_format: { type: 'json_object' }
+          }),
+        });
+
+        if (resp.ok) {
+          const data = await resp.json();
+          const rawContent = data.choices?.[0]?.message?.content?.trim() || '';
+          const cleaned = rawContent.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
+          return JSON.parse(cleaned);
+        } else {
+          const err = await resp.text();
+          console.warn(`[daily-blog] Groq ${model} error ${resp.status}: ${err.slice(0, 150)}`);
+        }
+      } catch (err: any) {
+        console.warn(`[daily-blog] Groq ${model} failed: ${err.message}`);
+      }
+    }
+  }
+
+  // 2. Fallback: Google Gemini
   const geminiKey = process.env.GEMINI_API_KEY;
   if (geminiKey) {
-    for (let attempt = 1; attempt <= 3; attempt++) {
+    const geminiModels = ['gemini-flash-latest', 'gemini-pro-latest'];
+    for (const model of geminiModels) {
       try {
-        console.log(`[daily-blog] Calling Gemini 3.6 Flash (attempt ${attempt}/3) for: "${nicheInfo.niche}"...`);
+        console.log(`[daily-blog] Calling Gemini fallback (${model})...`);
         const resp = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${geminiKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -274,55 +315,12 @@ RETURN ONLY A VALID JSON OBJECT (no markdown ticks, no commentary):
         if (resp.ok) {
           const data = await resp.json();
           const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '{}';
-          return JSON.parse(text);
-        } else if (resp.status === 503 || resp.status === 429) {
-          console.warn(`[daily-blog] Gemini busy (HTTP ${resp.status}). Retrying in ${attempt * 3}s...`);
-          await new Promise((resolve) => setTimeout(resolve, attempt * 3000));
-        } else {
-          const errBody = await resp.text();
-          console.warn(`[daily-blog] Gemini HTTP ${resp.status}: ${errBody.slice(0, 200)}`);
-          break;
+          const cleaned = text.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
+          return JSON.parse(cleaned);
         }
       } catch (err: any) {
-        console.warn(`[daily-blog] Gemini attempt ${attempt} failed: ${err.message}`);
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        console.warn(`[daily-blog] Gemini ${model} failed: ${err.message}`);
       }
-    }
-  }
-
-  // 2. Fallback 1: Groq
-  const groqKey = process.env.GROQ_API_KEY;
-  if (groqKey) {
-    try {
-      console.log(`[daily-blog] Calling Groq fallback (llama-3.3-70b-versatile)...`);
-      const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${groqKey}`,
-        },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          temperature: 0.65,
-          max_tokens: 4096,
-        }),
-      });
-
-      if (resp.ok) {
-        const data = await resp.json();
-        const rawContent = data.choices?.[0]?.message?.content?.trim() || '';
-        const cleaned = rawContent.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
-        return JSON.parse(cleaned);
-      } else {
-        const err = await resp.text();
-        console.warn(`[daily-blog] Groq error ${resp.status}: ${err.slice(0, 200)}`);
-      }
-    } catch (err: any) {
-      console.warn(`[daily-blog] Groq fallback failed: ${err.message}`);
     }
   }
 

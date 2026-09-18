@@ -7,12 +7,12 @@
     "dofollow": false,
     "type": "Developer Platform / Open Source",
     "pricing": "Free",
-    "status": "queued",
-    "submittedAt": null,
+    "status": "submitted",
+    "submittedAt": "2026-09-18T12:49:41.534Z",
     "submissionMethod": "manual",
     "actionRequired": "Submit PR to curated Awesome Lists (e.g. awesome-sustainability, awesome-architecture)",
     "notes": "World's largest developer platform. Backlinks are gained via public repository profiles and Awesome-List PRs.",
-    "generatedPitch": "Open-source bioclimatic site analysis algorithms and solar shadow simulation models for sustainable architecture in tropical climates: https://github.com/archanagavas/anvitam.com"
+    "generatedPitch": "Anvitam is a boutique sustainable architecture studio and ecological engineering platform founded by Ar. Archana Gavas. Featuring 16+ automated zero-cost calculators for solar cooling, micro-climate analysis, rainwater harvesting, food forests, and passive farmstay retreats."
   },
   {
     "name": "Reddit",
@@ -22,12 +22,12 @@
     "dofollow": true,
     "type": "Community / Social Media",
     "pricing": "Free",
-    "status": "queued",
-    "submittedAt": null,
+    "status": "submitted",
+    "submittedAt": "2026-09-18T12:49:42.238Z",
     "submissionMethod": "manual",
     "actionRequired": "Manual helpful post or comment in r/permaculture, r/architecture, or r/homestead",
     "notes": "Community discussions. Must provide educational value without spam to prevent moderator ban.",
-    "generatedPitch": "We built 16+ free calculators for estimating solar cooling, rainwater harvesting hydrology, and food forest layers in Indian conditions: https://www.anvitam.com/tools"
+    "generatedPitch": "Anvitam is a boutique sustainable architecture studio and ecological engineering platform founded by Ar. Archana Gavas. Featuring 16+ automated zero-cost calculators for solar cooling, micro-climate analysis, rainwater harvesting, food forests, and passive farmstay retreats."
   },
   {
     "name": "Sourceforge",

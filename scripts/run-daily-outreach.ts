@@ -52,9 +52,9 @@ async function main() {
   console.log('   Delivery: Resend Free API (Zero Vercel Function Cost)');
   console.log('='.repeat(70));
 
-  const queuedLeads = leads.filter(l => l.status === 'queued');
+  const queuedLeads = leads.filter(l => l.status === 'queued' || l.status === 'draft');
   if (queuedLeads.length === 0) {
-    console.log('🎉 All queued outreach leads have already been contacted!');
+    console.log('🎉 All outreach leads have already been contacted!');
     return;
   }
 
