@@ -1418,5 +1418,25 @@
     "sent_date": null,
     "response_status": "Discovered & Qualified Autonomously",
     "estimated_project_value": "$45,000 USD"
+  },
+  {
+    "id": "lead-7604-410",
+    "name": "Management / Founder",
+    "company": "Tierra Patagonia Hotel & Spa",
+    "category": "client",
+    "segment": "International Luxury Eco-Resort & Retreat Founders",
+    "location": "Torres del Paine, Chile",
+    "land_size": "50 Acres",
+    "email": "info@tierrahotels.com",
+    "source_name": "Chile Bioclimatic Wind-Responsive Architecture",
+    "source_url": "https://tierrahotels.com/patagonia",
+    "icp_fit": "Torres del Paine’s extreme wind and cold climate demand robust passive design. Your integration into the Patagonian steppe offers a perfect canvas for bioclimatic architecture that respects the landscape while maximizing guest comfort.",
+    "pitch_angle": "Passive solar heating strategies and wind-shielded biological pools to extend the season without heavy mechanical reliance.",
+    "pitch_subject": "Design ideas for Tierra Patagonia",
+    "pitch_body": "Hi Tierra Patagonia Team,\n\nI came across your property and genuinely loved how it sits within the dramatic Patagonian landscape.\n\nI'm an architect specializing in ecological masterplanning and passive solar design. Given your site's wind exposure and climate, I had a couple of ideas around wind-shielded biological pools and passive-heated guest zones that could elevate guest comfort without heavy operational costs.\n\nIf you're open to a quick 10-minute chat, I'd love to share a few sketches and similar projects from our portfolio:\n👉 Grab a quick intro slot here: https://topmate.io/archanagavas/1799075?utm_source=estimator&utm_campaign=estimate_lead\nOr feel free to reply right here or check our work at https://www.anvitam.com/contact\n\nLooking forward to hearing from you.\n\nBest,\nArchana",
+    "status": "draft",
+    "sent_date": null,
+    "response_status": "Discovered & Qualified Autonomously",
+    "estimated_project_value": "$45,000 USD"
   }
 ]
