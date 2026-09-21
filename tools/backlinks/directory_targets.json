@@ -119,9 +119,10 @@
     "dofollow": false,
     "type": "Press Coverage",
     "pricing": "Free",
-    "status": "queued",
-    "submittedAt": null,
-    "notes": "Digital news outlet covering breaking news, entertainment, technology, and viral content."
+    "status": "submitted",
+    "submittedAt": "2026-09-21T11:14:13.901Z",
+    "notes": "Digital news outlet covering breaking news, entertainment, technology, and viral content.",
+    "generatedPitch": "Anvitam is a boutique sustainable architecture studio and ecological engineering platform founded by Ar. Archana Gavas. Featuring 16+ automated zero-cost calculators for solar cooling, micro-climate analysis, rainwater harvesting, food forests, and passive farmstay retreats."
   },
   {
     "name": "CNET",
@@ -131,9 +132,10 @@
     "dofollow": false,
     "type": "Startup Directory",
     "pricing": "Free",
-    "status": "queued",
-    "submittedAt": null,
-    "notes": "Leading technology media website providing expert reviews, news, and advice on consumer electronics and software."
+    "status": "submitted",
+    "submittedAt": "2026-09-21T11:14:15.373Z",
+    "notes": "Leading technology media website providing expert reviews, news, and advice on consumer electronics and software.",
+    "generatedPitch": "Anvitam is a boutique sustainable architecture studio and ecological engineering platform founded by Ar. Archana Gavas. Featuring 16+ automated zero-cost calculators for solar cooling, micro-climate analysis, rainwater harvesting, food forests, and passive farmstay retreats."
   },
   {
     "name": "Digital Trends",
