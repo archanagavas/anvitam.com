@@ -628,7 +628,7 @@ export default function SiteAnalysis() {
           <div className="flex-1 flex flex-col min-w-0">
             
             {/* Unified Topbar inside canvas with Hamburger, Search, Settings & Logout */}
-            <div className="sa-topbar no-print bg-white text-gray-900 px-6 py-3 border-b border-gray-200/80 shadow-2xs flex flex-col lg:flex-row items-center justify-between gap-4 z-20 sticky top-20">
+            <div className="sa-topbar no-print bg-white text-gray-900 px-6 py-3 border-b border-gray-200/80 shadow-2xs flex flex-col lg:flex-row items-center justify-between gap-4 z-20 relative">
               <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
                 <button
                   type="button"

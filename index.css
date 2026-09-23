@@ -1110,6 +1110,7 @@ article tr:hover {
     font-size: 10.5pt !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    position: relative !important;
   }
   .sa-topbar,
   header,
@@ -1127,6 +1128,7 @@ article tr:hover {
     max-width: 100% !important;
     padding: 0 !important;
     margin: 0 !important;
+    position: relative !important;
   }
   .analysis-card {
     break-inside: avoid !important;
@@ -1134,6 +1136,22 @@ article tr:hover {
     box-shadow: none !important;
     border: 1px solid #d1d5db !important;
     background: #ffffff !important;
+    position: relative !important;
+  }
+  /* Elegant studio watermark for printed dossier */
+  .print-watermark {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-12deg);
+    width: 320px;
+    height: 320px;
+    opacity: 0.035 !important;
+    pointer-events: none;
+    z-index: 0;
+    display: block !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }
 

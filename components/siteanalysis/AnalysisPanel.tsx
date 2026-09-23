@@ -234,16 +234,30 @@ ${r.swot?.threats?.map(t => `- **${t.title}** (${t.tag}): ${t.desc}`).join('\n')
   };
 
   return (
-    <div className="analysis-panel p-6 sm:p-10 space-y-8 max-w-7xl mx-auto">
+    <div className="analysis-panel p-6 sm:p-10 space-y-8 max-w-7xl mx-auto relative">
+
+      {/* ── SUBTLE ELEGANT STUDIO LOGO WATERMARK FOR PRINT/PDF DOSSIER ── */}
+      <div
+        className="hidden print:block print-watermark"
+        style={{
+          backgroundImage: "url('/logo.png')",
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
+          backgroundSize: 'contain',
+        }}
+        aria-hidden="true"
+      />
 
       {/* ── PRINT-ONLY CLIENT DOSSIER COVER HEADER (Visible exclusively in Print / PDF) ── */}
       <div className="hidden print:block mb-8 border-b-2 border-black pb-6 space-y-4">
         {/* Studio Branding & Lead Architect Header */}
         <div className="flex justify-between items-start border-b border-gray-200 pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center text-[#CCFF00] font-black text-lg">
-              ▲
-            </div>
+            <img
+              src="/logo.png"
+              alt="Anvitam Studio Logo"
+              className="w-11 h-11 object-contain rounded-xl p-0.5 bg-white border border-gray-200 shadow-2xs"
+            />
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-black text-sm tracking-tight text-black">ANVITAM STUDIO</span>
