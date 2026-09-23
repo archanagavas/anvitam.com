@@ -171,9 +171,10 @@
     "dofollow": false,
     "type": "Startup Directory",
     "pricing": "Free",
-    "status": "queued",
-    "submittedAt": null,
-    "notes": "Technology, science, art, and culture news publication known for in-depth reporting and product reviews."
+    "status": "submitted",
+    "submittedAt": "2026-09-23T10:21:49.171Z",
+    "notes": "Technology, science, art, and culture news publication known for in-depth reporting and product reviews.",
+    "generatedPitch": "Anvitam is a boutique sustainable architecture studio and ecological engineering platform founded by Ar. Archana Gavas. Featuring 16+ automated zero-cost calculators for solar cooling, micro-climate analysis, rainwater harvesting, food forests, and passive farmstay retreats."
   },
   {
     "name": "AI Tools by Neil Patel",
@@ -183,9 +184,10 @@
     "dofollow": true,
     "type": "AI Directory",
     "pricing": "Free",
-    "status": "queued",
-    "submittedAt": null,
-    "notes": "Neil Patel's curated AI tools directory featuring top AI tools across categories like marketing, content, coding, and pr"
+    "status": "submitted",
+    "submittedAt": "2026-09-23T10:21:49.918Z",
+    "notes": "Neil Patel's curated AI tools directory featuring top AI tools across categories like marketing, content, coding, and pr",
+    "generatedPitch": "Anvitam is a boutique sustainable architecture studio and ecological engineering platform founded by Ar. Archana Gavas. Featuring 16+ automated zero-cost calculators for solar cooling, micro-climate analysis, rainwater harvesting, food forests, and passive farmstay retreats."
   },
   {
     "name": "G2",
