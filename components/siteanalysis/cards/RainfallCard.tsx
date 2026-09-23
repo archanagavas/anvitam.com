@@ -24,31 +24,40 @@ export const RainfallCard: React.FC<Props> = ({ data }) => {
     : 'Low — site requires alternative water supply strategies';
 
   return (
-    <div className="analysis-card">
-      <div className="card-header">
-        <span className="card-icon">☔</span>
-        <div>
-          <h3 className="card-title">Rainfall Pattern</h3>
-          <p className="card-subtitle">Monthly distribution & water harvesting potential</p>
+    <div className="analysis-card bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-4 text-gray-900">
+      <div className="card-header flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <span className="card-icon text-2xl p-2.5 rounded-2xl bg-black text-[#CCFF00] flex items-center justify-center">
+            ☔
+          </span>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="card-title text-base font-bold text-gray-900">Rainfall Pattern &amp; Hydrology</h3>
+              <span className="text-[9px] font-bold bg-sky-100 text-sky-800 px-2 py-0.5 rounded-full border border-sky-200">
+                🟡 Medium Confidence (ERA5 Gridded)
+              </span>
+            </div>
+            <p className="card-subtitle text-xs text-gray-500">Monthly distribution &amp; water harvesting potential</p>
+          </div>
         </div>
       </div>
 
-      <div className="metric-grid">
-        <div className="metric-item">
-          <span className="metric-value">{data.annual_rain_total}mm</span>
-          <span className="metric-label">Annual total</span>
+      <div className="metric-grid grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="metric-item p-3 bg-gray-50 rounded-2xl border border-gray-100">
+          <span className="metric-value text-base font-bold">~{data.annual_rain_total}mm</span>
+          <span className="metric-label text-[10px] text-gray-500 font-medium mt-0.5">Annual Total</span>
         </div>
-        <div className="metric-item">
-          <span className="metric-value">{dryMonths}</span>
-          <span className="metric-label">Dry months (&lt;60mm)</span>
+        <div className="metric-item p-3 bg-gray-50 rounded-2xl border border-gray-100">
+          <span className="metric-value text-base font-bold">{dryMonths}</span>
+          <span className="metric-label text-[10px] text-gray-500 font-medium mt-0.5">Dry Months (&lt;60mm)</span>
         </div>
-        <div className="metric-item">
-          <span className="metric-value">{wetMonths}</span>
-          <span className="metric-label">Wet months (&gt;100mm)</span>
+        <div className="metric-item p-3 bg-gray-50 rounded-2xl border border-gray-100">
+          <span className="metric-value text-base font-bold">{wetMonths}</span>
+          <span className="metric-label text-[10px] text-gray-500 font-medium mt-0.5">Monsoon Months (&gt;100mm)</span>
         </div>
-        <div className="metric-item">
-          <span className="metric-value">{Math.round(data.annual_rain_total / 12)}mm</span>
-          <span className="metric-label">Monthly avg</span>
+        <div className="metric-item p-3 bg-gray-50 rounded-2xl border border-gray-100">
+          <span className="metric-value text-base font-bold">{Math.max(...data.monthly_rain)}mm</span>
+          <span className="metric-label text-[10px] text-gray-500 font-medium mt-0.5">Peak Monsoon Month</span>
         </div>
       </div>
 
@@ -70,20 +79,20 @@ export const RainfallCard: React.FC<Props> = ({ data }) => {
         </ResponsiveContainer>
       </div>
 
-      <div className="recommendation-box">
-        <span className="rec-icon">💧</span>
+      <div className="recommendation-box p-3 bg-gray-50 rounded-2xl border border-gray-100 flex items-start gap-2.5">
+        <span className="rec-icon text-base">💧</span>
         <div>
-          <p className="rec-title">Rainwater Harvesting Potential</p>
-          <p className="rec-text">{harvestPotential}</p>
+          <p className="rec-title text-xs font-bold text-gray-900">Rainwater Harvesting Potential (85% Runoff Coeff)</p>
+          <p className="rec-text text-[11px] text-gray-600 leading-relaxed">{harvestPotential}</p>
         </div>
       </div>
 
-      <div className="source-badge">
-        <span>📡 Open-Meteo 5-year archive</span>
+      <div className="source-badge text-[10px] text-gray-400 flex items-center gap-2 pt-2 border-t border-gray-100">
+        <span>📡 Open-Meteo 5-year ERA5 archive (0.25° grid)</span>
         <span>·</span>
-        <span>ERA5 precipitation data</span>
+        <span>IMD regional alignment</span>
         <span>·</span>
-        <span>Limitations: excludes extreme events</span>
+        <span>On-site storm model required</span>
       </div>
     </div>
   );

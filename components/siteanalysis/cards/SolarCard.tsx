@@ -9,9 +9,9 @@ export const SolarCard: React.FC<Props> = ({ data, lat }) => {
   const maxHours = Math.max(...data.monthly_sun_hours, 1);
 
   const isNorthern = lat >= 0;
-  const absLat = Math.abs(lat);
-  const summerNoonAlt = Math.min(88, Math.max(25, 90 - absLat + 23.44));
-  const winterNoonAlt = Math.max(12, Math.min(65, 90 - absLat - 23.44));
+  const summerNoonAlt = data.summer_solstice_noon_alt || Math.min(90, Math.max(10, 90 - Math.abs(lat - 23.44)));
+  const winterNoonAlt = data.winter_solstice_noon_alt || Math.max(0, Math.min(90, 90 - Math.abs(lat - (-23.44))));
+  const equinoxNoonAlt = data.equinox_noon_alt || Math.max(0, Math.min(90, 90 - Math.abs(lat)));
 
   const noonAltFormatted = Number(data.sun_altitude_noon || 46.6).toFixed(1);
 
@@ -23,7 +23,12 @@ export const SolarCard: React.FC<Props> = ({ data, lat }) => {
             ☀️
           </div>
           <div>
-            <h3 className="card-title text-base font-black text-gray-900">Solar Path Analysis</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="card-title text-base font-black text-gray-900">Solar Path Analysis</h3>
+              <span className="text-[9px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-200">
+                🟢 High Confidence
+              </span>
+            </div>
             <p className="card-subtitle text-xs text-gray-500">Seasonal solar vault trajectories & daylight hours</p>
           </div>
         </div>
@@ -193,19 +198,26 @@ export const SolarCard: React.FC<Props> = ({ data, lat }) => {
         </div>
       </div>
 
-      {/* Optimal orientation */}
-      <div className="recommendation-box mt-4 bg-emerald-50/80 border border-emerald-200/80 p-3 rounded-2xl flex items-center gap-3">
+      {/* Optimal orientation & Tropic of Cancer Guidance */}
+      <div className="recommendation-box mt-4 bg-emerald-50/80 border border-emerald-200/80 p-3.5 rounded-2xl flex items-start gap-3">
         <span className="rec-icon text-xl">🧭</span>
         <div>
-          <p className="rec-title text-xs font-black text-emerald-900">Optimal Orientation</p>
-          <p className="rec-text text-xs text-emerald-700">{data.optimal_orientation} — maximises winter solar gain and minimises summer overheating.</p>
+          <p className="rec-title text-xs font-black text-emerald-900">Optimal Architectural Orientation</p>
+          <p className="rec-text text-xs text-emerald-800 leading-relaxed">
+            {data.optimal_orientation} — maximises winter solar heat gain ({data.winter_solstice_noon_alt}° noon altitude) and facilitates deep daylighting.
+          </p>
+          {data.is_sub_tropical_north && (
+            <p className="text-[11px] text-emerald-900 font-semibold mt-1 bg-emerald-100/60 p-1.5 rounded-lg border border-emerald-200/60">
+              ☀️ <strong>Sub-Tropic of Cancer Nuance ({lat.toFixed(2)}° N):</strong> During May–July, midday sun reaches {data.summer_solstice_noon_alt}° altitude and crosses slightly into the Northern sky. Provide horizontal overhangs on North glazing as well as South.
+            </p>
+          )}
         </div>
       </div>
 
       <div className="source-badge text-[10px] text-gray-400 mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
         <span>📡 SunCalc Astronomical Engine</span>
-        <span>Fidelity: High (±0.1° accuracy)</span>
-        <span>Latitude: {lat.toFixed(2)}°</span>
+        <span>Confidence: High (±0.1° astronomical calculation)</span>
+        <span>Latitude: {lat.toFixed(4)}° N</span>
       </div>
     </div>
   );

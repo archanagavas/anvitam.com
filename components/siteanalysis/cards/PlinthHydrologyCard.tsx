@@ -31,9 +31,14 @@ export const PlinthHydrologyCard: React.FC<Props> = ({ data }) => {
             <Droplets size={22} />
           </span>
           <div>
-            <h3 className="card-title text-base font-bold text-gray-900">Plinth Level & Flood Hydrology</h3>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="card-title text-base font-bold text-gray-900">Plinth Level & Flood Hydrology</h3>
+              <span className="text-[9px] font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full border border-amber-200">
+                🔴 Provisional Model Estimate
+              </span>
+            </div>
             <p className="card-subtitle text-xs text-gray-500 font-normal">
-              Finished floor elevation above road datum & monsoon runoff safety
+              Provisional FFL benchmark & design storm retention (Field topographic survey mandatory)
             </p>
           </div>
         </div>
@@ -44,7 +49,7 @@ export const PlinthHydrologyCard: React.FC<Props> = ({ data }) => {
       <div className="p-5 bg-gradient-to-br from-gray-900 via-black to-slate-900 text-white rounded-2xl border border-gray-800 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <span className="text-[10px] font-bold uppercase tracking-widest text-[#CCFF00] flex items-center gap-1 mb-1">
-            <ArrowUpRight size={12} /> Recommended Finished Plinth Level
+            <ArrowUpRight size={12} /> Suggested Finished Plinth Level (Provisional)
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-3xl sm:text-4xl font-black text-white tracking-tight">
@@ -55,14 +60,14 @@ export const PlinthHydrologyCard: React.FC<Props> = ({ data }) => {
             </span>
           </div>
           <p className="text-[11px] text-gray-300 mt-1 font-normal">
-            Measured above the highest crowned centerline of the adjacent municipal road.
+            Suggested benchmark above local road crown. Final FFL must be referenced to surveyed site datum & HFL.
           </p>
         </div>
 
         <div className="bg-white/10 backdrop-blur-md px-4 py-3 rounded-xl border border-white/10 shrink-0 text-left sm:text-right">
-          <p className="text-[10px] text-gray-300 font-medium">Recharge Pit Sizing</p>
-          <p className="text-lg font-bold text-[#CCFF00]">{data.recharge_pit_vol_m3} m³</p>
-          <p className="text-[9px] text-gray-400">Min bioswale capacity</p>
+          <p className="text-[10px] text-gray-300 font-medium">50mm Storm Detention</p>
+          <p className="text-lg font-bold text-[#CCFF00]">{data.storm_detention_m3_per_100m2 || 4.3} m³</p>
+          <p className="text-[9px] text-gray-400">per 100m² catchment area</p>
         </div>
       </div>
 

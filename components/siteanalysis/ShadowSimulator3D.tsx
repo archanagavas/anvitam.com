@@ -36,15 +36,19 @@ export const ShadowSimulator3D: React.FC<ShadowSimulator3DProps> = ({
 
   // Calculate sun position & shadow physics client-side
   useEffect(() => {
+    const numLat = Number(lat) || 22.3072;
+    const numLon = Number(lon) || 73.1812;
+
     const date = getSeasonDate(season);
     date.setHours(Math.floor(hour), (hour % 1) * 60, 0, 0);
 
-    const sunPos = SunCalc.getPosition(date, lat, lon);
+    const sunPos = SunCalc.getPosition(date, numLat, numLon);
     const azimuthDeg = Math.round(((sunPos.azimuth * 180) / Math.PI + 180) % 360);
-    const altitudeDeg = Math.round((sunPos.altitude * 180) / Math.PI);
+    const rawAlt = (sunPos.altitude * 180) / Math.PI;
+    const altitudeDeg = Math.max(0, Math.min(90, Math.round(rawAlt)));
 
     // Shadow length multiplier: height / tan(altitude)
-    const radAlt = Math.max(0.05, sunPos.altitude);
+    const radAlt = Math.max(0.05, Math.min(Math.PI / 2, sunPos.altitude));
     const shadowMult = Math.min(10, Math.max(0.1, 1 / Math.tan(radAlt)));
 
     // Solar radiation estimation based on solar altitude
@@ -89,7 +93,7 @@ export const ShadowSimulator3D: React.FC<ShadowSimulator3DProps> = ({
   const estimatedShadowLength = Math.round(buildingHeightMeters * calculatedSun.shadowLengthMultiplier);
 
   return (
-    <div className="bg-white text-gray-900 p-5 rounded-3xl border border-gray-200/80 shadow-xs space-y-4">
+    <div className="bg-white text-gray-900 p-5 rounded-3xl border border-gray-200/80 shadow-xs space-y-4 no-print">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">

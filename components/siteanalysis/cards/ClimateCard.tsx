@@ -16,31 +16,40 @@ export const ClimateCard: React.FC<Props> = ({ data }) => {
   }));
 
   return (
-    <div className="analysis-card">
-      <div className="card-header">
-        <span className="card-icon">🌤️</span>
-        <div>
-          <h3 className="card-title">Climate Summary</h3>
-          <p className="card-subtitle">5-year historical average — temperature & humidity</p>
+    <div className="analysis-card bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-4 text-gray-900">
+      <div className="card-header flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <span className="card-icon text-2xl p-2.5 rounded-2xl bg-black text-[#CCFF00] flex items-center justify-center">
+            🌤️
+          </span>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="card-title text-base font-bold text-gray-900">Climate &amp; Bioclimatic Classification</h3>
+              <span className="text-[9px] font-bold bg-sky-100 text-sky-800 px-2 py-0.5 rounded-full border border-sky-200">
+                🟡 Medium Confidence (ERA5 Gridded)
+              </span>
+            </div>
+            <p className="card-subtitle text-xs text-gray-500">5-year Open-Meteo ERA5 reanalysis &amp; Agro-Climatic Zone</p>
+          </div>
         </div>
       </div>
 
-      <div className="metric-grid">
-        <div className="metric-item">
-          <span className="metric-value">{data.annual_temp_avg}°C</span>
-          <span className="metric-label">Annual avg temp</span>
+      <div className="metric-grid grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="metric-item p-3 bg-gray-50 rounded-2xl border border-gray-100">
+          <span className="metric-value text-base font-bold">{data.annual_temp_avg}°C</span>
+          <span className="metric-label text-[10px] text-gray-500 font-medium mt-0.5">Annual Avg Temp</span>
         </div>
-        <div className="metric-item">
-          <span className="metric-value">{data.annual_rain_total}mm</span>
-          <span className="metric-label">Annual rainfall</span>
+        <div className="metric-item p-3 bg-gray-50 rounded-2xl border border-gray-100">
+          <span className="metric-value text-base font-bold">~{data.annual_rain_total}mm</span>
+          <span className="metric-label text-[10px] text-gray-500 font-medium mt-0.5">Annual Normal Rain</span>
         </div>
-        <div className="metric-item">
-          <span className="metric-value koppen-badge">{data.koppen_zone}</span>
-          <span className="metric-label">Köppen zone</span>
+        <div className="metric-item p-3 bg-gray-50 rounded-2xl border border-gray-100">
+          <span className="metric-value text-base font-bold text-amber-600">{data.et_rate_summer_mm_day || 6.2} mm/d</span>
+          <span className="metric-label text-[10px] text-gray-500 font-medium mt-0.5">Summer Peak ET₀</span>
         </div>
-        <div className="metric-item">
-          <span className="metric-value">{data.koppen_label}</span>
-          <span className="metric-label">Climate type</span>
+        <div className="metric-item p-3 bg-gray-50 rounded-2xl border border-gray-100">
+          <span className="metric-value text-xs font-bold text-gray-900 truncate">{data.koppen_zone} · {data.koppen_label.split(' ')[0]}</span>
+          <span className="metric-label text-[10px] text-gray-500 font-medium mt-0.5">Köppen Classification</span>
         </div>
       </div>
 

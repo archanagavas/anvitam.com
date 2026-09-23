@@ -628,7 +628,7 @@ export default function SiteAnalysis() {
           <div className="flex-1 flex flex-col min-w-0">
             
             {/* Unified Topbar inside canvas with Hamburger, Search, Settings & Logout */}
-            <div className="sa-topbar bg-white text-gray-900 px-6 py-3 border-b border-gray-200/80 shadow-2xs flex flex-col lg:flex-row items-center justify-between gap-4 z-20 sticky top-20">
+            <div className="sa-topbar no-print bg-white text-gray-900 px-6 py-3 border-b border-gray-200/80 shadow-2xs flex flex-col lg:flex-row items-center justify-between gap-4 z-20 sticky top-20">
               <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
                 <button
                   type="button"
@@ -724,8 +724,8 @@ export default function SiteAnalysis() {
               </div>
             </div>
 
-            {/* 3D Map Container */}
-            <div className="w-full h-[65vh] min-h-[480px] relative bg-gray-900 border-b border-gray-200 overflow-hidden">
+            {/* 3D Map Container (Hidden during PDF print export) */}
+            <div className="no-print w-full h-[65vh] min-h-[480px] relative bg-gray-900 border-b border-gray-200 overflow-hidden">
               <div ref={mapContainerRef} className="w-full h-full absolute inset-0 z-0" />
 
               {/* Map Overlay Controls */}
@@ -916,8 +916,8 @@ export default function SiteAnalysis() {
               </div>
             </div>
 
-            {/* 3D Solar Shadow Simulator */}
-            <div className="bg-gray-50 border-b border-gray-200 px-6 py-6 max-w-7xl mx-auto w-full">
+            {/* 3D Solar Shadow Simulator (Hidden during PDF print export) */}
+            <div className="no-print bg-gray-50 border-b border-gray-200 px-6 py-6 max-w-7xl mx-auto w-full">
               <ShadowSimulator3D
                 lat={pendingCoords?.lat ?? 22.3072}
                 lon={pendingCoords?.lon ?? 73.1812}

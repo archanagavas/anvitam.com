@@ -20,6 +20,9 @@ export interface ClimateData {
   koppen_zone: string;
   koppen_label: string;
   passive_strategies: string[];
+  et_rate_summer_mm_day: number; // Reference Evapotranspiration (ET0) summer peak
+  et_rate_winter_mm_day: number;
+  agro_climatic_zone: string;
 }
 
 export interface WindRoseData {
@@ -35,12 +38,17 @@ export interface SolarData {
   sunset: Date;
   solar_noon: Date;
   day_length_hours: number;
-  sun_altitude_noon: number; // e.g. 46.6
+  sun_altitude_noon: number; // e.g. 67.6
+  summer_solstice_noon_alt: number; // e.g. 89.0
+  equinox_noon_alt: number; // e.g. 67.6
+  winter_solstice_noon_alt: number; // e.g. 44.1
+  is_sub_tropical_north: boolean; // lat > 0 && lat <= 23.45 (midday sun crosses into northern sky in summer)
   optimal_orientation: string;
   sun_path_points: { azimuth: number; altitude: number; time: string }[];
   monthly_sun_hours: number[];
-  solstice_summer: { rise_az: number; set_az: number };
-  solstice_winter: { rise_az: number; set_az: number };
+  solstice_summer: { rise_az: number; set_az: number; noon_alt: number };
+  solstice_winter: { rise_az: number; set_az: number; noon_alt: number };
+  equinox: { rise_az: number; set_az: number; noon_alt: number };
 }
 
 export interface UrbanFabricData {
@@ -64,6 +72,8 @@ export interface SoilData {
   foundation_suitability: string;
   drainage: string;
   agriculture_potential: string;
+  topsoil_erosion_risk: 'Low' | 'Moderate' | 'High';
+  infiltration_rate_mm_hr: string;
 }
 
 export interface ThermalComfortData {
@@ -103,7 +113,10 @@ export interface PlinthHydrologyData {
   surface_runoff_factor: number;
   dpc_specification: string;
   recharge_pit_vol_m3: number;
+  storm_detention_m3_per_100m2: number;
+  harvest_liters_per_m2_annual: number;
   rationale: string;
+  confidence_note: string;
 }
 
 export interface SwotItem {
@@ -176,7 +189,8 @@ export interface SiteAnalysisResult {
 }
 
 // ─── Climate Data ─────────────────────────────────────────────────────────────
-export function generateFallbackClimate(lat: number): ClimateData {
+export function generateFallbackClimate(latParam: number): ClimateData {
+  const lat = Number(latParam);
   const absLat = Math.abs(lat);
   const isNorthern = lat >= 0;
   
@@ -203,6 +217,11 @@ export function generateFallbackClimate(lat: number): ClimateData {
 
   const { zone, label, strategies } = classifyKoppen(lat, annual_temp_avg, annual_rain_total, baseMin, baseRain);
 
+  // Landscape Evapotranspiration & Agro-Climatic Zone
+  const etSummer = +(Math.max(...baseMax) * 0.16).toFixed(1);
+  const etWinter = +(Math.min(...baseMax) * 0.11).toFixed(1);
+  const agroZone = (lat >= 20 && lat <= 25) ? 'Gujarat Plains & Hills Region (Zone XIII)' : (lat > 25 ? 'Northern Gangetic Plain / Sub-Humid Zone' : 'Central / Peninsular Semi-Arid Zone');
+
   return {
     monthly_temp_max: baseMax,
     monthly_temp_min: baseMin,
@@ -215,10 +234,15 @@ export function generateFallbackClimate(lat: number): ClimateData {
     koppen_zone: zone,
     koppen_label: label,
     passive_strategies: strategies,
+    et_rate_summer_mm_day: etSummer,
+    et_rate_winter_mm_day: etWinter,
+    agro_climatic_zone: agroZone
   };
 }
 
-export async function fetchClimateData(lat: number, lon: number): Promise<ClimateData> {
+export async function fetchClimateData(latParam: number, lonParam: number): Promise<ClimateData> {
+  const lat = Number(latParam);
+  const lon = Number(lonParam);
   const endYear = new Date().getFullYear() - 1;
   const startYear = endYear - 4;
 
@@ -274,6 +298,10 @@ export async function fetchClimateData(lat: number, lon: number): Promise<Climat
 
     const { zone, label, strategies } = classifyKoppen(lat, annual_temp_avg, annual_rain_total, monthly_temp_min, monthly_rain);
 
+    const etSummer = +(Math.max(...monthly_temp_max) * 0.16).toFixed(1);
+    const etWinter = +(Math.min(...monthly_temp_max) * 0.11).toFixed(1);
+    const agroZone = (lat >= 20 && lat <= 25) ? 'Gujarat Plains & Hills Region (Zone XIII)' : (lat > 25 ? 'Northern Gangetic Plain / Sub-Humid Zone' : 'Central / Peninsular Semi-Arid Zone');
+
     return {
       monthly_temp_max,
       monthly_temp_min,
@@ -286,6 +314,9 @@ export async function fetchClimateData(lat: number, lon: number): Promise<Climat
       koppen_zone: zone,
       koppen_label: label,
       passive_strategies: strategies,
+      et_rate_summer_mm_day: etSummer,
+      et_rate_winter_mm_day: etWinter,
+      agro_climatic_zone: agroZone
     };
   } catch (err) {
     console.warn('Climate API fallback activated:', err);
@@ -299,20 +330,22 @@ function classifyKoppen(lat: number, annualAvgTemp: number, annualRain: number, 
 
   if (annualAvgTemp > 18 && minMonthTemp >= 18) {
     if (dryMonths < 2) return { zone: 'Af', label: 'Tropical Rainforest', strategies: ['Cross-ventilation paramount', 'Elevated floors for airflow', 'Deep overhangs', 'Light-coloured roofs'] };
-    if (dryMonths >= 3) return { zone: 'Aw', label: 'Tropical Savanna', strategies: ['Monsoon roof design', 'Courtyard with water feature for cooling', 'Seasonal shading devices', 'Underground water storage'] };
+    if (dryMonths >= 3) return { zone: 'Aw', label: 'Tropical Savanna / Borderline Semi-Arid', strategies: ['Monsoon roof design', 'Courtyard with water feature for cooling', 'Seasonal shading devices', 'Underground water storage'] };
     return { zone: 'Am', label: 'Tropical Monsoon', strategies: ['Raised plinth for flooding protection', 'Wide roof overhangs', 'Cross-ventilation throughout'] };
   }
 
   if (annualRain < 250 || (annualRain < 500 && annualAvgTemp > 18)) {
     if (annualAvgTemp >= 18) return { zone: 'BWh', label: 'Hot Desert', strategies: ['Thick thermal mass walls', 'Small north-facing windows', 'Wind towers for passive cooling', 'Night purge ventilation'] };
-    return { zone: 'BSh', label: 'Hot Steppe/Semi-Arid', strategies: ['Evaporative cooling', 'Shade trees planted to west', 'Thermal mass + night ventilation'] };
+    return { zone: 'BSh', label: 'Hot Steppe / Semi-Arid', strategies: ['Evaporative cooling', 'Shade trees planted to west', 'Thermal mass + night ventilation'] };
   }
 
   return { zone: 'Cwb', label: 'Humid / Subtropical', strategies: ['Passive solar design', 'Thermal mass for summer cooling', 'Cross-ventilation', 'Rainwater harvesting'] };
 }
 
 // ─── Wind Rose Data ────────────────────────────────────────────────────────────
-export async function fetchWindRoseData(lat: number, lon: number): Promise<WindRoseData> {
+export async function fetchWindRoseData(latParam: number, lonParam: number): Promise<WindRoseData> {
+  const lat = Number(latParam);
+  const lon = Number(lonParam);
   const endYear = new Date().getFullYear() - 1;
   const startYear = endYear - 2;
 
@@ -373,21 +406,38 @@ export async function fetchWindRoseData(lat: number, lon: number): Promise<WindR
   }
 }
 
-// ─── Solar Data ───────────────────────────────────────────────────────────────
-export function calculateSolarData(lat: number, lon: number): SolarData {
+// ─── Solar Data (Astronomically Clamped 0° to 90°) ───────────────────────────
+export function calculateSolarData(latParam: number, lonParam: number): SolarData {
+  const lat = Number(latParam);
+  const lon = Number(lonParam);
+  const isNorthern = lat >= 0;
+  const isSubTropicalNorth = lat > 0 && lat <= 23.45;
+
   const today = new Date();
   const times = SunCalc.getTimes(today, lat, lon);
   const noonPos = SunCalc.getPosition(times.solarNoon, lat, lon);
 
-  const dayLength = (times.sunset.getTime() - times.sunrise.getTime()) / 3600000;
-  const altitudeDeg = (noonPos.altitude * 180) / Math.PI;
+  const dayLength = Math.max(0, (times.sunset.getTime() - times.sunrise.getTime()) / 3600000);
+  
+  // Clamped solar altitude between 0 and 90
+  const rawAltDeg = (noonPos.altitude * 180) / Math.PI;
+  const altitudeDeg = Math.max(0, Math.min(90, rawAltDeg));
+
+  // Precise astronomical solstices & equinox noon altitude: 90 - |lat - declination|
+  // Summer Solstice: declination = +23.44°
+  // Equinox: declination = 0°
+  // Winter Solstice: declination = -23.44°
+  const summerNoonAlt = Math.max(0, Math.min(90, +(90 - Math.abs(lat - 23.44)).toFixed(1)));
+  const equinoxNoonAlt = Math.max(0, Math.min(90, +(90 - Math.abs(lat - 0)).toFixed(1)));
+  const winterNoonAlt = Math.max(0, Math.min(90, +(90 - Math.abs(lat - (-23.44))).toFixed(1)));
 
   const sunPathPoints: { azimuth: number; altitude: number; time: string }[] = [];
   for (let h = 5; h <= 20; h++) {
     for (let m = 0; m < 60; m += 30) {
-      const t = new Date(today); t.setHours(h, m, 0, 0);
+      const t = new Date(today);
+      t.setHours(h, m, 0, 0);
       const pos = SunCalc.getPosition(t, lat, lon);
-      const alt = (pos.altitude * 180) / Math.PI;
+      const alt = Math.max(0, Math.min(90, (pos.altitude * 180) / Math.PI));
       if (alt > 0) {
         sunPathPoints.push({
           azimuth: +((pos.azimuth * 180 / Math.PI + 180) % 360).toFixed(1),
@@ -401,15 +451,25 @@ export function calculateSolarData(lat: number, lon: number): SolarData {
   const monthlySunHours = Array.from({ length: 12 }, (_, m) => {
     const d = new Date(today.getFullYear(), m, 15);
     const t = SunCalc.getTimes(d, lat, lon);
-    return +((t.sunset.getTime() - t.sunrise.getTime()) / 3600000 * 0.6).toFixed(1);
+    const length = (t.sunset.getTime() - t.sunrise.getTime()) / 3600000;
+    return Math.max(0, Math.min(16, +(length * 0.65).toFixed(1)));
   });
 
   const summerTimes = SunCalc.getTimes(new Date(today.getFullYear(), 5, 21), lat, lon);
   const winterTimes = SunCalc.getTimes(new Date(today.getFullYear(), 11, 21), lat, lon);
+  const equinoxTimes = SunCalc.getTimes(new Date(today.getFullYear(), 2, 21), lat, lon);
+
   const summerRisePos = SunCalc.getPosition(summerTimes.sunrise, lat, lon);
   const summerSetPos = SunCalc.getPosition(summerTimes.sunset, lat, lon);
   const winterRisePos = SunCalc.getPosition(winterTimes.sunrise, lat, lon);
   const winterSetPos = SunCalc.getPosition(winterTimes.sunset, lat, lon);
+  const equinoxRisePos = SunCalc.getPosition(equinoxTimes.sunrise, lat, lon);
+  const equinoxSetPos = SunCalc.getPosition(equinoxTimes.sunset, lat, lon);
+
+  let optimalOrientation = isNorthern ? 'South-facing (180°)' : 'North-facing (0°)';
+  if (isSubTropicalNorth) {
+    optimalOrientation = 'Dual North-South Balance (Long Axis East-West)';
+  }
 
   return {
     sunrise: times.sunrise,
@@ -417,22 +477,35 @@ export function calculateSolarData(lat: number, lon: number): SolarData {
     solar_noon: times.solarNoon,
     day_length_hours: +dayLength.toFixed(1),
     sun_altitude_noon: +altitudeDeg.toFixed(1),
-    optimal_orientation: lat >= 0 ? 'South-facing (180°)' : 'North-facing (0°)',
+    summer_solstice_noon_alt: summerNoonAlt,
+    equinox_noon_alt: equinoxNoonAlt,
+    winter_solstice_noon_alt: winterNoonAlt,
+    is_sub_tropical_north: isSubTropicalNorth,
+    optimal_orientation: optimalOrientation,
     sun_path_points: sunPathPoints,
     monthly_sun_hours: monthlySunHours,
     solstice_summer: {
       rise_az: +((summerRisePos.azimuth * 180 / Math.PI + 180) % 360).toFixed(1),
       set_az: +((summerSetPos.azimuth * 180 / Math.PI + 180) % 360).toFixed(1),
+      noon_alt: summerNoonAlt,
     },
     solstice_winter: {
       rise_az: +((winterRisePos.azimuth * 180 / Math.PI + 180) % 360).toFixed(1),
       set_az: +((winterSetPos.azimuth * 180 / Math.PI + 180) % 360).toFixed(1),
+      noon_alt: winterNoonAlt,
     },
+    equinox: {
+      rise_az: +((equinoxRisePos.azimuth * 180 / Math.PI + 180) % 360).toFixed(1),
+      set_az: +((equinoxSetPos.azimuth * 180 / Math.PI + 180) % 360).toFixed(1),
+      noon_alt: equinoxNoonAlt,
+    }
   };
 }
 
 // ─── Urban Fabric ─────────────────────────────────────────────────────────────
-export async function fetchUrbanFabricData(lat: number, lon: number, radiusM = 500): Promise<UrbanFabricData> {
+export async function fetchUrbanFabricData(latParam: number, lonParam: number, radiusM = 500): Promise<UrbanFabricData> {
+  const lat = Number(latParam);
+  const lon = Number(lonParam);
   const latDelta = radiusM / 111320;
   const lonDelta = radiusM / (111320 * Math.cos((lat * Math.PI) / 180));
   const bbox = `${lat - latDelta},${lon - lonDelta},${lat + latDelta},${lon + lonDelta}`;
@@ -522,7 +595,10 @@ export function calculateThermalComfort(climate: ClimateData): ThermalComfortDat
 }
 
 // ─── Soil Data ────────────────────────────────────────────────────────────────
-export async function fetchSoilData(lat: number, lon: number): Promise<SoilData> {
+export async function fetchSoilData(latParam: number, lonParam: number): Promise<SoilData> {
+  const lat = Number(latParam);
+  const lon = Number(lonParam);
+
   try {
     const isricUrl = `https://rest.isric.org/soilgrids/v2.0/properties/query?lon=${lon}&lat=${lat}&property=phh2o&property=soc&property=clay&property=sand&property=silt&property=bdod&depth=0-5cm&value=mean`;
     const controller = new AbortController();
@@ -553,18 +629,21 @@ export async function fetchSoilData(lat: number, lon: number): Promise<SoilData>
         const safeClay = clay;
         const safeSilt = silt || Math.max(5, 100 - safeSand - safeClay);
         const texture = safeClay > 40 ? 'Clay' : safeSand > 50 ? 'Sandy Loam' : safeClay > 25 ? 'Clay Loam' : 'Loam';
+        const erosionRisk: 'Low' | 'Moderate' | 'High' = safeSand > 60 ? 'High' : (safeClay > 30 ? 'Moderate' : 'Low');
 
         return {
-          ph: ph || 6.8,
-          organic_carbon: soc || 14.5,
+          ph: ph || 7.2,
+          organic_carbon: soc || 10.5,
           clay_pct: Math.round(safeClay),
           sand_pct: Math.round(safeSand),
           silt_pct: Math.round(safeSilt),
           bulk_density: bdod ? Math.round(bdod * 1000) : 1380,
           soil_texture: texture,
-          foundation_suitability: safeClay > 35 ? 'Moderate — expansive clay shrink-swell risk' : 'Good — stable loam/sand base suitable for shallow foundations',
+          foundation_suitability: safeClay > 35 ? 'Moderate — expansive clay shrink-swell risk (raft foundation recommended)' : 'Good — stable loam/sand base suitable for shallow foundations',
           drainage: safeSand > 50 ? 'Rapid percolation' : safeClay > 35 ? 'Slow — waterlogging potential' : 'Moderate well-drained',
-          agriculture_potential: soc && soc > 15 ? 'High organic fertility' : 'Moderate — responds well to organic compost',
+          agriculture_potential: soc && soc > 15 ? 'High organic fertility' : 'Moderate — responds well to organic compost and bio-mulching',
+          topsoil_erosion_risk: erosionRisk,
+          infiltration_rate_mm_hr: safeSand > 50 ? '45–60 mm/hr (Modeled)' : (safeClay > 35 ? '< 8 mm/hr (Slow)' : '18–28 mm/hr')
         };
       }
     }
@@ -573,14 +652,15 @@ export async function fetchSoilData(lat: number, lon: number): Promise<SoilData>
   }
 
   const hash = Math.abs(Math.sin(lat * 12.9898 + lon * 78.233) * 43758.5453) % 1;
-  const basePh = +(6.2 + hash * 1.6).toFixed(1);
-  const baseSoc = +(12.0 + hash * 16.5).toFixed(1);
-  const baseBulk = Math.round(1300 + hash * 250);
+  const basePh = +(7.1 + hash * 1.2).toFixed(1);
+  const baseSoc = +(8.0 + hash * 8.5).toFixed(1);
+  const baseBulk = Math.round(1350 + hash * 150);
 
-  const clay = Math.round(20 + hash * 25);
-  const sand = Math.round(35 + (1 - hash) * 30);
+  const clay = Math.round(22 + hash * 18);
+  const sand = Math.round(45 + (1 - hash) * 20);
   const silt = Math.max(10, 100 - clay - sand);
-  const texture = clay > 35 ? 'Clay Loam' : sand > 50 ? 'Sandy Loam' : 'Silty Clay Loam';
+  const texture = clay > 35 ? 'Clay Loam' : sand > 50 ? 'Sandy Loam' : 'Loam';
+  const erosionRisk: 'Low' | 'Moderate' | 'High' = sand > 55 ? 'High' : 'Moderate';
 
   return {
     ph: basePh,
@@ -592,18 +672,22 @@ export async function fetchSoilData(lat: number, lon: number): Promise<SoilData>
     soil_texture: texture,
     foundation_suitability: clay > 35 ? 'Moderate — expansive clay risk (recommend raft foundation)' : 'Good — stable load-bearing capacity for shallow footings',
     drainage: sand > 55 ? 'Excellent — high percolation' : 'Moderate — balanced retention',
-    agriculture_potential: baseSoc > 18 ? 'High — rich topsoil suitable for permaculture' : 'Good — suitable with organic mulch & compost',
+    agriculture_potential: baseSoc > 12 ? 'Good — suitable for native permaculture with compost' : 'Moderate — requires organic mulch & bio-amendments',
+    topsoil_erosion_risk: erosionRisk,
+    infiltration_rate_mm_hr: sand > 50 ? '45–60 mm/hr (Modeled)' : '18–28 mm/hr'
   };
 }
 
 // ─── Cardinal Direction & Orientation Analysis ───────────────────────────────
 export function calculateCardinalDirectionData(
-  lat: number,
+  latParam: number,
   climate: ClimateData,
   wind: WindRoseData,
   typology: DesignCategory = 'residential'
 ): CardinalDirectionData {
+  const lat = Number(latParam);
   const isNorthern = lat >= 0;
+  const isSubTropicalNorth = lat > 0 && lat <= 23.45;
   const dominantWind = wind?.dominant_direction || 'SW';
 
   const TYPOLOGY_ROOM_MATRIX: Record<DesignCategory, Record<string, string>> = {
@@ -664,9 +748,13 @@ export function calculateCardinalDirectionData(
       dir: 'N',
       label: 'North (0°)',
       azimuth: 0,
-      radiation_index: isNorthern ? 'Cool / Diffuse Light' : 'High Direct Radiation',
-      sun_hours: isNorthern ? '0–1 hrs (Indirect sky radiation)' : '6–8 hrs direct',
-      glare_risk: isNorthern ? 'Low' : 'High',
+      radiation_index: isSubTropicalNorth
+        ? 'Diffuse Winter / Direct Summer Midday Sun'
+        : (isNorthern ? 'Cool / Diffuse Sky Light' : 'High Direct Radiation'),
+      sun_hours: isSubTropicalNorth
+        ? 'Winter: 0–1 hr (diffuse) | Summer Solstice: 2–3 hrs direct high-noon sun'
+        : (isNorthern ? '0–1 hrs (Indirect sky radiation)' : '6–8 hrs direct'),
+      glare_risk: isSubTropicalNorth ? 'Moderate' : (isNorthern ? 'Low' : 'High'),
       wind_influence: dominantWind === 'N' ? 'Direct windward intake' : 'Shielded from monsoon gusts',
       typology_guidance: TYPOLOGY_ROOM_MATRIX[typology]['N']
     },
@@ -704,8 +792,8 @@ export function calculateCardinalDirectionData(
       dir: 'S',
       label: 'South (180°)',
       azimuth: 180,
-      radiation_index: isNorthern ? 'Peak Winter Sun / High Summer Altitude' : 'Cool / Indirect',
-      sun_hours: isNorthern ? '6–8 hrs (High midday sun altitude)' : '1–2 hrs indirect',
+      radiation_index: isNorthern ? 'Peak Winter Sun (~44°) / High Summer Altitude (~89°)' : 'Cool / Indirect',
+      sun_hours: isNorthern ? '6–8 hrs (Deep winter sun penetration)' : '1–2 hrs indirect',
       glare_risk: isNorthern ? 'High' : 'Low',
       wind_influence: dominantWind.includes('S') ? 'Primary summer prevailing breeze path' : 'Moderate ambient airflow',
       typology_guidance: TYPOLOGY_ROOM_MATRIX[typology]['S']
@@ -744,9 +832,13 @@ export function calculateCardinalDirectionData(
 
   return {
     sectors,
-    optimal_facade: isNorthern ? 'Long axis East-West (Main glazing North & South)' : 'Long axis East-West (Main glazing South & North)',
+    optimal_facade: isSubTropicalNorth
+      ? 'East-West longitudinal axis (Main fenestration facing North & South with balanced horizontal shading)'
+      : (isNorthern ? 'Long axis East-West (Main glazing North & South)' : 'Long axis East-West (Main glazing South & North)'),
     glazing_ratio_guide: 'North: 30-40% WWR | South: 25-35% (with overhangs) | East: 15-20% | West: <10% (solid buffer)',
-    passive_shading_rule: 'Provide horizontal overhangs (depth = 0.4 × window height) on South/North, and vertical louvers or jaalis on East/West.'
+    passive_shading_rule: isSubTropicalNorth
+      ? 'Provide horizontal overhangs (depth = 0.4 × window height) on BOTH South and North (to block May-July northern sun), and vertical louvers/jaalis on West.'
+      : 'Provide horizontal overhangs (depth = 0.4 × window height) on South/North, and vertical louvers or jaalis on East/West.'
   };
 }
 
@@ -762,7 +854,7 @@ export function calculatePlinthHydrology(
   const isSandy = (soil?.sand_pct || 40) > 50;
 
   // Base plinth height engineering formula based on rainfall intensity & soil permeability
-  let plinthMm = 450; // standard minimum code baseline
+  let plinthMm = 600; // standard minimum code baseline
   let waterlogging: 'Low' | 'Moderate' | 'High' | 'Severe' = 'Low';
 
   if (peakRainMonth > 300) {
@@ -788,24 +880,31 @@ export function calculatePlinthHydrology(
 
   const plinthInches = `${Math.round(plinthMm / 25.4)}" (${(plinthMm / 1000).toFixed(2)}m)`;
   const runoffFactor = isClayey ? 0.78 : isSandy ? 0.45 : 0.62;
-  const rechargePitVol = +((annualRain * 0.001 * 150 * runoffFactor * 0.15).toFixed(1)); // for 150m2 typical footprint
+  
+  // Design storm calculation: 50mm storm on 150m2 roof with 0.85 runoff coeff = 6.375 m3
+  const stormDetentionPer100m2 = +(50 * 0.001 * 100 * 0.85).toFixed(1);
+  const annualHarvestLitersPerM2 = Math.round(annualRain * 0.85);
+  const rechargePitVol = +((50 * 0.001 * 150 * runoffFactor * 1.5).toFixed(1)); // 50mm design storm retention for 150m2
 
   return {
     recommended_plinth_mm: plinthMm,
     recommended_plinth_inches: plinthInches,
     waterlogging_risk: waterlogging,
     peak_monthly_rain_mm: peakRainMonth,
-    soil_infiltration_rate: isSandy ? 'Fast (4.5–6.0 cm/hr)' : isClayey ? 'Slow (< 0.8 cm/hr — retention risk)' : 'Moderate (1.8–2.8 cm/hr)',
+    soil_infiltration_rate: isSandy ? 'Fast (~45–60 mm/hr)' : isClayey ? 'Slow (< 8 mm/hr — retention risk)' : 'Moderate (~18–28 mm/hr)',
     surface_runoff_factor: runoffFactor,
     dpc_specification: '50mm thick M20 grade concrete DPC with 2 coats of elastomeric SBS bituminous coating + 300-micron cross-laminated HDPE barrier above plinth beam.',
     recharge_pit_vol_m3: rechargePitVol > 0 ? rechargePitVol : 8.5,
-    rationale: `Calculated from peak monsoon monthly rainfall (${peakRainMonth}mm) and ${soil.soil_texture || 'Loam'} soil permeability. Recommended Finished Floor Level is +${plinthMm}mm above the crowned center line of the adjacent access road.`
+    storm_detention_m3_per_100m2: stormDetentionPer100m2,
+    harvest_liters_per_m2_annual: annualHarvestLitersPerM2,
+    rationale: `Provisional Finished Floor Level (FFL) recommendation (+${plinthMm}mm) based on peak monthly precipitation (${peakRainMonth}mm) and ${soil.soil_texture || 'Loam'} soil model. Sizing: 50mm design storm event × Catchment Area × ${runoffFactor} runoff factor. Final FFL must be established relative to surveyed road crown and High Flood Level (HFL).`,
+    confidence_note: 'Provisional Model Estimate — On-site topographic contour survey and percolation test required before final leveling and drainage sizing.'
   };
 }
 
 // ─── SWOT Analysis Generator ──────────────────────────────────────────────────
 export function generateSwotAnalysis(
-  lat: number,
+  latParam: number,
   climate: ClimateData,
   soil: SoilData,
   solar: SolarData,
@@ -814,14 +913,14 @@ export function generateSwotAnalysis(
   context: ContextualData,
   typology: DesignCategory = 'residential'
 ): SwotAnalysisData {
+  const lat = Number(latParam);
   const isNorthern = lat >= 0;
-  const comfortablePct = climate?.annual_temp_avg ? (climate.annual_temp_avg > 20 && climate.annual_temp_avg < 29 ? 65 : 45) : 55;
   const dominantWind = wind?.dominant_direction || 'SW';
 
   const strengths: SwotItem[] = [
     {
       title: 'Solar Orientation Potential',
-      desc: `Favorable solar path with noon altitude at ${solar.sun_altitude_noon}°. Optimal ${solar.optimal_orientation} allows clean passive daylighting with controlled overhangs.`,
+      desc: `Solar altitude today is ${solar.sun_altitude_noon}° (Summer Solstice: ${solar.summer_solstice_noon_alt}°, Winter Solstice: ${solar.winter_solstice_noon_alt}°). Optimal ${solar.optimal_orientation} allows clean passive daylighting with controlled overhangs.`,
       tag: 'Solar'
     },
     {
@@ -830,8 +929,8 @@ export function generateSwotAnalysis(
       tag: 'Ventilation'
     },
     {
-      title: 'Soil Bearing Capacity',
-      desc: `${soil.soil_texture} (${soil.clay_pct}% clay, ${soil.sand_pct}% sand) provides stable base for standard spread footings with bulk density ${soil.bulk_density} kg/m³.`,
+      title: 'Soil Bearing Capacity (Provisional Model)',
+      desc: `${soil.soil_texture} (${soil.clay_pct}% clay, ${soil.sand_pct}% sand) — regional SoilGrids estimate. Bulk density ~${soil.bulk_density} kg/m³. Geotechnical bore test recommended before foundation casting.`,
       tag: 'Geotechnical'
     },
     {
@@ -841,7 +940,7 @@ export function generateSwotAnalysis(
         : typology === 'commercial'
         ? 'Excellent daylight penetration along primary facade reduces operational artificial lighting by up to 35%.'
         : typology === 'landscape'
-        ? `Soil organic carbon (${soil.organic_carbon} g/kg) and pH ${soil.ph} are ideal for rich native permaculture.`
+        ? `Regional soil organic carbon (${soil.organic_carbon} g/kg), pH ${soil.ph}, and agro-zone (${climate.agro_climatic_zone}) favor native drought-resilient permaculture.`
         : typology === 'institutional'
         ? 'Ample horizontal daylight spread facilitates spacious campus wings and connected pedestrian colonnades.'
         : 'Deep natural daylight factor (DF > 3.0%) achievable across main habitable living zones.',
@@ -851,18 +950,18 @@ export function generateSwotAnalysis(
 
   const weaknesses: SwotItem[] = [
     {
-      title: 'Western Afternoon Solar Glare',
-      desc: 'Low-angle afternoon sun on West (270°) causes severe heat gain and thermal spikes between 14:00 and 17:30.',
+      title: 'Western Afternoon Solar Heat Gain',
+      desc: 'Low-angle afternoon sun on West (270°) causes severe radiant thermal spikes between 14:00 and 17:30.',
       tag: 'Thermal Load'
     },
     {
-      title: 'Monsoon Runoff & Waterlogging',
-      desc: `Peak monthly precipitation reaches ${Math.max(...(climate.monthly_rain || [180]))}mm. ${soil.clay_pct > 30 ? 'Slow clay percolation requires dedicated perimeter bioswales.' : 'Surface drainage slopes must be engineered carefully.'}`,
+      title: 'Monsoon Runoff & Topsoil Protection',
+      desc: `Peak monthly precipitation reaches ${Math.max(...(climate.monthly_rain || [180]))}mm. ${soil.clay_pct > 30 ? 'Slow clay percolation requires dedicated perimeter bioswales.' : 'Sandy loam topsoil requires vegetative stabilization to prevent erosion.'}`,
       tag: 'Hydrology'
     },
     {
-      title: 'Urban Density & Acoustic Buffer',
-      desc: `Local urban fabric density is ${urban.building_density_pct}%. Proximity to adjacent structures requires strategic fenestration placement for visual privacy.`,
+      title: 'Urban Fabric & Acoustic Buffer',
+      desc: `Local urban fabric density is ${urban.building_density_pct}%. Proximity to adjacent structures requires strategic fenestration placement for visual privacy and dust filtration.`,
       tag: 'Urban Context'
     }
   ];
@@ -870,22 +969,22 @@ export function generateSwotAnalysis(
   const opportunities: SwotItem[] = [
     {
       title: 'Rooftop Rainwater Harvesting',
-      desc: `Annual precipitation of ${climate.annual_rain_total}mm enables capture of up to ${Math.round(climate.annual_rain_total * 0.85)} Liters per m² of roof footprint annually.`,
+      desc: `Annual precipitation of ~${climate.annual_rain_total}mm enables capture of up to ${Math.round(climate.annual_rain_total * 0.85)} L/m² of roof footprint annually. Design storm retention: ~42.5 L/m² per 50mm event.`,
       tag: 'Sustainability'
     },
     {
-      title: 'Courtyard & Wind Stack Cooling',
-      desc: 'Integrating a central atrium or open courtyard triggers convective stack cooling, reducing active HVAC hours by 25-40%.',
+      title: 'Courtyard & Evaporative Stack Cooling',
+      desc: 'Integrating a central courtyard or biophilic water pool triggers natural convective stack cooling, significantly lowering operational cooling demand.',
       tag: 'Passive Design'
     },
     {
-      title: 'Rooftop Solar PV Generation',
-      desc: `${solar.day_length_hours} hours of daylight offers prime rooftop photovoltaic yield with estimated 4.8 - 5.4 kWh/m²/day irradiance.`,
+      title: 'Rooftop Solar PV Potential',
+      desc: `${solar.day_length_hours} hours of daylight offers strong rooftop photovoltaic yield with estimated 4.8 - 5.6 kWh/m²/day global solar irradiance.`,
       tag: 'Clean Energy'
     },
     {
       title: 'Native Biophilic Green Buffer',
-      desc: 'Planting indigenous trees along the South-West boundary buffers windstorms while filtering road particulates.',
+      desc: 'Planting indigenous windbreak species (Neem, Ficus, Bamboo) along the South-West boundary buffers windstorms while filtering road particulates.',
       tag: 'Ecology'
     }
   ];
@@ -893,20 +992,20 @@ export function generateSwotAnalysis(
   const threats: SwotItem[] = [
     {
       title: 'Extreme Summer Temperature Peaks',
-      desc: `Max summer temperatures touch ${Math.max(...(climate.monthly_temp_max || [38]))}°C, requiring high-albedo cool roofs (SRI > 78) and insulated exterior cavity walls.`,
+      desc: `Summer temperatures touch ${Math.max(...(climate.monthly_temp_max || [38]))}°C (with regional historical peaks up to 43–45°C), requiring high-albedo cool roofs (SRI > 78) and deep shade canopies.`,
       tag: 'Climate'
     },
     {
-      title: 'Soil Shrink-Swell Movement',
+      title: 'Seasonal Soil Moisture Variation',
       desc: soil.clay_pct > 35
         ? 'High clay content presents volumetric shrink-swell cycles across dry/monsoon seasons. Raft or under-reamed pile foundation advised.'
-        : 'Standard seasonal moisture variations require proper plinth apron and damp-proof membrane continuity.',
+        : 'Seasonal dry/monsoon transitions require proper plinth apron and damp-proof membrane continuity.',
       tag: 'Structural'
     },
     {
-      title: 'Surrounding Road Dust & Noise Intrusion',
-      desc: 'Proximity to vehicular collector roads demands acoustic double glazing on exposed street-facing apertures.',
-      tag: 'Environmental'
+      title: 'Topsoil Erosion Under Monsoon Downpours',
+      desc: `Topsoil erosion risk is rated ${soil.topsoil_erosion_risk}. High rainfall intensity during July–August requires terraced swales and deep-root native groundcover.`,
+      tag: 'Ecology'
     }
   ];
 
@@ -915,12 +1014,14 @@ export function generateSwotAnalysis(
     weaknesses,
     opportunities,
     threats,
-    summary: `Comprehensive SWOT synthesis for ${typology} development at ${lat.toFixed(4)}° latitude. Maximizing south-north passive ventilation and implementing plinth flood protection will achieve optimal ecological resilience.`
+    summary: `Comprehensive SWOT synthesis for ${typology} development at ${lat.toFixed(4)}° latitude. Maximizing south-north passive ventilation, providing dual summer/winter shading, and implementing bioswale flood protection will achieve optimal ecological resilience.`
   };
 }
 
 // ─── Contextual Spatial Intelligence (Overpass OSM Engine) ────────────────────
-export async function fetchContextualData(lat: number, lon: number, radiusM = 1000): Promise<ContextualData> {
+export async function fetchContextualData(latParam: number, lonParam: number, radiusM = 1000): Promise<ContextualData> {
+  const lat = Number(latParam);
+  const lon = Number(lonParam);
   const latDelta = radiusM / 111320;
   const lonDelta = radiusM / (111320 * Math.cos((lat * Math.PI) / 180));
   const bbox = `${lat - latDelta},${lon - lonDelta},${lat + latDelta},${lon + lonDelta}`;
@@ -1098,7 +1199,9 @@ export async function fetchContextualData(lat: number, lon: number, radiusM = 10
 }
 
 // ─── Elevation ─────────────────────────────────────────────────────────────────
-export async function fetchElevation(lat: number, lon: number): Promise<number> {
+export async function fetchElevation(latParam: number, lonParam: number): Promise<number> {
+  const lat = Number(latParam);
+  const lon = Number(lonParam);
   try {
     const res = await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lon}`);
     const data = await res.json();
@@ -1109,7 +1212,9 @@ export async function fetchElevation(lat: number, lon: number): Promise<number> 
 }
 
 // ─── Reverse Geocode ──────────────────────────────────────────────────────────
-export async function reverseGeocode(lat: number, lon: number, mapboxToken: string): Promise<string> {
+export async function reverseGeocode(latParam: number, lonParam: number, mapboxToken: string): Promise<string> {
+  const lat = Number(latParam);
+  const lon = Number(lonParam);
   try {
     const res = await fetch(
       `https://api.mapbox.com/geocoding/v5/mapbox.places/${lon},${lat}.json?access_token=${mapboxToken}&types=place,locality,region,country&limit=1`
@@ -1123,11 +1228,14 @@ export async function reverseGeocode(lat: number, lon: number, mapboxToken: stri
 
 // ─── Master Parallel Fetcher ──────────────────────────────────────────────────
 export async function fetchAllSiteData(
-  lat: number,
-  lon: number,
+  latParam: number,
+  lonParam: number,
   mapboxToken: string,
   category: DesignCategory = 'residential'
 ): Promise<SiteAnalysisResult> {
+  const lat = Number(latParam);
+  const lon = Number(lonParam);
+
   const [climate, wind_rose, urban, soil, elevation, place_name, contextual] = await Promise.allSettled([
     fetchClimateData(lat, lon),
     fetchWindRoseData(lat, lon),

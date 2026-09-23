@@ -41,7 +41,7 @@ export const StickyConsultationBar: React.FC<StickyConsultationBarProps> = ({
   if (isDismissed || !isVisible) return null;
 
   return (
-    <aside aria-label="Consultation booking banner" className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-xl z-50 animate-fade-in font-sans">
+    <aside aria-label="Consultation booking banner" className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-xl z-50 animate-fade-in font-sans no-print sticky-consultation-bar">
       <div className="bg-gradient-to-r from-[#03160E] via-[#052A1A] to-[#03160E] text-white p-4 sm:p-4.5 rounded-2xl sm:rounded-3xl shadow-2xl border border-[#CCFF00]/40 flex items-center justify-between gap-3 sm:gap-4 backdrop-blur-md">
         
         {/* Architect Thumbnail & Pitch */}
