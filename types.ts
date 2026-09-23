@@ -177,6 +177,7 @@ export interface ContactMessage {
 export interface EstimatorService {
   id: string;
   title: string;
+  name?: string;
   icon: string;
   desc: string;
   subs: string[];
@@ -193,25 +194,32 @@ export interface WorkshopGalleryItem {
 export interface Workshop {
   id: string;
   title: string;
+  subtitle?: string;
   organization: string;
   location: string;
   city?: string;
   state?: string;
   country?: string;
   date: string;
+  time?: string;
   category: 'School' | 'College' | 'Workplace' | 'Community';
   description: string;
+  audience?: string;
+  targetAudience?: string[];
   attendeesCount?: string;
   offerings?: string[];
+  curriculum?: string[];
   skillsOutcomes?: string;
   materialsUsed?: string;
   impact?: string;
-  outcomes?: string;
+  outcomes?: string | string[];
   faqs?: { question: string; answer: string }[];
+  coverImage?: string;
   images: string[];
   galleryDetails?: WorkshopGalleryItem[];
   videoUrl?: string;
   youtubeUrl?: string;
+  registerUrl?: string;
   relatedProjectIds?: string[];
   relatedServiceIds?: string[];
   relatedArticleIds?: string[];
@@ -224,6 +232,6 @@ export interface Workshop {
   ogTitle?: string;
   ogDescription?: string;
   ogImage?: string;
-  status: 'published' | 'draft';
+  status: 'published' | 'draft' | 'upcoming';
   createdAt?: string;
 }

@@ -1425,7 +1425,7 @@ const Admin: React.FC = () => {
   const [loginError, setLoginError] = useState<string | null>(null);
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const showToast = (msg: string) => {
+  const showToast = (msg: string, _type?: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
   };

@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { DODO_PRODUCTS } from '../../constants/dodoConfig';
-import { getToolUser } from '../../utils/userAuth';
+import { getToolUser, isUserAdmin } from '../../utils/userAuth';
 import { ShieldCheck, Zap, Sparkles, CheckCircle2, Globe, FileText, X, ArrowRight, Star } from 'lucide-react';
 
 interface Props {
@@ -30,6 +30,9 @@ export const ToolsPaywallOverlay: React.FC<Props> = ({
   onUseFreeTrial,
 }) => {
   const user = getToolUser();
+  const isAdmin = isUserAdmin() || user?.is_admin || user?.role === 'admin';
+  if (isAdmin) return null;
+
   const currentCredits = propCredits ?? (user ? user.credits_remaining : 0);
   const isExpired = user ? (currentCredits <= 0 && !user.is_subscribed) : false;
 

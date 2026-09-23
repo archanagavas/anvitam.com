@@ -9,7 +9,7 @@ import {
   Sliders, CheckCircle2, ArrowUpRight, User, ShieldCheck, X, Filter,
   MessageSquare, Send, Bot, Menu, Settings, History, Image as ImageIcon
 } from 'lucide-react';
-import { getToolUser, getOrCreateDefaultToolUser, logoutToolUser, backgroundSyncCredits, type ToolUser } from '../utils/userAuth';
+import { getToolUser, getOrCreateDefaultToolUser, logoutToolUser, backgroundSyncCredits, isUserAdmin, type ToolUser } from '../utils/userAuth';
 import { TOOLS_SUITE, type ToolItem } from '../constants/toolsData';
 import { ToolsAuthModal } from '../components/tools/ToolsAuthModal';
 import { ToolsPaywallOverlay } from '../components/tools/ToolsPaywallOverlay';
@@ -210,12 +210,24 @@ export default function UserDashboard() {
             {user ? (
               <button
                 type="button"
-                onClick={() => setShowPaywall(true)}
+                onClick={() => {
+                  if (user.is_admin || isUserAdmin()) {
+                    setShowSettingsModal(true);
+                  } else {
+                    setShowPaywall(true);
+                  }
+                }}
                 aria-label="View or top up available studio credits"
                 className="px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-semibold flex items-center gap-1.5 hover:bg-black transition cursor-pointer shadow-2xs"
               >
-                <Zap size={14} className="fill-[#CCFF00] text-[#CCFF00]" />
-                <span>{user.credits_remaining ?? 3} Credits</span>
+                {user.is_admin || isUserAdmin() ? (
+                  <span>👑 Admin (Unlimited)</span>
+                ) : (
+                  <>
+                    <Zap size={14} className="fill-[#CCFF00] text-[#CCFF00]" />
+                    <span>{user.credits_remaining ?? 3} Credits</span>
+                  </>
+                )}
               </button>
             ) : (
               <button

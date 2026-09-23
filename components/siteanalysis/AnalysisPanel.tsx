@@ -1,6 +1,6 @@
-// components/siteanalysis/AnalysisPanel.tsx
+// components/siteanalysis/AnalysisPanel.tsx — Master Architectural Analysis Grid with 14+ Analytical Cards
 import React, { useState } from 'react';
-import type { SiteAnalysisResult } from '../../services/siteAnalysisService';
+import type { SiteAnalysisResult, DesignCategory } from '../../services/siteAnalysisService';
 import { SolarCard } from './cards/SolarCard';
 import { WindRoseCard } from './cards/WindRoseCard';
 import { ClimateCard } from './cards/ClimateCard';
@@ -11,9 +11,13 @@ import { SoilCard } from './cards/SoilCard';
 import { OrientationCard } from './cards/OrientationCard';
 import { BioclimateCard } from './cards/BioclimateCard';
 import { TopographyCard } from './cards/TopographyCard';
-import { MapPin, Share2, Sparkles, SlidersHorizontal, Check, Eye } from 'lucide-react';
+import { DirectionCard } from './cards/DirectionCard';
+import { PlinthHydrologyCard } from './cards/PlinthHydrologyCard';
+import { SwotCard } from './cards/SwotCard';
+import { ContextualCard } from './cards/ContextualCard';
+import { MapPin, Share2, Sparkles, SlidersHorizontal, Eye } from 'lucide-react';
 
-export type DesignCategory = 'residential' | 'commercial' | 'landscape' | 'institutional' | 'interior';
+export type { DesignCategory };
 
 interface Props {
   result: SiteAnalysisResult | null;
@@ -60,7 +64,7 @@ export const AnalysisPanel: React.FC<Props> = ({
           Drop a Pin on 3D Map to Begin Analysis
         </h3>
         <p className="text-xs sm:text-sm text-gray-500 max-w-xl mx-auto mb-8 leading-relaxed font-normal">
-          Click anywhere on the 3D map above or search an address to generate 11+ high-precision architectural site diagrams.
+          Click anywhere on the 3D map above or search an address to generate 14+ high-precision architectural site diagrams tailored for {category} development.
         </p>
 
         {/* Preset Locations Quick Buttons */}
@@ -87,7 +91,7 @@ export const AnalysisPanel: React.FC<Props> = ({
 
         {/* Available Modules Badges */}
         <div className="flex flex-wrap justify-center gap-2 pt-2">
-          {['☀️ Solar path 3D', '💨 Wind rose vectors', '🧱 SoilGrids composition', '🏢 Urban context density', '🌿 Bioclimatic strategies', '🌡️ Thermal comfort'].map(f => (
+          {['🧭 Direction & Space Zoning', '🌊 Plinth Level & Hydrology', '📊 SWOT Matrix', '🗺️ Spatial Neighborhood POIs', '☀️ Solar Path 3D', '💨 Wind Rose', '🧱 SoilGrids', '🏢 Urban Fabric', '🌡️ Thermal Comfort'].map(f => (
             <span key={f} className="text-xs font-medium bg-gray-100 text-gray-700 px-3.5 py-1.5 rounded-full border border-gray-200/60">
               {f}
             </span>
@@ -102,6 +106,10 @@ export const AnalysisPanel: React.FC<Props> = ({
   const r = result!;
 
   const allCardsMap: Record<string, { title: string; element: React.ReactNode }> = {
+    'direction': { title: 'Cardinal Direction & Space Layout', element: <DirectionCard key="direction" data={r.direction} category={category} /> },
+    'plinth': { title: 'Plinth Level & Flood Hydrology', element: <PlinthHydrologyCard key="plinth" data={r.plinth_hydrology} /> },
+    'swot': { title: 'Architectural SWOT Matrix', element: <SwotCard key="swot" data={r.swot} category={category} /> },
+    'contextual': { title: 'Contextual Neighborhood Ecosystem', element: <ContextualCard key="contextual" data={r.contextual} /> },
     'solar': { title: '3D Solar Path & SunCalc', element: <SolarCard key="solar" data={r.solar} lat={r.location.lat} /> },
     'wind': { title: 'Wind Rose & Airflow Vectors', element: <WindRoseCard key="wind" data={r.wind_rose} /> },
     'soil': { title: 'SoilGrids Geotechnical Profile', element: <SoilCard key="soil" data={r.soil} /> },
@@ -130,12 +138,15 @@ export const AnalysisPanel: React.FC<Props> = ({
       {/* Location Header Banner */}
       <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-6 text-gray-900">
         <div>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
             <span className="text-[10px] font-bold uppercase tracking-wider text-black bg-[#CCFF00] px-3 py-1 rounded-full">
               Site Intelligence Active
             </span>
-            <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
-              Category: {category}
+            <span className="text-[10px] font-bold text-gray-700 bg-gray-100 px-3 py-1 rounded-full uppercase tracking-wider">
+              Typology: {category}
+            </span>
+            <span className="text-[10px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+              14 Diagnostic Engines
             </span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">{r.place_name}</h2>
@@ -155,10 +166,10 @@ export const AnalysisPanel: React.FC<Props> = ({
       </div>
 
       {/* MODULAR TOOL FILTER BAR */}
-      <div className="bg-white p-3 rounded-2xl border border-gray-200/80 shadow-xs flex items-center justify-between gap-4 overflow-x-auto">
+      <div className="bg-white p-3 rounded-2xl border border-gray-200/80 shadow-xs flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold text-gray-500 px-2 flex items-center gap-1.5 shrink-0">
-            <SlidersHorizontal size={14} className="text-black" /> Tool Focus:
+            <SlidersHorizontal size={14} className="text-black" /> Focus Filter:
           </span>
           <button
             onClick={() => setSelectedFilter('all')}
@@ -166,14 +177,17 @@ export const AnalysisPanel: React.FC<Props> = ({
               selectedFilter === 'all' ? 'bg-black text-[#CCFF00] shadow-xs' : 'text-gray-600 hover:text-black bg-gray-100 font-normal'
             }`}
           >
-            All 11+ Site Diagrams
+            All 14+ Site Engines
           </button>
           {[
+            { id: 'direction', label: '🧭 Direction & Space' },
+            { id: 'plinth', label: '🌊 Plinth & Flood' },
+            { id: 'swot', label: '📊 SWOT Matrix' },
+            { id: 'contextual', label: '🗺️ Neighborhood Context' },
             { id: 'solar', label: '☀️ Solar Path' },
             { id: 'wind', label: '💨 Wind Rose' },
             { id: 'soil', label: '🧱 SoilGrids' },
-            { id: 'urban', label: '🏢 Urban Context' },
-            { id: 'bioclimate', label: '🌿 Bioclimate' },
+            { id: 'urban', label: '🏢 Urban Fabric' },
           ].map(tool => (
             <button
               key={tool.id}
@@ -190,9 +204,9 @@ export const AnalysisPanel: React.FC<Props> = ({
         {selectedFilter !== 'all' && (
           <button
             onClick={() => setSelectedFilter('all')}
-            className="text-xs font-bold text-black hover:underline flex items-center gap-1 shrink-0 px-2"
+            className="text-xs font-bold text-black hover:underline flex items-center gap-1 shrink-0 px-2 cursor-pointer"
           >
-            <Eye size={13} /> View All 11+ Diagrams
+            <Eye size={13} /> View All 14+ Diagrams
           </button>
         )}
       </div>

@@ -29,6 +29,7 @@ export const maxDuration = 60;
 
 import * as jwt from 'jsonwebtoken';
 import { getDoc, getAllDocs, upsertDoc, deleteDoc, getDb, isDbConfigured, findWhere } from '../lib/db.js';
+import { verifyAdminToken, extractToken } from '../lib/auth.js';
 import {
   buildModulePrompt,
   buildRecommendationPrompt,
@@ -510,68 +511,98 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     // Auth & credits — resolve user from JWT, body.userId, or body.email
     let userId: string | null = null;
     let userDoc: any = null;
-    const decoded = validateJWT(req);
-    if (decoded) {
-      userId = decoded.userId;
-    } else if (body.userId || body.user_id) {
-      userId = body.userId || body.user_id;
-    }
+    let isAdmin = false;
 
-    if (userId) {
-      try {
-        userDoc = await getDoc('tool_users', userId);
-      } catch (err) {
-        console.error('[ai-design/generate] Failed to fetch user doc by ID:', userId, err);
-      }
-    }
-
-    if (!userDoc && body.email) {
-      try {
-        const users = await findWhere('tool_users', 'email', body.email);
-        if (users && users.length > 0) {
-          userDoc = users[0];
-          userId = userDoc.id;
-        }
-      } catch (err) {
-        console.error('[ai-design/generate] Failed to fetch user doc by email:', body.email, err);
+    const rawAuthToken = extractToken(req.headers.authorization);
+    if (rawAuthToken) {
+      const adminTokenPayload = verifyAdminToken(rawAuthToken);
+      if (adminTokenPayload) {
+        isAdmin = true;
+        userId = 'admin_studio_lead';
+        userDoc = {
+          id: 'admin_studio_lead',
+          email: adminTokenPayload.email || 'ar.archanagavas@gmail.com',
+          name: 'Studio Admin',
+          credits_remaining: 999999,
+          credits_used: 0,
+          is_subscribed: true,
+          is_admin: true,
+        };
       }
     }
 
     if (!userDoc) {
+      const decoded = validateJWT(req);
+      if (decoded) {
+        userId = decoded.userId;
+        if ((decoded as any).is_admin) isAdmin = true;
+      } else if (body.userId || body.user_id) {
+        userId = body.userId || body.user_id;
+      }
+
+      if (userId) {
+        try {
+          userDoc = await getDoc('tool_users', userId);
+        } catch (err) {
+          console.error('[ai-design/generate] Failed to fetch user doc by ID:', userId, err);
+        }
+      }
+
+      if (!userDoc && body.email) {
+        try {
+          const users = await findWhere('tool_users', 'email', body.email);
+          if (users && users.length > 0) {
+            userDoc = users[0];
+            userId = userDoc.id;
+          }
+        } catch (err) {
+          console.error('[ai-design/generate] Failed to fetch user doc by email:', body.email, err);
+        }
+      }
+    }
+
+    const adminEmail = (process.env.ADMIN_EMAIL || 'ar.archanagavas@gmail.com').toLowerCase().trim();
+    if (userDoc && (userDoc.is_admin || userDoc.role === 'admin' || userDoc.email?.toLowerCase() === adminEmail)) {
+      isAdmin = true;
+    }
+
+    if (!userDoc && !isAdmin) {
       return res.status(401).json({ error: 'Unauthorized. You must log in or register to generate AI designs.' });
     }
 
-    // ── Rate Limiting (5 per minute per user) ──
+    // ── Rate Limiting (5 per minute per user, skipped for admin) ──
     const limitKey = userId || (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.socket?.remoteAddress || 'unknown';
     const now = Date.now();
     
-    if (generateRateLimit[limitKey] && generateRateLimit[limitKey].count >= 5 && now < generateRateLimit[limitKey].until) {
-      const secs = Math.ceil((generateRateLimit[limitKey].until - now) / 1000);
-      return res.status(429).json({ error: `Too many generations. Please wait ${secs}s before trying again.` });
+    if (!isAdmin) {
+      if (generateRateLimit[limitKey] && generateRateLimit[limitKey].count >= 5 && now < generateRateLimit[limitKey].until) {
+        const secs = Math.ceil((generateRateLimit[limitKey].until - now) / 1000);
+        return res.status(429).json({ error: `Too many generations. Please wait ${secs}s before trying again.` });
+      }
+
+      // Record attempt
+      if (!generateRateLimit[limitKey] || now >= generateRateLimit[limitKey].until) {
+        generateRateLimit[limitKey] = { count: 1, until: now + 60_000 };
+      } else {
+        generateRateLimit[limitKey].count++;
+      }
     }
 
-    // Record attempt
-    if (!generateRateLimit[limitKey] || now >= generateRateLimit[limitKey].until) {
-      generateRateLimit[limitKey] = { count: 1, until: now + 60_000 };
-    } else {
-      generateRateLimit[limitKey].count++;
-    }
-
-    let isSubscribed: boolean = userDoc?.is_subscribed ?? false;
-    if (isSubscribed && userDoc?.subscription_end) {
+    let isSubscribed: boolean = isAdmin || (userDoc?.is_subscribed ?? false);
+    if (isSubscribed && userDoc?.subscription_end && !isAdmin) {
       if (new Date(userDoc.subscription_end).getTime() < Date.now()) {
         isSubscribed = false;
       }
     }
-    const creditsRemaining: number = userDoc?.credits_remaining ?? 0;
+    const creditsRemaining: number = isAdmin ? 999999 : (userDoc?.credits_remaining ?? 0);
 
     const modelTier = (body.modelTier || body.modelChoice || 'low-fast').toLowerCase();
     let creditCost = 1;
-    if (modelTier === 'free-chat') creditCost = 0;
+    if (isAdmin || modelTier === 'free-chat') creditCost = 0;
     else if (modelTier === 'med-balanced' || modelTier === 'pro' || modelTier === 'flux' || modelTier === 'claude') creditCost = 2;
     else if (modelTier === 'hard-master' || modelTier === 'gpt4o') creditCost = 3;
 
-    if (userDoc && !isSubscribed && creditsRemaining < creditCost) {
+    if (userDoc && !isSubscribed && !isAdmin && creditsRemaining < creditCost) {
       return res.status(402).json({
         error: `Insufficient credits. This operation requires ${creditCost} credit(s), but you have ${creditsRemaining} remaining. Please upgrade to Pro or top up to run high-performance AI models.`,
         credits_remaining: creditsRemaining,

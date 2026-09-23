@@ -1,9 +1,9 @@
-// api/tools.ts — Unified Serverless Router for Tool Auth, Credits, Subscriptions, Webhooks & Soil
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createHandler } from '../lib/adapter.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { findWhere, getDoc, upsertDoc } from '../lib/db.js';
+import { verifyAdminToken } from '../lib/auth.js';
 import crypto from 'crypto';
 
 const loginAttempts: Record<string, { count: number; until: number }> = {};
@@ -153,8 +153,11 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       const trialDaysUsed = trialMs / (1000 * 60 * 60 * 24);
       const trial_days_remaining = Math.max(0, Math.ceil(15 - trialDaysUsed));
 
+      const adminEmail = (process.env.ADMIN_EMAIL || 'ar.archanagavas@gmail.com').toLowerCase().trim();
+      const isAdmin = user.is_admin || user.role === 'admin' || user.email.toLowerCase() === adminEmail;
+
       const token = jwt.sign(
-        { userId: user.id, email: user.email, type: 'tool_user' },
+        { userId: user.id, email: user.email, type: 'tool_user', is_admin: isAdmin },
         process.env.JWT_SECRET || '',
         { expiresIn: '30d' }
       );
@@ -166,14 +169,15 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
           email: user.email,
           name: user.name || '',
           country: user.country || 'IN',
-          credits_remaining: user.credits_remaining ?? 3,
+          credits_remaining: isAdmin ? 999999 : (user.credits_remaining ?? 3),
           credits_used: user.credits_used ?? 0,
           trial_started_at: user.trial_started_at,
-          is_subscribed: user.is_subscribed || false,
+          is_subscribed: isAdmin ? true : (user.is_subscribed || false),
+          is_admin: isAdmin,
           subscription_end: user.subscription_end || null,
-          subscription_plan: user.subscription_plan || null,
-          trial_days_remaining,
-          has_access: user.is_subscribed || (user.credits_remaining ?? 3) > 0,
+          subscription_plan: isAdmin ? 'pro_monthly' : (user.subscription_plan || null),
+          trial_days_remaining: isAdmin ? 365 : trial_days_remaining,
+          has_access: true,
         },
       });
     } catch (err) {
@@ -209,8 +213,11 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
         verification_otp: null
       });
 
+      const adminEmail = (process.env.ADMIN_EMAIL || 'ar.archanagavas@gmail.com').toLowerCase().trim();
+      const isAdmin = user.is_admin || user.role === 'admin' || user.email.toLowerCase() === adminEmail;
+
       const token = jwt.sign(
-        { userId: user.id, email: user.email, type: 'tool_user' },
+        { userId: user.id, email: user.email, type: 'tool_user', is_admin: isAdmin },
         process.env.JWT_SECRET || '',
         { expiresIn: '30d' }
       );
@@ -225,13 +232,14 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
           email: user.email,
           name: user.name || '',
           country: user.country || 'IN',
-          credits_remaining: user.credits_remaining ?? 3,
+          credits_remaining: isAdmin ? 999999 : (user.credits_remaining ?? 3),
           credits_used: user.credits_used ?? 0,
           trial_started_at: user.trial_started_at,
-          is_subscribed: user.is_subscribed || false,
+          is_subscribed: isAdmin ? true : (user.is_subscribed || false),
+          is_admin: isAdmin,
           subscription_end: user.subscription_end || null,
-          subscription_plan: user.subscription_plan || null,
-          trial_days_remaining,
+          subscription_plan: isAdmin ? 'pro_monthly' : (user.subscription_plan || null),
+          trial_days_remaining: isAdmin ? 365 : trial_days_remaining,
           has_access: true,
         },
       });
@@ -249,27 +257,50 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     
     try {
       const token = authHeader.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as { userId: string };
-      const user = await getDoc('tool_users', decoded.userId);
-      if (!user) return res.status(404).json({ error: 'User not found' });
-      
-      let isSubscribed = user.is_subscribed || false;
-      if (isSubscribed && user.subscription_end) {
-        if (new Date(user.subscription_end).getTime() < Date.now()) {
-          isSubscribed = false;
-          await upsertDoc('tool_users', user.id, { ...user, is_subscribed: false });
-        }
+      // Check if this is an admin token
+      const adminPayload = verifyAdminToken(token);
+      if (adminPayload) {
+        return res.status(200).json({
+          id: 'admin_studio_lead',
+          email: adminPayload.email || 'ar.archanagavas@gmail.com',
+          credits_remaining: 999999,
+          credits_used: 0,
+          is_subscribed: true,
+          is_admin: true,
+          subscription_plan: 'pro_monthly',
+          subscription_end: null
+        });
       }
 
-      return res.status(200).json({
-        id: user.id,
-        email: user.email,
-        credits_remaining: user.credits_remaining ?? 0,
-        credits_used: user.credits_used ?? 0,
-        is_subscribed: isSubscribed,
-        subscription_plan: user.subscription_plan,
-        subscription_end: user.subscription_end
-      });
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as { userId?: string; email?: string; is_admin?: boolean };
+      if (decoded.userId) {
+        const user = await getDoc('tool_users', decoded.userId);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        
+        const adminEmail = (process.env.ADMIN_EMAIL || 'ar.archanagavas@gmail.com').toLowerCase().trim();
+        const isAdmin = user.is_admin || user.role === 'admin' || user.email.toLowerCase() === adminEmail;
+
+        let isSubscribed = isAdmin || user.is_subscribed || false;
+        if (isSubscribed && user.subscription_end && !isAdmin) {
+          if (new Date(user.subscription_end).getTime() < Date.now()) {
+            isSubscribed = false;
+            await upsertDoc('tool_users', user.id, { ...user, is_subscribed: false });
+          }
+        }
+
+        return res.status(200).json({
+          id: user.id,
+          email: user.email,
+          credits_remaining: isAdmin ? 999999 : (user.credits_remaining ?? 0),
+          credits_used: user.credits_used ?? 0,
+          is_subscribed: isSubscribed,
+          is_admin: isAdmin,
+          subscription_plan: isAdmin ? 'pro_monthly' : user.subscription_plan,
+          subscription_end: user.subscription_end
+        });
+      }
+
+      return res.status(401).json({ error: 'Invalid token' });
     } catch (err) {
       return res.status(401).json({ error: 'Invalid token' });
     }
@@ -284,9 +315,38 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     }
     const token = authHeader.split(' ')[1];
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as { userId: string; email: string };
+      // First check if token is Admin token — admin gets instant 0-cost bypass
+      const adminPayload = verifyAdminToken(token);
+      if (adminPayload) {
+        return res.status(200).json({
+          success: true,
+          is_subscribed: true,
+          is_admin: true,
+          credits_remaining: 999999,
+          credits_used: 0,
+        });
+      }
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as { userId?: string; email?: string; is_admin?: boolean };
+      if (!decoded.userId) {
+        return res.status(401).json({ error: 'Invalid authentication token' });
+      }
+
       const user = await getDoc('tool_users', decoded.userId);
       if (!user) return res.status(404).json({ error: 'User not found' });
+
+      const adminEmail = (process.env.ADMIN_EMAIL || 'ar.archanagavas@gmail.com').toLowerCase().trim();
+      const isAdmin = user.is_admin || user.role === 'admin' || user.email.toLowerCase() === adminEmail || decoded.is_admin;
+
+      if (isAdmin) {
+        return res.status(200).json({
+          success: true,
+          is_subscribed: true,
+          is_admin: true,
+          credits_remaining: 999999,
+          credits_used: user.credits_used ?? 0,
+        });
+      }
 
       if (user.credit_expiry) {
         const expiryDate = new Date(user.credit_expiry);
@@ -324,6 +384,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       return res.status(200).json({
         success: true,
         is_subscribed: user.is_subscribed || false,
+        is_admin: false,
         credits_remaining: newRemaining,
         credits_used: newUsed,
       });

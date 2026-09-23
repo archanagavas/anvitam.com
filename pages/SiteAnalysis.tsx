@@ -15,7 +15,7 @@ import { ToolsAuthModal } from '../components/tools/ToolsAuthModal';
 import { ToolsPaywallOverlay } from '../components/tools/ToolsPaywallOverlay';
 import { AllToolsDrawer } from '../components/tools/AllToolsDrawer';
 import { ToolsSettingsModal } from '../components/tools/ToolsSettingsModal';
-import { getToolUser, getOrCreateDefaultToolUser, logoutToolUser, deductUserCredit, type ToolUser } from '../utils/userAuth';
+import { getToolUser, getOrCreateDefaultToolUser, logoutToolUser, deductUserCredit, isUserAdmin, type ToolUser } from '../utils/userAuth';
 import { TOOLS_SUITE } from '../constants/toolsData';
 import StickyConsultationBar from '../components/StickyConsultationBar';
 import {
@@ -570,7 +570,7 @@ export default function SiteAnalysis() {
     }, { replace: true });
 
     try {
-      const result = await fetchAllSiteData(lat, lon, MAPBOX_TOKEN);
+      const result = await fetchAllSiteData(lat, lon, MAPBOX_TOKEN, category);
       setAnalysisResult(result);
       setIsAnalyzed(true);
     } catch (err) {
@@ -605,17 +605,26 @@ export default function SiteAnalysis() {
     }
   };
 
-  const handleCategoryChange = (cat: DesignCategory) => {
+  const handleCategoryChange = async (cat: DesignCategory) => {
     setCategory(cat);
-    if (cat === 'interior') {
-      navigate('/tools/ai-home-design?module=interior');
-      return;
-    }
     setSearchParams(prev => {
       const p = new URLSearchParams(prev);
       p.set('category', cat);
       return p;
     }, { replace: true });
+
+    // If already analyzed and coords present, immediately re-tune analysis for new typology
+    if (isAnalyzed && pendingCoords) {
+      setLoading(true);
+      try {
+        const result = await fetchAllSiteData(pendingCoords.lat, pendingCoords.lon, MAPBOX_TOKEN, cat);
+        setAnalysisResult(result);
+      } catch (err) {
+        console.error('Category re-fetch failed:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
   const handleShare = () => {
@@ -752,12 +761,24 @@ export default function SiteAnalysis() {
                 {user ? (
                   <button
                     type="button"
-                    onClick={() => setShowPaywall(true)}
+                    onClick={() => {
+                      if (user.is_admin || isUserAdmin()) {
+                        setShowDashboardModal(true);
+                      } else {
+                        setShowPaywall(true);
+                      }
+                    }}
                     aria-label="View or top up available studio credits"
                     className="px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-semibold flex items-center gap-1.5 hover:bg-black transition cursor-pointer shadow-2xs"
                   >
-                    <Zap size={14} className="fill-[#CCFF00] text-[#CCFF00]" />
-                    <span>{user.credits_remaining} Credits</span>
+                    {user.is_admin || isUserAdmin() ? (
+                      <span>👑 Admin (Unlimited)</span>
+                    ) : (
+                      <>
+                        <Zap size={14} className="fill-[#CCFF00] text-[#CCFF00]" />
+                        <span>{user.credits_remaining} Credits</span>
+                      </>
+                    )}
                   </button>
                 ) : (
                   <button
