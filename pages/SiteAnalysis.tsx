@@ -717,24 +717,6 @@ export default function SiteAnalysis() {
                 </form>
               </div>
 
-              {/* Category Selector Pills */}
-              <div className="flex items-center gap-1.5 overflow-x-auto w-full lg:w-auto py-1 lg:py-0 no-scrollbar justify-start sm:justify-center">
-                {CATEGORIES.map(cat => (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => handleCategoryChange(cat.id)}
-                    aria-label={`Select ${cat.label} category`}
-                    className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer whitespace-nowrap ${
-                      category === cat.id ? 'bg-black text-[#CCFF00] font-semibold shadow-2xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200/80'
-                    }`}
-                  >
-                    <span className="text-xs">{cat.icon}</span>
-                    <span>{cat.label}</span>
-                  </button>
-                ))}
-              </div>
-
               {/* Controls: Credit Pill, Settings, Logout */}
               <div className="flex items-center gap-2.5 shrink-0 w-full lg:w-auto justify-end">
                 {user ? (
@@ -862,71 +844,131 @@ export default function SiteAnalysis() {
               </div>
 
               {/* Floating Confirmation & Typology Selection Card */}
-              {pendingCoords && (
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 bg-white/95 backdrop-blur-md text-gray-900 p-5 rounded-3xl border border-gray-900 shadow-2xl flex flex-col gap-3.5 max-w-xl w-11/12">
-                  
-                  {/* Top: Location & Status */}
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-9 h-9 rounded-2xl bg-black text-[#CCFF00] flex items-center justify-center font-bold shrink-0 shadow-xs">
-                        <MapPin size={18} />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-gray-900 truncate">
-                          {pendingCoords.placeName || `Site Lat: ${pendingCoords.lat.toFixed(4)}°, Lon: ${pendingCoords.lon.toFixed(4)}°`}
-                        </p>
-                        <p className="text-[10px] text-gray-500 font-normal">
-                          {isAnalyzed ? '✅ Analysis active · Select typology below to recalculate' : 'Choose project typology & run 14+ diagnostic site engines'}
-                        </p>
-                      </div>
-                    </div>
-
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-black bg-[#CCFF00] px-2.5 py-0.5 rounded-full shrink-0">
-                      {category}
-                    </span>
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 bg-white/95 backdrop-blur-md text-gray-900 p-5 rounded-3xl border border-gray-900 shadow-2xl flex flex-col gap-3 max-w-xl w-11/12">
+                
+                {/* Search Bar inside Floating Card */}
+                <form onSubmit={handleSearch} className="relative w-full">
+                  <div className="relative w-full flex items-center">
+                    <input
+                      type="text"
+                      className="bg-gray-100 text-gray-900 placeholder-gray-400 text-xs pl-4 pr-10 py-2 rounded-2xl border border-gray-200 focus:border-black focus:bg-white outline-none w-full font-normal transition"
+                      placeholder="Search location, city, lat/lon…"
+                      value={searchInput}
+                      onChange={e => setSearchInput(e.target.value)}
+                      onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+                      aria-label="Search location, city, latitude or longitude"
+                    />
+                    <button
+                      type="submit"
+                      aria-label="Execute search"
+                      className="absolute right-1 p-1.5 bg-black text-[#CCFF00] hover:bg-gray-800 rounded-xl transition cursor-pointer flex items-center justify-center"
+                    >
+                      <Search size={13} />
+                    </button>
                   </div>
 
-                  {/* Middle: Interactive Typology Selector Pills (Directly Above Run Analysis) */}
-                  <div className="space-y-1.5 pt-1 border-t border-gray-100">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                      1. Select Project Typology:
-                    </p>
-                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-                      {CATEGORIES.map(cat => (
-                        <button
-                          key={cat.id}
-                          type="button"
-                          onClick={() => handleCategoryChange(cat.id)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer whitespace-nowrap ${
-                            category === cat.id
-                              ? 'bg-black text-[#CCFF00] shadow-xs'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                        >
-                          <span className="text-xs">{cat.icon}</span>
-                          <span>{cat.label}</span>
-                        </button>
-                      ))}
+                  {/* Location Autocomplete Suggestions Dropdown (Floats Upwards) */}
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 overflow-hidden text-left max-h-56 overflow-y-auto">
+                      <div className="px-3 py-1.5 bg-gray-50 border-b border-gray-100 text-[10px] font-semibold text-gray-400 uppercase tracking-wider flex items-center justify-between">
+                        <span>Matching Locations</span>
+                        {isSearchingSuggestions && <span className="animate-pulse text-amber-500">Searching…</span>}
+                      </div>
+                      {suggestions.map((item, idx) => {
+                        const lat = parseFloat(item.lat);
+                        const lon = parseFloat(item.lon);
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => {
+                              positionMarker(lat, lon);
+                              setPendingCoords({ lat, lon, placeName: item.display_name });
+                              setIsAnalyzed(false);
+                              setSearchInput(item.display_name.split(',')[0]);
+                              setShowSuggestions(false);
+                            }}
+                            className="w-full text-left px-3.5 py-2 text-xs text-gray-800 hover:bg-gray-100 flex items-start gap-2 border-b border-gray-100 last:border-0 transition cursor-pointer"
+                          >
+                            <MapPin size={14} className="text-emerald-600 shrink-0 mt-0.5" />
+                            <div className="truncate">
+                              <p className="font-semibold truncate text-gray-900">{item.display_name.split(',')[0]}</p>
+                              <p className="text-[10px] text-gray-500 truncate">{item.display_name}</p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </form>
+
+                {/* Location Info Header */}
+                <div className="flex items-center justify-between gap-3 pt-0.5">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-xl bg-black text-[#CCFF00] flex items-center justify-center font-bold shrink-0 shadow-xs">
+                      <MapPin size={16} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-gray-900 truncate">
+                        {pendingCoords?.placeName || (pendingCoords ? `Site Lat: ${pendingCoords.lat.toFixed(4)}°, Lon: ${pendingCoords.lon.toFixed(4)}°` : 'Click anywhere on 3D map or search above')}
+                      </p>
+                      <p className="text-[10px] text-gray-500 font-normal truncate">
+                        {isAnalyzed ? '✅ Site analysis active · Select typology below to recalculate' : 'Choose project typology & run 14+ diagnostic site engines'}
+                      </p>
                     </div>
                   </div>
 
-                  {/* Bottom: Action Trigger Button */}
-                  <button
-                    onClick={executeSiteAnalysis}
-                    disabled={loading}
-                    className="w-full bg-black text-[#CCFF00] hover:bg-gray-800 font-bold text-xs py-3 rounded-2xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <Zap size={14} className="fill-[#CCFF00]" />
-                    <span>
-                      {loading
-                        ? 'Synthesizing 14+ Site Diagnostics...'
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-black bg-[#CCFF00] px-2.5 py-0.5 rounded-full shrink-0">
+                    {category}
+                  </span>
+                </div>
+
+                {/* Middle: Interactive Typology Selector Pills */}
+                <div className="space-y-1 pt-1 border-t border-gray-100">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                    1. Select Project Typology:
+                  </p>
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                    {CATEGORIES.map(cat => (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => handleCategoryChange(cat.id)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer whitespace-nowrap ${
+                          category === cat.id
+                            ? 'bg-black text-[#CCFF00] shadow-xs'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        <span className="text-xs">{cat.icon}</span>
+                        <span>{cat.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Bottom: Action Trigger Button */}
+                <button
+                  onClick={executeSiteAnalysis}
+                  disabled={loading || !pendingCoords}
+                  className={`w-full font-bold text-xs py-3 rounded-2xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer ${
+                    !pendingCoords
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      : 'bg-black text-[#CCFF00] hover:bg-gray-800'
+                  }`}
+                >
+                  <Zap size={14} className={pendingCoords ? "fill-[#CCFF00]" : ""} />
+                  <span>
+                    {loading
+                      ? 'Synthesizing 14+ Site Diagnostics...'
+                      : !pendingCoords
+                        ? 'Drop a Pin on 3D Map or Search to Analyze'
                         : isAnalyzed
                           ? `Re-Analyze for ${category.toUpperCase()} (1 Credit)`
                           : `Run Site Analysis for ${category.toUpperCase()} (${user?.is_admin || isUserAdmin() ? 'Free Admin' : '1 Credit'})`}
-                    </span>
-                  </button>
-                </div>
-              )}
+                  </span>
+                </button>
+              </div>
             </div>
 
             {/* 3D Solar Shadow Simulator */}
