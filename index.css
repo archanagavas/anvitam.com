@@ -1109,6 +1109,30 @@ article tr:hover {
   flex-direction: column;
   gap: 1.25rem;
   color: #111827;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle architectural watermark emblem on every card */
+.analysis-card::after {
+  content: "";
+  position: absolute;
+  right: -10px;
+  bottom: -10px;
+  width: 140px;
+  height: 140px;
+  background-image: url('/watermark.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.analysis-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .card-header {
@@ -1257,17 +1281,39 @@ article tr:hover {
     position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) rotate(-12deg);
-    width: 380px;
-    height: 380px;
-    background-image: url('/logo.png');
+    transform: translate(-50%, -50%);
+    width: 440px;
+    height: 440px;
+    background-image: url('/watermark.png');
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
-    opacity: 0.075 !important;
+    opacity: 0.10 !important;
     pointer-events: none;
     z-index: 0;
     display: block !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .print-page-watermark {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .print-page-watermark img {
+    width: 420px;
+    height: 420px;
+    object-fit: contain;
+    opacity: 0.10 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -1299,6 +1345,26 @@ article tr:hover {
     background: #ffffff !important;
     position: relative !important;
     z-index: 1 !important;
+    overflow: hidden !important;
+  }
+  .analysis-card::after {
+    content: "" !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 240px !important;
+    height: 240px !important;
+    background-image: url('/watermark.png') !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-size: contain !important;
+    opacity: 0.12 !important;
+    pointer-events: none !important;
+    z-index: 0 !important;
+    display: block !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }
 

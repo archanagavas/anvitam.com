@@ -236,17 +236,10 @@ ${r.swot?.threats?.map(t => `- **${t.title}** (${t.tag}): ${t.desc}`).join('\n')
   return (
     <div className="analysis-panel p-6 sm:p-10 space-y-8 max-w-7xl mx-auto relative">
 
-      {/* ── SUBTLE ELEGANT STUDIO LOGO WATERMARK FOR PRINT/PDF DOSSIER ── */}
-      <div
-        className="hidden print:block print-watermark"
-        style={{
-          backgroundImage: "url('/logo.png')",
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center',
-          backgroundSize: 'contain',
-        }}
-        aria-hidden="true"
-      />
+      {/* ── SUBTLE ELEGANT STUDIO MANDALA EMBLEM WATERMARK FOR PRINT/PDF DOSSIER ── */}
+      <div className="hidden print:flex print-page-watermark" aria-hidden="true">
+        <img src="/watermark.png" alt="Anvitam Watermark" className="w-[440px] h-[440px] object-contain opacity-10" />
+      </div>
 
       {/* ── PRINT-ONLY CLIENT DOSSIER COVER HEADER (Visible exclusively in Print / PDF) ── */}
       <div className="hidden print:block mb-8 border-b-2 border-black pb-6 space-y-4">
