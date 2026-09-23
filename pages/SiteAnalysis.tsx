@@ -343,7 +343,7 @@ export default function SiteAnalysis() {
         });
 
         map.on('error', (e: any) => {
-          console.warn('[Mapbox GL] Error caught during rendering:', e);
+          console.warn('[Mapbox GL] Event notice:', e);
           const errMsg = String(e?.error?.message || e?.error || '');
           const status = e?.error?.status || e?.status;
 
@@ -355,36 +355,20 @@ export default function SiteAnalysis() {
             mapboxgl.accessToken = FALLBACK_MAPBOX_TOKEN;
             try {
               map.setStyle(selectedObj.style);
-            } catch {
-              setMapEngine('2d');
-            }
+            } catch { /* keep existing style */ }
             return;
           }
 
           // Style fallback: If Mapbox Standard fails to load, try streets-v12
           if (!styleFallbackAttempted && selectedObj.id === 'standard-3d') {
             styleFallbackAttempted = true;
-            console.warn('[Mapbox GL] Standard 3D engine failed. Switching to 3D Streets fallback style...');
+            console.warn('[Mapbox GL] Standard 3D engine failed. Switching to 3D Streets style...');
             try {
               map.setStyle('mapbox://styles/mapbox/streets-v12');
               return;
-            } catch { /* proceed to 2d */ }
-          }
-
-          // Complete safety fallback to 2D engine if Mapbox 3D cannot render
-          if (!isMapLoaded) {
-            console.warn('[Mapbox GL] Map rendering encountered unrecoverable issue. Seamlessly switching to 2D engine.');
-            setMapEngine('2d');
+            } catch { /* silent */ }
           }
         });
-
-        // 4-second safety guard: If Mapbox GL fails to load tiles within 4 seconds, activate 2D engine
-        const loadSafetyTimer = setTimeout(() => {
-          if (!isMapLoaded && mapEngine === '3d') {
-            console.warn('[Mapbox GL] Map load timed out after 4s. Activating 2D map engine fallback.');
-            setMapEngine('2d');
-          }
-        }, 4000);
 
         resizeObserver = new ResizeObserver(() => {
           forceResize();
@@ -392,13 +376,8 @@ export default function SiteAnalysis() {
         if (mapContainerRef.current) {
           resizeObserver.observe(mapContainerRef.current);
         }
-
-        return () => {
-          clearTimeout(loadSafetyTimer);
-        };
       } catch (err) {
-        console.warn('Mapbox 3D init failed, switching to Leaflet raster engine:', err);
-        setMapEngine('2d');
+        console.warn('Mapbox 3D init error:', err);
       }
     } else {
       const selectedStyle = LEAFLET_2D_STYLES.find(s => s.id === leafletStyleId) || LEAFLET_2D_STYLES[0];
@@ -882,30 +861,69 @@ export default function SiteAnalysis() {
                 )}
               </div>
 
-              {/* Floating Confirmation Card */}
+              {/* Floating Confirmation & Typology Selection Card */}
               {pendingCoords && (
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 bg-white text-gray-900 p-4 rounded-3xl border border-black shadow-2xl flex flex-col sm:flex-row items-center gap-4 max-w-lg w-11/12">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-black text-[#CCFF00] flex items-center justify-center font-bold shrink-0">
-                      <MapPin size={20} />
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 bg-white/95 backdrop-blur-md text-gray-900 p-5 rounded-3xl border border-gray-900 shadow-2xl flex flex-col gap-3.5 max-w-xl w-11/12">
+                  
+                  {/* Top: Location & Status */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-9 h-9 rounded-2xl bg-black text-[#CCFF00] flex items-center justify-center font-bold shrink-0 shadow-xs">
+                        <MapPin size={18} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-gray-900 truncate">
+                          {pendingCoords.placeName || `Site Lat: ${pendingCoords.lat.toFixed(4)}°, Lon: ${pendingCoords.lon.toFixed(4)}°`}
+                        </p>
+                        <p className="text-[10px] text-gray-500 font-normal">
+                          {isAnalyzed ? '✅ Analysis active · Select typology below to recalculate' : 'Choose project typology & run 14+ diagnostic site engines'}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs font-bold text-gray-900 line-clamp-1">
-                        {pendingCoords.placeName || `Site Lat: ${pendingCoords.lat.toFixed(4)}°, Lon: ${pendingCoords.lon.toFixed(4)}°`}
-                      </p>
-                      <p className="text-[10px] text-gray-500 font-normal">
-                        {isAnalyzed ? '✅ Site analysis report active below' : 'Click below to generate 11+ site diagrams'}
-                      </p>
+
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-black bg-[#CCFF00] px-2.5 py-0.5 rounded-full shrink-0">
+                      {category}
+                    </span>
+                  </div>
+
+                  {/* Middle: Interactive Typology Selector Pills (Directly Above Run Analysis) */}
+                  <div className="space-y-1.5 pt-1 border-t border-gray-100">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                      1. Select Project Typology:
+                    </p>
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                      {CATEGORIES.map(cat => (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => handleCategoryChange(cat.id)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer whitespace-nowrap ${
+                            category === cat.id
+                              ? 'bg-black text-[#CCFF00] shadow-xs'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          <span className="text-xs">{cat.icon}</span>
+                          <span>{cat.label}</span>
+                        </button>
+                      ))}
                     </div>
                   </div>
 
+                  {/* Bottom: Action Trigger Button */}
                   <button
                     onClick={executeSiteAnalysis}
                     disabled={loading}
-                    className="bg-black text-[#CCFF00] hover:bg-gray-800 font-bold text-xs px-5 py-3 rounded-2xl transition shadow-md flex items-center gap-2 shrink-0 cursor-pointer"
+                    className="w-full bg-black text-[#CCFF00] hover:bg-gray-800 font-bold text-xs py-3 rounded-2xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Zap size={14} className="fill-[#CCFF00]" />
-                    {loading ? 'Analyzing Site...' : 'Run Analysis (1 Credit)'}
+                    <span>
+                      {loading
+                        ? 'Synthesizing 14+ Site Diagnostics...'
+                        : isAnalyzed
+                          ? `Re-Analyze for ${category.toUpperCase()} (1 Credit)`
+                          : `Run Site Analysis for ${category.toUpperCase()} (${user?.is_admin || isUserAdmin() ? 'Free Admin' : '1 Credit'})`}
+                    </span>
                   </button>
                 </div>
               )}
