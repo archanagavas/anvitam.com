@@ -103,6 +103,9 @@ export const AnalysisPanel: React.FC<Props> = ({
   }
 
   if (loading) return <LoadingSkeleton />;
+  if (!result) return null;
+
+  const r = result;
 
   const handlePrintReport = () => {
     window.print();
