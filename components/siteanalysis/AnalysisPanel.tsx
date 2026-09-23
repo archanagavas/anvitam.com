@@ -237,45 +237,68 @@ ${r.swot?.threats?.map(t => `- **${t.title}** (${t.tag}): ${t.desc}`).join('\n')
     <div className="analysis-panel p-6 sm:p-10 space-y-8 max-w-7xl mx-auto">
 
       {/* ── PRINT-ONLY CLIENT DOSSIER COVER HEADER (Visible exclusively in Print / PDF) ── */}
-      <div className="hidden print:block mb-8 border-b-2 border-black pb-6">
-        <div className="flex justify-between items-start">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="bg-black text-[#CCFF00] font-black text-xs px-2 py-0.5 rounded">ANVITAM STUDIO</span>
-              <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">Site Intelligence PRD Dossier</span>
+      <div className="hidden print:block mb-8 border-b-2 border-black pb-6 space-y-4">
+        {/* Studio Branding & Lead Architect Header */}
+        <div className="flex justify-between items-start border-b border-gray-200 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center text-[#CCFF00] font-black text-lg">
+              ▲
             </div>
-            <h1 className="text-2xl font-black text-black tracking-tight">{r.place_name}</h1>
-            <p className="text-xs font-mono text-gray-600 mt-1">
-              Coordinates: {r.location.lat.toFixed(4)}° N, {r.location.lon.toFixed(4)}° E · Elevation: {r.elevation_m}m AMSL · Typology: {category.toUpperCase()}
-            </p>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-black text-sm tracking-tight text-black">ANVITAM STUDIO</span>
+                <span className="text-[10px] bg-black text-[#CCFF00] font-bold px-2 py-0.5 rounded uppercase">
+                  Bioclimatic &amp; Ecological Architecture
+                </span>
+              </div>
+              <p className="text-[10px] text-gray-600 mt-0.5">
+                Regenerative Masterplanning · Microclimate Modeling · Landscape Intelligence · anvitam.com
+              </p>
+            </div>
           </div>
           <div className="text-right">
-            <p className="text-xs font-bold text-black">Ar. Archana Gavas</p>
-            <p className="text-[10px] text-gray-500">Lead Architect &amp; Founder</p>
-            <p className="text-[10px] text-gray-600 font-mono">www.anvitam.com</p>
-            <p className="text-[9px] text-gray-400 mt-1">{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            <p className="text-xs font-black text-black">Ar. Archana Gavas</p>
+            <p className="text-[10px] text-gray-600 font-medium">Founder &amp; Principal Architect</p>
+            <p className="text-[10px] text-gray-500 font-mono">archana@anvitam.com</p>
+            <p className="text-[9px] text-gray-400 mt-0.5">{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
           </div>
         </div>
 
+        {/* Project & Typology Title */}
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-black bg-gray-100 border border-gray-300 px-2.5 py-0.5 rounded-full">
+              Typology: {category.toUpperCase()}
+            </span>
+            <span className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">
+              Site Intelligence Dossier
+            </span>
+          </div>
+          <h1 className="text-2xl font-black text-black tracking-tight">{r.place_name}</h1>
+          <p className="text-xs font-mono text-gray-700 mt-1">
+            Coordinates: {r.location.lat.toFixed(4)}° N, {r.location.lon.toFixed(4)}° E · Elevation: {r.elevation_m}m AMSL (SRTM DEM) · Climate: {r.climate?.koppen_zone} ({r.climate?.koppen_label})
+          </p>
+        </div>
+
         {/* 7-Layer Provenance & Confidence Key */}
-        <div className="mt-4 pt-3 border-t border-gray-300 grid grid-cols-3 gap-2 text-[10px]">
-          <div className="p-2 bg-gray-50 border border-gray-200 rounded-lg">
-            <p className="font-bold text-emerald-800">🟢 High Confidence</p>
-            <p className="text-gray-600">Astronomical sun path, exact coordinates, solstice angles</p>
+        <div className="pt-3 border-t border-gray-300 grid grid-cols-3 gap-2.5 text-[10px]">
+          <div className="p-2.5 bg-emerald-50/70 border border-emerald-200 rounded-xl">
+            <p className="font-bold text-emerald-900">🟢 High Confidence</p>
+            <p className="text-emerald-800 leading-tight mt-0.5">Astronomical sun path, exact GPS coordinates, solstice/equinox angles (±0.1°)</p>
           </div>
-          <div className="p-2 bg-gray-50 border border-gray-200 rounded-lg">
-            <p className="font-bold text-sky-800">🟡 Medium Confidence</p>
-            <p className="text-gray-600">ERA5 climate normals, SRTM DEM elevation, OpenStreetMap fabric</p>
+          <div className="p-2.5 bg-sky-50/70 border border-sky-200 rounded-xl">
+            <p className="font-bold text-sky-900">🟡 Medium Confidence</p>
+            <p className="text-sky-800 leading-tight mt-0.5">ERA5 climate archive (5-yr seasonal mean), SRTM DEM elevation, OpenStreetMap context</p>
           </div>
-          <div className="p-2 bg-gray-50 border border-gray-200 rounded-lg">
-            <p className="font-bold text-amber-800">🔴 Provisional (Field Survey Req.)</p>
-            <p className="text-gray-600">SoilGrids pH, infiltration rate, plinth datum, structural capacity</p>
+          <div className="p-2.5 bg-amber-50/70 border border-amber-200 rounded-xl">
+            <p className="font-bold text-amber-900">🔴 Provisional (Field Survey Required)</p>
+            <p className="text-amber-800 leading-tight mt-0.5">SoilGrids pH, infiltration rate, plinth datum, structural foundation sizing</p>
           </div>
         </div>
       </div>
 
-      {/* Location Header Banner with 1-Click Client Export & Share (Web UI) */}
-      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-6 text-gray-900">
+      {/* Location Header Banner with 1-Click Client Export & Share (Web UI - Hidden in Print to avoid duplicate) */}
+      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-6 text-gray-900 print:hidden">
         <div>
           <div className="flex items-center gap-2 mb-2 flex-wrap">
             <span className="text-[10px] font-bold uppercase tracking-wider text-black bg-[#CCFF00] px-3 py-1 rounded-full">

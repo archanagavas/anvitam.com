@@ -325,21 +325,76 @@ export async function fetchClimateData(latParam: number, lonParam: number): Prom
 }
 
 function classifyKoppen(lat: number, annualAvgTemp: number, annualRain: number, monthlyMinTemp: number[], monthlyRain: number[]) {
-  const minMonthTemp = Math.min(...monthlyMinTemp);
+  const absLat = Math.abs(lat);
+  const maxRain = Math.max(...monthlyRain);
   const dryMonths = monthlyRain.filter(r => r < 60).length;
 
-  if (annualAvgTemp > 18 && minMonthTemp >= 18) {
-    if (dryMonths < 2) return { zone: 'Af', label: 'Tropical Rainforest', strategies: ['Cross-ventilation paramount', 'Elevated floors for airflow', 'Deep overhangs', 'Light-coloured roofs'] };
-    if (dryMonths >= 3) return { zone: 'Aw', label: 'Tropical Savanna / Borderline Semi-Arid', strategies: ['Monsoon roof design', 'Courtyard with water feature for cooling', 'Seasonal shading devices', 'Underground water storage'] };
-    return { zone: 'Am', label: 'Tropical Monsoon', strategies: ['Raised plinth for flooding protection', 'Wide roof overhangs', 'Cross-ventilation throughout'] };
+  // Arid / Semi-Arid (B)
+  if (annualRain < 400 || (annualRain < 750 && annualAvgTemp > 22 && dryMonths >= 7)) {
+    if (annualRain < 250) {
+      return {
+        zone: 'BWh',
+        label: 'Hot Arid Desert',
+        strategies: ['Thick thermal mass walls', 'Courtyard microclimate creation', 'Wind catchers / Badgirs', 'Night purge flush ventilation']
+      };
+    }
+    return {
+      zone: 'BSh',
+      label: 'Hot Semi-Arid / Steppe',
+      strategies: ['Deep shade canopies & pergola buffers', 'Drought-resilient native planting', 'Evaporative cooling with water basins', 'Night ventilation']
+    };
   }
 
-  if (annualRain < 250 || (annualRain < 500 && annualAvgTemp > 18)) {
-    if (annualAvgTemp >= 18) return { zone: 'BWh', label: 'Hot Desert', strategies: ['Thick thermal mass walls', 'Small north-facing windows', 'Wind towers for passive cooling', 'Night purge ventilation'] };
-    return { zone: 'BSh', label: 'Hot Steppe / Semi-Arid', strategies: ['Evaporative cooling', 'Shade trees planted to west', 'Thermal mass + night ventilation'] };
+  // Tropical (A) - Latitude within tropics (<= 23.5°) or mean annual temp >= 22°C with distinct wet/dry seasons
+  if (absLat <= 24 || annualAvgTemp >= 22) {
+    if (dryMonths >= 4 && maxRain > 120) {
+      return {
+        zone: 'Aw',
+        label: 'Tropical Savanna (Composite / Transitional to BSh)',
+        strategies: [
+          'High-capacity monsoon stormwater detention swales & RWH',
+          'Deep horizontal overhangs for both South and North facades (sub-Tropic of Cancer)',
+          'Dense West / Southwest vegetative shading against peak summer heat gain',
+          'Courtyard stack ventilation & permeable ground paving'
+        ]
+      };
+    }
+    if (annualRain > 1500) {
+      return {
+        zone: 'Am',
+        label: 'Tropical Monsoon',
+        strategies: ['Raised plinth above local flood datum', 'High-volume roof drainage & cisterns', 'Continuous cross-ventilation']
+      };
+    }
+    if (dryMonths < 2) {
+      return {
+        zone: 'Af',
+        label: 'Tropical Wet (Rainforest)',
+        strategies: ['Maximum cross-ventilation', 'Elevated stilt floors for airflow', 'Breathable louvered facades']
+      };
+    }
+    return {
+      zone: 'Aw',
+      label: 'Tropical Savanna / Composite',
+      strategies: ['Monsoon swale retention', 'Courtyard cooling', 'Dual-facade solar shading']
+    };
   }
 
-  return { zone: 'Cwb', label: 'Humid / Subtropical', strategies: ['Passive solar design', 'Thermal mass for summer cooling', 'Cross-ventilation', 'Rainwater harvesting'] };
+  // Subtropical with dry winter (Cwa)
+  if (absLat <= 35 && annualAvgTemp > 16) {
+    return {
+      zone: 'Cwa',
+      label: 'Subtropical Monsoon (Dry Winter / Hot Summer)',
+      strategies: ['Passive solar winter heating', 'Summer sun shading & courtyard ventilation', 'Monsoon rainwater capture']
+    };
+  }
+
+  // Temperate / Oceanic (Cfa)
+  return {
+    zone: 'Cfa',
+    label: 'Humid Subtropical',
+    strategies: ['Passive solar orientation', 'Balanced seasonal insulation', 'Cross-ventilation']
+  };
 }
 
 // ─── Wind Rose Data ────────────────────────────────────────────────────────────
@@ -406,7 +461,7 @@ export async function fetchWindRoseData(latParam: number, lonParam: number): Pro
   }
 }
 
-// ─── Solar Data (Astronomically Clamped 0° to 90°) ───────────────────────────
+// ─── Solar Data (Astronomically Clamped 0° to 90° & Exact Compass Azimuths) ─────
 export function calculateSolarData(latParam: number, lonParam: number): SolarData {
   const lat = Number(latParam);
   const lon = Number(lonParam);
@@ -414,22 +469,42 @@ export function calculateSolarData(latParam: number, lonParam: number): SolarDat
   const isSubTropicalNorth = lat > 0 && lat <= 23.45;
 
   const today = new Date();
-  const times = SunCalc.getTimes(today, lat, lon);
-  const noonPos = SunCalc.getPosition(times.solarNoon, lat, lon);
-
-  const dayLength = Math.max(0, (times.sunset.getTime() - times.sunrise.getTime()) / 3600000);
   
-  // Clamped solar altitude between 0 and 90
-  const rawAltDeg = (noonPos.altitude * 180) / Math.PI;
-  const altitudeDeg = Math.max(0, Math.min(90, rawAltDeg));
+  // Calculate current day's precise astronomical solar declination:
+  const startOfYear = new Date(today.getFullYear(), 0, 0);
+  const dayOfYear = Math.floor((today.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
+  // Cooper (1969) astronomical formula: delta = 23.45 * sin(360/365 * (284 + n))
+  const declinationDeg = 23.45 * Math.sin(((2 * Math.PI) / 365) * (284 + dayOfYear));
+  
+  // Today's Noon Solar Altitude: 90 - |lat - declination| (clamped 0 to 90)
+  const todayNoonAlt = Math.max(0, Math.min(90, +(90 - Math.abs(lat - declinationDeg)).toFixed(1)));
 
-  // Precise astronomical solstices & equinox noon altitude: 90 - |lat - declination|
-  // Summer Solstice: declination = +23.44°
-  // Equinox: declination = 0°
-  // Winter Solstice: declination = -23.44°
+  // Solstices & Equinox Noon Altitudes:
+  // Summer Solstice (June 21): declination = +23.44°
+  // Equinox (March 21 / Sept 23): declination = 0°
+  // Winter Solstice (Dec 21): declination = -23.44°
   const summerNoonAlt = Math.max(0, Math.min(90, +(90 - Math.abs(lat - 23.44)).toFixed(1)));
   const equinoxNoonAlt = Math.max(0, Math.min(90, +(90 - Math.abs(lat - 0)).toFixed(1)));
   const winterNoonAlt = Math.max(0, Math.min(90, +(90 - Math.abs(lat - (-23.44))).toFixed(1)));
+
+  // Astronomical Sunrise & Sunset Azimuths (degrees clockwise from True North: N=0°, E=90°, S=180°, W=270°)
+  // cos(azimuth_rise) = sin(declination) / cos(latitude)
+  const latRad = (lat * Math.PI) / 180;
+  const calcAzimuths = (decDeg: number) => {
+    const decRad = (decDeg * Math.PI) / 180;
+    const cosVal = Math.sin(decRad) / Math.cos(latRad);
+    const clampedCos = Math.max(-1, Math.min(1, cosVal));
+    const riseAz = +(Math.acos(clampedCos) * (180 / Math.PI)).toFixed(1);
+    const setAz = +((360 - riseAz) % 360).toFixed(1);
+    return { riseAz, setAz };
+  };
+
+  const summerAz = calcAzimuths(23.44);
+  const winterAz = calcAzimuths(-23.44);
+  const equinoxAz = calcAzimuths(0);
+
+  const times = SunCalc.getTimes(today, lat, lon);
+  const dayLength = Math.max(0, (times.sunset.getTime() - times.sunrise.getTime()) / 3600000);
 
   const sunPathPoints: { azimuth: number; altitude: number; time: string }[] = [];
   for (let h = 5; h <= 20; h++) {
@@ -455,17 +530,6 @@ export function calculateSolarData(latParam: number, lonParam: number): SolarDat
     return Math.max(0, Math.min(16, +(length * 0.65).toFixed(1)));
   });
 
-  const summerTimes = SunCalc.getTimes(new Date(today.getFullYear(), 5, 21), lat, lon);
-  const winterTimes = SunCalc.getTimes(new Date(today.getFullYear(), 11, 21), lat, lon);
-  const equinoxTimes = SunCalc.getTimes(new Date(today.getFullYear(), 2, 21), lat, lon);
-
-  const summerRisePos = SunCalc.getPosition(summerTimes.sunrise, lat, lon);
-  const summerSetPos = SunCalc.getPosition(summerTimes.sunset, lat, lon);
-  const winterRisePos = SunCalc.getPosition(winterTimes.sunrise, lat, lon);
-  const winterSetPos = SunCalc.getPosition(winterTimes.sunset, lat, lon);
-  const equinoxRisePos = SunCalc.getPosition(equinoxTimes.sunrise, lat, lon);
-  const equinoxSetPos = SunCalc.getPosition(equinoxTimes.sunset, lat, lon);
-
   let optimalOrientation = isNorthern ? 'South-facing (180°)' : 'North-facing (0°)';
   if (isSubTropicalNorth) {
     optimalOrientation = 'Dual North-South Balance (Long Axis East-West)';
@@ -476,7 +540,7 @@ export function calculateSolarData(latParam: number, lonParam: number): SolarDat
     sunset: times.sunset,
     solar_noon: times.solarNoon,
     day_length_hours: +dayLength.toFixed(1),
-    sun_altitude_noon: +altitudeDeg.toFixed(1),
+    sun_altitude_noon: todayNoonAlt,
     summer_solstice_noon_alt: summerNoonAlt,
     equinox_noon_alt: equinoxNoonAlt,
     winter_solstice_noon_alt: winterNoonAlt,
@@ -485,18 +549,18 @@ export function calculateSolarData(latParam: number, lonParam: number): SolarDat
     sun_path_points: sunPathPoints,
     monthly_sun_hours: monthlySunHours,
     solstice_summer: {
-      rise_az: +((summerRisePos.azimuth * 180 / Math.PI + 180) % 360).toFixed(1),
-      set_az: +((summerSetPos.azimuth * 180 / Math.PI + 180) % 360).toFixed(1),
+      rise_az: summerAz.riseAz,
+      set_az: summerAz.setAz,
       noon_alt: summerNoonAlt,
     },
     solstice_winter: {
-      rise_az: +((winterRisePos.azimuth * 180 / Math.PI + 180) % 360).toFixed(1),
-      set_az: +((winterSetPos.azimuth * 180 / Math.PI + 180) % 360).toFixed(1),
+      rise_az: winterAz.riseAz,
+      set_az: winterAz.setAz,
       noon_alt: winterNoonAlt,
     },
     equinox: {
-      rise_az: +((equinoxRisePos.azimuth * 180 / Math.PI + 180) % 360).toFixed(1),
-      set_az: +((equinoxSetPos.azimuth * 180 / Math.PI + 180) % 360).toFixed(1),
+      rise_az: equinoxAz.riseAz,
+      set_az: equinoxAz.setAz,
       noon_alt: equinoxNoonAlt,
     }
   };
