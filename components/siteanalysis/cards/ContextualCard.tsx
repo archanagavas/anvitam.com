@@ -96,13 +96,13 @@ export const ContextualCard: React.FC<Props> = ({ data }) => {
         <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">
           Nearby Amenities, Markets &amp; Facilities
         </h4>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
           {data.amenities.map((amenity, idx) => (
-            <div key={idx} className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-100 transition flex items-start gap-2.5">
-              <span className="text-lg">{amenity.icon}</span>
-              <div className="min-w-0">
-                <p className="text-xs font-semibold text-gray-900 truncate">{amenity.name}</p>
-                <p className="text-[10px] text-gray-500 font-mono">{amenity.distance_m}m away</p>
+            <div key={idx} className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-100 transition flex items-start gap-2.5 min-w-0">
+              <span className="text-lg shrink-0 mt-0.5">{amenity.icon}</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-gray-900 leading-snug break-words">{amenity.name}</p>
+                <p className="text-[10px] text-gray-500 font-mono mt-0.5">{amenity.distance_m}m away</p>
               </div>
             </div>
           ))}

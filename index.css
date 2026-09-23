@@ -1098,6 +1098,144 @@ article tr:hover {
   background-color: #f8fafc;
 }
 
+/* ═══ Architectural Analysis Card Unified Design System ═══ */
+.analysis-card {
+  background: #ffffff;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(229, 231, 235, 0.9);
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  color: #111827;
+}
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.card-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0.5rem;
+  border-radius: 0.875rem;
+  background: #000000;
+  color: #CCFF00;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.card-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.card-subtitle {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #6b7280;
+  line-height: 1.4;
+  margin-top: 0.125rem;
+}
+
+.strategies-section {
+  background: #f9fafb;
+  border: 1px solid #f3f4f6;
+  border-radius: 1rem;
+  padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.strategies-title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #4b5563;
+  margin: 0;
+}
+
+.strategies-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.strategy-item {
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: #374151;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.strategy-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 9999px;
+  background-color: #CCFF00;
+  border: 1px solid #000000;
+  margin-top: 0.375rem;
+  flex-shrink: 0;
+}
+
+.recommendation-box {
+  background: #f9fafb;
+  border: 1px solid #f3f4f6;
+  border-radius: 1rem;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.rec-icon {
+  font-size: 1.125rem;
+  line-height: 1;
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+}
+
+.rec-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.rec-text {
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: #4b5563;
+  margin: 0.125rem 0 0 0;
+}
+
+.source-badge {
+  font-size: 0.6875rem;
+  color: #9ca3af;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #e5e7eb;
+}
+
 /* ═══ Professional Architectural Dossier Print & PDF Styling ═══ */
 @media print {
   @page {
@@ -1112,6 +1250,28 @@ article tr:hover {
     print-color-adjust: exact !important;
     position: relative !important;
   }
+  
+  /* Universal Repeating Watermark on every printed page */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-12deg);
+    width: 380px;
+    height: 380px;
+    background-image: url('/logo.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0.075 !important;
+    pointer-events: none;
+    z-index: 0;
+    display: block !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   .sa-topbar,
   header,
   footer,
@@ -1129,6 +1289,7 @@ article tr:hover {
     padding: 0 !important;
     margin: 0 !important;
     position: relative !important;
+    z-index: 1 !important;
   }
   .analysis-card {
     break-inside: avoid !important;
@@ -1137,21 +1298,7 @@ article tr:hover {
     border: 1px solid #d1d5db !important;
     background: #ffffff !important;
     position: relative !important;
-  }
-  /* Elegant studio watermark for printed dossier */
-  .print-watermark {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-12deg);
-    width: 320px;
-    height: 320px;
-    opacity: 0.035 !important;
-    pointer-events: none;
-    z-index: 0;
-    display: block !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+    z-index: 1 !important;
   }
 }
 

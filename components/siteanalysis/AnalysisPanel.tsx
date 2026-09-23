@@ -256,25 +256,25 @@ ${r.swot?.threats?.map(t => `- **${t.title}** (${t.tag}): ${t.desc}`).join('\n')
             <img
               src="/logo.png"
               alt="Anvitam Studio Logo"
-              className="w-11 h-11 object-contain rounded-xl p-0.5 bg-white border border-gray-200 shadow-2xs"
+              className="w-11 h-11 object-contain rounded-xl p-0.5 bg-white border border-gray-200 shadow-2xs shrink-0"
             />
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-black text-sm tracking-tight text-black">ANVITAM STUDIO</span>
+                <span className="font-bold text-sm tracking-tight text-gray-900">ANVITAM STUDIO</span>
                 <span className="text-[10px] bg-black text-[#CCFF00] font-bold px-2 py-0.5 rounded uppercase">
                   Bioclimatic &amp; Ecological Architecture
                 </span>
               </div>
-              <p className="text-[10px] text-gray-600 mt-0.5">
+              <p className="text-[11px] text-gray-600 mt-0.5 font-normal leading-relaxed">
                 Regenerative Masterplanning · Microclimate Modeling · Landscape Intelligence · anvitam.com
               </p>
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-xs font-black text-black">Ar. Archana Gavas</p>
-            <p className="text-[10px] text-gray-600 font-medium">Founder &amp; Principal Architect</p>
-            <p className="text-[10px] text-gray-500 font-mono">archana@anvitam.com</p>
-            <p className="text-[9px] text-gray-400 mt-0.5">{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          <div className="text-right flex flex-col items-end shrink-0 pl-4">
+            <p className="text-sm font-bold text-gray-900 leading-tight">Ar. Archana Gavas</p>
+            <p className="text-[11px] text-gray-600 font-medium leading-tight mt-0.5">Founder &amp; Principal Architect</p>
+            <p className="text-[11px] text-gray-700 font-normal leading-tight mt-0.5">ar.archanagavas@gmail.com</p>
+            <p className="text-[10px] text-gray-400 font-normal leading-tight mt-1">{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
           </div>
         </div>
 
@@ -431,9 +431,9 @@ ${r.swot?.threats?.map(t => `- **${t.title}** (${t.tag}): ${t.desc}`).join('\n')
             <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
               This dossier provides preliminary AI-assisted bioclimatic &amp; spatial intelligence. For construction-ready masterplanning, finished floor level benchmarks, soil testing, and drainage grading, connect directly with Ar. Archana Gavas.
             </p>
-            <div className="pt-2 flex flex-wrap items-center gap-4 text-xs text-gray-400 font-mono">
-              <span>✉️ archana@anvitam.com</span>
-              <span>🌐 anvitam.com</span>
+            <div className="pt-2 flex flex-wrap items-center gap-4 text-xs text-gray-300">
+              <span>✉️ ar.archanagavas@gmail.com</span>
+              <span>🌐 www.anvitam.com</span>
               <span>📍 Halol / Vadodara / Pan-India Masterplanning</span>
             </div>
           </div>

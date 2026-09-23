@@ -980,22 +980,29 @@ export function generateSwotAnalysis(
   const lat = Number(latParam);
   const isNorthern = lat >= 0;
   const dominantWind = wind?.dominant_direction || 'SW';
+  const isLandscape = typology === 'landscape';
 
   const strengths: SwotItem[] = [
     {
-      title: 'Solar Orientation Potential',
-      desc: `Solar altitude today is ${solar.sun_altitude_noon}° (Summer Solstice: ${solar.summer_solstice_noon_alt}°, Winter Solstice: ${solar.winter_solstice_noon_alt}°). Optimal ${solar.optimal_orientation} allows clean passive daylighting with controlled overhangs.`,
+      title: isLandscape ? 'Photosynthetic & Solar Radiation Potential' : 'Solar Orientation Potential',
+      desc: isLandscape
+        ? `Solar altitude today is ${solar.sun_altitude_noon}° (Summer: ${solar.summer_solstice_noon_alt}°, Winter: ${solar.winter_solstice_noon_alt}°). High daily PAR supports robust native botanical growth and solar pergolas.`
+        : `Solar altitude today is ${solar.sun_altitude_noon}° (Summer Solstice: ${solar.summer_solstice_noon_alt}°, Winter Solstice: ${solar.winter_solstice_noon_alt}°). Optimal ${solar.optimal_orientation} allows clean passive daylighting with controlled overhangs.`,
       tag: 'Solar'
     },
     {
-      title: 'Natural Wind Channeling',
-      desc: `Strong dominant airflow from ${dominantWind} at ~${wind.dominant_speed} km/h provides natural cooling potential for cross-ventilation.`,
+      title: isLandscape ? 'Natural Wind Permeability & Microclimate Airflow' : 'Natural Wind Channeling',
+      desc: isLandscape
+        ? `Dominant ${dominantWind} airflow at ~${wind.dominant_speed} km/h provides continuous natural ventilation across open park zones and supports ecological pollinator corridors.`
+        : `Strong dominant airflow from ${dominantWind} at ~${wind.dominant_speed} km/h provides natural cooling potential for cross-ventilation.`,
       tag: 'Ventilation'
     },
     {
-      title: 'Soil Bearing Capacity (Provisional Model)',
-      desc: `${soil.soil_texture} (${soil.clay_pct}% clay, ${soil.sand_pct}% sand) — regional SoilGrids estimate. Bulk density ~${soil.bulk_density} kg/m³. Geotechnical bore test recommended before foundation casting.`,
-      tag: 'Geotechnical'
+      title: isLandscape ? 'Soil Texture & Native Planting Readiness' : 'Soil Bearing Capacity (Provisional Model)',
+      desc: isLandscape
+        ? `Regional ${soil.soil_texture} (${soil.clay_pct}% clay, ${soil.sand_pct}% sand) with ${soil.organic_carbon} g/kg organic carbon supports deep-rooted native tree guilds and permeable bioswales.`
+        : `${soil.soil_texture} (${soil.clay_pct}% clay, ${soil.sand_pct}% sand) — regional SoilGrids estimate. Bulk density ~${soil.bulk_density} kg/m³. Geotechnical bore test recommended before foundation casting.`,
+      tag: isLandscape ? 'Ecology' : 'Geotechnical'
     },
     {
       title: `${typology.toUpperCase()} Typology Fit`,
@@ -1004,7 +1011,7 @@ export function generateSwotAnalysis(
         : typology === 'commercial'
         ? 'Excellent daylight penetration along primary facade reduces operational artificial lighting by up to 35%.'
         : typology === 'landscape'
-        ? `Regional soil organic carbon (${soil.organic_carbon} g/kg), pH ${soil.ph}, and agro-zone (${climate.agro_climatic_zone}) favor native drought-resilient permaculture.`
+        ? `Regional agro-zone (${climate.agro_climatic_zone}), pH ${soil.ph}, and soil profile enable water-sensitive ecological masterplanning, retention ponds, and native agroforestry.`
         : typology === 'institutional'
         ? 'Ample horizontal daylight spread facilitates spacious campus wings and connected pedestrian colonnades.'
         : 'Deep natural daylight factor (DF > 3.0%) achievable across main habitable living zones.',
@@ -1014,56 +1021,66 @@ export function generateSwotAnalysis(
 
   const weaknesses: SwotItem[] = [
     {
-      title: 'Western Afternoon Solar Heat Gain',
-      desc: 'Low-angle afternoon sun on West (270°) causes severe radiant thermal spikes between 14:00 and 17:30.',
+      title: isLandscape ? 'Western Open Ground Thermal Radiation' : 'Western Afternoon Solar Heat Gain',
+      desc: isLandscape
+        ? 'Unshaded western planting zones and public pathways face intense radiant heat spikes (14:00 - 17:30). Requires dense multi-tier shade tree canopy buffers.'
+        : 'Low-angle afternoon sun on West (270°) causes severe radiant thermal spikes between 14:00 and 17:30.',
       tag: 'Thermal Load'
     },
     {
-      title: 'Monsoon Runoff & Topsoil Protection',
-      desc: `Peak monthly precipitation reaches ${Math.max(...(climate.monthly_rain || [180]))}mm. ${soil.clay_pct > 30 ? 'Slow clay percolation requires dedicated perimeter bioswales.' : 'Sandy loam topsoil requires vegetative stabilization to prevent erosion.'}`,
+      title: isLandscape ? 'Monsoon Surface Runoff & Sheet Erosion' : 'Monsoon Runoff & Topsoil Protection',
+      desc: `Peak monthly precipitation reaches ${Math.max(...(climate.monthly_rain || [180]))}mm. ${soil.clay_pct > 30 ? 'Low soil infiltration requires dedicated perimeter bioswales & overflow routes.' : 'Sandy loam topsoil requires vegetative stabilization and bio-swale terracing to prevent erosion.'}`,
       tag: 'Hydrology'
     },
     {
-      title: 'Urban Fabric & Acoustic Buffer',
-      desc: `Local urban fabric density is ${urban.building_density_pct}%. Proximity to adjacent structures requires strategic fenestration placement for visual privacy and dust filtration.`,
+      title: isLandscape ? 'Perimeter Dust & Acoustic Buffer Need' : 'Urban Fabric & Acoustic Buffer',
+      desc: isLandscape
+        ? `Surrounding road traffic and ${urban.building_density_pct}% urban fabric density require a 10–15m dense multi-layered evergreen green buffer on exposed plot edges.`
+        : `Local urban fabric density is ${urban.building_density_pct}%. Proximity to adjacent structures requires strategic fenestration placement for visual privacy and dust filtration.`,
       tag: 'Urban Context'
     }
   ];
 
   const opportunities: SwotItem[] = [
     {
-      title: 'Rooftop Rainwater Harvesting',
-      desc: `Annual precipitation of ~${climate.annual_rain_total}mm enables capture of up to ${Math.round(climate.annual_rain_total * 0.85)} L/m² of roof footprint annually. Design storm retention: ~42.5 L/m² per 50mm event.`,
+      title: isLandscape ? 'Landscape Bioswales & Retention Wetlands' : 'Rooftop Rainwater Harvesting',
+      desc: isLandscape
+        ? `Annual precipitation of ~${climate.annual_rain_total}mm enables decentralized stormwater bioswales, rain gardens, and retention wetlands (~42.5 L/m² harvest volume per 50mm storm).`
+        : `Annual precipitation of ~${climate.annual_rain_total}mm enables capture of up to ${Math.round(climate.annual_rain_total * 0.85)} L/m² of roof footprint annually. Design storm retention: ~42.5 L/m² per 50mm event.`,
       tag: 'Sustainability'
     },
     {
-      title: 'Courtyard & Evaporative Stack Cooling',
-      desc: 'Integrating a central courtyard or biophilic water pool triggers natural convective stack cooling, significantly lowering operational cooling demand.',
+      title: isLandscape ? 'Stratified Shade Canopies & Evaporative Cooling' : 'Courtyard & Evaporative Stack Cooling',
+      desc: isLandscape
+        ? 'Integrating multi-tier shade groves (canopy, understory, groundcover) with windward bio-retention ponds creates natural evaporative microclimate cooling, lowering ambient summer heat by 3–5°C.'
+        : 'Integrating a central courtyard or biophilic water pool triggers natural convective stack cooling, significantly lowering operational cooling demand.',
       tag: 'Passive Design'
     },
     {
-      title: 'Rooftop Solar PV Potential',
-      desc: `${solar.day_length_hours} hours of daylight offers strong rooftop photovoltaic yield with estimated 4.8 - 5.6 kWh/m²/day global solar irradiance.`,
+      title: isLandscape ? 'Solar Shaded Pergolas & Pathway Lighting' : 'Rooftop Solar PV Potential',
+      desc: `${solar.day_length_hours} hours of daylight supports solar pergolas, pathway lighting, and solar drip irrigation pumps (GHI: 4.8 - 5.6 kWh/m²/day).`,
       tag: 'Clean Energy'
     },
     {
-      title: 'Native Biophilic Green Buffer',
-      desc: 'Planting indigenous windbreak species (Neem, Ficus, Bamboo) along the South-West boundary buffers windstorms while filtering road particulates.',
+      title: isLandscape ? 'Native Regenerative Permaculture & Agroforestry' : 'Native Biophilic Green Buffer',
+      desc: isLandscape
+        ? `Soil pH (${soil.ph}) and agro-zone (${climate.agro_climatic_zone}) favor native drought-hardy guilds (Neem, Peepal, Banyan, Mahua, indigenous grasses) that regenerate soil biology.`
+        : 'Planting indigenous windbreak species (Neem, Ficus, Bamboo) along the South-West boundary buffers windstorms while filtering road particulates.',
       tag: 'Ecology'
     }
   ];
 
   const threats: SwotItem[] = [
     {
-      title: 'Extreme Summer Temperature Peaks',
-      desc: `Summer temperatures touch ${Math.max(...(climate.monthly_temp_max || [38]))}°C (with regional historical peaks up to 43–45°C), requiring high-albedo cool roofs (SRI > 78) and deep shade canopies.`,
+      title: isLandscape ? 'Extreme Summer Heat & High Evapotranspiration' : 'Extreme Summer Temperature Peaks',
+      desc: `Summer temperatures reach ${Math.max(...(climate.monthly_temp_max || [38]))}°C with peak ET₀ of ${climate.et_rate_summer_mm_day || 6.4} mm/day, requiring hydro-zoned drip irrigation and deep organic mulching.`,
       tag: 'Climate'
     },
     {
-      title: 'Seasonal Soil Moisture Variation',
+      title: isLandscape ? 'Seasonal Soil Moisture Swelling & Desiccation' : 'Seasonal Soil Moisture Variation',
       desc: soil.clay_pct > 35
-        ? 'High clay content presents volumetric shrink-swell cycles across dry/monsoon seasons. Raft or under-reamed pile foundation advised.'
-        : 'Seasonal dry/monsoon transitions require proper plinth apron and damp-proof membrane continuity.',
+        ? 'High clay content presents volumetric shrink-swell cycles across dry/monsoon seasons. Permeable gravel sub-bases advised for paved plazas.'
+        : 'Seasonal dry/monsoon transitions require organic soil conditioning and soil moisture retention mulch layers.',
       tag: 'Structural'
     },
     {
@@ -1078,7 +1095,9 @@ export function generateSwotAnalysis(
     weaknesses,
     opportunities,
     threats,
-    summary: `Comprehensive SWOT synthesis for ${typology} development at ${lat.toFixed(4)}° latitude. Maximizing south-north passive ventilation, providing dual summer/winter shading, and implementing bioswale flood protection will achieve optimal ecological resilience.`
+    summary: isLandscape
+      ? `Landscape & ecological SWOT synthesis for ${typology} masterplanning at ${lat.toFixed(4)}° latitude. Integrating water-sensitive retention bioswales, stratified native shade buffers, and drought-resilient planting maximizes regenerative microclimate performance.`
+      : `Comprehensive SWOT synthesis for ${typology} development at ${lat.toFixed(4)}° latitude. Maximizing south-north passive ventilation, providing dual summer/winter shading, and implementing bioswale flood protection will achieve optimal ecological resilience.`
   };
 }
 
