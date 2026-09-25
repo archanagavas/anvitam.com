@@ -223,9 +223,10 @@
     "dofollow": true,
     "type": "Community",
     "pricing": "Free",
-    "status": "queued",
-    "submittedAt": null,
-    "notes": "The premier platform for discovering and launching new products daily."
+    "status": "submitted",
+    "submittedAt": "2026-09-25T10:40:29.163Z",
+    "notes": "The premier platform for discovering and launching new products daily.",
+    "generatedPitch": "Anvitam is a boutique sustainable architecture studio and ecological engineering platform founded by Ar. Archana Gavas. Featuring 16+ automated zero-cost calculators for solar cooling, micro-climate analysis, rainwater harvesting, food forests, and passive farmstay retreats."
   },
   {
     "name": "EnGadget",
@@ -235,9 +236,10 @@
     "dofollow": false,
     "type": "Startup Directory",
     "pricing": "Free",
-    "status": "queued",
-    "submittedAt": null,
-    "notes": "Technology news and reviews site covering consumer electronics, gadgets, gaming, and emerging tech."
+    "status": "submitted",
+    "submittedAt": "2026-09-25T10:40:29.980Z",
+    "notes": "Technology news and reviews site covering consumer electronics, gadgets, gaming, and emerging tech.",
+    "generatedPitch": "Anvitam is a boutique sustainable architecture studio and ecological engineering platform founded by Ar. Archana Gavas. Featuring 16+ automated zero-cost calculators for solar cooling, micro-climate analysis, rainwater harvesting, food forests, and passive farmstay retreats."
   },
   {
     "name": "Fast Company",
