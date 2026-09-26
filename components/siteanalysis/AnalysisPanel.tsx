@@ -305,53 +305,89 @@ ${r.swot?.threats?.map(t => `- **${t.title}** (${t.tag}): ${t.desc}`).join('\n')
       </div>
 
       {/* Location Header Banner with 1-Click Client Export & Share (Web UI - Hidden in Print to avoid duplicate) */}
-      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-6 text-gray-900 print:hidden">
-        <div>
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-black bg-[#CCFF00] px-3 py-1 rounded-full">
-              Site Intelligence Active
-            </span>
-            <span className="text-[10px] font-bold text-gray-700 bg-gray-100 px-3 py-1 rounded-full uppercase tracking-wider">
-              Typology: {category}
-            </span>
-            <span className="text-[10px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
-              14 Diagnostic Engines
-            </span>
+      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200 shadow-sm flex flex-col gap-6 text-gray-900 print:hidden transition-all duration-300 hover:shadow-md">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-black bg-[#CCFF00] px-3 py-1 rounded-full shadow-2xs">
+                Site Intelligence Active
+              </span>
+              <span className="text-[10px] font-bold text-gray-700 bg-gray-100 border border-gray-200 px-3 py-1 rounded-full uppercase tracking-wider">
+                Typology: {category}
+              </span>
+              <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                14 Live Diagnostic Engines
+              </span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">{r.place_name}</h2>
+            <p className="text-xs text-gray-500 mt-1 font-mono">
+              {r.location.lat.toFixed(4)}° N, {r.location.lon.toFixed(4)}° E · Elevation: {r.elevation_m}m AMSL (SRTM Satellite DEM)
+            </p>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">{r.place_name}</h2>
-          <p className="text-xs text-gray-500 mt-1 font-mono">
-            {r.location.lat.toFixed(4)}° N, {r.location.lon.toFixed(4)}° E · Elevation: {r.elevation_m}m AMSL
-          </p>
+
+          {/* 1-Click Client Export, PRD Download & Share Action Cluster */}
+          <div className="flex flex-wrap items-center gap-2.5 no-print">
+            <button
+              onClick={handlePrintReport}
+              className="bg-black hover:bg-gray-800 text-[#CCFF00] font-bold text-xs px-4 py-2.5 rounded-2xl transition-all duration-200 hover:scale-102 active:scale-98 flex items-center gap-2 cursor-pointer shadow-sm shrink-0 border border-black"
+              title="Export high-resolution printable PDF report for client presentation"
+            >
+              <Printer size={15} />
+              <span>Download Client PDF Dossier</span>
+            </button>
+
+            <button
+              onClick={handleExportPRDDossier}
+              className="bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold text-xs px-4 py-2.5 rounded-2xl border border-gray-200 transition-all duration-200 hover:scale-102 active:scale-98 flex items-center gap-2 cursor-pointer shadow-2xs shrink-0"
+              title="Download architectural site PRD specification markdown file"
+            >
+              {prdExported ? <Check size={15} className="text-emerald-600" /> : <FileText size={15} />}
+              <span>{prdExported ? 'PRD Downloaded!' : 'Export PRD Dossier'}</span>
+            </button>
+
+            <button
+              className="bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold text-xs px-4 py-2.5 rounded-2xl border border-gray-200 transition-all duration-200 hover:scale-102 active:scale-98 flex items-center gap-2 cursor-pointer shadow-2xs shrink-0"
+              onClick={onShare}
+              title="Copy shareable report link to clipboard"
+            >
+              <Share2 size={15} />
+              <span>Share Dossier</span>
+            </button>
+          </div>
         </div>
 
-        {/* 1-Click Client Export, PRD Download & Share Action Cluster */}
-        <div className="flex flex-wrap items-center gap-2.5 no-print">
-          <button
-            onClick={handlePrintReport}
-            className="bg-black hover:bg-gray-800 text-[#CCFF00] font-bold text-xs px-4 py-2.5 rounded-2xl transition flex items-center gap-2 cursor-pointer shadow-xs shrink-0"
-            title="Export high-resolution printable PDF report for client"
-          >
-            <Printer size={15} />
-            <span>Download Client PDF Dossier</span>
-          </button>
-
-          <button
-            onClick={handleExportPRDDossier}
-            className="bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold text-xs px-4 py-2.5 rounded-2xl border border-gray-200 transition flex items-center gap-2 cursor-pointer shadow-xs shrink-0"
-            title="Download architectural site PRD specification markdown file"
-          >
-            {prdExported ? <Check size={15} className="text-emerald-600" /> : <FileText size={15} />}
-            <span>{prdExported ? 'PRD Downloaded!' : 'Export PRD Dossier'}</span>
-          </button>
-
-          <button
-            className="bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold text-xs px-4 py-2.5 rounded-2xl border border-gray-200 transition flex items-center gap-2 cursor-pointer shadow-xs shrink-0"
-            onClick={onShare}
-            title="Copy shareable link to clipboard"
-          >
-            <Share2 size={15} />
-            <span>Share Link</span>
-          </button>
+        {/* 6-Metric Executive KPI Strip (Immediate high-level architectural insight) */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 pt-4 border-t border-gray-100">
+          <div className="p-3 bg-gray-50 rounded-2xl border border-gray-100/80">
+            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block">Köppen Zone</span>
+            <span className="text-sm font-black text-gray-900 block truncate">{r.climate?.koppen_zone}</span>
+            <span className="text-[10px] text-gray-500 font-medium truncate block">{r.climate?.koppen_label.split(' ')[0]}</span>
+          </div>
+          <div className="p-3 bg-gray-50 rounded-2xl border border-gray-100/80">
+            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block">Today Noon Alt</span>
+            <span className="text-sm font-black text-amber-600 block">{r.solar.sun_altitude_noon}°</span>
+            <span className="text-[10px] text-gray-500 font-medium truncate block">Summer {r.solar.summer_solstice_noon_alt}°</span>
+          </div>
+          <div className="p-3 bg-gray-50 rounded-2xl border border-gray-100/80">
+            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block">Dominant Wind</span>
+            <span className="text-sm font-black text-gray-900 block">{r.wind_rose.dominant_direction}</span>
+            <span className="text-[10px] text-gray-500 font-medium truncate block">{r.wind_rose.dominant_speed} km/h avg</span>
+          </div>
+          <div className="p-3 bg-gray-50 rounded-2xl border border-gray-100/80">
+            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block">Plinth Rec.</span>
+            <span className="text-sm font-black text-blue-600 block">+{r.plinth_hydrology.recommended_plinth_mm}mm</span>
+            <span className="text-[10px] text-gray-500 font-medium truncate block">{r.plinth_hydrology.waterlogging_risk} Flood Risk</span>
+          </div>
+          <div className="p-3 bg-gray-50 rounded-2xl border border-gray-100/80">
+            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block">Soil Texture</span>
+            <span className="text-sm font-black text-gray-900 block truncate">{r.soil.soil_texture}</span>
+            <span className="text-[10px] text-gray-500 font-medium truncate block">pH {r.soil.ph} · {r.soil.clay_pct}% Clay</span>
+          </div>
+          <div className="p-3 bg-gray-50 rounded-2xl border border-gray-100/80">
+            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block">Green Canopy</span>
+            <span className="text-sm font-black text-emerald-600 block">{r.contextual.green_cover_pct}%</span>
+            <span className="text-[10px] text-gray-500 font-medium truncate block">{r.contextual.tree_canopy_density}</span>
+          </div>
         </div>
       </div>
 
