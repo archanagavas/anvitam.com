@@ -16,7 +16,7 @@ import {
   Calendar,
   Building2
 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useContent } from '../context/ContentContext';
 import { cn } from '../lib/utils';
 
@@ -30,6 +30,8 @@ interface Message {
 }
 
 export function AIChatWidget() {
+  const location = useLocation();
+  const isSiteAnalysis = location.pathname.startsWith('/site-analysis');
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([
@@ -368,7 +370,7 @@ Timestamp: ${new Date().toLocaleString()}`;
   };
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 select-none font-sans">
+    <div className={`fixed bottom-5 right-5 z-50 select-none font-sans ${isSiteAnalysis ? 'hidden md:block' : ''}`}>
       {/* Floating Action Button */}
       <AnimatePresence>
         {!isOpen && (
