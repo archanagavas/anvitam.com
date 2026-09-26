@@ -110,22 +110,39 @@ export function CoverflowCarousel({
   }, [count, depth, fade, falloff, gap, loop, rotate]);
 
   const settle = React.useCallback(
-    (target: number) => {
+    (target: number, duration: number = 440) => {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       targetRef.current = target;
       setSelected(indexAt(target));
 
-      const step = () => {
-        const remaining = target - posRef.current;
-        if (Math.abs(remaining) < 0.001) {
+      const startPos = posRef.current;
+      const change = target - startPos;
+      if (Math.abs(change) < 0.0001) {
+        posRef.current = target;
+        paint();
+        rafRef.current = null;
+        return;
+      }
+
+      const startTime = performance.now();
+      // Silky smooth quartic easing curve: swift initial response, ultra-smooth gentle deceleration
+      const easeOutQuart = (x: number): number => 1 - Math.pow(1 - x, 4);
+
+      const step = (now: number) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(1, elapsed / duration);
+        const eased = easeOutQuart(progress);
+
+        posRef.current = startPos + change * eased;
+        paint();
+
+        if (progress < 1) {
+          rafRef.current = requestAnimationFrame(step);
+        } else {
           posRef.current = target;
           paint();
           rafRef.current = null;
-          return;
         }
-        posRef.current += remaining * 0.34;
-        paint();
-        rafRef.current = requestAnimationFrame(step);
       };
       rafRef.current = requestAnimationFrame(step);
     },
@@ -303,7 +320,7 @@ export function CoverflowCarousel({
                 aria-label={`${index + 1} of ${count}`}
                 onClick={(e) => handleCardClick(slide, index, e)}
                 className={cn(
-                  "absolute left-1/2 top-0 aspect-square overflow-hidden rounded-2xl bg-muted shadow-2xl will-change-transform cursor-pointer group transition-all duration-300 hover:shadow-2xl border border-white/20 hover:border-[#CCFF00] hover:scale-[1.02]",
+                  "absolute left-1/2 top-0 aspect-square overflow-hidden rounded-2xl bg-muted shadow-2xl will-change-transform cursor-pointer group transition-[border-color,box-shadow] duration-300 hover:shadow-2xl border border-white/20 hover:border-[#CCFF00]",
                   cardClassName,
                 )}
                 style={{ width: "var(--cf-card)" }}
@@ -337,7 +354,7 @@ export function CoverflowCarousel({
               type="button"
               aria-label="Previous slide"
               onClick={() => nudge(-1)}
-              className="absolute left-3 top-1/2 z-[200] -translate-y-1/2 rounded-full bg-white/90 p-2.5 text-black shadow-lg backdrop-blur transition hover:bg-white hover:scale-110 cursor-pointer"
+              className="absolute left-2 sm:left-4 top-1/2 z-[200] -translate-y-1/2 rounded-full bg-white/95 p-3 text-black shadow-xl backdrop-blur transition-all duration-200 hover:bg-black hover:text-[#CCFF00] hover:scale-110 active:scale-90 cursor-pointer border border-gray-200"
             >
               <ChevronLeft className="size-5" />
             </button>
@@ -345,7 +362,7 @@ export function CoverflowCarousel({
               type="button"
               aria-label="Next slide"
               onClick={() => nudge(1)}
-              className="absolute right-3 top-1/2 z-[200] -translate-y-1/2 rounded-full bg-white/90 p-2.5 text-black shadow-lg backdrop-blur transition hover:bg-white hover:scale-110 cursor-pointer"
+              className="absolute right-2 sm:right-4 top-1/2 z-[200] -translate-y-1/2 rounded-full bg-white/95 p-3 text-black shadow-xl backdrop-blur transition-all duration-200 hover:bg-black hover:text-[#CCFF00] hover:scale-110 active:scale-90 cursor-pointer border border-gray-200"
             >
               <ChevronRight className="size-5" />
             </button>

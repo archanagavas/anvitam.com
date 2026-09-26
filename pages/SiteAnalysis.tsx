@@ -18,10 +18,12 @@ import { ToolsSettingsModal } from '../components/tools/ToolsSettingsModal';
 import { getToolUser, getOrCreateDefaultToolUser, logoutToolUser, deductUserCredit, isUserAdmin, type ToolUser } from '../utils/userAuth';
 import { TOOLS_SUITE } from '../constants/toolsData';
 import StickyConsultationBar from '../components/StickyConsultationBar';
+import * as SunCalc from 'suncalc';
 import {
   MapPin, Layers, Zap, Box, Search, Check, Share2, Globe,
   Menu, ArrowLeft, Home, Building, Trees, Wand2, Trash2, Sliders, LogOut, Settings,
-  Maximize2, Minimize2, Navigation, ChevronDown, ChevronUp, X, Loader2
+  Maximize2, Minimize2, Navigation, ChevronDown, ChevronUp, X, Loader2,
+  Sun, Play, Pause, RefreshCw, Clock, Calendar
 } from 'lucide-react';
 
 const FALLBACK_MAPBOX_TOKEN = typeof window !== 'undefined' ? atob('cGsuZXlKMUlqb2lZVzUyYVhSaGJTSXNJbUVpT2lKamJYUTBaR1Z0YjJFd1kySTJNbnB6T1dZeWVYUm9NV0Z4SW4wLmZoUXY1SFdHR0FNdktucHljY0R2dHc=') : '';
@@ -105,6 +107,20 @@ export default function SiteAnalysis() {
   const [isCardCollapsed, setIsCardCollapsed] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+
+  // Unified Settings Card Tabs ('typology' | 'solar')
+  const [activeCardTab, setActiveCardTab] = useState<'typology' | 'solar'>('typology');
+
+  // Integrated 3D Solar Shadow Simulator Telemetry State
+  const [solarHour, setSolarHour] = useState<number>(14);
+  const [solarSeason, setSolarSeason] = useState<'summer' | 'equinox' | 'winter'>('summer');
+  const [isSolarPlaying, setIsSolarPlaying] = useState<boolean>(false);
+  const [solarData, setSolarData] = useState<{
+    azimuthDeg: number;
+    altitudeDeg: number;
+    shadowLengthMultiplier: number;
+    solarRadiationKwh: number;
+  }>({ azimuthDeg: 176, altitudeDeg: 90, shadowLengthMultiplier: 1, solarRadiationKwh: 6.5 });
 
   // Map Container & Instance Refs
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -247,6 +263,67 @@ export default function SiteAnalysis() {
 
   // 3D Shadow Simulation state
   const [buildingHeightM, setBuildingHeightM] = useState(12);
+
+  // Dynamic Solar Shadow Telemetry & Mapbox Light Sync
+  useEffect(() => {
+    const numLat = pendingCoords?.lat ?? 22.3072;
+    const numLon = pendingCoords?.lon ?? 73.1812;
+
+    const year = new Date().getFullYear();
+    let date = new Date(year, 5, 21); // summer solstice
+    if (solarSeason === 'winter') date = new Date(year, 11, 21);
+    if (solarSeason === 'equinox') date = new Date(year, 2, 21);
+
+    date.setHours(Math.floor(solarHour), (solarHour % 1) * 60, 0, 0);
+
+    const sunPos = SunCalc.getPosition(date, numLat, numLon);
+    const azimuthDeg = Math.round(((sunPos.azimuth * 180) / Math.PI + 180) % 360);
+    const rawAlt = (sunPos.altitude * 180) / Math.PI;
+    const altitudeDeg = Math.max(0, Math.min(90, Math.round(rawAlt)));
+
+    const radAlt = Math.max(0.05, Math.min(Math.PI / 2, sunPos.altitude));
+    const shadowMult = Math.min(10, Math.max(0.1, 1 / Math.tan(radAlt)));
+    const radKwh = altitudeDeg > 0 ? parseFloat((Math.sin(radAlt) * 6.5).toFixed(1)) : 0;
+
+    setSolarData({
+      azimuthDeg,
+      altitudeDeg,
+      shadowLengthMultiplier: parseFloat(shadowMult.toFixed(2)),
+      solarRadiationKwh: radKwh,
+    });
+
+    if (mapEngine === '3d' && mapboxRef.current) {
+      try {
+        const lightPreset = altitudeDeg < 15 ? 'dusk' : altitudeDeg > 60 ? 'day' : 'dawn';
+        (mapboxRef.current as any).setConfigProperty('basemap', 'lightPreset', lightPreset);
+      } catch { /* silent */ }
+    }
+  }, [solarHour, solarSeason, pendingCoords, mapEngine]);
+
+  // Solar Time-lapse animation loop
+  useEffect(() => {
+    let timer: any;
+    if (isSolarPlaying) {
+      timer = setInterval(() => {
+        setSolarHour(prev => {
+          if (prev >= 18.5) {
+            setIsSolarPlaying(false);
+            return 6;
+          }
+          return parseFloat((prev + 0.25).toFixed(2));
+        });
+      }, 250);
+    }
+    return () => clearInterval(timer);
+  }, [isSolarPlaying]);
+
+  const formatSolarTime = (h: number) => {
+    const fullHours = Math.floor(h);
+    const minutes = Math.round((h % 1) * 60);
+    const period = fullHours >= 12 ? 'PM' : 'AM';
+    const displayHours = fullHours % 12 === 0 ? 12 : fullHours % 12;
+    return `${displayHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${period}`;
+  };
 
   // User credit listener
   useEffect(() => {
@@ -981,48 +1058,78 @@ export default function SiteAnalysis() {
 
               {/* Floating Confirmation & Typology Selection Card */}
               {isCardCollapsed ? (
-                /* Minimized Collapsed Bar (Allows 95%+ Map Visibility on Mobile) */
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 max-w-xl w-11/12 sm:w-auto">
-                  <div className="bg-white/95 backdrop-blur-md text-gray-900 px-3.5 py-2 rounded-2xl border border-gray-900 shadow-2xl flex items-center justify-between gap-2.5">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-6 h-6 rounded-lg bg-black text-[#CCFF00] flex items-center justify-center font-bold shrink-0 shadow-xs">
-                        <MapPin size={13} />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-gray-900 truncate">
-                          {pendingCoords?.placeName ? pendingCoords.placeName.split(',')[0] : (pendingCoords ? `Site (${pendingCoords.lat.toFixed(4)}°, ${pendingCoords.lon.toFixed(4)}°)` : 'Tap map or search')}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 shrink-0">
+                /* Minimized Collapsed Bar (Matches Image 2: Clean search bar, click anywhere or focus to re-open) */
+                <div className="absolute bottom-3 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 max-w-xl w-[94%] sm:w-11/12 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                  <div 
+                    onClick={() => setIsCardCollapsed(false)}
+                    className="bg-white/95 backdrop-blur-md text-gray-900 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full border border-gray-900 shadow-2xl flex items-center justify-between gap-2 cursor-pointer hover:bg-white hover:border-black transition group"
+                  >
+                    <form 
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        setIsCardCollapsed(false);
+                        handleSearch(e);
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="relative flex-1 flex items-center min-w-0"
+                    >
+                      <input
+                        type="text"
+                        className="bg-transparent text-gray-900 placeholder-gray-500 text-xs sm:text-sm pl-2 pr-10 py-1 outline-none w-full font-normal"
+                        placeholder="Search location or coordinates (lat, lon)..."
+                        value={searchInput}
+                        onChange={e => setSearchInput(e.target.value)}
+                        onFocus={() => {
+                          setIsCardCollapsed(false);
+                          if (suggestions.length > 0) setShowSuggestions(true);
+                        }}
+                        aria-label="Search location or coordinates"
+                      />
+                      {searchInput && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSearchInput('');
+                            setSuggestions([]);
+                          }}
+                          className="p-1 text-gray-400 hover:text-black transition mr-1"
+                          title="Clear search"
+                        >
+                          <X size={13} />
+                        </button>
+                      )}
                       <button
-                        onClick={executeSiteAnalysis}
-                        disabled={loading || !pendingCoords}
-                        className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition shadow-sm ${
-                          !pendingCoords 
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-black text-[#CCFF00] hover:bg-gray-800 cursor-pointer'
-                        }`}
+                        type="submit"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsCardCollapsed(false);
+                          handleSearch(e);
+                        }}
+                        aria-label="Execute search"
+                        className="w-7 h-7 sm:w-8 sm:h-8 bg-black text-[#CCFF00] hover:bg-gray-800 rounded-full transition cursor-pointer flex items-center justify-center shrink-0 shadow-xs"
                       >
-                        <Zap size={12} className={pendingCoords ? "fill-[#CCFF00]" : ""} />
-                        <span>{loading ? 'Analyzing...' : 'Analyze'}</span>
+                        <Search size={13} />
                       </button>
+                    </form>
 
-                      <button
-                        onClick={() => setIsCardCollapsed(false)}
-                        className="p-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition cursor-pointer flex items-center text-xs font-semibold"
-                        title="Expand Search & Typology Options"
-                        aria-label="Expand Search & Typology Options"
-                      >
-                        <ChevronUp size={15} />
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsCardCollapsed(false);
+                      }}
+                      className="p-1.5 rounded-full hover:bg-gray-100 text-gray-700 transition cursor-pointer flex items-center shrink-0"
+                      title="Open Settings & Typology"
+                      aria-label="Open Settings & Typology"
+                    >
+                      <ChevronDown size={18} />
+                    </button>
                   </div>
                 </div>
               ) : (
-                /* Expanded Studio HUD Card (Made Streamlined & Compact on Mobile) */
-                <div className="absolute bottom-3 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 bg-white/95 backdrop-blur-md text-gray-900 p-3 sm:p-5 rounded-3xl border border-gray-900 shadow-2xl flex flex-col gap-2.5 max-w-xl w-[94%] sm:w-11/12">
+                /* Expanded Studio HUD Card (Combined Image 3 & Image 4 Settings) */
+                <div className="absolute bottom-2 sm:bottom-5 left-1/2 -translate-x-1/2 z-30 bg-white/95 backdrop-blur-md text-gray-900 p-3 sm:p-4 rounded-3xl border border-gray-900 shadow-2xl flex flex-col gap-2.5 max-w-xl w-[94%] sm:w-11/12 animate-in fade-in zoom-in-95 duration-200">
                   
                   {/* Top Bar inside Card: Search Bar + Minimize Button */}
                   <div className="flex items-center gap-2">
@@ -1030,12 +1137,12 @@ export default function SiteAnalysis() {
                       <div className="relative w-full flex items-center">
                         <input
                           type="text"
-                          className="bg-gray-100 text-gray-900 placeholder-gray-400 text-xs pl-3.5 pr-14 py-2 rounded-2xl border border-gray-200 focus:border-black focus:bg-white outline-none w-full font-normal transition"
-                          placeholder="Search location, city, lat/lon…"
+                          className="bg-gray-100 text-gray-900 placeholder-gray-500 text-xs pl-3.5 pr-14 py-2 rounded-2xl border border-gray-200 focus:border-black focus:bg-white outline-none w-full font-normal transition"
+                          placeholder="Search location or coordinates (lat, lon)..."
                           value={searchInput}
                           onChange={e => setSearchInput(e.target.value)}
                           onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
-                          aria-label="Search location, city, latitude or longitude"
+                          aria-label="Search location or coordinates"
                         />
                         <div className="absolute right-1 flex items-center gap-0.5">
                           {searchInput && (
@@ -1090,81 +1197,236 @@ export default function SiteAnalysis() {
                       type="button"
                       onClick={() => setIsCardCollapsed(true)}
                       className="p-2 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-black transition shrink-0 cursor-pointer"
-                      title="Minimize panel to view full map"
-                      aria-label="Minimize panel to view full map"
+                      title="Minimize to search bar"
+                      aria-label="Minimize to search bar"
                     >
                       <ChevronDown size={16} />
                     </button>
                   </div>
 
-                  {/* Location Info Header */}
-                  <div className="flex items-center justify-between gap-2 pt-0.5">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-black text-[#CCFF00] flex items-center justify-center font-bold shrink-0 shadow-xs">
-                        <MapPin size={14} />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-gray-900 truncate">
-                          {pendingCoords?.placeName || (pendingCoords ? `Site: ${pendingCoords.lat.toFixed(4)}°, ${pendingCoords.lon.toFixed(4)}°` : 'Click anywhere on 3D map or search above')}
-                        </p>
-                        <p className="text-[10px] text-gray-500 font-normal truncate">
-                          {isAnalyzed ? '✅ Site analysis active · Select typology to recalculate' : 'Choose typology & run 14+ diagnostic site engines'}
-                        </p>
-                      </div>
-                    </div>
-
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-black bg-[#CCFF00] px-2 py-0.5 rounded-full shrink-0">
-                      {category}
-                    </span>
+                  {/* Combined Settings Tab Switcher (Image 3 & Image 4 Combined) */}
+                  <div className="flex items-center gap-1.5 p-1 bg-gray-100/90 rounded-2xl border border-gray-200">
+                    <button
+                      type="button"
+                      onClick={() => setActiveCardTab('typology')}
+                      className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                        activeCardTab === 'typology'
+                          ? 'bg-black text-[#CCFF00] shadow-sm'
+                          : 'text-gray-600 hover:text-black hover:bg-white/60'
+                      }`}
+                    >
+                      <Building size={13} />
+                      <span>Typology & Site</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveCardTab('solar')}
+                      className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                        activeCardTab === 'solar'
+                          ? 'bg-black text-[#CCFF00] shadow-sm'
+                          : 'text-gray-600 hover:text-black hover:bg-white/60'
+                      }`}
+                    >
+                      <Sun size={13} className={activeCardTab === 'solar' ? 'text-[#CCFF00]' : ''} />
+                      <span>3D Solar Simulator</span>
+                    </button>
                   </div>
 
-                  {/* Middle: Interactive Typology Selector Pills */}
-                  <div className="space-y-1 pt-1 border-t border-gray-100">
-                    <div className="flex items-center justify-between">
-                      <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                        Select Typology:
-                      </p>
+                  {/* TAB 1: Image 4 - Typology & Site Settings */}
+                  {activeCardTab === 'typology' && (
+                    <div className="flex flex-col gap-2.5 animate-in fade-in duration-150">
+                      {/* Location Info Header */}
+                      <div className="flex items-center justify-between gap-2 pt-0.5">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-black text-[#CCFF00] flex items-center justify-center font-bold shrink-0 shadow-xs">
+                            <MapPin size={14} />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-gray-900 truncate">
+                              {pendingCoords?.placeName || (pendingCoords ? `Site: ${pendingCoords.lat.toFixed(4)}°, ${pendingCoords.lon.toFixed(4)}°` : 'Click anywhere on 3D map or search above')}
+                            </p>
+                            <p className="text-[10px] text-gray-500 font-normal truncate">
+                              {isAnalyzed ? '✅ Site analysis active · Select typology to recalculate' : 'Choose typology & run 14+ diagnostic site engines'}
+                            </p>
+                          </div>
+                        </div>
+
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-black bg-[#CCFF00] px-2 py-0.5 rounded-full shrink-0">
+                          {category}
+                        </span>
+                      </div>
+
+                      {/* Typology Selector Pills */}
+                      <div className="space-y-1 pt-1 border-t border-gray-100">
+                        <div className="flex items-center justify-between">
+                          <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                            Select Typology:
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
+                          {CATEGORIES.map(cat => (
+                            <button
+                              key={cat.id}
+                              type="button"
+                              onClick={() => handleCategoryChange(cat.id)}
+                              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 transition cursor-pointer whitespace-nowrap ${
+                                category === cat.id
+                                  ? 'bg-black text-[#CCFF00] shadow-xs'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}
+                            >
+                              <span className="text-xs">{cat.icon}</span>
+                              <span>{cat.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Action Trigger Button */}
+                      <button
+                        onClick={executeSiteAnalysis}
+                        disabled={loading || !pendingCoords}
+                        className={`w-full font-bold text-xs py-2.5 sm:py-3 rounded-2xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer ${
+                          !pendingCoords
+                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                            : 'bg-black text-[#CCFF00] hover:bg-gray-800'
+                        }`}
+                      >
+                        <Zap size={14} className={pendingCoords ? "fill-[#CCFF00]" : ""} />
+                        <span>
+                          {loading
+                            ? 'Synthesizing 14+ Site Diagnostics...'
+                            : !pendingCoords
+                              ? 'Drop a Pin on 3D Map or Search to Analyze'
+                              : isAnalyzed
+                                ? `Re-Analyze for ${category.toUpperCase()} (1 Credit)`
+                                : `Run Site Analysis for ${category.toUpperCase()} (${user?.is_admin || isUserAdmin() ? 'Free Admin' : '1 Credit'})`}
+                        </span>
+                      </button>
                     </div>
-                    <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
-                      {CATEGORIES.map(cat => (
+                  )}
+
+                  {/* TAB 2: Image 3 - 3D Solar Shadow Simulator */}
+                  {activeCardTab === 'solar' && (
+                    <div className="flex flex-col gap-2.5 animate-in fade-in duration-150">
+                      {/* Top Header Row */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-7 h-7 rounded-xl bg-black text-[#CCFF00] flex items-center justify-center font-bold shrink-0 shadow-xs">
+                            <Sun size={15} />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-bold text-gray-900 truncate">Phase 2: 3D Solar Shadow Simulator</span>
+                              <span className="text-[9px] bg-black text-[#CCFF00] font-bold px-1.5 py-0.2 rounded-full">Interactive</span>
+                            </div>
+                            <p className="text-[10px] text-gray-500 truncate">Simulates solar rays, shadow casting & roof solar heat gain in real-time.</p>
+                          </div>
+                        </div>
+
                         <button
-                          key={cat.id}
                           type="button"
-                          onClick={() => handleCategoryChange(cat.id)}
-                          className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 transition cursor-pointer whitespace-nowrap ${
-                            category === cat.id
-                              ? 'bg-black text-[#CCFF00] shadow-xs'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
+                          onClick={() => setIsSolarPlaying(!isSolarPlaying)}
+                          className="px-2.5 py-1 rounded-xl bg-black text-[#CCFF00] hover:bg-gray-800 text-[11px] font-bold flex items-center gap-1 transition cursor-pointer shrink-0"
                         >
-                          <span className="text-xs">{cat.icon}</span>
-                          <span>{cat.label}</span>
+                          {isSolarPlaying ? <Pause size={12} /> : <Play size={12} className="fill-[#CCFF00]" />}
+                          <span>{isSolarPlaying ? 'Pause' : 'Play Time-Lapse'}</span>
                         </button>
-                      ))}
-                    </div>
-                  </div>
+                      </div>
 
-                  {/* Bottom: Action Trigger Button */}
-                  <button
-                    onClick={executeSiteAnalysis}
-                    disabled={loading || !pendingCoords}
-                    className={`w-full font-bold text-xs py-2.5 sm:py-3 rounded-2xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer ${
-                      !pendingCoords
-                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                        : 'bg-black text-[#CCFF00] hover:bg-gray-800'
-                    }`}
-                  >
-                    <Zap size={14} className={pendingCoords ? "fill-[#CCFF00]" : ""} />
-                    <span>
-                      {loading
-                        ? 'Synthesizing 14+ Site Diagnostics...'
-                        : !pendingCoords
-                          ? 'Drop a Pin on 3D Map or Search to Analyze'
-                          : isAnalyzed
-                            ? `Re-Analyze for ${category.toUpperCase()} (1 Credit)`
-                            : `Run Site Analysis for ${category.toUpperCase()} (${user?.is_admin || isUserAdmin() ? 'Free Admin' : '1 Credit'})`}
-                    </span>
-                  </button>
+                      {/* Slider & Presets Box */}
+                      <div className="p-2.5 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col gap-2">
+                        {/* Time of Day */}
+                        <div>
+                          <div className="flex items-center justify-between text-[11px] font-medium text-gray-600 mb-1">
+                            <span className="flex items-center gap-1 font-semibold text-gray-800">
+                              <Clock size={12} /> Time of Day
+                            </span>
+                            <span className="px-2 py-0.5 bg-white border border-gray-200 rounded-lg font-bold text-gray-900">
+                              {formatSolarTime(solarHour)}
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min="6"
+                            max="19"
+                            step="0.25"
+                            value={solarHour}
+                            onChange={(e) => setSolarHour(parseFloat(e.target.value))}
+                            className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                          />
+                          <div className="flex justify-between text-[9px] text-gray-400 mt-1 font-medium">
+                            <span>6:00 AM (Sunrise)</span>
+                            <span>12:00 PM (Noon)</span>
+                            <span>7:00 PM (Sunset)</span>
+                          </div>
+                        </div>
+
+                        {/* Seasonal Presets */}
+                        <div className="pt-1.5 border-t border-gray-200/60">
+                          <div className="flex items-center gap-1 text-[10px] font-semibold text-gray-600 mb-1.5">
+                            <Calendar size={11} /> Seasonal Preset:
+                          </div>
+                          <div className="grid grid-cols-3 gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setSolarSeason('summer')}
+                              className={`py-1 px-1.5 rounded-xl text-[10px] font-bold transition truncate text-center cursor-pointer ${
+                                solarSeason === 'summer'
+                                  ? 'bg-black text-[#CCFF00] shadow-xs'
+                                  : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'
+                              }`}
+                            >
+                              Summer Solstice
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setSolarSeason('equinox')}
+                              className={`py-1 px-1.5 rounded-xl text-[10px] font-bold transition truncate text-center cursor-pointer ${
+                                solarSeason === 'equinox'
+                                  ? 'bg-black text-[#CCFF00] shadow-xs'
+                                  : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'
+                              }`}
+                            >
+                              Equinox
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setSolarSeason('winter')}
+                              className={`py-1 px-1.5 rounded-xl text-[10px] font-bold transition truncate text-center cursor-pointer ${
+                                solarSeason === 'winter'
+                                  ? 'bg-black text-[#CCFF00] shadow-xs'
+                                  : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'
+                              }`}
+                            >
+                              Winter Solstice
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 4 Telemetry Metrics (Matching Image 3) */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-center">
+                        <div className="bg-gray-50 border border-gray-100 p-1.5 sm:p-2 rounded-xl">
+                          <p className="text-[9px] uppercase font-bold text-gray-400">Sun Altitude</p>
+                          <p className="text-sm font-extrabold text-gray-900">{solarData.altitudeDeg}°</p>
+                        </div>
+                        <div className="bg-gray-50 border border-gray-100 p-1.5 sm:p-2 rounded-xl">
+                          <p className="text-[9px] uppercase font-bold text-gray-400">Sun Azimuth</p>
+                          <p className="text-sm font-extrabold text-gray-900">{solarData.azimuthDeg}°</p>
+                        </div>
+                        <div className="bg-gray-50 border border-gray-100 p-1.5 sm:p-2 rounded-xl">
+                          <p className="text-[9px] uppercase font-bold text-gray-400">Shadow Projection</p>
+                          <p className="text-sm font-extrabold text-gray-900">~{solarData.shadowLengthMultiplier >= 10 ? '>10' : solarData.shadowLengthMultiplier}m</p>
+                        </div>
+                        <div className="bg-gray-50 border border-gray-100 p-1.5 sm:p-2 rounded-xl">
+                          <p className="text-[9px] uppercase font-bold text-gray-400">Solar Radiation</p>
+                          <p className="text-sm font-extrabold text-emerald-600">{solarData.solarRadiationKwh} kWh/m²</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                 </div>
               )}
             </div>
