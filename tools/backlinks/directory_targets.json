@@ -249,9 +249,10 @@
     "dofollow": false,
     "type": "Startup Directory",
     "pricing": "Free",
-    "status": "queued",
-    "submittedAt": null,
-    "notes": "Business media brand focused on innovation, technology, leadership, and world-changing ideas."
+    "status": "submitted",
+    "submittedAt": "2026-09-26T10:24:19.074Z",
+    "notes": "Business media brand focused on innovation, technology, leadership, and world-changing ideas.",
+    "generatedPitch": "Anvitam is a boutique sustainable architecture studio and ecological engineering platform founded by Ar. Archana Gavas. Featuring 16+ automated zero-cost calculators for solar cooling, micro-climate analysis, rainwater harvesting, food forests, and passive farmstay retreats."
   },
   {
     "name": "PC Mag",
@@ -261,9 +262,10 @@
     "dofollow": false,
     "type": "Startup Directory",
     "pricing": "Free",
-    "status": "queued",
-    "submittedAt": null,
-    "notes": "Leading source for tech product reviews, news, buying guides, and expert analysis of consumer technology."
+    "status": "submitted",
+    "submittedAt": "2026-09-26T10:24:19.391Z",
+    "notes": "Leading source for tech product reviews, news, buying guides, and expert analysis of consumer technology.",
+    "generatedPitch": "Anvitam is a boutique sustainable architecture studio and ecological engineering platform founded by Ar. Archana Gavas. Featuring 16+ automated zero-cost calculators for solar cooling, micro-climate analysis, rainwater harvesting, food forests, and passive farmstay retreats."
   },
   {
     "name": "Shopify App Store",
