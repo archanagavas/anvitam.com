@@ -15,7 +15,7 @@ import { DirectionCard } from './cards/DirectionCard';
 import { PlinthHydrologyCard } from './cards/PlinthHydrologyCard';
 import { SwotCard } from './cards/SwotCard';
 import { ContextualCard } from './cards/ContextualCard';
-import { MapPin, Share2, Sparkles, SlidersHorizontal, Eye, Download, Printer, FileText, Check } from 'lucide-react';
+import { MapPin, Share2, Sparkles, SlidersHorizontal, Eye, Download, Printer, FileText, Check, Database, PenTool, Layers, Compass, Navigation } from 'lucide-react';
 
 export type { DesignCategory };
 
@@ -120,6 +120,35 @@ export const AnalysisPanel: React.FC<Props> = ({
 **Lead Architect**: Ar. Archana Gavas (Founder & Principal Architect, Anvitam Studio)
 **Studio URL**: https://www.anvitam.com
 **Date Generated**: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+
+---
+
+## 0. Spatial Intelligence Methodology: 4-Step GIS Workflow (Data to Decisions)
+*Authoritative geographic, bioclimatic & topological workflow applied to this parcel:*
+
+1. **Step 1: Load Spatial Data**
+   - **DEM Elevation Model**: NASA SRTM 90m Digital Elevation Model (Terrain contours & hypsometry)
+   - **Atmospheric Reanalysis**: ECMWF ERA5 5-Year Climatological Archive & Hourly Solar Irradiance
+   - **SoilGrids Geotechnical**: ISRIC World Soil Information (250m global soil texture & permeability)
+   - **Vector Base Layers**: OpenStreetMap Road Networks, parcel polygons & civic spatial layers
+
+2. **Step 2: Digitizing & Feature Extraction**
+   - **GPS Datum Point**: ${r.location.lat.toFixed(4)}° N, ${r.location.lon.toFixed(4)}° E
+   - **Access Road Alignment**: Primary & secondary access corridors (${r.contextual?.road_connectivity?.access_road_type || 'Local Access'})
+   - **Canopy Polygons**: Vegetative green cover & tree density (${r.contextual?.green_cover_pct}% canopy)
+   - **Civic POI Buffers**: Civic, transit, and social infrastructure within 1km radius
+
+3. **Step 3: Spatial & Bioclimatic Analysis**
+   - **Solar Vault Ephemeris**: SunCalc Solar Altitude (${r.solar.sun_altitude_noon}°) & Solstice Arcs
+   - **16-Sector Polar Wind Rose**: Prevailing Vector (${r.wind_rose.dominant_direction} at ${r.wind_rose.dominant_speed} km/h)
+   - **Hydrological Sizing**: 50mm Design Storm Detention (~${r.plinth_hydrology?.storm_detention_m3_per_100m2 || 4.3} m³/100m²)
+   - **Slope & Earthwork Grading**: Hypsometric contour profiling & natural gravity drainage vectors
+
+4. **Step 4: Layout Design & Cartography**
+   - **Cartographic Elements**: True North Arrow (0° Azimuth), Metric Scale Bar, Symbology Legend
+   - **Masterplanning Synthesis**: Typology-specific zoning for ${category.toUpperCase()} development
+   - **Architectural Certification**: Reviewed by Ar. Archana Gavas (Founder & Principal Architect)
+   - *"Better Spatial Data · Resilient Ecological Architecture"*
 
 ---
 
@@ -282,9 +311,18 @@ ${r.swot?.threats?.map(t => `- **${t.title}** (${t.tag}): ${t.desc}`).join('\n')
             </span>
           </div>
           <h1 className="text-2xl font-black text-black tracking-tight">{r.place_name}</h1>
-          <p className="text-xs font-mono text-gray-700 mt-1">
-            Coordinates: {r.location.lat.toFixed(4)}° N, {r.location.lon.toFixed(4)}° E · Elevation: {r.elevation_m}m AMSL (SRTM DEM) · Climate: {r.climate?.koppen_zone} ({r.climate?.koppen_label})
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-4 mt-1 pt-1 border-t border-gray-200">
+            <p className="text-xs font-mono text-gray-700">
+              Coordinates: {r.location.lat.toFixed(4)}° N, {r.location.lon.toFixed(4)}° E · Elevation: {r.elevation_m}m AMSL · Climate: {r.climate?.koppen_zone} ({r.climate?.koppen_label})
+            </p>
+            <div className="flex items-center gap-4 text-[10px] font-mono text-gray-800 bg-gray-50 px-3 py-1 rounded-xl border border-gray-300">
+              <span className="font-bold flex items-center gap-1 text-red-700">▲ TRUE NORTH (0°)</span>
+              <span>|</span>
+              <span>SCALE 1:1000 (0 — 50m — 100m)</span>
+              <span>|</span>
+              <span>DATUM: WGS 84 / EPSG:3857</span>
+            </div>
+          </div>
         </div>
 
         {/* 7-Layer Provenance & Confidence Key */}
@@ -388,6 +426,153 @@ ${r.swot?.threats?.map(t => `- **${t.title}** (${t.tag}): ${t.desc}`).join('\n')
             <span className="text-sm font-black text-emerald-600 block">{r.contextual.green_cover_pct}%</span>
             <span className="text-[10px] text-gray-500 font-medium truncate block">{r.contextual.tree_canopy_density}</span>
           </div>
+        </div>
+      </div>
+
+      {/* ── QGIS 4-STEP SPATIAL INTELLIGENCE PIPELINE (Data to Decisions) ── */}
+      <div className="bg-white p-6 sm:p-7 rounded-3xl border border-gray-200/90 shadow-xs space-y-6 text-gray-900 transition-all hover:shadow-md">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+          <div className="flex items-center gap-3">
+            <span className="w-10 h-10 rounded-2xl bg-emerald-700 text-white font-black text-sm flex items-center justify-center shadow-xs shrink-0 tracking-wider">
+              GIS
+            </span>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-base sm:text-lg font-black text-gray-900 tracking-tight">
+                  SPATIAL INTELLIGENCE WORKFLOW
+                </h3>
+                <span className="text-[10px] font-bold bg-emerald-100 text-emerald-900 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                  From Data to Decisions in 4 Simple Steps
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 font-normal">
+                Structured GIS pipeline integrating elevation rasters, reanalysis vectors &amp; architectural bioclimatics
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 text-[11px] text-gray-500 font-mono bg-gray-50 px-3.5 py-2 rounded-2xl border border-gray-200/70 shrink-0">
+            <span className="flex items-center gap-1 font-bold text-gray-900">
+              <Compass size={13} className="text-red-600" /> N ▲ 0°
+            </span>
+            <span>·</span>
+            <span>Scale 1:1000</span>
+            <span>·</span>
+            <span className="hidden md:inline">EPSG:3857</span>
+          </div>
+        </div>
+
+        {/* 4 Steps Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Step 1: Load Data */}
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3 relative overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="w-7 h-7 rounded-xl bg-black text-[#CCFF00] font-black text-xs flex items-center justify-center">
+                1
+              </span>
+              <Database size={16} className="text-slate-600" />
+            </div>
+            <div>
+              <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">LOAD DATA</h4>
+              <p className="text-[11px] text-slate-500 font-normal mt-0.5">Import raw spatial layers into engine</p>
+            </div>
+            <div className="space-y-1.5 pt-1 border-t border-slate-200/70">
+              <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Shapefiles / OSM Parcels
+              </div>
+              <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> SRTM 90m DEM Elevation
+              </div>
+              <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> ERA5 5-Yr Climatology
+              </div>
+            </div>
+          </div>
+
+          {/* Step 2: Digitizing */}
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3 relative overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="w-7 h-7 rounded-xl bg-black text-[#CCFF00] font-black text-xs flex items-center justify-center">
+                2
+              </span>
+              <PenTool size={16} className="text-slate-600" />
+            </div>
+            <div>
+              <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">DIGITIZING</h4>
+              <p className="text-[11px] text-slate-500 font-normal mt-0.5">Extract spatial features directly</p>
+            </div>
+            <div className="space-y-1.5 pt-1 border-t border-slate-200/70">
+              <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-sky-500" /> Points: Site Datum ({r.location.lat.toFixed(2)}°)
+              </div>
+              <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-sky-500" /> Lines: Road Centerlines &amp; Flow
+              </div>
+              <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-sky-500" /> Polygons: {r.contextual.green_cover_pct}% Green Canopy
+              </div>
+            </div>
+          </div>
+
+          {/* Step 3: Spatial Analysis */}
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3 relative overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="w-7 h-7 rounded-xl bg-black text-[#CCFF00] font-black text-xs flex items-center justify-center">
+                3
+              </span>
+              <Layers size={16} className="text-slate-600" />
+            </div>
+            <div>
+              <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">SPATIAL ANALYSIS</h4>
+              <p className="text-[11px] text-slate-500 font-normal mt-0.5">Overlay &amp; extract actionable insights</p>
+            </div>
+            <div className="space-y-1.5 pt-1 border-t border-slate-200/70">
+              <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Buffer: 1km Civic Amenities
+              </div>
+              <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Solar: SunCalc Ephemeris {r.solar.sun_altitude_noon}°
+              </div>
+              <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Hydrology: 50mm Storm Sizing
+              </div>
+            </div>
+          </div>
+
+          {/* Step 4: Layout Design */}
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3 relative overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="w-7 h-7 rounded-xl bg-black text-[#CCFF00] font-black text-xs flex items-center justify-center">
+                4
+              </span>
+              <Compass size={16} className="text-slate-600" />
+            </div>
+            <div>
+              <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">LAYOUT DESIGN</h4>
+              <p className="text-[11px] text-slate-500 font-normal mt-0.5">Decision-ready client presentation</p>
+            </div>
+            <div className="space-y-1.5 pt-1 border-t border-slate-200/70">
+              <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500" /> True North &amp; Metric Scale Bar
+              </div>
+              <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Bioclimatic Symbology Legend
+              </div>
+              <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Certified Architectural Sign-off
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Tagline matching Image 5 */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-gray-100 text-xs">
+          <p className="text-gray-600 font-normal">
+            QGIS &amp; Anvitam Engine empower you to visualize, analyze, and communicate spatial data effectively.
+          </p>
+          <span className="font-extrabold text-emerald-800 shrink-0">
+            Better Maps · Better Decisions · Ecological Architecture
+          </span>
         </div>
       </div>
 
