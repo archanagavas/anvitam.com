@@ -252,14 +252,44 @@ ${r.swot?.threats?.map(t => `- **${t.title}** (${t.tag}): ${t.desc}`).join('\n')
     'topo': { title: 'Topography Elevation & Slopes', element: <TopographyCard key="topo" elevation={r.elevation_m} lat={r.location.lat} lon={r.location.lon} /> },
   };
 
-  const getFilteredCards = () => {
-    if (selectedFilter === 'all') {
-      return Object.values(allCardsMap).map(c => c.element);
+  const renderBentoGrid = () => {
+    if (selectedFilter !== 'all') {
+      return (
+        <div className="max-w-2xl mx-auto w-full">
+          {allCardsMap[selectedFilter]?.element || Object.values(allCardsMap)[0]?.element}
+        </div>
+      );
     }
-    if (allCardsMap[selectedFilter]) {
-      return [allCardsMap[selectedFilter].element];
-    }
-    return Object.values(allCardsMap).map(c => c.element);
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-start">
+        {/* Column 1: Solar Vault & Orientation */}
+        <div className="flex flex-col gap-5 w-full">
+          {allCardsMap['solar']?.element}
+          {allCardsMap['orientation']?.element}
+          {allCardsMap['direction']?.element}
+          {allCardsMap['bioclimate']?.element}
+        </div>
+
+        {/* Column 2: Wind, Microclimate & Urban Density */}
+        <div className="flex flex-col gap-5 w-full">
+          {allCardsMap['wind']?.element}
+          {allCardsMap['climate']?.element}
+          {allCardsMap['thermal']?.element}
+          {allCardsMap['urban']?.element}
+          {allCardsMap['contextual']?.element}
+        </div>
+
+        {/* Column 3: Topography, Hydrology & Geotechnical Strategy */}
+        <div className="flex flex-col gap-5 w-full">
+          {allCardsMap['plinth']?.element}
+          {allCardsMap['topo']?.element}
+          {allCardsMap['rain']?.element}
+          {allCardsMap['soil']?.element}
+          {allCardsMap['swot']?.element}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -622,10 +652,8 @@ ${r.swot?.threats?.map(t => `- **${t.title}** (${t.tag}): ${t.desc}`).join('\n')
         )}
       </div>
 
-      {/* Grid layout for cards with dense auto-packing to prevent any blank column holes */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 [grid-auto-flow:dense]">
-        {getFilteredCards()}
-      </div>
+      {/* True Bento Grid Layout with zero whitespace voids */}
+      {renderBentoGrid()}
 
       {/* ── GROUND TRUTH VERIFICATION & ARCHANA GAVAS CONSULTATION SECTION ── */}
       <div className="bg-gradient-to-br from-[#03160E] via-[#052A1A] to-[#03160E] text-white p-8 rounded-3xl border border-[#CCFF00]/30 shadow-xl mt-12 break-inside-avoid">

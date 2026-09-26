@@ -76,20 +76,20 @@ export const SolarCard: React.FC<Props> = ({ data, lat }) => {
   const todayArc = getArcPath(todayRiseAz, todaySetAz, todayNoonAlt);
 
   return (
-    <div className="analysis-card bg-white p-6 rounded-3xl border border-gray-200 shadow-sm text-gray-900">
-      <div className="card-header flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-lg">
+    <div className="bg-white p-5 rounded-3xl border border-gray-200/90 shadow-2xs space-y-3.5 text-gray-900 transition-all hover:shadow-md">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-base">
             ☀️
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="card-title text-base font-black text-gray-900">Solar Path &amp; Vault Trajectory</h3>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <h3 className="text-sm font-black text-gray-900">Solar Path &amp; Vault Trajectory</h3>
               <span className="text-[9px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-200">
-                🟢 Live Celestial Physics
+                Live SunCalc
               </span>
             </div>
-            <p className="card-subtitle text-xs text-gray-500">Astronomically computed for Latitude: {lat.toFixed(4)}° {isNorthern ? 'N' : 'S'}</p>
+            <p className="text-[11px] text-gray-500">Latitude: {lat.toFixed(2)}° {isNorthern ? 'N' : 'S'}</p>
           </div>
         </div>
       </div>
