@@ -75,6 +75,52 @@ def vercel_request(endpoint, token, method='GET', body=None):
             err_msg = err_body
         raise RuntimeError(f"Vercel API HTTP {err.code}: {err_msg}")
 
+def resolve_project(token, project_name=None):
+    """
+    Fetch all projects in the Vercel account and resolve the target project.
+    If project_name is provided, match by name or id (case-insensitive substring or exact).
+    If project_name is not provided or not found, auto-detect the most relevant project.
+    """
+    try:
+        data = vercel_request("/v9/projects", token)
+        projects = data.get('projects', [])
+        if not projects:
+            print("⚠️  No projects found on Vercel account.")
+            return None
+        
+        project_names = [p.get('name') for p in projects]
+        print(f"📋 Available Vercel Projects in account: {project_names}")
+        
+        if project_name:
+            # 1. Exact match on name or id
+            for p in projects:
+                if p.get('name') == project_name or p.get('id') == project_name:
+                    print(f"🎯 Matched project '{p.get('name')}' (ID: {p.get('id')})")
+                    return p.get('id')
+            # 2. Case-insensitive match or substring
+            for p in projects:
+                if project_name.lower() in p.get('name', '').lower() or p.get('name', '').lower() in project_name.lower():
+                    print(f"🎯 Matched project '{p.get('name')}' (ID: {p.get('id')}) by fuzzy match with '{project_name}'")
+                    return p.get('id')
+        
+        # 3. If no project_name or no match, find project containing 'anvitam'
+        for p in projects:
+            if 'anvitam' in p.get('name', '').lower():
+                print(f"🎯 Auto-detected project '{p.get('name')}' (ID: {p.get('id')})")
+                return p.get('id')
+        
+        # 4. Fallback to the first project in account if only 1
+        if len(projects) == 1:
+            fallback = projects[0]
+            print(f"🎯 Using single project '{fallback.get('name')}' (ID: {fallback.get('id')})")
+            return fallback.get('id')
+            
+        print("ℹ️  Multiple projects found and no direct match; querying deployments across account.")
+        return None
+    except Exception as e:
+        print(f"⚠️  Notice: could not query /v9/projects ({e}). Querying deployments directly...")
+        return None
+
 def purge_deployments(token, project_name=None, keep_count=3, dry_run=False):
     print("=" * 65)
     print("🚀 ANVITAM VERCEL STORAGE PURGE UTILITY")
@@ -82,14 +128,16 @@ def purge_deployments(token, project_name=None, keep_count=3, dry_run=False):
     print(f"   Mode:   {'🧪 DRY-RUN (no deletions)' if dry_run else '⚡ ACTIVE PURGE'}")
     print("=" * 65)
 
+    target_project_id = resolve_project(token, project_name)
+
     # 1. Fetch deployments list (paginated up to 500)
     all_deployments = []
     until = None
     
     while True:
         query = f"/v6/deployments?limit=100"
-        if project_name:
-            query += f"&projectId={project_name}"
+        if target_project_id:
+            query += f"&projectId={target_project_id}"
         if until:
             query += f"&until={until}"
             
