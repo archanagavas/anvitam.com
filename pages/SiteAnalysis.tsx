@@ -20,7 +20,8 @@ import { TOOLS_SUITE } from '../constants/toolsData';
 import StickyConsultationBar from '../components/StickyConsultationBar';
 import {
   MapPin, Layers, Zap, Box, Search, Check, Share2, Globe,
-  Menu, ArrowLeft, Home, Building, Trees, Wand2, Trash2, Sliders, LogOut, Settings
+  Menu, ArrowLeft, Home, Building, Trees, Wand2, Trash2, Sliders, LogOut, Settings,
+  Maximize2, Minimize2, Navigation, ChevronDown, ChevronUp, X, Loader2
 } from 'lucide-react';
 
 const FALLBACK_MAPBOX_TOKEN = typeof window !== 'undefined' ? atob('cGsuZXlKMUlqb2lZVzUyYVhSaGJTSXNJbUVpT2lKamJYUTBaR1Z0YjJFd1kySTJNbnB6T1dZeWVYUm9NV0Z4SW4wLmZoUXY1SFdHR0FNdktucHljY0R2dHc=') : '';
@@ -57,10 +58,10 @@ const MAPBOX_3D_STYLES = [
   }
 ];
 
+// Clean 2D Tile Layers (Free, No API Key Required)
 const LEAFLET_2D_STYLES = [
   { id: 'satellite-2d', name: '🛰️ 2D High-Res Satellite (Esri)', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', maxZoom: 19, attribution: 'Tiles &copy; Esri' },
-  { id: 'streets-2d', name: '🏢 2D OpenStreetMap Streets', url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', maxZoom: 19, attribution: '&copy; OpenStreetMap' },
-  { id: 'studio-2d', name: '📐 2D Architectural Studio (Positron)', url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', maxZoom: 19, attribution: '&copy; CARTO' }
+  { id: 'streets-2d', name: '🏢 2D OpenStreetMap Streets', url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', maxZoom: 19, attribution: '&copy; OpenStreetMap' }
 ];
 
 const CATEGORIES: { id: DesignCategory; label: string; icon: string }[] = [
@@ -99,6 +100,12 @@ export default function SiteAnalysis() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [showDashboardModal, setShowDashboardModal] = useState(false);
 
+  // Mobile, Fullscreen & Card State
+  const [isFullscreenMap, setIsFullscreenMap] = useState(false);
+  const [isCardCollapsed, setIsCardCollapsed] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
   // Map Container & Instance Refs
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapboxRef = useRef<mapboxgl.Map | null>(null);
@@ -117,6 +124,92 @@ export default function SiteAnalysis() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchFormRef = useRef<HTMLFormElement>(null);
 
+  // Detect Mobile Viewport
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Responsive Map Resize Trigger on Fullscreen or Drawer Toggle
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (mapboxRef.current) {
+        try { mapboxRef.current.resize(); } catch { /* silent */ }
+      }
+      if (leafletRef.current) {
+        try { leafletRef.current.invalidateSize(); } catch { /* silent */ }
+      }
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [isFullscreenMap, isCardCollapsed]);
+
+  // Unified Multi-Tier Geocoding Engine (Coordinates -> Mapbox POI -> Nominatim Fallback)
+  const executeGeocoding = async (query: string): Promise<Array<{ lat: number; lon: number; display_name: string; short_name: string }>> => {
+    const clean = query.trim();
+    if (!clean) return [];
+
+    // 1. Direct coordinate regex: "22.3072, 73.1812" or "22.3072 73.1812"
+    const coordRegex = /^(-?\d+(?:\.\d+)?)[,\s]+(-?\d+(?:\.\d+)?)$/;
+    const coordMatch = clean.match(coordRegex);
+    if (coordMatch) {
+      const lat = parseFloat(coordMatch[1]);
+      const lon = parseFloat(coordMatch[2]);
+      if (!isNaN(lat) && !isNaN(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
+        return [{
+          lat,
+          lon,
+          display_name: `Coordinates: ${lat.toFixed(5)}°, ${lon.toFixed(5)}°`,
+          short_name: `${lat.toFixed(4)}°, ${lon.toFixed(4)}°`
+        }];
+      }
+    }
+
+    // 2. High-precision Mapbox Geocoding (fast, global POIs, cities, landmarks)
+    if (MAPBOX_TOKEN) {
+      try {
+        const mbRes = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(clean)}.json?access_token=${MAPBOX_TOKEN}&types=country,region,postcode,district,place,locality,neighborhood,address,poi&limit=5`);
+        if (mbRes.ok) {
+          const mbData = await mbRes.json();
+          if (mbData.features && mbData.features.length > 0) {
+            return mbData.features.map((f: any) => ({
+              lat: f.center[1],
+              lon: f.center[0],
+              display_name: f.place_name,
+              short_name: f.text || f.place_name.split(',')[0]
+            }));
+          }
+        }
+      } catch (err) {
+        console.warn('[Mapbox Geocoding notice]', err);
+      }
+    }
+
+    // 3. OpenStreetMap Nominatim Fallback
+    try {
+      const nomRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(clean)}&limit=5`);
+      if (nomRes.ok) {
+        const nomData = await nomRes.json();
+        if (nomData && nomData.length > 0) {
+          return nomData.map((d: any) => ({
+            lat: parseFloat(d.lat),
+            lon: parseFloat(d.lon),
+            display_name: d.display_name,
+            short_name: d.display_name.split(',')[0]
+          }));
+        }
+      }
+    } catch (err) {
+      console.warn('[Nominatim Geocoding error]', err);
+    }
+
+    return [];
+  };
+
   // Live location autocomplete debouncer
   useEffect(() => {
     if (!searchInput.trim() || searchInput.length < 2) {
@@ -128,18 +221,15 @@ export default function SiteAnalysis() {
     const timer = setTimeout(async () => {
       setIsSearchingSuggestions(true);
       try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchInput)}&limit=5`);
-        if (res.ok) {
-          const data = await res.json();
-          setSuggestions(data || []);
-          setShowSuggestions(true);
-        }
+        const results = await executeGeocoding(searchInput);
+        setSuggestions(results);
+        setShowSuggestions(results.length > 0);
       } catch (err) {
-        console.warn('[Geocoding error]', err);
+        console.warn('[Autocomplete error]', err);
       } finally {
         setIsSearchingSuggestions(false);
       }
-    }, 300);
+    }, 280);
 
     return () => clearTimeout(timer);
   }, [searchInput]);
@@ -485,7 +575,9 @@ export default function SiteAnalysis() {
     }
   };
 
-  const positionMarker = (lat: number, lon: number) => {
+  const positionMarker = (lat: number, lon: number, placeName?: string) => {
+    const isMobileView = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
+
     if (mapEngine === '3d' && mapboxRef.current) {
       const map = mapboxRef.current;
 
@@ -499,11 +591,29 @@ export default function SiteAnalysis() {
 
       const mb = (mapboxgl as any).default || mapboxgl;
       const MarkerConstructor = mb.Marker || mapboxgl.Marker;
-      mapboxMarkerRef.current = new MarkerConstructor({ element: el, anchor: 'bottom' })
+      const marker = new MarkerConstructor({ element: el, anchor: 'bottom' })
         .setLngLat([lon, lat])
         .addTo(map);
 
-      map.flyTo({ center: [lon, lat], zoom: 16, pitch: 55, bearing: -15, duration: 1000 });
+      if (placeName) {
+        const PopupConstructor = mb.Popup || mapboxgl.Popup;
+        const popup = new PopupConstructor({ offset: 25, closeButton: false, className: 'site-pin-popup' })
+          .setHTML(`<div style="font-family:sans-serif;font-size:11px;font-weight:700;color:#111;padding:2px 4px;">📍 ${placeName.split(',')[0]}</div>`);
+        marker.setPopup(popup);
+        popup.addTo(map);
+      }
+
+      mapboxMarkerRef.current = marker;
+
+      // Crucial: offset camera center so the target marker is clearly visible in the upper visible area above the bottom UI
+      map.flyTo({
+        center: [lon, lat],
+        zoom: 16.5,
+        pitch: 55,
+        bearing: -15,
+        offset: [0, isMobileView ? -90 : -50],
+        duration: 1200
+      });
     } else {
       if (!leafletRef.current) return;
 
@@ -519,10 +629,50 @@ export default function SiteAnalysis() {
       });
 
       const marker = L.marker([lat, lon], { icon: customPin }).addTo(leafletRef.current);
+      if (placeName) {
+        marker.bindPopup(`<div style="font-family:sans-serif;font-size:11px;font-weight:700;color:#111;">📍 ${placeName.split(',')[0]}</div>`).openPopup();
+      }
       leafletMarkerRef.current = marker;
 
-      leafletRef.current.setView([lat, lon], 13, { animate: true });
+      leafletRef.current.setView([lat, lon], 16, { animate: true });
+      setTimeout(() => {
+        if (leafletRef.current) {
+          leafletRef.current.panBy([0, isMobileView ? 90 : 50], { animate: true });
+        }
+      }, 250);
     }
+  };
+
+  const selectLocation = (lat: number, lon: number, placeName?: string) => {
+    positionMarker(lat, lon, placeName);
+    setPendingCoords({ lat, lon, placeName });
+    setIsAnalyzed(false);
+    if (placeName) {
+      setSearchInput(placeName.split(',')[0]);
+    }
+    setShowSuggestions(false);
+  };
+
+  const handleLocateMe = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser');
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        selectLocation(lat, lon, 'My Current Location');
+        setIsLocating(false);
+      },
+      (err) => {
+        console.warn('Geolocation error:', err);
+        setIsLocating(false);
+        alert('Could not retrieve your location. Please check browser permissions.');
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
   };
 
   const executeSiteAnalysis = async () => {
@@ -560,27 +710,23 @@ export default function SiteAnalysis() {
   };
 
   const handleSelectPresetLocation = (lat: number, lon: number, name: string) => {
-    positionMarker(lat, lon);
-    setPendingCoords({ lat, lon, placeName: name });
-    setIsAnalyzed(false);
+    selectLocation(lat, lon, name);
   };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchInput.trim()) return;
+    setIsSearchingSuggestions(true);
     try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchInput)}&limit=1`);
-      const data = await res.json();
-      if (data && data[0]) {
-        const lat = parseFloat(data[0].lat);
-        const lon = parseFloat(data[0].lon);
-        positionMarker(lat, lon);
-        setPendingCoords({ lat, lon, placeName: data[0].display_name });
-        setIsAnalyzed(false);
+      const results = await executeGeocoding(searchInput);
+      if (results.length > 0) {
+        const first = results[0];
+        selectLocation(first.lat, first.lon, first.display_name);
       }
-      setSearchInput('');
     } catch (err) {
       console.warn('Geocoding search failed:', err);
+    } finally {
+      setIsSearchingSuggestions(false);
     }
   };
 
@@ -627,22 +773,22 @@ export default function SiteAnalysis() {
           {/* ── MAIN STUDIO CANVAS ── */}
           <div className="flex-1 flex flex-col min-w-0">
             
-            {/* Unified Topbar inside canvas with Hamburger, Search, Settings & Logout */}
-            <div className="sa-topbar no-print bg-white text-gray-900 px-6 py-3 border-b border-gray-200/80 shadow-2xs flex flex-col lg:flex-row items-center justify-between gap-4 z-20 relative">
-              <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
+            {/* Unified Topbar inside canvas with Hamburger, Title, Credit Pill, Settings & Logout */}
+            <div className="sa-topbar no-print bg-white text-gray-900 px-3 sm:px-6 py-2.5 sm:py-3 border-b border-gray-200/80 shadow-2xs flex flex-row items-center justify-between gap-2 z-20 relative">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <button
                   type="button"
                   onClick={() => setShowToolsDrawer(true)}
-                  className="px-3 py-2 rounded-xl bg-black text-[#CCFF00] hover:bg-gray-800 transition cursor-pointer flex items-center gap-2 text-xs font-semibold shadow-2xs shrink-0"
+                  className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-black text-[#CCFF00] hover:bg-gray-800 transition cursor-pointer flex items-center gap-1.5 text-xs font-semibold shadow-2xs shrink-0"
                   title="Open All 21+ Tools Drawer"
                   aria-label="Open All 21+ Tools Drawer"
                 >
-                  <Menu size={16} />
-                  <span>All Tools</span>
+                  <Menu size={15} />
+                  <span className="hidden xs:inline">All Tools</span>
                 </button>
 
                 <div
-                  className="flex items-center gap-2 cursor-pointer shrink-0"
+                  className="flex items-center gap-2 cursor-pointer min-w-0"
                   onClick={() => navigate('/tools')}
                   role="button"
                   tabIndex={0}
@@ -654,16 +800,16 @@ export default function SiteAnalysis() {
                   }}
                   aria-label="Navigate to site tools directory"
                 >
-                  <span className="w-7 h-7 rounded-lg bg-black text-[#CCFF00] font-semibold flex items-center justify-center text-xs shadow-2xs">SA</span>
-                  <div>
-                    <h1 className="text-xs sm:text-sm font-semibold text-gray-900 leading-none">Site Intelligence Canvas</h1>
-                    <p className="text-[10px] text-gray-500 font-medium">Anvitam Studio</p>
+                  <span className="w-7 h-7 rounded-lg bg-black text-[#CCFF00] font-semibold flex items-center justify-center text-xs shadow-2xs shrink-0">SA</span>
+                  <div className="min-w-0">
+                    <h1 className="text-xs sm:text-sm font-semibold text-gray-900 leading-none truncate">Site Intelligence Canvas</h1>
+                    <p className="text-[10px] text-gray-500 font-medium hidden sm:block">Anvitam Studio</p>
                   </div>
                 </div>
               </div>
 
               {/* Controls: Credit Pill, Settings, Logout */}
-              <div className="flex items-center gap-2.5 shrink-0 w-full lg:w-auto justify-end">
+              <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
                 {user ? (
                   <button
                     type="button"
@@ -675,14 +821,14 @@ export default function SiteAnalysis() {
                       }
                     }}
                     aria-label="View or top up available studio credits"
-                    className="px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-semibold flex items-center gap-1.5 hover:bg-black transition cursor-pointer shadow-2xs"
+                    className="px-2.5 sm:px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-semibold flex items-center gap-1 hover:bg-black transition cursor-pointer shadow-2xs"
                   >
                     {user.is_admin || isUserAdmin() ? (
-                      <span>👑 Admin (Unlimited)</span>
+                      <span className="truncate">👑 Admin</span>
                     ) : (
                       <>
-                        <Zap size={14} className="fill-[#CCFF00] text-[#CCFF00]" />
-                        <span>{user.credits_remaining} Credits</span>
+                        <Zap size={13} className="fill-[#CCFF00] text-[#CCFF00]" />
+                        <span>{user.credits_remaining} Cr</span>
                       </>
                     )}
                   </button>
@@ -691,20 +837,20 @@ export default function SiteAnalysis() {
                     type="button"
                     onClick={() => setShowAuth(true)}
                     aria-label="Sign in to Anvitam Studio"
-                    className="px-3.5 py-1.5 rounded-full bg-[#CCFF00] text-black border border-black/10 text-xs font-semibold hover:bg-black hover:text-[#CCFF00] transition cursor-pointer shadow-2xs"
+                    className="px-2.5 sm:px-3.5 py-1.5 rounded-full bg-[#CCFF00] text-black border border-black/10 text-xs font-semibold hover:bg-black hover:text-[#CCFF00] transition cursor-pointer shadow-2xs"
                   >
-                    Sign In / Register
+                    Sign In
                   </button>
                 )}
 
                 <button
                   type="button"
                   onClick={() => setShowSettingsModal(true)}
-                  className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-gray-400 text-gray-700 hover:text-black transition cursor-pointer shadow-2xs"
+                  className="p-1.5 sm:p-2 rounded-xl bg-white border border-gray-200/80 hover:border-gray-400 text-gray-700 hover:text-black transition cursor-pointer shadow-2xs"
                   title="Studio & Account Settings"
                   aria-label="Studio & Account Settings"
                 >
-                  <Settings size={17} />
+                  <Settings size={16} />
                 </button>
 
                 {user && (
@@ -714,206 +860,313 @@ export default function SiteAnalysis() {
                       logoutToolUser();
                       setUser(null);
                     }}
-                    className="p-2 rounded-xl bg-white border border-gray-200/80 hover:border-red-400 text-gray-600 hover:text-red-600 transition cursor-pointer shadow-2xs"
+                    className="p-1.5 sm:p-2 rounded-xl bg-white border border-gray-200/80 hover:border-red-400 text-gray-600 hover:text-red-600 transition cursor-pointer shadow-2xs"
                     title="Sign Out"
                     aria-label="Sign Out"
                   >
-                    <LogOut size={17} />
+                    <LogOut size={16} />
                   </button>
                 )}
               </div>
             </div>
 
             {/* 3D Map Container (Hidden during PDF print export) */}
-            <div className="no-print w-full h-[65vh] min-h-[480px] relative bg-gray-900 border-b border-gray-200 overflow-hidden">
+            <div className={`no-print relative bg-gray-950 border-b border-gray-200 overflow-hidden transition-all duration-300 ${
+              isFullscreenMap
+                ? 'fixed inset-0 z-50 h-[100dvh] w-screen'
+                : 'w-full h-[76vh] sm:h-[72vh] min-h-[520px] sm:min-h-[500px]'
+            }`}>
               <div ref={mapContainerRef} className="w-full h-full absolute inset-0 z-0" />
 
-              {/* Map Overlay Controls */}
-              <div className="absolute top-4 left-4 z-20 bg-white/95 text-gray-900 backdrop-blur-md rounded-2xl p-2 border border-gray-200 flex flex-wrap items-center gap-2 shadow-md">
-                <div className="flex items-center bg-gray-100 p-0.5 rounded-xl border border-gray-200">
-                  <button
-                    onClick={() => setMapEngine('3d')}
-                    className={`px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                      mapEngine === '3d' ? 'bg-black text-[#CCFF00] shadow-2xs' : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    <Globe size={13} /> 3D Globe & Extruded Buildings
-                  </button>
-                  <button
-                    onClick={() => setMapEngine('2d')}
-                    className={`px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                      mapEngine === '2d' ? 'bg-black text-[#CCFF00] shadow-2xs' : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    <Layers size={13} /> 2D High-Res Flat
-                  </button>
-                </div>
-
-                {/* Map Style Dropdown */}
-                <select
-                  value={mapEngine === '3d' ? mapboxStyleId : leafletStyleId}
-                  onChange={(e) => mapEngine === '3d' ? change3DStyle(e.target.value) : change2DStyle(e.target.value)}
-                  className="bg-gray-100 text-gray-900 text-xs font-semibold rounded-xl px-2.5 py-1.5 border border-gray-200 outline-none cursor-pointer hover:bg-gray-200"
-                >
-                  {mapEngine === '3d' ? (
-                    MAPBOX_3D_STYLES.map(st => (
-                      <option key={st.id} value={st.id} className="bg-white text-gray-900">
-                        {st.name}
-                      </option>
-                    ))
-                  ) : (
-                    LEAFLET_2D_STYLES.map(st => (
-                      <option key={st.id} value={st.id} className="bg-white text-gray-900">
-                        {st.name}
-                      </option>
-                    ))
-                  )}
-                </select>
-
-                {mapEngine === '3d' && (
-                  <div className="flex items-center gap-1 bg-gray-100 p-0.5 rounded-xl border border-gray-200">
+              {/* Map Overlay Controls Header Bar */}
+              <div className="absolute top-3 left-3 right-3 sm:right-auto z-20 flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2">
+                <div className="bg-white/95 text-gray-900 backdrop-blur-md rounded-2xl p-1 sm:p-1.5 border border-gray-200 flex items-center gap-1.5 shadow-lg max-w-full overflow-x-auto no-scrollbar">
+                  {/* 3D vs 2D Switcher */}
+                  <div className="flex items-center bg-gray-100 p-0.5 rounded-xl border border-gray-200 shrink-0">
                     <button
-                      onClick={flyToGlobeSpaceView}
-                      className="px-2.5 py-1 rounded-lg text-xs font-semibold text-gray-700 hover:text-black hover:bg-gray-200 transition cursor-pointer"
+                      onClick={() => setMapEngine('3d')}
+                      className={`px-2 sm:px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
+                        mapEngine === '3d' ? 'bg-black text-[#CCFF00] shadow-2xs' : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                      title="3D Globe & Extruded Buildings"
                     >
-                      🚀 Earth Globe
+                      <Globe size={13} />
+                      <span className="hidden xs:inline">{isMobile ? '3D City' : '3D Buildings'}</span>
+                      <span className="xs:hidden">3D</span>
                     </button>
                     <button
-                      onClick={flyTo3DBuildingSiteView}
-                      className="px-2.5 py-1 rounded-lg text-xs font-semibold text-gray-700 hover:text-black hover:bg-gray-200 transition cursor-pointer"
+                      onClick={() => setMapEngine('2d')}
+                      className={`px-2 sm:px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
+                        mapEngine === '2d' ? 'bg-black text-[#CCFF00] shadow-2xs' : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                      title="2D High-Res Flat"
                     >
-                      🏢 3D Building Site
+                      <Layers size={13} />
+                      <span className="hidden xs:inline">{isMobile ? '2D Flat' : '2D High-Res'}</span>
+                      <span className="xs:hidden">2D</span>
                     </button>
                   </div>
-                )}
+
+                  {/* Map Style Dropdown (Filtered, Cleaned of broken Positron layer) */}
+                  <select
+                    value={mapEngine === '3d' ? mapboxStyleId : leafletStyleId}
+                    onChange={(e) => mapEngine === '3d' ? change3DStyle(e.target.value) : change2DStyle(e.target.value)}
+                    className="bg-gray-100 text-gray-900 text-xs font-semibold rounded-xl px-2 py-1 border border-gray-200 outline-none cursor-pointer hover:bg-gray-200 max-w-[125px] sm:max-w-[180px] truncate shrink-0"
+                    title="Select Map Style"
+                  >
+                    {mapEngine === '3d' ? (
+                      MAPBOX_3D_STYLES.map(st => (
+                        <option key={st.id} value={st.id} className="bg-white text-gray-900">
+                          {st.name}
+                        </option>
+                      ))
+                    ) : (
+                      LEAFLET_2D_STYLES.map(st => (
+                        <option key={st.id} value={st.id} className="bg-white text-gray-900">
+                          {st.name}
+                        </option>
+                      ))
+                    )}
+                  </select>
+
+                  {/* 3D Quick View Shortcuts */}
+                  {mapEngine === '3d' && (
+                    <div className="hidden sm:flex items-center gap-1 bg-gray-100 p-0.5 rounded-xl border border-gray-200 shrink-0">
+                      <button
+                        onClick={flyToGlobeSpaceView}
+                        className="px-2 py-1 rounded-lg text-xs font-semibold text-gray-700 hover:text-black hover:bg-gray-200 transition cursor-pointer flex items-center gap-1"
+                        title="Orbit / Earth Globe"
+                      >
+                        <span>🚀 Globe</span>
+                      </button>
+                      <button
+                        onClick={flyTo3DBuildingSiteView}
+                        className="px-2 py-1 rounded-lg text-xs font-semibold text-gray-700 hover:text-black hover:bg-gray-200 transition cursor-pointer flex items-center gap-1"
+                        title="3D Building Site"
+                      >
+                        <span>🏢 3D Site</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Right Utility Buttons: Locate Me & Full Screen Toggle */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    onClick={handleLocateMe}
+                    disabled={isLocating}
+                    className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-2xl bg-white/95 backdrop-blur-md text-gray-900 border border-gray-200/90 hover:bg-gray-100 transition shadow-lg cursor-pointer flex items-center gap-1 text-xs font-semibold"
+                    title="Zoom to my GPS location"
+                    aria-label="Zoom to my GPS location"
+                  >
+                    {isLocating ? <Loader2 size={14} className="animate-spin text-emerald-600" /> : <Navigation size={14} className="text-emerald-600" />}
+                    <span className="hidden sm:inline">Locate Me</span>
+                  </button>
+
+                  <button
+                    onClick={() => setIsFullscreenMap(prev => !prev)}
+                    className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-2xl backdrop-blur-md transition shadow-lg cursor-pointer flex items-center gap-1 text-xs font-semibold ${
+                      isFullscreenMap
+                        ? 'bg-black text-[#CCFF00] border border-black'
+                        : 'bg-white/95 text-gray-900 border border-gray-200/90 hover:bg-gray-100'
+                    }`}
+                    title={isFullscreenMap ? 'Exit Full Screen' : 'Full Screen Map'}
+                    aria-label={isFullscreenMap ? 'Exit Full Screen' : 'Full Screen Map'}
+                  >
+                    {isFullscreenMap ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+                    <span className="hidden sm:inline">{isFullscreenMap ? 'Exit' : 'Full Screen'}</span>
+                  </button>
+                </div>
               </div>
 
               {/* Floating Confirmation & Typology Selection Card */}
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 bg-white/95 backdrop-blur-md text-gray-900 p-5 rounded-3xl border border-gray-900 shadow-2xl flex flex-col gap-3 max-w-xl w-11/12">
-                
-                {/* Search Bar inside Floating Card */}
-                <form onSubmit={handleSearch} className="relative w-full">
-                  <div className="relative w-full flex items-center">
-                    <input
-                      type="text"
-                      className="bg-gray-100 text-gray-900 placeholder-gray-400 text-xs pl-4 pr-10 py-2 rounded-2xl border border-gray-200 focus:border-black focus:bg-white outline-none w-full font-normal transition"
-                      placeholder="Search location, city, lat/lon…"
-                      value={searchInput}
-                      onChange={e => setSearchInput(e.target.value)}
-                      onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
-                      aria-label="Search location, city, latitude or longitude"
-                    />
+              {isCardCollapsed ? (
+                /* Minimized Collapsed Bar (Allows 95%+ Map Visibility on Mobile) */
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 max-w-xl w-11/12 sm:w-auto">
+                  <div className="bg-white/95 backdrop-blur-md text-gray-900 px-3.5 py-2 rounded-2xl border border-gray-900 shadow-2xl flex items-center justify-between gap-2.5">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-6 h-6 rounded-lg bg-black text-[#CCFF00] flex items-center justify-center font-bold shrink-0 shadow-xs">
+                        <MapPin size={13} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-gray-900 truncate">
+                          {pendingCoords?.placeName ? pendingCoords.placeName.split(',')[0] : (pendingCoords ? `Site (${pendingCoords.lat.toFixed(4)}°, ${pendingCoords.lon.toFixed(4)}°)` : 'Tap map or search')}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        onClick={executeSiteAnalysis}
+                        disabled={loading || !pendingCoords}
+                        className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition shadow-sm ${
+                          !pendingCoords 
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-black text-[#CCFF00] hover:bg-gray-800 cursor-pointer'
+                        }`}
+                      >
+                        <Zap size={12} className={pendingCoords ? "fill-[#CCFF00]" : ""} />
+                        <span>{loading ? 'Analyzing...' : 'Analyze'}</span>
+                      </button>
+
+                      <button
+                        onClick={() => setIsCardCollapsed(false)}
+                        className="p-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition cursor-pointer flex items-center text-xs font-semibold"
+                        title="Expand Search & Typology Options"
+                        aria-label="Expand Search & Typology Options"
+                      >
+                        <ChevronUp size={15} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Expanded Studio HUD Card (Made Streamlined & Compact on Mobile) */
+                <div className="absolute bottom-3 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 bg-white/95 backdrop-blur-md text-gray-900 p-3 sm:p-5 rounded-3xl border border-gray-900 shadow-2xl flex flex-col gap-2.5 max-w-xl w-[94%] sm:w-11/12">
+                  
+                  {/* Top Bar inside Card: Search Bar + Minimize Button */}
+                  <div className="flex items-center gap-2">
+                    <form onSubmit={handleSearch} ref={searchFormRef} className="relative flex-1">
+                      <div className="relative w-full flex items-center">
+                        <input
+                          type="text"
+                          className="bg-gray-100 text-gray-900 placeholder-gray-400 text-xs pl-3.5 pr-14 py-2 rounded-2xl border border-gray-200 focus:border-black focus:bg-white outline-none w-full font-normal transition"
+                          placeholder="Search location, city, lat/lon…"
+                          value={searchInput}
+                          onChange={e => setSearchInput(e.target.value)}
+                          onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+                          aria-label="Search location, city, latitude or longitude"
+                        />
+                        <div className="absolute right-1 flex items-center gap-0.5">
+                          {searchInput && (
+                            <button
+                              type="button"
+                              onClick={() => { setSearchInput(''); setSuggestions([]); }}
+                              className="p-1 text-gray-400 hover:text-black transition"
+                              title="Clear search"
+                            >
+                              <X size={12} />
+                            </button>
+                          )}
+                          <button
+                            type="submit"
+                            aria-label="Execute search"
+                            className="p-1.5 bg-black text-[#CCFF00] hover:bg-gray-800 rounded-xl transition cursor-pointer flex items-center justify-center"
+                          >
+                            <Search size={12} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Location Autocomplete Suggestions Dropdown (Floats Upwards) */}
+                      {showSuggestions && suggestions.length > 0 && (
+                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 overflow-hidden text-left max-h-52 overflow-y-auto">
+                          <div className="px-3 py-1.5 bg-gray-50 border-b border-gray-100 text-[10px] font-semibold text-gray-400 uppercase tracking-wider flex items-center justify-between">
+                            <span>Matching Locations</span>
+                            {isSearchingSuggestions && <span className="animate-pulse text-amber-500">Searching…</span>}
+                          </div>
+                          {suggestions.map((item, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => {
+                                selectLocation(item.lat, item.lon, item.display_name);
+                              }}
+                              className="w-full text-left px-3 py-2 text-xs text-gray-800 hover:bg-gray-100 flex items-start gap-2 border-b border-gray-100 last:border-0 transition cursor-pointer"
+                            >
+                              <MapPin size={14} className="text-emerald-600 shrink-0 mt-0.5" />
+                              <div className="truncate">
+                                <p className="font-semibold truncate text-gray-900">{item.short_name || item.display_name.split(',')[0]}</p>
+                                <p className="text-[10px] text-gray-500 truncate">{item.display_name}</p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </form>
+
+                    {/* Minimize Card Button */}
                     <button
-                      type="submit"
-                      aria-label="Execute search"
-                      className="absolute right-1 p-1.5 bg-black text-[#CCFF00] hover:bg-gray-800 rounded-xl transition cursor-pointer flex items-center justify-center"
+                      type="button"
+                      onClick={() => setIsCardCollapsed(true)}
+                      className="p-2 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-black transition shrink-0 cursor-pointer"
+                      title="Minimize panel to view full map"
+                      aria-label="Minimize panel to view full map"
                     >
-                      <Search size={13} />
+                      <ChevronDown size={16} />
                     </button>
                   </div>
 
-                  {/* Location Autocomplete Suggestions Dropdown (Floats Upwards) */}
-                  {showSuggestions && suggestions.length > 0 && (
-                    <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 overflow-hidden text-left max-h-56 overflow-y-auto">
-                      <div className="px-3 py-1.5 bg-gray-50 border-b border-gray-100 text-[10px] font-semibold text-gray-400 uppercase tracking-wider flex items-center justify-between">
-                        <span>Matching Locations</span>
-                        {isSearchingSuggestions && <span className="animate-pulse text-amber-500">Searching…</span>}
+                  {/* Location Info Header */}
+                  <div className="flex items-center justify-between gap-2 pt-0.5">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-black text-[#CCFF00] flex items-center justify-center font-bold shrink-0 shadow-xs">
+                        <MapPin size={14} />
                       </div>
-                      {suggestions.map((item, idx) => {
-                        const lat = parseFloat(item.lat);
-                        const lon = parseFloat(item.lon);
-                        return (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => {
-                              positionMarker(lat, lon);
-                              setPendingCoords({ lat, lon, placeName: item.display_name });
-                              setIsAnalyzed(false);
-                              setSearchInput(item.display_name.split(',')[0]);
-                              setShowSuggestions(false);
-                            }}
-                            className="w-full text-left px-3.5 py-2 text-xs text-gray-800 hover:bg-gray-100 flex items-start gap-2 border-b border-gray-100 last:border-0 transition cursor-pointer"
-                          >
-                            <MapPin size={14} className="text-emerald-600 shrink-0 mt-0.5" />
-                            <div className="truncate">
-                              <p className="font-semibold truncate text-gray-900">{item.display_name.split(',')[0]}</p>
-                              <p className="text-[10px] text-gray-500 truncate">{item.display_name}</p>
-                            </div>
-                          </button>
-                        );
-                      })}
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-gray-900 truncate">
+                          {pendingCoords?.placeName || (pendingCoords ? `Site: ${pendingCoords.lat.toFixed(4)}°, ${pendingCoords.lon.toFixed(4)}°` : 'Click anywhere on 3D map or search above')}
+                        </p>
+                        <p className="text-[10px] text-gray-500 font-normal truncate">
+                          {isAnalyzed ? '✅ Site analysis active · Select typology to recalculate' : 'Choose typology & run 14+ diagnostic site engines'}
+                        </p>
+                      </div>
                     </div>
-                  )}
-                </form>
 
-                {/* Location Info Header */}
-                <div className="flex items-center justify-between gap-3 pt-0.5">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded-xl bg-black text-[#CCFF00] flex items-center justify-center font-bold shrink-0 shadow-xs">
-                      <MapPin size={16} />
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-black bg-[#CCFF00] px-2 py-0.5 rounded-full shrink-0">
+                      {category}
+                    </span>
+                  </div>
+
+                  {/* Middle: Interactive Typology Selector Pills */}
+                  <div className="space-y-1 pt-1 border-t border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                        Select Typology:
+                      </p>
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-gray-900 truncate">
-                        {pendingCoords?.placeName || (pendingCoords ? `Site Lat: ${pendingCoords.lat.toFixed(4)}°, Lon: ${pendingCoords.lon.toFixed(4)}°` : 'Click anywhere on 3D map or search above')}
-                      </p>
-                      <p className="text-[10px] text-gray-500 font-normal truncate">
-                        {isAnalyzed ? '✅ Site analysis active · Select typology below to recalculate' : 'Choose project typology & run 14+ diagnostic site engines'}
-                      </p>
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
+                      {CATEGORIES.map(cat => (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => handleCategoryChange(cat.id)}
+                          className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 transition cursor-pointer whitespace-nowrap ${
+                            category === cat.id
+                              ? 'bg-black text-[#CCFF00] shadow-xs'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          <span className="text-xs">{cat.icon}</span>
+                          <span>{cat.label}</span>
+                        </button>
+                      ))}
                     </div>
                   </div>
 
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-black bg-[#CCFF00] px-2.5 py-0.5 rounded-full shrink-0">
-                    {category}
-                  </span>
+                  {/* Bottom: Action Trigger Button */}
+                  <button
+                    onClick={executeSiteAnalysis}
+                    disabled={loading || !pendingCoords}
+                    className={`w-full font-bold text-xs py-2.5 sm:py-3 rounded-2xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer ${
+                      !pendingCoords
+                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                        : 'bg-black text-[#CCFF00] hover:bg-gray-800'
+                    }`}
+                  >
+                    <Zap size={14} className={pendingCoords ? "fill-[#CCFF00]" : ""} />
+                    <span>
+                      {loading
+                        ? 'Synthesizing 14+ Site Diagnostics...'
+                        : !pendingCoords
+                          ? 'Drop a Pin on 3D Map or Search to Analyze'
+                          : isAnalyzed
+                            ? `Re-Analyze for ${category.toUpperCase()} (1 Credit)`
+                            : `Run Site Analysis for ${category.toUpperCase()} (${user?.is_admin || isUserAdmin() ? 'Free Admin' : '1 Credit'})`}
+                    </span>
+                  </button>
                 </div>
-
-                {/* Middle: Interactive Typology Selector Pills */}
-                <div className="space-y-1 pt-1 border-t border-gray-100">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                    1. Select Project Typology:
-                  </p>
-                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-                    {CATEGORIES.map(cat => (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        onClick={() => handleCategoryChange(cat.id)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer whitespace-nowrap ${
-                          category === cat.id
-                            ? 'bg-black text-[#CCFF00] shadow-xs'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        <span className="text-xs">{cat.icon}</span>
-                        <span>{cat.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Bottom: Action Trigger Button */}
-                <button
-                  onClick={executeSiteAnalysis}
-                  disabled={loading || !pendingCoords}
-                  className={`w-full font-bold text-xs py-3 rounded-2xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer ${
-                    !pendingCoords
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      : 'bg-black text-[#CCFF00] hover:bg-gray-800'
-                  }`}
-                >
-                  <Zap size={14} className={pendingCoords ? "fill-[#CCFF00]" : ""} />
-                  <span>
-                    {loading
-                      ? 'Synthesizing 14+ Site Diagnostics...'
-                      : !pendingCoords
-                        ? 'Drop a Pin on 3D Map or Search to Analyze'
-                        : isAnalyzed
-                          ? `Re-Analyze for ${category.toUpperCase()} (1 Credit)`
-                          : `Run Site Analysis for ${category.toUpperCase()} (${user?.is_admin || isUserAdmin() ? 'Free Admin' : '1 Credit'})`}
-                  </span>
-                </button>
-              </div>
+              )}
             </div>
 
             {/* 3D Solar Shadow Simulator (Hidden during PDF print export) */}
