@@ -275,9 +275,10 @@
     "dofollow": false,
     "type": "SaaS Marketplace",
     "pricing": "Free",
-    "status": "queued",
-    "submittedAt": null,
-    "notes": "Shopify's official marketplace for e-commerce apps, themes, and integrations to extend online stores."
+    "status": "submitted",
+    "submittedAt": "2026-09-27T10:55:25.871Z",
+    "notes": "Shopify's official marketplace for e-commerce apps, themes, and integrations to extend online stores.",
+    "generatedPitch": "Anvitam is a boutique sustainable architecture studio and ecological engineering platform founded by Ar. Archana Gavas. Featuring 16+ automated zero-cost calculators for solar cooling, micro-climate analysis, rainwater harvesting, food forests, and passive farmstay retreats."
   },
   {
     "name": "Stripe App Marketplace",
@@ -287,9 +288,10 @@
     "dofollow": false,
     "type": "SaaS Marketplace",
     "pricing": "Free",
-    "status": "queued",
-    "submittedAt": null,
-    "notes": "Stripe's marketplace for apps and integrations that extend payment processing and financial operations."
+    "status": "submitted",
+    "submittedAt": "2026-09-27T10:55:26.322Z",
+    "notes": "Stripe's marketplace for apps and integrations that extend payment processing and financial operations.",
+    "generatedPitch": "Anvitam is a boutique sustainable architecture studio and ecological engineering platform founded by Ar. Archana Gavas. Featuring 16+ automated zero-cost calculators for solar cooling, micro-climate analysis, rainwater harvesting, food forests, and passive farmstay retreats."
   },
   {
     "name": "ZDNet",
