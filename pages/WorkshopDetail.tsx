@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
+import { INITIAL_WORKSHOPS } from '../constants';
 import { 
   ArrowLeft, 
   MapPin, 
@@ -33,7 +34,7 @@ const WorkshopDetail: React.FC = () => {
   const { workshops, addMessage, isInitialSyncDone } = useContent();
   
   // Find workshop by ID or slug
-  const workshop = workshops.find(w => w.id === id || w.slug === id);
+  const workshop = workshops.find(w => w.id === id || w.slug === id) || INITIAL_WORKSHOPS.find(w => w.id === id || w.slug === id);
 
   // FAQ Accordion State
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);

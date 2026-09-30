@@ -65,9 +65,11 @@ const ProjectDetail: React.FC = () => {
   };
   const targetId = (id && projectAliases[id]) || id;
 
+  // Combine projects from DB/state and INITIAL_PROJECTS so we have the full catalog
+  const allProjects = Array.isArray(projects) && projects.length > 0 ? projects : INITIAL_PROJECTS;
+
   // Find project by slug or ID, falling back to INITIAL_PROJECTS
-  let projectIndex = projects.findIndex(p => p.id === targetId || p.slug === targetId || p.id === id || p.slug === id);
-  let project = projects[projectIndex];
+  let project = allProjects.find(p => p.id === targetId || p.slug === targetId || p.id === id || p.slug === id);
   if (!project) {
     const initProj = INITIAL_PROJECTS.find(p => p.id === targetId || p.slug === targetId || p.id === id || p.slug === id);
     if (initProj) {
@@ -110,8 +112,15 @@ const ProjectDetail: React.FC = () => {
     );
   }
 
-  const prevProject = projectIndex > 0 ? projects[projectIndex - 1] : projects[projects.length - 1];
-  const nextProject = projectIndex < projects.length - 1 ? projects[projectIndex + 1] : projects[0];
+  // Safe navigation calculation
+  const validProjects = (allProjects && allProjects.length > 0 ? allProjects : INITIAL_PROJECTS).filter(p => Boolean(p && (p.slug || p.id)));
+  const currentProjectIdx = validProjects.findIndex(p => p.id === project.id || (p.slug && p.slug === project.slug));
+  const prevProject = validProjects.length > 1 && currentProjectIdx > 0 
+    ? validProjects[currentProjectIdx - 1] 
+    : (validProjects.length > 1 ? validProjects[validProjects.length - 1] : null);
+  const nextProject = validProjects.length > 1 && currentProjectIdx >= 0 && currentProjectIdx < validProjects.length - 1 
+    ? validProjects[currentProjectIdx + 1] 
+    : (validProjects.length > 1 ? validProjects[0] : null);
 
   const ctaButton = (
     <a 
@@ -438,44 +447,54 @@ const ProjectDetail: React.FC = () => {
       )}
 
       {/* 8. Related / Next Projects Navigation */}
-      <div className="max-w-4xl mx-auto px-6 mb-20">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-6 border-t border-gray-100 pt-8">Explore More Projects</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Link 
-            to={`/projects/${prevProject.slug || prevProject.id}`} 
-            className="flex items-center space-x-4 p-4 rounded-xl border border-gray-100 hover:border-gray-300 transition group bg-white shadow-xs"
-          >
-            <img 
-              src={prevProject.image} 
-              className="w-16 h-16 rounded-lg object-cover flex-shrink-0" 
-              alt={prevProject.title} 
-            />
-            <div>
-              <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest block">Previous Case</span>
-              <h4 className="font-bold text-[#111] text-xs md:text-sm group-hover:text-gray-650 transition-colors line-clamp-1">
-                {prevProject.title}
-              </h4>
-            </div>
-          </Link>
+      {(prevProject || nextProject) && (
+        <div className="max-w-4xl mx-auto px-6 mb-20">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-6 border-t border-gray-100 pt-8">Explore More Projects</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {prevProject && (
+              <Link 
+                to={`/projects/${prevProject.slug || prevProject.id}`} 
+                className="flex items-center space-x-4 p-4 rounded-xl border border-gray-100 hover:border-gray-300 transition group bg-white shadow-xs"
+              >
+                {prevProject.image && (
+                  <img 
+                    src={prevProject.image} 
+                    className="w-16 h-16 rounded-lg object-cover flex-shrink-0" 
+                    alt={prevProject.title || 'Previous Case'} 
+                  />
+                )}
+                <div>
+                  <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest block">Previous Case</span>
+                  <h4 className="font-bold text-[#111] text-xs md:text-sm group-hover:text-gray-650 transition-colors line-clamp-1">
+                    {prevProject.title}
+                  </h4>
+                </div>
+              </Link>
+            )}
 
-          <Link 
-            to={`/projects/${nextProject.slug || nextProject.id}`} 
-            className="flex items-center space-x-4 p-4 rounded-xl border border-gray-100 hover:border-gray-300 transition group bg-white shadow-xs"
-          >
-            <img 
-              src={nextProject.image} 
-              className="w-16 h-16 rounded-lg object-cover flex-shrink-0" 
-              alt={nextProject.title} 
-            />
-            <div>
-              <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest block">Next Case</span>
-              <h4 className="font-bold text-[#111] text-xs md:text-sm group-hover:text-gray-650 transition-colors line-clamp-1">
-                {nextProject.title}
-              </h4>
-            </div>
-          </Link>
+            {nextProject && (
+              <Link 
+                to={`/projects/${nextProject.slug || nextProject.id}`} 
+                className="flex items-center space-x-4 p-4 rounded-xl border border-gray-100 hover:border-gray-300 transition group bg-white shadow-xs"
+              >
+                {nextProject.image && (
+                  <img 
+                    src={nextProject.image} 
+                    className="w-16 h-16 rounded-lg object-cover flex-shrink-0" 
+                    alt={nextProject.title || 'Next Case'} 
+                  />
+                )}
+                <div>
+                  <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest block">Next Case</span>
+                  <h4 className="font-bold text-[#111] text-xs md:text-sm group-hover:text-gray-650 transition-colors line-clamp-1">
+                    {nextProject.title}
+                  </h4>
+                </div>
+              </Link>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 9. Pre-Footer CTA */}
       <div className="bg-[#0a0a0a] text-white pt-20 pb-20 px-6 rounded-t-3xl md:rounded-t-[3rem] mt-10">
