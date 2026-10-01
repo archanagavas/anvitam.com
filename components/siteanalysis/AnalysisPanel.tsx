@@ -54,24 +54,24 @@ export const AnalysisPanel: React.FC<Props> = ({
 
   if (!result && !loading) {
     return (
-      <div className="p-8 sm:p-12 bg-white text-gray-900 rounded-3xl border border-gray-200/80 shadow-xs max-w-4xl mx-auto my-8 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-black text-[#CCFF00] font-bold text-2xl flex items-center justify-center mx-auto mb-5 shadow-xs">
-          <MapPin size={32} />
+      <div className="p-4 sm:p-10 bg-white text-gray-900 rounded-2xl sm:rounded-3xl border border-gray-200/80 shadow-xs max-w-4xl mx-auto my-3 sm:my-8 text-center">
+        <div className="w-11 h-11 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-black text-[#CCFF00] font-bold text-xl sm:text-2xl flex items-center justify-center mx-auto mb-3 sm:mb-5 shadow-xs">
+          <MapPin size={22} className="sm:w-8 sm:h-8" />
         </div>
-        <span className="text-[10px] font-bold uppercase tracking-wider text-black bg-[#CCFF00] px-3.5 py-1 rounded-full inline-block mb-3">
+        <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-black bg-[#CCFF00] px-3 py-0.5 sm:px-3.5 sm:py-1 rounded-full inline-block mb-2 sm:mb-3">
           Interactive Site Intelligence
         </span>
-        <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 tracking-tight">
+        <h3 className="text-lg sm:text-3xl font-bold text-gray-900 mb-1.5 sm:mb-2 tracking-tight">
           Drop a Pin on 3D Map to Begin Analysis
         </h3>
-        <p className="text-xs sm:text-sm text-gray-500 max-w-xl mx-auto mb-8 leading-relaxed font-normal">
+        <p className="text-xs sm:text-sm text-gray-500 max-w-xl mx-auto mb-4 sm:mb-8 leading-relaxed font-normal">
           Click anywhere on the 3D map above or search an address to generate 14+ high-precision architectural site diagrams tailored for {category} development.
         </p>
 
         {/* Preset Locations Quick Buttons */}
-        <div className="mb-8 pt-6 border-t border-gray-100">
-          <p className="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">Try Sample Global Locations:</p>
-          <div className="flex flex-wrap justify-center gap-2.5">
+        <div className="mb-4 sm:mb-8 pt-4 sm:pt-6 border-t border-gray-100">
+          <p className="text-[11px] sm:text-xs font-bold text-gray-500 mb-2.5 sm:mb-3 uppercase tracking-wider">Try Sample Global Locations:</p>
+          <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2.5">
             {[
               { name: 'Vadodara, India', lat: 22.3072, lon: 73.1812 },
               { name: 'London, UK', lat: 51.5074, lon: -0.1278 },
@@ -82,18 +82,18 @@ export const AnalysisPanel: React.FC<Props> = ({
               <button
                 key={loc.name}
                 onClick={() => onSelectPresetLocation && onSelectPresetLocation(loc.lat, loc.lon, loc.name)}
-                className="bg-gray-100 hover:bg-black hover:text-[#CCFF00] text-gray-800 text-xs font-semibold px-4 py-2 rounded-2xl border border-gray-200 transition cursor-pointer flex items-center gap-1.5"
+                className="bg-gray-100 hover:bg-black hover:text-[#CCFF00] text-gray-800 text-xs font-semibold px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl sm:rounded-2xl border border-gray-200 transition cursor-pointer flex items-center gap-1 sm:gap-1.5"
               >
-                <MapPin size={13} /> {loc.name}
+                <MapPin size={12} /> {loc.name}
               </button>
             ))}
           </div>
         </div>
 
         {/* Available Modules Badges */}
-        <div className="flex flex-wrap justify-center gap-2 pt-2">
+        <div className="flex flex-wrap justify-center gap-1 sm:gap-2 pt-1 sm:pt-2">
           {['🧭 Direction & Space Zoning', '🌊 Plinth Level & Hydrology', '📊 SWOT Matrix', '🗺️ Spatial Neighborhood POIs', '☀️ Solar Path 3D', '💨 Wind Rose', '🧱 SoilGrids', '🏢 Urban Fabric', '🌡️ Thermal Comfort'].map(f => (
-            <span key={f} className="text-xs font-medium bg-gray-100 text-gray-700 px-3.5 py-1.5 rounded-full border border-gray-200/60">
+            <span key={f} className="text-[10px] sm:text-xs font-medium bg-gray-100 text-gray-700 px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-full border border-gray-200/60">
               {f}
             </span>
           ))}

@@ -393,6 +393,7 @@ export default function SiteAnalysis() {
           zoom: 15,
           pitch: 55,
           bearing: -15,
+          cooperativeGestures: true,
         });
 
         mapboxRef.current = map;
@@ -951,12 +952,12 @@ export default function SiteAnalysis() {
             <div className={`no-print relative bg-gray-950 border-b border-gray-200 overflow-hidden transition-all duration-300 ${
               isFullscreenMap
                 ? 'fixed inset-0 z-50 h-[100dvh] w-screen'
-                : 'w-full h-[76vh] sm:h-[72vh] min-h-[520px] sm:min-h-[500px]'
+                : 'w-full h-[38vh] sm:h-[58vh] md:h-[68vh] min-h-[250px] sm:min-h-[460px]'
             }`}>
               <div ref={mapContainerRef} className="w-full h-full absolute inset-0 z-0" />
 
               {/* Map Overlay Controls Header Bar */}
-              <div className="absolute top-3 left-3 right-3 sm:right-auto z-20 flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2">
+              <div className="absolute top-2.5 left-2.5 right-2.5 sm:right-auto z-20 flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2">
                 <div className="bg-white/95 text-gray-900 backdrop-blur-md rounded-2xl p-1 sm:p-1.5 border border-gray-200 flex items-center gap-1.5 shadow-lg max-w-full overflow-x-auto no-scrollbar">
                   {/* 3D vs 2D Switcher */}
                   <div className="flex items-center bg-gray-100 p-0.5 rounded-xl border border-gray-200 shrink-0">
@@ -1057,9 +1058,9 @@ export default function SiteAnalysis() {
               </div>
             </div>
 
-            {/* Studio Intelligence Dock (Takes the place of Image 1 below map — Leaves the 3D map 100% unobstructed) */}
-            <div className="no-print bg-[#F9FAFB] border-b border-gray-200 px-3 sm:px-6 py-4 max-w-7xl mx-auto w-full">
-              <div className="max-w-3xl mx-auto bg-white backdrop-blur-md text-gray-900 p-3.5 sm:p-5 rounded-3xl border border-gray-900 shadow-xl flex flex-col gap-3">
+            {/* Studio Intelligence Dock (Leaves the 3D map unobstructed and fits naturally on mobile) */}
+            <div className="no-print bg-[#F9FAFB] border-b border-gray-200 px-2.5 sm:px-6 py-2.5 sm:py-4 max-w-7xl mx-auto w-full">
+              <div className="max-w-3xl mx-auto bg-white backdrop-blur-md text-gray-900 p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-gray-900 shadow-xl flex flex-col gap-2.5 sm:gap-3">
                 
                 {/* Search Bar Row */}
                 <div className="flex items-center gap-2">
@@ -1067,7 +1068,7 @@ export default function SiteAnalysis() {
                     <div className="relative w-full flex items-center">
                       <input
                         type="text"
-                        className="bg-gray-100 text-gray-900 placeholder-gray-500 text-xs sm:text-sm pl-4 pr-16 py-2.5 rounded-2xl border border-gray-200 focus:border-black focus:bg-white outline-none w-full font-normal transition"
+                        className="bg-gray-100 text-gray-900 placeholder-gray-500 text-xs sm:text-sm pl-3.5 sm:pl-4 pr-16 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl border border-gray-200 focus:border-black focus:bg-white outline-none w-full font-normal transition"
                         placeholder="Search location or coordinates (lat, lon)..."
                         value={searchInput}
                         onChange={e => setSearchInput(e.target.value)}
@@ -1088,7 +1089,7 @@ export default function SiteAnalysis() {
                         <button
                           type="submit"
                           aria-label="Execute search"
-                          className="px-3 py-1.5 bg-black text-[#CCFF00] hover:bg-gray-800 rounded-xl transition cursor-pointer flex items-center justify-center font-bold text-xs gap-1"
+                          className="px-2.5 sm:px-3 py-1.5 bg-black text-[#CCFF00] hover:bg-gray-800 rounded-xl transition cursor-pointer flex items-center justify-center font-bold text-xs gap-1"
                         >
                           <Search size={13} />
                           <span className="hidden sm:inline">Search</span>
@@ -1125,48 +1126,48 @@ export default function SiteAnalysis() {
                 </div>
 
                 {/* Combined Settings Tab Switcher */}
-                <div className="flex items-center gap-1.5 p-1 bg-gray-100 rounded-2xl border border-gray-200">
+                <div className="flex items-center gap-1 p-0.5 sm:p-1 bg-gray-100 rounded-xl sm:rounded-2xl border border-gray-200">
                   <button
                     type="button"
                     onClick={() => setActiveCardTab('typology')}
-                    className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                    className={`flex-1 py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1 sm:gap-1.5 transition cursor-pointer ${
                       activeCardTab === 'typology'
-                        ? 'bg-black text-[#CCFF00] shadow-sm'
+                        ? 'bg-black text-[#CCFF00] shadow-xs'
                         : 'text-gray-600 hover:text-black hover:bg-white/60'
                     }`}
                   >
-                    <Building size={14} />
+                    <Building size={13} />
                     <span>Site &amp; Typology Settings</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setActiveCardTab('solar')}
-                    className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                    className={`flex-1 py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1 sm:gap-1.5 transition cursor-pointer ${
                       activeCardTab === 'solar'
-                        ? 'bg-black text-[#CCFF00] shadow-sm'
+                        ? 'bg-black text-[#CCFF00] shadow-xs'
                         : 'text-gray-600 hover:text-black hover:bg-white/60'
                     }`}
                   >
-                    <Sun size={14} className={activeCardTab === 'solar' ? 'text-[#CCFF00]' : ''} />
+                    <Sun size={13} className={activeCardTab === 'solar' ? 'text-[#CCFF00]' : ''} />
                     <span>3D Solar Simulator</span>
                   </button>
                 </div>
 
                 {/* TAB 1: Site & Typology Settings */}
                 {activeCardTab === 'typology' && (
-                  <div className="flex flex-col gap-3 animate-in fade-in duration-150">
+                  <div className="flex flex-col gap-2.5 sm:gap-3 animate-in fade-in duration-150">
                     {/* Location Info Header */}
-                    <div className="flex items-center justify-between gap-2 p-2.5 bg-gray-50 rounded-2xl border border-gray-100">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-8 h-8 rounded-xl bg-black text-[#CCFF00] flex items-center justify-center font-bold shrink-0 shadow-xs">
-                          <MapPin size={15} />
+                    <div className="flex items-center justify-between gap-2 p-2 sm:p-2.5 bg-gray-50 rounded-xl sm:rounded-2xl border border-gray-100">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-black text-[#CCFF00] flex items-center justify-center font-bold shrink-0 shadow-xs">
+                          <MapPin size={14} />
                         </div>
                         <div className="min-w-0">
                           <p className="text-xs font-bold text-gray-900 truncate">
-                            {pendingCoords?.placeName || (pendingCoords ? `Site Coordinates: ${pendingCoords.lat.toFixed(4)}°, ${pendingCoords.lon.toFixed(4)}°` : 'Click anywhere on the map above or search above')}
+                            {pendingCoords?.placeName || (pendingCoords ? `Site Coordinates: ${pendingCoords.lat.toFixed(4)}°, ${pendingCoords.lon.toFixed(4)}°` : 'Click anywhere on map or choose sample below')}
                           </p>
                           <p className="text-[10px] text-gray-500 font-normal truncate">
-                            {isAnalyzed ? '✅ Site analysis active · Select typology to recalculate' : 'Drop pin on map or select typology & run 14+ diagnostic engines'}
+                            {isAnalyzed ? '✅ Site analysis active · Select typology to recalculate' : 'Drop pin or pick typology to synthesize 14+ diagnostics'}
                           </p>
                         </div>
                       </div>
@@ -1177,24 +1178,24 @@ export default function SiteAnalysis() {
                     </div>
 
                     {/* Typology Selector Pills */}
-                    <div className="space-y-1.5">
+                    <div className="space-y-1">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                         Select Project Typology:
                       </p>
-                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
+                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-1 sm:gap-1.5">
                         {CATEGORIES.map(cat => (
                           <button
                             key={cat.id}
                             type="button"
                             onClick={() => handleCategoryChange(cat.id)}
-                            className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                            className={`px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1 sm:gap-1.5 transition cursor-pointer ${
                               category === cat.id
                                 ? 'bg-black text-[#CCFF00] shadow-xs'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                           >
                             <span className="text-xs">{cat.icon}</span>
-                            <span>{cat.label}</span>
+                            <span className="truncate">{cat.label}</span>
                           </button>
                         ))}
                       </div>
@@ -1204,7 +1205,7 @@ export default function SiteAnalysis() {
                     <button
                       onClick={executeSiteAnalysis}
                       disabled={loading || !pendingCoords}
-                      className={`w-full font-bold text-xs sm:text-sm py-3 rounded-2xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer ${
+                      className={`w-full font-bold text-xs sm:text-sm py-2.5 sm:py-3 rounded-xl sm:rounded-2xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer ${
                         !pendingCoords
                           ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                           : 'bg-black text-[#CCFF00] hover:bg-gray-800'
@@ -1221,6 +1222,30 @@ export default function SiteAnalysis() {
                               : `Run Site Analysis for ${category.toUpperCase()} (${user?.is_admin || isUserAdmin() ? 'Free Admin' : '1 Credit'})`}
                       </span>
                     </button>
+
+                    {/* Quick Sample Presets Bar for Instant Mobile Testing */}
+                    {!pendingCoords && (
+                      <div className="flex items-center gap-1.5 pt-0.5 overflow-x-auto no-scrollbar">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider shrink-0">Sample Sites:</span>
+                        {[
+                          { name: 'Vadodara', lat: 22.3072, lon: 73.1812 },
+                          { name: 'London', lat: 51.5074, lon: -0.1278 },
+                          { name: 'New York', lat: 40.7128, lon: -74.0060 },
+                          { name: 'Dubai', lat: 25.2048, lon: 55.2708 },
+                          { name: 'Sydney', lat: -33.8688, lon: 151.2093 }
+                        ].map(loc => (
+                          <button
+                            key={loc.name}
+                            type="button"
+                            onClick={() => handleSelectPresetLocation(loc.lat, loc.lon, loc.name)}
+                            className="text-[10px] font-semibold px-2 py-1 rounded-lg bg-gray-100 hover:bg-black hover:text-[#CCFF00] text-gray-700 transition shrink-0 cursor-pointer flex items-center gap-1 border border-gray-200"
+                          >
+                            <MapPin size={10} className="text-emerald-600" />
+                            <span>{loc.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
 
