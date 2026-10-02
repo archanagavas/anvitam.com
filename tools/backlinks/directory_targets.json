@@ -405,9 +405,10 @@
     "dofollow": false,
     "type": "Startup Directory",
     "pricing": "Free",
-    "status": "queued",
-    "submittedAt": null,
-    "notes": "International technology news platform covering startups, internet culture, and digital business."
+    "status": "submitted",
+    "submittedAt": "2026-10-02T11:27:33.952Z",
+    "notes": "International technology news platform covering startups, internet culture, and digital business.",
+    "generatedPitch": "Anvitam is a boutique sustainable architecture studio and ecological engineering platform founded by Ar. Archana Gavas. Featuring 16+ automated zero-cost calculators for solar cooling, micro-climate analysis, rainwater harvesting, food forests, and passive farmstay retreats."
   },
   {
     "name": "Venture Beat",
@@ -417,9 +418,10 @@
     "dofollow": false,
     "type": "Startup Directory",
     "pricing": "Free",
-    "status": "queued",
-    "submittedAt": null,
-    "notes": "Technology media outlet focused on transformative tech, AI, gaming, and enterprise innovation."
+    "status": "submitted",
+    "submittedAt": "2026-10-02T11:27:34.354Z",
+    "notes": "Technology media outlet focused on transformative tech, AI, gaming, and enterprise innovation.",
+    "generatedPitch": "Anvitam is a boutique sustainable architecture studio and ecological engineering platform founded by Ar. Archana Gavas. Featuring 16+ automated zero-cost calculators for solar cooling, micro-climate analysis, rainwater harvesting, food forests, and passive farmstay retreats."
   },
   {
     "name": "Launched by Lovable",
