@@ -21,6 +21,7 @@ import json
 import argparse
 import logging
 from typing import Optional, Dict, Any
+from datetime import datetime
 
 # Ensure UTF-8 output on Windows console safely
 if sys.platform == "win32":
@@ -137,14 +138,15 @@ class AutopilotEngine:
         social_dispatches = []
 
         if not skip_syndication:
-            # A. Article overview to social channels
+            # A. Article overview to social channels (Protected by DRAFT safety)
             article_payload = {
                 "title": approved_draft.get("title"),
                 "slug": pub_result.get("slug"),
                 "url": pub_result.get("url"),
                 "excerpt": approved_draft.get("excerpt") or approved_draft.get("meta_description"),
                 "content_html": approved_draft.get("content_html"),
-                "tags": approved_draft.get("tags")
+                "tags": approved_draft.get("tags"),
+                "is_draft": pub_result.get("is_draft", True)
             }
             syndication_results = self.syndicator.syndicate_all(
                 article_data=article_payload,
@@ -153,23 +155,66 @@ class AutopilotEngine:
 
             # B. Dispatch the 5 Independent Daily Social Posts from the 30-Day Blueprint
             daily_posts = day_plan.get("social_posts", [])
-            self.logger.info(f"🌿 Dispatching {len(daily_posts)} Independent Social Posts for Day {day_plan.get('day')}...")
+            print("\n" + "=" * 70)
+            print(f"🌿 5 INDEPENDENT SOCIAL ASSETS — DAY {day_plan.get('day')}: {day_plan.get('theme')}")
+            print(f"Engine: SLAY Copywriting Framework (Short Lines, Double Spacing, Zero Hashtags)")
+            print("=" * 70)
+
+            records_markdown = [
+                f"# 🌿 Anvitam Social Assets — Day {day_plan.get('day')}",
+                f"**Theme:** {day_plan.get('theme')}  ",
+                f"**Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}  ",
+                f"**Cadence:** 5 Standalone High-Ticket Lead Assets (SLAY Framework)\n",
+                "---\n"
+            ]
 
             for idx, post in enumerate(daily_posts, 1):
-                full_text = f"{post.get('text')}\n\n{post.get('cta', '')}"
+                slot = post.get("slot", "Daily")
+                p_type = post.get("type", "Asset")
+                concept = post.get("concept", "")
+                full_text = post.get("text", "")
+                cta = post.get("cta", "")
+                
+                print(f"\n┌──────────────────────────────────────────────────────────────────┐")
+                print(f"│ 📢 ASSET #{idx}/5 [{slot}] — {p_type.upper()}")
+                print(f"│ Concept: {concept}")
+                print(f"└──────────────────────────────────────────────────────────────────┘")
+                print(f"{full_text}\n")
+                if cta:
+                    print(f"💬 DISCUSSION / CTA: {cta}\n")
+
                 res = self.syndicator.syndicate_social_post(
-                    post_text=full_text,
-                    title=f"{post.get('type')}: {post.get('concept')}",
+                    post_data=post,
+                    title=f"Anvitam: {concept}",
                     link_url="https://topmate.io/archanagavas",
                     dry_run=dry_run
                 )
                 social_dispatches.append({
-                    "slot": post.get("slot"),
-                    "type": post.get("type"),
-                    "concept": post.get("concept"),
+                    "slot": slot,
+                    "type": p_type,
+                    "concept": concept,
                     "results": res
                 })
-                self.logger.info(f"✔ Social Post #{idx} [{post.get('slot')} | {post.get('type')}] dispatched successfully.")
+                active_channels = [k for k, v in res.items() if isinstance(v, dict) and v.get("status") in ["success", "simulated"]]
+                print(f"✔ Dispatched across {len(active_channels)} channels: {active_channels}")
+                
+                records_markdown.append(f"## Asset {idx}: [{slot}] {p_type} — {concept}\n")
+                records_markdown.append(f"### LinkedIn / Longform (SLAY Format)\n```\n{full_text}\n\n{cta}\n```\n")
+                if post.get("twitter_text"):
+                    records_markdown.append(f"### Twitter / X & Bluesky (≤275 Chars)\n```\n{post.get('twitter_text')}\n```\n")
+                if post.get("threads_text"):
+                    records_markdown.append(f"### Threads / Mastodon (≤450 Chars)\n```\n{post.get('threads_text')}\n```\n")
+                records_markdown.append(f"**Syndication Status:** {json.dumps(res)}\n\n---\n")
+
+            # Save local records
+            import os
+            social_records_dir = os.path.join(os.path.dirname(__file__), "published_records", "socials")
+            os.makedirs(social_records_dir, exist_ok=True)
+            today_str = datetime.now().strftime("%Y-%m-%d")
+            social_record_file = os.path.join(social_records_dir, f"day_{day_plan.get('day')}_{today_str}.md")
+            with open(social_record_file, "w", encoding="utf-8") as f:
+                f.write("\n".join(records_markdown))
+            print(f"\n📁 Local Social Archive Saved: {social_record_file}")
 
         self.logger.info("=" * 70)
         self.logger.info(f"🌿 DAY {day_plan.get('day')} AUTONOMOUS MULTI-ASSET CYCLE COMPLETE")

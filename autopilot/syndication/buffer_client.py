@@ -85,10 +85,12 @@ class BufferClient:
         link_url: Optional[str] = None,
         title: Optional[str] = None,
         description: Optional[str] = None,
-        publish_now: bool = True
+        publish_now: bool = True,
+        platform_texts: Optional[Dict[str, str]] = None
     ) -> Dict[str, Any]:
         """
         Publishes an update to all connected Buffer channels simultaneously via GraphQL createPost.
+        Supports platform-specific customized text via `platform_texts`.
         """
         token = os.getenv("BUFFER_ACCESS_TOKEN")
         if not token:
@@ -125,22 +127,26 @@ class BufferClient:
 
         for ch in channels:
             ch_id = ch["id"]
-            service = ch.get("service", "unknown")
-            # Truncate text appropriately for Twitter (280 chars) if needed
-            ch_text = post_content
-            if service == "twitter" and len(ch_text) > 280:
-                # Keep link intact if present
-                if link_url and link_url in ch_text:
-                    prefix_limit = 280 - len(link_url) - 5
-                    ch_text = f"{text[:prefix_limit]}...\n{link_url}"
-                else:
-                    ch_text = ch_text[:280]
-            elif service == "threads" and len(ch_text) > 490:
-                if link_url and link_url in ch_text:
-                    prefix_limit = 490 - len(link_url) - 5
-                    ch_text = f"{text[:prefix_limit]}...\n{link_url}"
-                else:
-                    ch_text = ch_text[:490]
+            service = ch.get("service", "unknown").lower()
+            
+            # Use platform-tailored text if provided
+            if platform_texts and service in platform_texts:
+                ch_text = platform_texts[service]
+            else:
+                ch_text = post_content
+                # Truncate text appropriately for Twitter (280 chars) if needed
+                if service == "twitter" and len(ch_text) > 280:
+                    if link_url and link_url in ch_text:
+                        prefix_limit = max(50, 280 - len(link_url) - 5)
+                        ch_text = f"{text[:prefix_limit]}...\n{link_url}"
+                    else:
+                        ch_text = ch_text[:280]
+                elif service == "threads" and len(ch_text) > 490:
+                    if link_url and link_url in ch_text:
+                        prefix_limit = max(50, 490 - len(link_url) - 5)
+                        ch_text = f"{text[:prefix_limit]}...\n{link_url}"
+                    else:
+                        ch_text = ch_text[:490]
 
 
             payload = {

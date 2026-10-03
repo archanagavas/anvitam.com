@@ -83,7 +83,7 @@ DELIVERABLE SPECIFICATIONS:
 2. Meta Description: Under 155 characters, high intent, compelling summary.
 3. First 120 Words (The AEO Snippet): Directly answers the search query with crisp numbers, metrics, and summary answer so ChatGPT Search and Google extract it cleanly.
 4. Body Content (Comprehensive, detailed 1,200 - 1,800 words):
-   - You MUST write a full-length, thorough master guide. Do NOT write a short summary or brief outline.
+   - You MUST write a full-length, thorough master architectural guide (minimum 1,200 to 1,600 words). Do NOT write a brief summary.
    - Include 6 to 8 substantive sections with <h2> and <h3> headings:
      * Section 1: The Direct 2026 Cost Math & Reality Check (₹/sqft breakdown, material cost vs contractor equipment).
      * Section 2: Soil Physics in Western India (Red laterite vs expansive black cotton clay, sieve ratios: 15% clay / 70% sand).
@@ -91,10 +91,10 @@ DELIVERABLE SPECIFICATIONS:
      * Section 4: Thermodynamics & Cooling Physics (8.5-hour thermal phase lag, passive 26°C interior during 42°C summers).
      * Section 5: Coastal Monsoon Defense (1.8m windward eaves, breathable silane sealants, plinth splash details).
      * Section 6: Real Field Case Vignette from Alibaug / Karjat (contractor mistakes averted, preserving seasonal runoff).
-   - Paragraphs MUST be strictly 1-3 sentences maximum with generous white space.
+   - Each section MUST contain 2 to 4 rich, detailed paragraphs explaining the engineering realities, common contractor mistakes, exact metrics, and field solutions. Keep individual paragraphs concise (2-4 sentences) with natural breathing room.
    - ZERO robotic link formulas ("For more information visit..."). Only 2 natural inline links in the body.
    - Include at least 4 real customer FAQs with clear, authoritative answers.
-   - End with a single, high-value invitation for landowners to conduct a 30-Minute Pre-Construction Feasibility Audit on Topmate.
+   - End with a single, high-value invitation for landowners to conduct a 30-Minute Pre-Construction Feasibility Audit on Topmate (https://topmate.io/archanagavas).
 5. Suggested URL Slug (e.g. "rammed-earth-villa-cost-alibaug").
 6. 4-6 Relevant Tag Chips.
 
