@@ -115,6 +115,19 @@ class PublishingAgent:
             )
         self.logger.info(f"Saved local blog reading draft to: {md_file}")
 
+        # Auto-register new blog into link_registry so future articles can contextually link to it
+        try:
+            from autopilot.link_registry import register_new_blog
+            register_new_blog(
+                title=draft.get("title", slug),
+                slug=slug,
+                meta_description=draft.get("meta_description", ""),
+                tags=draft.get("tags", []),
+                auto_save=True
+            )
+        except Exception as e:
+            self.logger.warning(f"Could not auto-register new blog to link_registry: {e}")
+
         if dry_run:
             self.logger.info(f"[DRY-RUN] Staged draft locally: {slug}")
             return {"post_id": post_id, "slug": slug, "status": "simulated_draft" if is_draft else "simulated_published", "draft_file": str(md_file)}
