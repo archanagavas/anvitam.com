@@ -233,4 +233,59 @@ Return strictly a valid JSON object matching this schema:
         self.logger.info(f"Syndication Hub completed distribution with status: {results}")
         return results
 
+    def syndicate_social_post(
+        self,
+        post_text: str,
+        link_url: Optional[str] = None,
+        title: Optional[str] = None,
+        platforms: Optional[List[str]] = None,
+        dry_run: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Dispatches an individual standalone social post across all active channels:
+        Buffer (Twitter, LinkedIn, Threads) + Bluesky + Mastodon + Tumblr.
+        """
+        self.logger.info(f"Syndication Hub: Dispatching standalone social post ({len(post_text)} chars)...")
+
+        if dry_run:
+            self.logger.info(f"[DRY-RUN] Simulating dispatch of social post: '{post_text[:60]}...'")
+            return {"status": "simulated", "platforms": ["buffer", "bluesky", "mastodon", "tumblr"]}
+
+        results = {}
+        import os
+
+        # 1. Buffer (X, LinkedIn, Threads)
+        if os.getenv("BUFFER_ACCESS_TOKEN") and (not platforms or "buffer" in platforms):
+            results["buffer"] = self.buffer.publish_update(
+                text=post_text,
+                link_url=link_url
+            )
+
+        # 2. Bluesky
+        if not platforms or "bluesky" in platforms:
+            bsky_text = post_text[:285] + "…" if len(post_text) > 290 else post_text
+            results["bluesky"] = self.bluesky.publish(
+                text=bsky_text,
+                link_url=link_url
+            )
+
+        # 3. Mastodon
+        if not platforms or "mastodon" in platforms:
+            masto_text = post_text[:485] + "…" if len(post_text) > 495 else post_text
+            results["mastodon"] = self.mastodon.publish(
+                status_text=masto_text,
+                link_url=link_url
+            )
+
+        # 4. Tumblr
+        if not platforms or "tumblr" in platforms:
+            results["tumblr"] = self.tumblr.publish(
+                title=title or "Anvitam Architectural Insight",
+                content_html=f"<p>{post_text.replace(chr(10), '<br>')}</p>",
+                canonical_url=link_url or "https://www.anvitam.com",
+                tags=["architecture", "ecologicaldesign", "permaculture", "rammedearth"]
+            )
+
+        return results
+
 

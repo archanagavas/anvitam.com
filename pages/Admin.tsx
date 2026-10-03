@@ -2588,37 +2588,36 @@ const Admin: React.FC = () => {
                       <Database size={11} />
                       {isDbConnected ? 'Firestore Cloud Live' : 'DB Fallback Mode'}
                     </span>
-                    <span className="text-[10px] font-black uppercase tracking-widest bg-blue-500/10 text-blue-300 border border-blue-500/30 px-3 py-1 rounded-full flex items-center gap-1.5">
+                    <span className="text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full flex items-center gap-1.5">
                       <Cpu size={11} />
-                      4 Autonomous Agents
+                      Autonomous Multi-Agent Engine (start_autopilot.bat)
                     </span>
                   </div>
                   <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
                     Anvitam Studio &amp; Platform Intelligence
                   </h1>
                   <p className="text-xs sm:text-sm text-gray-300 max-w-2xl font-normal leading-relaxed">
-                    Real-time operational command across international client acquisition, inbound lead pipelines, proprietary calculator suites, and autonomous SEO telemetry.
+                    Real-time operational command across international client acquisition, inbound lead pipelines, proprietary calculator suites, and autonomous multi-agent syndication.
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2.5 shrink-0 self-start lg:self-center">
                   <button
                     onClick={refreshFromDb}
-                    className="bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-bold px-4 py-2.5 rounded-xl border border-white/20 flex items-center gap-2 transition backdrop-blur-xs"
+                    className="bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-bold px-4 py-2.5 rounded-xl border border-white/20 flex items-center gap-2 transition backdrop-blur-xs cursor-pointer"
                     title="Force immediate sync with Google Cloud Firestore"
                   >
                     <RefreshCw size={13} />
                     <span>Sync Firestore</span>
                   </button>
-                  <a
-                    href="https://github.com/archanagavas/anvitam.com/actions"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-gray-950 text-xs font-extrabold px-4 py-2.5 rounded-xl flex items-center gap-1.5 shadow-lg shadow-emerald-950/50 transition"
+                  <button
+                    onClick={() => setActiveTab('cmo')}
+                    className="bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-gray-950 text-xs font-extrabold px-4 py-2.5 rounded-xl flex items-center gap-1.5 shadow-lg shadow-emerald-950/50 transition cursor-pointer"
+                    title="Open Autonomous CMO Growth Engine"
                   >
-                    <Play size={13} className="fill-current" />
-                    <span>View Agents</span>
-                  </a>
+                    <Sparkles size={13} className="fill-current" />
+                    <span>CMO &amp; Autopilot</span>
+                  </button>
                 </div>
               </div>
 

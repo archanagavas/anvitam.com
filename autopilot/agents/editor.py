@@ -16,6 +16,11 @@ BANNED_AI_SLOP_WORDS = [
     "embark on", "seamlessly blends", "holistic approach", "more than just", "a symphony of"
 ]
 
+BANNED_LINK_SLOP_PHRASES = [
+    "for more information", "to learn more", "visit our [", "visit our contact page",
+    "if you're interested in", "if you are interested"
+]
+
 class EditorAgent:
     def __init__(self):
         self.logger = logging.getLogger("autopilot.editor")
@@ -31,9 +36,10 @@ class EditorAgent:
         """
         self.logger.info(f"Editor Agent: Auditing draft '{draft.get('title')}' against AEO & quality standards...")
 
-        # Fast heuristic check for banned words
+        # Fast heuristic checks
         html_lower = draft.get("content_html", "").lower()
         slop_found = [word for word in BANNED_AI_SLOP_WORDS if word in html_lower]
+        link_slop_found = [phrase for phrase in BANNED_LINK_SLOP_PHRASES if phrase in html_lower]
 
         prompt = f"""
 You are the Executive Editor and Quality Director for Anvitam Architecture & Ecological Design Studio.
@@ -48,19 +54,19 @@ DRAFT TO AUDIT:
 - Title: {draft.get('title')}
 - Meta Description: {draft.get('meta_description')}
 - Suggested Slug: {draft.get('slug')}
-- HTML Content Snippet (First 1500 chars):
-{draft.get('content_html')[:1500]}
-... [Length: {len(draft.get('content_html', ''))} characters]
+- Full HTML Content:
+{draft.get('content_html', '')[:6000]}
 
 FAQ Count: {len(draft.get('faqs', []))}
-Banned AI Slop Detected by Heuristic: {json.dumps(slop_found)}
+Banned AI Slop Detected: {json.dumps(slop_found)}
+Mechanical Link Slop Detected: {json.dumps(link_slop_found)}
 
 AUDIT CRITERIA (100 TOTAL POINTS):
 1. AEO / Direct Answer Moat (25 pts): Does the opening 120 words provide an immediate, unambiguous answer to '{strategy_brief.get('primary_keyword')}' that ChatGPT, Perplexity, or Google AI Overview can lift as a verified citation?
 2. Empirical Depth & Technical Moat (25 pts): Does the content include real engineering specifications, thermal lag data, soil physics (black cotton clay vs laterite), or specific dimensions? Or does it read like a junior writer re-summarizing Wikipedia?
-3. Archana's "Raw Mentor" Voice & Anti-Slop (20 pts): Are paragraphs strictly 1-3 lines? Is it direct, warm, and authentic? Are AI clichés ("delve", "testament", "tapestry", "in today's world") completely absent?
-4. Local Town Specificity (15 pts): Does it speak specifically to the soil, climate, and construction realities of {strategy_brief.get('target_town')}?
-5. Conversion & Internal Linking Architecture (15 pts): Are there natural internal links to anvitam.com services and an organic consultation CTA to Topmate?
+3. Archana's "Raw Mentor" Voice & Anti-Slop (20 pts): Are paragraphs strictly 1-3 lines? Is it direct, warm, and authentic? Are AI clichés completely absent?
+4. ZERO Mechanical Link Spam (15 pts): Are robotic formulas like "For more information, visit our..." or "To learn more..." 100% ABSENT? Automatic failure (<70 score) if mechanical link sentences exist.
+5. Local Town Specificity (15 pts): Does it speak specifically to the soil, climate, and construction realities of {strategy_brief.get('target_town')}?
 
 PASS THRESHOLD: 92/100.
 If score < 92, you MUST specify 2 to 4 concrete, actionable things the writer must fix in the next iteration.

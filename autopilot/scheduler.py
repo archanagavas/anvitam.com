@@ -88,7 +88,9 @@ def run_scheduler(interval_minutes: int = 30, dry_run: bool = False, max_runs: i
                 result = engine.run_nightly_cycle(dry_run=dry_run)
                 title = result.get("article", {}).get("title", "Untitled")
                 score = result.get("article", {}).get("score", "N/A")
-                print(f"✔ Cycle #{run_count} Complete: '{title}' (Editor Score: {score}/100)")
+                social_dispatched = len(result.get("social_posts_dispatched", []))
+                print(f"✔ Cycle #{run_count} Complete: Master Guide '{title}' (Editor Score: {score}/100, Staged as DRAFT)")
+                print(f"✔ Multi-Asset Distribution: {social_dispatched} Independent Lead Posts Dispatched across Buffer, Bluesky, Mastodon, Tumblr")
             except Exception as e:
                 logger.error(f"Error during cycle #{run_count}: {e}")
                 print(f"⚠ Cycle #{run_count} encountered error: {e}. Will retry in next interval.")

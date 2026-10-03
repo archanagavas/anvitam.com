@@ -115,10 +115,10 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       const rows = await getCollection(collectionName, sortDir);
       if (resource === 'testimonials') {
         const validRows = rows.filter(r => r && r.text && r.text.trim().length > 0 && r.author && r.author !== 'Client');
-        if (validRows.length === 0) { res.setHeader('x-db-fallback', 'true'); return res.status(200).json(fallbackData); }
+        if (validRows.length === 0) { return res.status(200).json(fallbackData); }
         return res.status(200).json(validRows.map(r => normalizeItem(resource, r)));
       }
-      if (rows.length === 0) { res.setHeader('x-db-fallback', 'true'); return res.status(200).json(fallbackData); }
+      if (rows.length === 0) { return res.status(200).json(fallbackData); }
       return res.status(200).json(rows.map(r => normalizeItem(resource, r)));
     } catch (err) {
       res.setHeader('x-db-fallback', 'true');

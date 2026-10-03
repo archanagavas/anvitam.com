@@ -368,126 +368,162 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [isDbConnected, setIsDbConnected] = useState(false);
   const [isInitialSyncDone, setIsInitialSyncDone] = useState(false);
 
-  // ── Fetch from Neon DB ────────────────────────────────────────────
+  // ── Fetch from Firebase Firestore DB ──────────────────────────────────
   const refreshFromDb = async () => {
     try {
-      const [blogsRes, projectsRes, servicesRes, productsRes, testimonialsRes, partnersRes, workshopsRes, estimatorRes] = await Promise.all([
-        fetch('/api/blogs'),
-        fetch('/api/projects'),
-        fetch('/api/services'),
-        fetch('/api/products'),
-        fetch('/api/testimonials'),
-        fetch('/api/partners'),
-        fetch('/api/workshops'),
-        fetch('/api/estimator-services')
-      ]);
+      const endpoints = [
+        { key: 'blogs', url: '/api/blogs' },
+        { key: 'projects', url: '/api/projects' },
+        { key: 'services', url: '/api/services' },
+        { key: 'products', url: '/api/products' },
+        { key: 'testimonials', url: '/api/testimonials' },
+        { key: 'partners', url: '/api/partners' },
+        { key: 'workshops', url: '/api/workshops' },
+        { key: 'estimator', url: '/api/estimator-services' },
+      ];
 
-      const hasAnyFallback = 
-        blogsRes.headers.get('x-db-fallback') === 'true' ||
-        projectsRes.headers.get('x-db-fallback') === 'true' ||
-        servicesRes.headers.get('x-db-fallback') === 'true' ||
-        productsRes.headers.get('x-db-fallback') === 'true' ||
-        testimonialsRes.headers.get('x-db-fallback') === 'true' ||
-        partnersRes.headers.get('x-db-fallback') === 'true' ||
-        workshopsRes.headers.get('x-db-fallback') === 'true' ||
-        estimatorRes.headers.get('x-db-fallback') === 'true';
+      const responses = await Promise.allSettled(
+        endpoints.map(ep => fetch(ep.url).catch(e => {
+          console.warn(`[ContentContext] Fetch failed for ${ep.key}:`, e);
+          return null;
+        }))
+      );
 
-      if (workshopsRes.ok) {
-        const rawWorkshops: Workshop[] = await workshopsRes.json();
-        setWorkshops(prev => {
-          const merged = mergePreservingLocal(prev, rawWorkshops, INITIAL_WORKSHOPS, repairWorkshop);
-          saveToStorage('anvitam_workshops_v2', merged);
-          return merged;
-        });
+      const resMap: Record<string, Response | null> = {};
+      endpoints.forEach((ep, i) => {
+        const item = responses[i];
+        resMap[ep.key] = item.status === 'fulfilled' ? item.value : null;
+      });
+
+      const blogsRes = resMap['blogs'];
+      const projectsRes = resMap['projects'];
+      const servicesRes = resMap['services'];
+      const productsRes = resMap['products'];
+      const testimonialsRes = resMap['testimonials'];
+      const partnersRes = resMap['partners'];
+      const workshopsRes = resMap['workshops'];
+      const estimatorRes = resMap['estimator'];
+
+      // Database is connected if primary collections respond ok without explicit x-db-fallback=true
+      const isConfigured = 
+        (blogsRes?.ok && blogsRes.headers.get('x-db-fallback') !== 'true') ||
+        (projectsRes?.ok && projectsRes.headers.get('x-db-fallback') !== 'true') ||
+        (servicesRes?.ok && servicesRes.headers.get('x-db-fallback') !== 'true');
+
+      if (workshopsRes?.ok) {
+        try {
+          const rawWorkshops: Workshop[] = await workshopsRes.json();
+          setWorkshops(prev => {
+            const merged = mergePreservingLocal(prev, rawWorkshops, INITIAL_WORKSHOPS, repairWorkshop);
+            saveToStorage('anvitam_workshops_v2', merged);
+            return merged;
+          });
+        } catch (_) {}
       }
 
-      if (estimatorRes.ok) {
-        const rawEstimator: EstimatorService[] = await estimatorRes.json();
-        setEstimatorServices(prev => {
-          const merged = mergePreservingLocal(prev, rawEstimator, INITIAL_ESTIMATOR_SERVICES, repairEstimatorService);
-          saveToStorage('anvitam_estimator_services_v1', merged);
-          return merged;
-        });
+      if (estimatorRes?.ok) {
+        try {
+          const rawEstimator: EstimatorService[] = await estimatorRes.json();
+          setEstimatorServices(prev => {
+            const merged = mergePreservingLocal(prev, rawEstimator, INITIAL_ESTIMATOR_SERVICES, repairEstimatorService);
+            saveToStorage('anvitam_estimator_services_v1', merged);
+            return merged;
+          });
+        } catch (_) {}
       }
 
-      if (blogsRes.ok) {
-        const dbBlogs: BlogPost[] = await blogsRes.json();
-        setBlogs(prev => {
-          const merged = mergePreservingLocal(prev, dbBlogs, INITIAL_BLOGS, repairBlog);
-          saveToStorage('anvitam_blogs_v2', merged);
-          return merged;
-        });
+      if (blogsRes?.ok) {
+        try {
+          const dbBlogs: BlogPost[] = await blogsRes.json();
+          setBlogs(prev => {
+            const merged = mergePreservingLocal(prev, dbBlogs, INITIAL_BLOGS, repairBlog);
+            saveToStorage('anvitam_blogs_v2', merged);
+            return merged;
+          });
+        } catch (_) {}
       }
 
-      if (projectsRes.ok) {
-        const rawProjects: Project[] = await projectsRes.json();
-        setProjects(prev => {
-          const merged = mergePreservingLocal(prev, rawProjects, INITIAL_PROJECTS, repairProject);
-          saveToStorage('anvitam_projects_v2', merged);
-          return merged;
-        });
+      if (projectsRes?.ok) {
+        try {
+          const rawProjects: Project[] = await projectsRes.json();
+          setProjects(prev => {
+            const merged = mergePreservingLocal(prev, rawProjects, INITIAL_PROJECTS, repairProject);
+            saveToStorage('anvitam_projects_v2', merged);
+            return merged;
+          });
+        } catch (_) {}
       }
 
-      if (servicesRes.ok) {
-        const rawServices: Service[] = await servicesRes.json();
-        setServices(prev => {
-          const merged = mergePreservingLocal(prev, rawServices, SERVICES, repairService);
-          saveToStorage('anvitam_services_v7', merged);
-          return merged;
-        });
+      if (servicesRes?.ok) {
+        try {
+          const rawServices: Service[] = await servicesRes.json();
+          setServices(prev => {
+            const merged = mergePreservingLocal(prev, rawServices, SERVICES, repairService);
+            saveToStorage('anvitam_services_v7', merged);
+            return merged;
+          });
+        } catch (_) {}
       }
 
-      if (productsRes.ok) {
-        const rawProducts: DigitalProduct[] = await productsRes.json();
-        setDigitalProducts(prev => {
-          const merged = mergePreservingLocal(prev, rawProducts, DIGITAL_PRODUCTS, repairProduct);
-          saveToStorage('anvitam_products', merged);
-          return merged;
-        });
+      if (productsRes?.ok) {
+        try {
+          const rawProducts: DigitalProduct[] = await productsRes.json();
+          setDigitalProducts(prev => {
+            const merged = mergePreservingLocal(prev, rawProducts, DIGITAL_PRODUCTS, repairProduct);
+            saveToStorage('anvitam_products', merged);
+            return merged;
+          });
+        } catch (_) {}
       }
 
-      if (testimonialsRes.ok) {
-        const dbTestimonials: Testimonial[] = await testimonialsRes.json();
-        const isFallback = testimonialsRes.headers.get('x-db-fallback') === 'true';
-        setTestimonials(prev => {
-          let merged: Testimonial[];
-          if (!isFallback && Array.isArray(dbTestimonials)) {
-            merged = dbTestimonials.filter(t => t && t.author?.trim() && t.text?.trim());
-          } else {
-            merged = mergePreservingLocal(prev, dbTestimonials, INITIAL_TESTIMONIALS, (t, def) => ({
-              ...def, ...t, image: t.image || def?.image || ''
-            })).filter(t => t && t.author?.trim() && t.text?.trim());
-          }
-          saveToStorage('anvitam_testimonials', merged);
-          return merged;
-        });
+      if (testimonialsRes?.ok) {
+        try {
+          const dbTestimonials: Testimonial[] = await testimonialsRes.json();
+          const isFallback = testimonialsRes.headers.get('x-db-fallback') === 'true';
+          setTestimonials(prev => {
+            let merged: Testimonial[];
+            if (!isFallback && Array.isArray(dbTestimonials)) {
+              merged = dbTestimonials.filter(t => t && t.author?.trim() && t.text?.trim());
+            } else {
+              merged = mergePreservingLocal(prev, dbTestimonials, INITIAL_TESTIMONIALS, (t, def) => ({
+                ...def, ...t, image: t.image || def?.image || ''
+              })).filter(t => t && t.author?.trim() && t.text?.trim());
+            }
+            saveToStorage('anvitam_testimonials', merged);
+            return merged;
+          });
+        } catch (_) {}
       }
 
-      if (partnersRes.ok) {
-        const dbPartners: PartnerBrand[] = await partnersRes.json();
-        setPartners(prev => {
-          const merged = mergePreservingLocal(prev, dbPartners, INITIAL_PARTNERS, (p, def) => ({
-            ...def, ...p, logo: p.logo || def?.logo || ''
-          }));
-          saveToStorage('anvitam_partners_v3', merged);
-          return merged;
-        });
+      if (partnersRes?.ok) {
+        try {
+          const dbPartners: PartnerBrand[] = await partnersRes.json();
+          setPartners(prev => {
+            const merged = mergePreservingLocal(prev, dbPartners, INITIAL_PARTNERS, (p, def) => ({
+              ...def, ...p, logo: p.logo || def?.logo || ''
+            }));
+            saveToStorage('anvitam_partners_v3', merged);
+            return merged;
+          });
+        } catch (_) {}
       }
 
       // Fetch messages if admin token exists
       const token = getAuthToken();
       if (token) {
-        const msgRes = await fetch('/api/messages', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (msgRes.ok) {
-          const dbMessages: ContactMessage[] = await msgRes.json();
-          setMessages(dbMessages);
-          saveToStorage('anvitam_messages', dbMessages);
-        }
+        try {
+          const msgRes = await fetch('/api/messages', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (msgRes.ok) {
+            const dbMessages: ContactMessage[] = await msgRes.json();
+            setMessages(dbMessages);
+            saveToStorage('anvitam_messages', dbMessages);
+          }
+        } catch (_) {}
       }
 
-      setIsDbConnected(!hasAnyFallback);
+      setIsDbConnected(Boolean(isConfigured));
     } catch (err) {
       console.warn('[ContentContext] DB sync failed — using local data:', err);
       setIsDbConnected(false);

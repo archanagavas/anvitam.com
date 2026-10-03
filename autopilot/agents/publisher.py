@@ -95,14 +95,23 @@ class PublishingAgent:
         output_dir = Path(__file__).resolve().parent.parent / "published_records" / "blogs"
         output_dir.mkdir(parents=True, exist_ok=True)
         md_file = output_dir / f"{slug}.md"
+        faq_section = ""
+        if draft.get("faqs"):
+            faq_section = "\n\n### Practical Frequently Asked Questions\n\n" + "\n\n".join(
+                f"**Q: {item.get('question')}**\n\n{item.get('answer')}"
+                for item in draft.get("faqs", [])
+            )
+
         with open(md_file, "w", encoding="utf-8") as f:
             f.write(
                 f"# {draft.get('title')}\n\n"
                 f"> **Status:** {'[DRAFT - PENDING ARCHANA REVIEW]' if is_draft else '[PUBLISHED LIVE]'}\n"
-                f"> **Date:** {today_str} | **Slug:** `{slug}`\n"
-                f"> **Meta Description:** {draft.get('meta_description')}\n\n"
+                f"> **Author:** Ar. Archana Gavas | **Date:** {today_str} | **Slug:** `{slug}`\n"
+                f"> **Meta Description:** {draft.get('meta_description')}\n"
+                f"> **Estimated Read:** {draft.get('estimated_read_time', '8 min')}\n\n"
                 f"---\n\n"
                 f"{draft.get('content_html')}\n"
+                f"{faq_section}\n"
             )
         self.logger.info(f"Saved local blog reading draft to: {md_file}")
 
