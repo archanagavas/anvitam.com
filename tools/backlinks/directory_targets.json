@@ -431,9 +431,10 @@
     "dofollow": true,
     "type": "Startup Directory",
     "pricing": "Free",
-    "status": "queued",
-    "submittedAt": null,
-    "notes": "Showcase of projects built with Lovable platform."
+    "status": "submitted",
+    "submittedAt": "2026-10-03T10:43:32.312Z",
+    "notes": "Showcase of projects built with Lovable platform.",
+    "generatedPitch": "Anvitam is a boutique sustainable architecture studio and ecological engineering platform founded by Ar. Archana Gavas. Featuring 16+ automated zero-cost calculators for solar cooling, micro-climate analysis, rainwater harvesting, food forests, and passive farmstay retreats."
   },
   {
     "name": "AppExchange",
@@ -443,9 +444,10 @@
     "dofollow": false,
     "type": "SaaS Marketplace",
     "pricing": "Free",
-    "status": "queued",
-    "submittedAt": null,
-    "notes": "Salesforce's enterprise cloud marketplace offering business apps, components, and consulting services."
+    "status": "submitted",
+    "submittedAt": "2026-10-03T10:43:32.499Z",
+    "notes": "Salesforce's enterprise cloud marketplace offering business apps, components, and consulting services.",
+    "generatedPitch": "Anvitam is a boutique sustainable architecture studio and ecological engineering platform founded by Ar. Archana Gavas. Featuring 16+ automated zero-cost calculators for solar cooling, micro-climate analysis, rainwater harvesting, food forests, and passive farmstay retreats."
   },
   {
     "name": "Geek Wire",
