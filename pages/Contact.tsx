@@ -19,6 +19,7 @@ const Contact: React.FC = () => {
   });
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [honeypot, setHoneypot] = useState('');
   const [activeTab, setActiveTab] = useState('Getting started');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
@@ -28,8 +29,24 @@ const Contact: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // ── Anti-bot Honeypot Trap (Spam Protection) ─────────────────────
+    if (honeypot) {
+      setStatus('success');
+      return;
+    }
+
+    // ── Email format validation ──────────────────────────────────────
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email || !emailRegex.test(formData.email)) {
+      setSubmitError('Please enter a valid email address.');
+      setStatus('error');
+      return;
+    }
+
     setStatus('submitting');
     setSubmitError(null);
+
 
     const formattedMessage = `[DIRECT CONTACT INQUIRY]
 Service Requested: ${formData.serviceType}
@@ -247,7 +264,26 @@ ${formData.message}`;
               </div>
             ) : (
               <form className="space-y-5" onSubmit={handleSubmit}>
+                {/* Honeypot field - hidden from humans, traps bots */}
+                <div style={{ display: 'none' }} aria-hidden="true">
+                  <input
+                    type="text"
+                    name="client_website_verification"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={honeypot}
+                    onChange={e => setHoneypot(e.target.value)}
+                  />
+                </div>
+
+                {submitError && (
+                  <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium">
+                    {submitError}
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-[#111] ml-1">First Name *</label>
                     <input 

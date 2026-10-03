@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import CookieConsent from './components/ui/CookieConsent';
+
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -200,16 +202,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <span>© {new Date().getFullYear()} Anvitam. All rights reserved.</span>
             <div className="flex gap-6">
               <Link to="/admin" className="text-[#CCFF00] hover:text-white transition-colors font-bold">Staff Login</Link>
-              <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms &amp; Conditions</a>
+              <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+              <Link to="/terms" className="hover:text-white transition-colors">Terms &amp; Conditions</Link>
             </div>
           </div>
 
         </div>
       </footer>
+
+      {/* Cookie Consent Banner */}
+      <CookieConsent />
     </div>
   );
 };
 
 export default Layout;
+
 
