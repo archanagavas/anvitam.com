@@ -1,0 +1,110 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "RachnaCAD",
+  "version": "1.0.0",
+  "identifier": "com.anvitam.rachnacad",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:5173/rachnacad",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "RachnaCAD | 2D/3D BIM & Architectural Suite",
+        "width": 1440,
+        "height": 920,
+        "minWidth": 1024,
+        "minHeight": 700,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "transparent": false,
+        "theme": "Light",
+        "additionalBrowserArgs": "--enable-unsafe-webgpu --enable-features=Vulkan"
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "fileAssociations": [
+      {
+        "ext": ["rachna"],
+        "name": "RachnaCAD Project File",
+        "description": "Native RachnaCAD Architectural BIM & CAD Project",
+        "role": "Editor"
+      },
+      {
+        "ext": ["dxf"],
+        "name": "AutoCAD Drawing Exchange Format",
+        "description": "2D/3D Vector CAD File",
+        "role": "Editor"
+      },
+      {
+        "ext": ["ifc"],
+        "name": "Industry Foundation Classes BIM",
+        "description": "Open BIM 3D Exchange Standard",
+        "role": "Viewer"
+      }
+    ],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "",
+      "nsis": {
+        "installerIcon": "icons/icon.ico",
+        "headerImage": null,
+        "sidebarImage": null,
+        "installMode": "currentUser",
+        "languages": ["English"]
+      }
+    },
+    "macOS": {
+      "frameworks": [],
+      "minimumSystemVersion": "11.0",
+      "dmg": {
+        "background": null,
+        "windowSize": {
+          "width": 660,
+          "height": 400
+        },
+        "appPosition": {
+          "x": 180,
+          "y": 170
+        },
+        "applicationFolderPosition": {
+          "x": 480,
+          "y": 170
+        }
+      }
+    },
+    "linux": {
+      "deb": {
+        "depends": ["libwebkit2gtk-4.1-0", "libappindicator3-1"]
+      },
+      "appimage": {
+        "bundleMediaFramework": false
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IFJhY2huYUNBRC1LZXkKUldSM1NkWnp2UFlVb2d5MVRtS0R3Y25k...",
+      "endpoints": [
+        "https://github.com/archanagavas/anvitam.com/releases/latest/download/updater.json"
+      ]
+    }
+  }
+}

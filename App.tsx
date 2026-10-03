@@ -38,6 +38,7 @@ import Tools from './pages/Tools';
 import SiteAnalysis from './pages/SiteAnalysis';
 import UserDashboard from './pages/UserDashboard';
 import AIHomeDesign from './pages/AIHomeDesign';
+import RachnaCAD from './pages/RachnaCAD';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -136,6 +137,8 @@ const App: React.FC = () => {
               <AnimatePresence mode="wait">
                 <Routes>
                   <Route path="/admin" element={<Admin />} />
+                  <Route path="/rachnacad" element={<RachnaCAD />} />
+                  <Route path="/tools/rachnacad" element={<RachnaCAD />} />
                   <Route path="*" element={
                     <Layout>
                       <PageTransition>

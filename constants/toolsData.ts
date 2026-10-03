@@ -31,6 +31,35 @@ export interface ToolItem {
 
 export const TOOLS_SUITE: ToolItem[] = [
   {
+    id: 'rachnacad',
+    name: 'RachnaCAD Studio — AI BIM & 2D/3D CAD',
+    category: 'Generative AI Studios',
+    shortDesc: 'AutoCAD precision 2D drafting + Archicad smart 3D BIM + Local GPU AI with zero cloud fees. 60% Free Forever.',
+    fullDesc: 'Draft with AutoCAD speed, extrude parametric 3D walls in real time, place doors & windows with automated boolean openings, and export native .DXF and IFC files with automated BOQ quantity takeoffs.',
+    features: [
+      '⚡ Dual-Synchronized 2D/3D BIM Viewport',
+      '📐 Precision AutoCAD Drafting (Line, Wall, Arc, Dim)',
+      '🚪 Parametric Smart Openings (Door Swings & Window Glass)',
+      '🧱 Real-Time BOQ Schedule (Brick, Mortar & Volume Calc)',
+      '🚀 Local GPU AI Inference ($0 Offline Qwen & Llama)',
+      '📁 Native .DXF, DWG & OpenBIM IFC 4.3 Export',
+      '💻 Cross-Platform: Windows, macOS & Linux'
+    ],
+    subModules: [
+      { id: 'cad-drafting', name: '2D CAD Precision Vector Canvas', badge: 'AUTOCAD LT', href: '/rachnacad?tab=2d', icon: '📐' },
+      { id: 'bim-sync', name: '3D Parametric BIM Extruder', badge: 'ARCHICAD', href: '/rachnacad?tab=3d', icon: '🏢' },
+      { id: 'ai-copilot', name: 'Local GPU Architectural Co-Pilot', badge: 'LOCAL AI', href: '/rachnacad?tab=ai', icon: '🤖' },
+      { id: 'boq-takeoff', name: 'Automated Quantity Takeoff (BOQ)', badge: 'TAKEOFF', href: '/rachnacad', icon: '📊' }
+    ],
+    href: '/rachnacad',
+    status: 'live',
+    badge: 'NEW BIM FLAGSHIP',
+    iconBg: 'bg-[#CCFF00] text-black',
+    iconColor: 'text-[#CCFF00]',
+    iconSvg: React.createElement(Building, { size: 24 }),
+    previewImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200&auto=format&fit=crop',
+  },
+  {
     id: 'ai-home-design',
     name: 'AI Space & Home Design Studio',
     category: 'Generative AI Studios',
@@ -94,11 +123,12 @@ export const TOOLS_SUITE: ToolItem[] = [
   }
 ];
 
-// Backward-compatible lookup helper for legacy deep-links
 export function findToolById(id: string): ToolItem {
+  const found = TOOLS_SUITE.find((t) => t.id === id);
+  if (found) return found;
   if (id.startsWith('ai-')) {
-    return TOOLS_SUITE[0];
+    return TOOLS_SUITE[1];
   }
-  return TOOLS_SUITE[1];
+  return TOOLS_SUITE[0];
 }
 

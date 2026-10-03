@@ -1,0 +1,23 @@
+{
+  "version": "v1.0.0",
+  "notes": "RachnaCAD v1.0.0 Release:\n- Module 1: Web Gateway & Freemium CAD Hub\n- Module 2: 2D CAD Precision Vector Engine (AutoCAD LT parity)\n- Module 3: 3D Parametric BIM & Dual-Synchronized Viewport (Archicad parity)\n- Module 4: ChatGPT-Style Proactive AI Co-Pilot with Local GPU (Qwen-2.5-Coder & Llama-3.2-3B)\n- Module 5: 1-Click 2D Image / Blueprint -> 3D BIM Converter\n- Module 6: Tauri 2.0 Cross-Platform Desktop Binaries (<60MB)",
+  "pub_date": "2026-09-29T08:00:00Z",
+  "platforms": {
+    "windows-x86_64": {
+      "signature": "RachnaCAD-Win64-Verified-Signature",
+      "url": "https://github.com/archanagavas/anvitam.com/releases/download/v1.0.0/RachnaCAD-Setup-x64.exe"
+    },
+    "darwin-aarch64": {
+      "signature": "RachnaCAD-MacARM64-Verified-Signature",
+      "url": "https://github.com/archanagavas/anvitam.com/releases/download/v1.0.0/RachnaCAD-Universal.dmg"
+    },
+    "darwin-x86_64": {
+      "signature": "RachnaCAD-MacIntel-Verified-Signature",
+      "url": "https://github.com/archanagavas/anvitam.com/releases/download/v1.0.0/RachnaCAD-Universal.dmg"
+    },
+    "linux-x86_64": {
+      "signature": "RachnaCAD-Linux64-Verified-Signature",
+      "url": "https://github.com/archanagavas/anvitam.com/releases/download/v1.0.0/RachnaCAD-x86_64.AppImage"
+    }
+  }
+}

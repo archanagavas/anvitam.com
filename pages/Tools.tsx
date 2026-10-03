@@ -50,6 +50,10 @@ export default function Tools() {
   });
 
   const handleLaunchTool = (tool: ToolItem) => {
+    if (tool.id === 'rachnacad') {
+      navigate('/rachnacad');
+      return;
+    }
     const user = getToolUser();
     if (!user || user.is_guest) {
       setPendingToolRedirect(tool.href);

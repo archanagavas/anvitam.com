@@ -1,0 +1,308 @@
+<Window x:Class="RachnaCAD.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="RachnaCAD | 2D/3D Architectural BIM &amp; AI Studio"
+        Height="880" Width="1380"
+        MinHeight="680" MinWidth="1000"
+        WindowStartupLocation="CenterScreen"
+        Background="#F8FAFC"
+        FontFamily="Segoe UI, Inter, Arial">
+
+    <Window.Resources>
+        <!-- Modern Clean Notion/Vercel Button Styles -->
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#0F172A"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="18,10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="8" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#334155"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="AccentButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#CCFF00"/>
+            <Setter Property="Foreground" Value="#0F172A"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="18,10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="8" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#B8E600"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#FFFFFF"/>
+            <Setter Property="Foreground" Value="#334155"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#F1F5F9"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <!-- ========================================================= -->
+        <!-- 1. INSTALLER WIZARD PANEL (C:\ or D:\ Drive Installation) -->
+        <!-- ========================================================= -->
+        <Grid x:Name="InstallerPanel" Visibility="Visible" Background="#F8FAFC">
+            <Border Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" 
+                    CornerRadius="16" Width="680" 
+                    HorizontalAlignment="Center" VerticalAlignment="Center" 
+                    Padding="36">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="30" Color="#000000" Opacity="0.08" Direction="270" ShadowDepth="4"/>
+                </Border.Effect>
+
+                <StackPanel>
+                    <!-- Header -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,24">
+                        <Border Width="44" Height="44" Background="#CCFF00" CornerRadius="10" Margin="0,0,16,0">
+                            <TextBlock Text="📐" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="RachnaCAD" FontSize="20" FontWeight="Bold" Foreground="#0F172A"/>
+                                <Border Background="#0F172A" CornerRadius="4" Margin="10,2,0,2" Padding="6,2">
+                                    <TextBlock Text="v1.0 SETUP" FontSize="10" FontWeight="Bold" Foreground="#CCFF00"/>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Text="2D AutoCAD Precision • 3D Archicad BIM • Local GPU AI" FontSize="12" Foreground="#64748B" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- STEP 1: SELECT DESTINATION DRIVE/DIRECTORY -->
+                    <StackPanel x:Name="InstallerStepSelectLocation" Visibility="Visible">
+                        <TextBlock Text="Select Installation Drive &amp; Location" FontSize="15" FontWeight="SemiBold" Foreground="#0F172A" Margin="0,0,0,6"/>
+                        <TextBlock Text="Choose where RachnaCAD will be installed on your computer:" FontSize="12" Foreground="#64748B" Margin="0,0,0,16"/>
+
+                        <!-- Drive Quick Pick Buttons -->
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <Border x:Name="DriveCOption" Grid.Column="0" Background="#F1F5F9" BorderBrush="#0F172A" BorderThickness="2" CornerRadius="8" Padding="12" Cursor="Hand" MouseDown="DriveCOption_MouseDown">
+                                <StackPanel>
+                                    <TextBlock Text="💾 Drive C: (Primary)" FontWeight="Bold" FontSize="12" Foreground="#0F172A"/>
+                                    <TextBlock x:Name="DriveCPathLabel" Text="C:\Program Files\RachnaCAD" FontSize="11" Foreground="#475569" Margin="0,4,0,0" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock x:Name="DriveCFreeLabel" Text="Calculating free space..." FontSize="10" Foreground="#059669" FontWeight="SemiBold" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border x:Name="DriveDOption" Grid.Column="2" Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12" Cursor="Hand" MouseDown="DriveDOption_MouseDown">
+                                <StackPanel>
+                                    <TextBlock x:Name="DriveDTitleLabel" Text="💾 Drive D: / Secondary" FontWeight="Bold" FontSize="12" Foreground="#0F172A"/>
+                                    <TextBlock x:Name="DriveDPathLabel" Text="D:\RachnaCAD" FontSize="11" Foreground="#475569" Margin="0,4,0,0" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock x:Name="DriveDFreeLabel" Text="Calculating free space..." FontSize="10" Foreground="#059669" FontWeight="SemiBold" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- Custom Path Input -->
+                        <TextBlock Text="Destination Path:" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,4,0,4"/>
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="TargetPathTextBox" Grid.Column="0" Text="C:\Program Files\RachnaCAD" Padding="10,8" FontSize="12" BorderBrush="#CBD5E1"/>
+                            <Button x:Name="BrowseButton" Grid.Column="2" Content="Browse..." Style="{StaticResource SecondaryButtonStyle}" Click="BrowseButton_Click"/>
+                        </Grid>
+
+                        <!-- Space Requirements -->
+                        <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,18">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Space Required: 260 MB" FontSize="11" FontWeight="SemiBold" Foreground="#334155"/>
+                                    <TextBlock x:Name="SelectedDriveSpaceLabel" Text="Available on Drive C: Checking..." FontSize="11" Foreground="#64748B"/>
+                                </StackPanel>
+                                <Border Grid.Column="1" Background="#DCFCE7" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                    <TextBlock Text="Ready to Install" FontSize="10" FontWeight="Bold" Foreground="#15803D"/>
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                        <!-- Checkboxes -->
+                        <StackPanel Margin="0,0,0,24">
+                            <CheckBox x:Name="CreateDesktopShortcutCheckBox" IsChecked="True" Content="Create Desktop Shortcut (RachnaCAD.lnk)" FontSize="12" Foreground="#334155" Margin="0,0,0,8"/>
+                            <CheckBox x:Name="CreateStartMenuShortcutCheckBox" IsChecked="True" Content="Create Start Menu Shortcut" FontSize="12" Foreground="#334155"/>
+                        </StackPanel>
+
+                        <!-- Action Buttons -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" Content="Run Portable (Test Now)" Style="{StaticResource SecondaryButtonStyle}" Click="RunPortable_Click"/>
+                            <Button Grid.Column="2" Content="Install RachnaCAD" Style="{StaticResource PrimaryButtonStyle}" Click="StartInstallation_Click"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- STEP 2: INSTALLATION PROGRESS -->
+                    <StackPanel x:Name="InstallerStepProgress" Visibility="Collapsed">
+                        <TextBlock Text="Installing RachnaCAD..." FontSize="15" FontWeight="SemiBold" Foreground="#0F172A" Margin="0,0,0,6"/>
+                        <TextBlock x:Name="InstallStatusLabel" Text="Extracting CAD Vector Engine &amp; BIM components..." FontSize="12" Foreground="#64748B" Margin="0,0,0,16"/>
+
+                        <!-- Progress Bar -->
+                        <ProgressBar x:Name="InstallProgressBar" Height="8" Minimum="0" Maximum="100" Value="0" Margin="0,0,0,12" Foreground="#0F172A" Background="#E2E8F0" BorderThickness="0"/>
+                        <TextBlock x:Name="InstallPercentLabel" Text="0%" HorizontalAlignment="Right" FontSize="11" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,20"/>
+
+                        <!-- Installed Modules Checklist -->
+                        <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="14">
+                            <StackPanel>
+                                <TextBlock x:Name="StatusItem1" Text="⏳ Copying 2D Vector Drafting Precision Kernel..." FontSize="11" Foreground="#475569" Margin="0,0,0,6"/>
+                                <TextBlock x:Name="StatusItem2" Text="⏳ Initializing Three.js WebGPU 3D Parametric BIM..." FontSize="11" Foreground="#475569" Margin="0,0,0,6"/>
+                                <TextBlock x:Name="StatusItem3" Text="⏳ Configuring Multi-AI Model Engine (Qwen &amp; Llama Local GPU)..." FontSize="11" Foreground="#475569" Margin="0,0,0,6"/>
+                                <TextBlock x:Name="StatusItem4" Text="⏳ Setting up DXF / DWG / IFC parsers..." FontSize="11" Foreground="#475569" Margin="0,0,0,6"/>
+                                <TextBlock x:Name="StatusItem5" Text="⏳ Creating Windows Desktop &amp; Start Menu Shortcuts..." FontSize="11" Foreground="#475569"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- STEP 3: INSTALLATION COMPLETE -->
+                    <StackPanel x:Name="InstallerStepComplete" Visibility="Collapsed">
+                        <Border Width="50" Height="50" Background="#DCFCE7" CornerRadius="25" HorizontalAlignment="Center" Margin="0,0,0,16">
+                            <TextBlock Text="✓" FontSize="26" FontWeight="Bold" Foreground="#15803D" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+
+                        <TextBlock Text="Installation Completed Successfully!" FontSize="18" FontWeight="Bold" Foreground="#0F172A" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                        <TextBlock x:Name="InstalledPathNoticeLabel" Text="RachnaCAD has been installed to C:\Program Files\RachnaCAD" FontSize="12" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+                        <Border Background="#F1F5F9" CornerRadius="8" Padding="12" Margin="0,0,0,24">
+                            <StackPanel>
+                                <TextBlock Text="✓ Desktop Shortcut created" FontSize="11" Foreground="#15803D" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <TextBlock Text="✓ Next Step: Authenticate your workstation license to unlock full studio access." FontSize="11" Foreground="#475569"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Button Content="🚀 Launch RachnaCAD &amp; Authenticate" Style="{StaticResource AccentButtonStyle}" Padding="24,12" HorizontalAlignment="Center" Click="LaunchAppFromInstaller_Click"/>
+                    </StackPanel>
+
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- ========================================================= -->
+        <!-- 2. AUTHENTICATION GATE PANEL (Workstation Sign-In / OTP)  -->
+        <!-- ========================================================= -->
+        <Grid x:Name="AuthPanel" Visibility="Collapsed" Background="#F8FAFC">
+            <Border Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" 
+                    CornerRadius="16" Width="460" 
+                    HorizontalAlignment="Center" VerticalAlignment="Center" 
+                    Padding="36">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="30" Color="#000000" Opacity="0.08" Direction="270" ShadowDepth="4"/>
+                </Border.Effect>
+
+                <StackPanel>
+                    <!-- Icon & Header -->
+                    <Border Width="48" Height="48" Background="#CCFF00" CornerRadius="12" HorizontalAlignment="Center" Margin="0,0,0,16">
+                        <TextBlock Text="📐" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+
+                    <TextBlock Text="RachnaCAD Workstation" FontSize="20" FontWeight="Bold" Foreground="#0F172A" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Sign in to activate your studio license and local GPU AI co-pilot." FontSize="12" Foreground="#64748B" HorizontalAlignment="Center" TextAlignment="Center" Margin="0,6,0,24"/>
+
+                    <!-- Email Field -->
+                    <TextBlock Text="Architect Email Address" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                    <TextBox x:Name="AuthEmailTextBox" Text="architect@studio.com" Padding="12,10" FontSize="13" BorderBrush="#CBD5E1" Margin="0,0,0,14"/>
+
+                    <!-- Verification Code Field -->
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Verification Code (OTP)" FontSize="11" FontWeight="SemiBold" Foreground="#475569"/>
+                        <TextBlock Grid.Column="1" Text="Dev Code: 123456" FontSize="10" Foreground="#059669" FontWeight="Bold"/>
+                    </Grid>
+                    
+                    <TextBox x:Name="AuthOtpTextBox" Text="123456" Padding="12,10" FontSize="13" BorderBrush="#CBD5E1" Margin="0,0,0,8"/>
+
+                    <!-- Quick Auto-Fill Test Button -->
+                    <Button Content="⚡ 1-Click Auto-Fill Demo Code (123456)" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,0,18" Click="AutoFillDevOtp_Click"/>
+
+                    <!-- Error / Info Message -->
+                    <TextBlock x:Name="AuthMessageLabel" Text="" FontSize="11" Foreground="#DC2626" HorizontalAlignment="Center" Margin="0,0,0,12" Visibility="Collapsed"/>
+
+                    <!-- Submit Button -->
+                    <Button Content="Verify &amp; Unlock RachnaCAD Studio" Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,0,12" Click="VerifyAndUnlock_Click"/>
+
+                    <!-- Bypass for Testing -->
+                    <Button Content="Continue as Guest (Offline Mode)" Style="{StaticResource SecondaryButtonStyle}" Click="ContinueAsGuest_Click"/>
+
+                    <TextBlock Text="🔒 60% Free Forever • $10/mo Pro Tier • Anvitam Secure Auth" FontSize="10" Foreground="#94A3B8" HorizontalAlignment="Center" Margin="0,20,0,0"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- ========================================================= -->
+        <!-- 3. FULL RACHNACAD STUDIO PANEL (CAD + BIM + AI Workspace) -->
+        <!-- ========================================================= -->
+        <Grid x:Name="StudioPanel" Visibility="Collapsed">
+            <wv2:WebView2 x:Name="CADWebView"/>
+        </Grid>
+    </Grid>
+</Window>

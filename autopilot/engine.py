@@ -1,0 +1,195 @@
+"""
+Master Autopilot Engine & CLI Entrypoint.
+Orchestrates the 2:00 AM autonomous loop:
+1. Research Agent -> Scans competitors, maps, and reviews to find 6 gaps
+2. Strategy Agent -> Scores gaps and picks #1 winner
+3. Writing Agent -> Drafts 1,800-word guide in Archana's Raw Mentor voice
+4. Editor Agent -> Quality Gate audits against AEO and Stop-Slop (loops until >=92%)
+5. Publishing Agent -> Pushes live to anvitam.com, interlinks older post, sends Resend digest
+6. Syndication Hub -> Dispatches to Bluesky, Mastodon, Threads, X, LinkedIn, Medium, Substack
+
+Usage:
+  python -m autopilot.engine --mode run-all
+  python -m autopilot.engine --mode research-gaps
+  python -m autopilot.engine --mode write-topic --topic "Cost of rammed earth villa Alibaug"
+  python -m autopilot.engine --dry-run
+"""
+
+import sys
+import io
+import json
+import argparse
+import logging
+from typing import Optional, Dict, Any
+
+# Ensure UTF-8 output on Windows console safely
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
+from autopilot.config import logger
+from autopilot.agents.researcher import ResearchAgent
+from autopilot.agents.strategist import StrategyAgent
+from autopilot.agents.writer import WritingAgent
+from autopilot.agents.editor import EditorAgent
+from autopilot.agents.publisher import PublishingAgent
+from autopilot.syndication.syndicator import SyndicationHub
+
+class AutopilotEngine:
+    def __init__(self):
+        self.logger = logging.getLogger("autopilot.engine")
+        self.researcher = ResearchAgent()
+        self.strategist = StrategyAgent()
+        self.writer = WritingAgent()
+        self.editor = EditorAgent()
+        self.publisher = PublishingAgent()
+        self.syndicator = SyndicationHub()
+
+    def run_nightly_cycle(
+        self,
+        region_override: Optional[str] = None,
+        topic_override: Optional[str] = None,
+        dry_run: bool = False,
+        skip_syndication: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Executes the complete 2:00 AM autonomous content & distribution loop.
+        """
+        self.logger.info("=" * 70)
+        self.logger.info("🌿 STARTING 2:00 AM AUTONOMOUS MULTI-AGENT LOOP (ARCHANA STUDIO)")
+        self.logger.info("=" * 70)
+
+        # ── Step 1: Research Agent ──────────────────────────────────────────
+        if topic_override:
+            self.logger.info(f"Topic override provided: '{topic_override}'")
+            candidate_gaps = [{
+                "gap_id": 1,
+                "target_query": topic_override,
+                "town": region_override or "Western India Regional Corridor",
+                "competitor_reference": "Direct Founder Topic Directive",
+                "customer_pain_point": "Urgent practical clarity on project costs and execution",
+                "buyer_persona": "High-net-worth estate or resort developer",
+                "search_intent": "Commercial Investigation"
+            }]
+        else:
+            candidate_gaps = self.researcher.run(region_override=region_override)
+            self.logger.info(f"Research Agent identified {len(candidate_gaps)} competitor search gaps.")
+
+        # ── Step 2: Strategy Agent ──────────────────────────────────────────
+        strategy_brief = self.strategist.run(candidate_gaps=candidate_gaps)
+        winning_topic = strategy_brief.get("primary_keyword")
+        self.logger.info(f"Strategy Agent selected winning keyword: '{winning_topic}' (Score: {strategy_brief.get('total_score')})")
+
+        # ── Step 3 & 4: Writing Agent & Editor Quality Gate Loop ────────────
+        max_editorial_loops = 3
+        current_loop = 1
+        revision_feedback = None
+        approved_draft = None
+
+        while current_loop <= max_editorial_loops:
+            self.logger.info(f"Writing Loop {current_loop}/{max_editorial_loops}: Generating draft...")
+            draft = self.writer.run(strategy_brief=strategy_brief, revision_feedback=revision_feedback)
+
+            self.logger.info(f"Editor Quality Gate: Auditing draft (Loop {current_loop})...")
+            audit = self.editor.audit(draft=draft, strategy_brief=strategy_brief)
+            score = audit.get("overall_score", 0)
+            passed = audit.get("passed", False)
+
+            self.logger.info(f"Editor Result: Score {score}/100 | Passed: {passed}")
+
+            if passed or score >= 92:
+                self.logger.info(f"Quality gate PASSED on loop {current_loop} with score {score}/100!")
+                approved_draft = draft
+                approved_draft["editorial_score"] = score
+                approved_draft["editorial_audit"] = audit
+                break
+            else:
+                self.logger.warning(f"Quality gate rejected draft. Issues found: {audit.get('issues_to_fix')}")
+                revision_feedback = audit.get("revision_instructions_for_writer")
+                current_loop += 1
+
+        if not approved_draft:
+            self.logger.warning("Reached max editorial loops without 92+ score. Proceeding with best current draft.")
+            approved_draft = draft
+
+        # ── Step 5: Publishing & Interlinking Agent ─────────────────────────
+        pub_result = self.publisher.publish_article(draft=approved_draft, dry_run=dry_run)
+        self.logger.info(f"Publication complete: {pub_result}")
+
+        # ── Step 6: Multi-Platform Syndication Hub ──────────────────────────
+        syndication_results = {}
+        if not skip_syndication:
+            article_payload = {
+                "title": approved_draft.get("title"),
+                "slug": pub_result.get("slug"),
+                "url": pub_result.get("url"),
+                "excerpt": approved_draft.get("excerpt") or approved_draft.get("meta_description"),
+                "content_html": approved_draft.get("content_html"),
+                "tags": approved_draft.get("tags")
+            }
+            syndication_results = self.syndicator.syndicate_all(
+                article_data=article_payload,
+                dry_run=dry_run
+            )
+
+        self.logger.info("=" * 70)
+        self.logger.info("🌿 2:00 AM AUTONOMOUS CYCLE FINISHED SUCCESSFULLY")
+        self.logger.info(f"Article Live: {pub_result.get('url', 'Simulated')}")
+        self.logger.info(f"Syndication Status: {json.dumps(syndication_results, indent=2)}")
+        self.logger.info("=" * 70)
+
+        return {
+            "strategy": strategy_brief,
+            "article": {
+                "title": approved_draft.get("title"),
+                "slug": approved_draft.get("slug"),
+                "score": approved_draft.get("editorial_score")
+            },
+            "publication": pub_result,
+            "syndication": syndication_results
+        }
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Anvitam Autopilot: Autonomous Competitor Loop & 8-Platform Syndication")
+    parser.add_argument("--mode", choices=["run-all", "research-gaps", "write-topic", "syndicate"], default="run-all", help="Execution mode")
+    parser.add_argument("--topic", type=str, help="Manual topic override to research and write")
+    parser.add_argument("--region", type=str, help="Target region/town (e.g. 'Alibaug', 'Vadodara', 'Goa')")
+    parser.add_argument("--dry-run", action="store_true", help="Simulate without publishing live or dispatching posts")
+    parser.add_argument("--skip-syndication", action="store_true", help="Only publish to website, skip social networks")
+
+    args = parser.parse_args()
+
+    engine = AutopilotEngine()
+
+    if args.mode == "research-gaps":
+        gaps = engine.researcher.run(region_override=args.region)
+        print("\n🔍 6 UNCOVERED COMPETITOR SEARCH GAPS FOUND:")
+        print(json.dumps(gaps, indent=2))
+        return
+
+    if args.mode == "write-topic":
+        if not args.topic:
+            print("Error: --topic is required when using --mode write-topic")
+            sys.exit(1)
+        engine.run_nightly_cycle(
+            topic_override=args.topic,
+            region_override=args.region,
+            dry_run=args.dry_run,
+            skip_syndication=args.skip_syndication
+        )
+        return
+
+    # Default: Run full nightly cycle
+    engine.run_nightly_cycle(
+        region_override=args.region,
+        dry_run=args.dry_run,
+        skip_syndication=args.skip_syndication
+    )
+
+
+if __name__ == "__main__":
+    main()

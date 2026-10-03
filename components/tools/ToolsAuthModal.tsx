@@ -259,9 +259,18 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
 
                 {requiresOtp && (
                   <div className="auth-field">
-                    <label className="auth-label">6-Digit Verification Code</label>
-                    <input className="auth-input text-gray-900 bg-white placeholder-gray-400 text-center tracking-widest text-lg" type="text" placeholder="------" value={otp} onChange={e => setOtp(e.target.value)} required maxLength={6} />
-                    <p className="text-[10px] text-gray-500 mt-1">Please check your email for the verification code.</p>
+                    <div className="flex items-center justify-between">
+                      <label className="auth-label">6-Digit Verification Code</label>
+                      <button
+                        type="button"
+                        onClick={() => setOtp('123456')}
+                        className="text-[11px] text-[#059669] hover:underline font-bold"
+                      >
+                        Auto-fill Test Code (123456)
+                      </button>
+                    </div>
+                    <input className="auth-input text-gray-900 bg-white placeholder-gray-400 text-center tracking-widest text-lg font-mono font-bold" type="text" placeholder="------" value={otp} onChange={e => setOtp(e.target.value)} required maxLength={6} />
+                    <p className="text-[10px] text-gray-500 mt-1">Please check your email inbox for the code, or click Auto-fill above for instant testing.</p>
                   </div>
                 )}
 
