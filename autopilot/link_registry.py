@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "Keyline Drainage for Black Cotton Soil: The Ultimate Guide to Foundation Crack Solutions in Alibaug",
+            "url": "https://www.anvitam.com/blog/keyline-drainage-black-cotton-soil-alibaug",
+            "topics": [
+                "keyline drainage",
+                "black cotton soil",
+                "foundation crack solutions",
+                "alibaug"
+            ],
+            "suggested_anchors": [
+                "our guide on keyline drainage for black cotton soil",
+                "Keyline Drainage for Black Cotton Soil: The Ultimate Guide to Foundation Crack Solutions in Alibaug"
+            ]
+        },
+        {
             "title": "How Much Does a Rammed Earth Villa Cost in Alibaug? (2026 Soil, Monsoon, and Engineering Reality)",
             "url": "https://www.anvitam.com/blog/rammed-earth-villa-cost-alibaug",
             "topics": [
