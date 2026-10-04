@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "Passive Solar Orientation in Alibaug: A Comprehensive Guide to Cooling Your Home Naturally",
+            "url": "https://www.anvitam.com/blog/passive-solar-orientation-alibaug",
+            "topics": [
+                "passive solar orientation",
+                "alibaug",
+                "rammed earth",
+                "sustainable building"
+            ],
+            "suggested_anchors": [
+                "our guide on passive solar orientation in alibaug",
+                "Passive Solar Orientation in Alibaug: A Comprehensive Guide to Cooling Your Home Naturally"
+            ]
+        },
+        {
             "title": "Keyline Drainage for Black Cotton Soil: The Ultimate Guide to Foundation Crack Solutions in Alibaug",
             "url": "https://www.anvitam.com/blog/keyline-drainage-black-cotton-soil-alibaug",
             "topics": [
