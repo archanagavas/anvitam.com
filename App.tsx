@@ -39,6 +39,7 @@ import SiteAnalysis from './pages/SiteAnalysis';
 import UserDashboard from './pages/UserDashboard';
 import AIHomeDesign from './pages/AIHomeDesign';
 import RachnaCAD from './pages/RachnaCAD';
+import { SHOW_GENERATIVE_AI_STUDIOS } from './constants/toolsData';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -123,6 +124,13 @@ const App: React.FC = () => {
   // Render main layout immediately to maximize Web Vitals (FCP, LCP, CLS)
   const [isLoading, setIsLoading] = useState(false);
 
+  // Generative AI Studios (RachnaCAD & AI Home/Space Design) are safely kept in the codebase
+  // for future development, but strictly disabled on live deployment until fully finalized.
+  const canAccessGenerativeAi = SHOW_GENERATIVE_AI_STUDIOS &&
+    (typeof window !== 'undefined' && (
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1'
+    ));
 
   return (
     <ErrorBoundary>
@@ -137,8 +145,8 @@ const App: React.FC = () => {
               <AnimatePresence mode="wait">
                 <Routes>
                   <Route path="/admin" element={<Admin />} />
-                  <Route path="/rachnacad" element={<RachnaCAD />} />
-                  <Route path="/tools/rachnacad" element={<RachnaCAD />} />
+                  <Route path="/rachnacad" element={canAccessGenerativeAi ? <RachnaCAD /> : <Navigate to="/tools" replace />} />
+                  <Route path="/tools/rachnacad" element={canAccessGenerativeAi ? <RachnaCAD /> : <Navigate to="/tools" replace />} />
                   <Route path="*" element={
                     <Layout>
                       <PageTransition>
@@ -158,12 +166,12 @@ const App: React.FC = () => {
                           <Route path="/blog/:id" element={<BlogDetail />} />
                           <Route path="/contact" element={<Contact />} />
                           <Route path="/tools" element={<Tools />} />
-                          <Route path="/tools/ai-home-design" element={<AIHomeDesign />} />
-                          <Route path="/tools/ai-interior" element={<AIHomeDesign />} />
-                          <Route path="/tools/ai-exterior" element={<AIHomeDesign />} />
-                          <Route path="/tools/ai-garden" element={<AIHomeDesign />} />
-                          <Route path="/tools/ai-replace" element={<AIHomeDesign />} />
-                          <Route path="/tools/ai-removal" element={<AIHomeDesign />} />
+                          <Route path="/tools/ai-home-design" element={canAccessGenerativeAi ? <AIHomeDesign /> : <Navigate to="/tools" replace />} />
+                          <Route path="/tools/ai-interior" element={canAccessGenerativeAi ? <AIHomeDesign /> : <Navigate to="/tools" replace />} />
+                          <Route path="/tools/ai-exterior" element={canAccessGenerativeAi ? <AIHomeDesign /> : <Navigate to="/tools" replace />} />
+                          <Route path="/tools/ai-garden" element={canAccessGenerativeAi ? <AIHomeDesign /> : <Navigate to="/tools" replace />} />
+                          <Route path="/tools/ai-replace" element={canAccessGenerativeAi ? <AIHomeDesign /> : <Navigate to="/tools" replace />} />
+                          <Route path="/tools/ai-removal" element={canAccessGenerativeAi ? <AIHomeDesign /> : <Navigate to="/tools" replace />} />
                           <Route path="/site-analysis" element={<SiteAnalysis />} />
                           <Route path="/site-intelligence" element={<SiteAnalysis />} />
                           <Route path="/site_intelligence" element={<SiteAnalysis />} />

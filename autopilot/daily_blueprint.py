@@ -136,8 +136,16 @@ THIRTY_DAY_PLAN: List[Dict[str, Any]] = [
             }
         ]
     }
-    # Additional days 3-30 follow this identical high-converting SLAY framework
 ]
+
+# Seamlessly load days 3 through 30 from the complete blueprint catalog
+try:
+    from autopilot.blueprint_data import FULL_THIRTY_DAY_PLAN
+    if len(FULL_THIRTY_DAY_PLAN) >= 30:
+        THIRTY_DAY_PLAN.extend(FULL_THIRTY_DAY_PLAN[2:])
+except Exception as _e:
+    logger.warning(f"Could not load extended 30-day catalog: {_e}")
+
 
 def send_milestone_review_email(current_day: int = 30) -> Dict[str, Any]:
     """

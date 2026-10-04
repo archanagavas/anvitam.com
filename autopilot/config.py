@@ -7,13 +7,15 @@ Provides zero-cost multi-model LLM generation with automatic fallbacks.
 import os
 import json
 import logging
+import sys
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 import requests
 from dotenv import load_dotenv
 
-# Setup Logging
+# Setup Logging (explicit stdout for clean Windows PowerShell execution)
 logging.basicConfig(
+    stream=sys.stdout,
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 )

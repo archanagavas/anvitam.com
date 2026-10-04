@@ -10,7 +10,7 @@ import {
   Image as ImageIcon, Tag, Save, ArrowLeft, Type, Hash, AlertCircle, Menu,
   Database, Wifi, WifiOff, Shield, Lock, Zap, Activity, MessageCircle, Calculator, Building2,
   Link2, Target, Send, Users, ExternalLink, Check, Clock, TrendingUp, ChevronDown, ChevronUp, Search,
-  ArrowRight, Sun, Droplets, Compass, Layers, MapPin, Play, Cpu
+  ArrowRight, Sun, Droplets, Compass, Layers, MapPin, Play, Cpu, Mountain
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { generateSitemapXml, generateLlmsTxt, generateLlmsFullTxt, downloadFile } from '../utils/seoGenerator';
@@ -2482,7 +2482,7 @@ const Admin: React.FC = () => {
           <NavButton id="analytics" icon={ChartIcon} label="Dashboard" />
           <NavButton id="cmo" icon={Sparkles} label="CMO Growth Engine" />
           <NavButton id="directories" icon={Link2} label="Directory Drip & Backlinks" />
-          <NavButton id="outreach" icon={Mail} label="1,000 Client Leads & Outreach" />
+          <NavButton id="outreach" icon={Mail} label="Client Leads & Outreach" />
           <NavButton id="api-ledger" icon={Zap} label="API Usage & Billing Ledger" />
           <NavButton id="messages" icon={MessageSquare} label="Inquiries" />
           <NavButton id="estimator" icon={Calculator} label="Estimate Leads" />
@@ -2556,13 +2556,15 @@ const Admin: React.FC = () => {
 
           const getCountryBadge = (location: string = '') => {
             const loc = location.toLowerCase();
-            if (loc.includes('usa') || loc.includes('texas') || loc.includes('california')) return { flag: '🇺🇸', label: 'USA' };
+            if (loc.includes('uk') || loc.includes('edinburgh') || loc.includes('london') || loc.includes('britain') || loc.includes('united kingdom')) return { flag: '🇬🇧', label: 'UK' };
+            if (loc.includes('australia') || loc.includes('sydney') || loc.includes('melbourne') || loc.includes('margaret river')) return { flag: '🇦🇺', label: 'Australia' };
+            if (loc.includes('uae') || loc.includes('dubai') || loc.includes('abu dhabi')) return { flag: '🇦🇪', label: 'UAE' };
+            if (loc.includes('usa') || loc.includes('texas') || loc.includes('california') || loc.includes('new york')) return { flag: '🇺🇸', label: 'USA' };
+            if (loc.includes('india') || loc.includes('karnataka') || loc.includes('kerala') || loc.includes('delhi') || loc.includes('gujarat') || loc.includes('maharashtra') || loc.includes('goa')) return { flag: '🇮🇳', label: 'India' };
             if (loc.includes('italy') || loc.includes('tuscany')) return { flag: '🇮🇹', label: 'Italy' };
             if (loc.includes('mexico') || loc.includes('guerrero')) return { flag: '🇲🇽', label: 'Mexico' };
             if (loc.includes('spain') || loc.includes('andalusia')) return { flag: '🇪🇸', label: 'Spain' };
             if (loc.includes('brazil') || loc.includes('bahia') || loc.includes('trancoso')) return { flag: '🇧🇷', label: 'Brazil' };
-            if (loc.includes('australia') || loc.includes('margaret river')) return { flag: '🇦🇺', label: 'Australia' };
-            if (loc.includes('india') || loc.includes('karnataka') || loc.includes('kerala') || loc.includes('delhi') || loc.includes('gujarat')) return { flag: '🇮🇳', label: 'India' };
             return { flag: '🌐', label: 'Global' };
           };
 
@@ -2590,14 +2592,14 @@ const Admin: React.FC = () => {
                     </span>
                     <span className="text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full flex items-center gap-1.5">
                       <Cpu size={11} />
-                      Autonomous Multi-Agent Engine (start_autopilot.bat)
+                      Local Multi-Agent Engine (start_autopilot.bat)
                     </span>
                   </div>
                   <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
                     Anvitam Studio &amp; Platform Intelligence
                   </h1>
                   <p className="text-xs sm:text-sm text-gray-300 max-w-2xl font-normal leading-relaxed">
-                    Real-time operational command across international client acquisition, inbound lead pipelines, proprietary calculator suites, and autonomous multi-agent syndication.
+                    Real-time operational command across international client acquisition, inbound lead pipelines, proprietary calculator suites, and autonomous local multi-agent syndication.
                   </p>
                 </div>
 
@@ -2624,26 +2626,26 @@ const Admin: React.FC = () => {
               {/* ── 6 Real Operational Metric Cards (Dynamic Live State) ── */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5">
                 
-                {/* 1. Global Qualified Pipeline Value */}
+                {/* 1. Verified International Pipeline */}
                 <div
                   onClick={() => setActiveTab('outreach')}
                   className="bg-white p-4 rounded-2xl shadow-xs border border-gray-200/80 hover:border-emerald-500/50 hover:shadow-md transition cursor-pointer group flex flex-col justify-between"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Total Pipeline</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">B2B Outreach</span>
                     <span className="p-2 rounded-xl bg-emerald-50 text-emerald-700 group-hover:scale-110 transition-transform">
                       <Target size={16} />
                     </span>
                   </div>
                   <div>
-                    <div className="text-lg font-black text-gray-900 tracking-tight leading-snug">
-                      ${(pipelineUSD / 1000).toFixed(0)}k <span className="text-xs text-gray-400 font-medium">USD</span>
+                    <div className="text-2xl font-black text-gray-900 tracking-tight leading-snug">
+                      {clientLeads.length} <span className="text-xs text-gray-400 font-medium">Prospects</span>
                     </div>
                     <div className="text-xs font-extrabold text-emerald-700">
-                      + ₹{(pipelineINR / 100000).toFixed(0)}L <span className="text-[10px] text-gray-400 font-normal">INR</span>
+                      {outreachLeads.filter(l => l.status === 'sent' || l.status === 'replied').length} Dispatched · {clientLeads.filter(l => l.status === 'draft').length} Staged
                     </div>
                     <p className="text-[10px] text-gray-500 mt-1 font-medium">
-                      {outreachLeads.length} verified HNI prospects ($250 to $100k)
+                      UK RFPs &amp; Architecture Partners
                     </p>
                   </div>
                 </div>
@@ -2715,7 +2717,7 @@ const Admin: React.FC = () => {
                       {blogs.filter(b => b.status === 'published').length} published · {blogs.filter(b => b.status === 'draft').length} queue
                     </p>
                     <p className="text-[10px] text-gray-500 mt-1 font-medium">
-                      Ogilvy voice · 3-5x search density
+                      High-intent architectural guides
                     </p>
                   </div>
                 </div>
@@ -2736,43 +2738,43 @@ const Admin: React.FC = () => {
                       {toolUsers.length}
                     </div>
                     <p className="text-xs font-semibold text-amber-700 mt-0.5">
-                      16+ live web tools
+                      Active Tool Accounts
                     </p>
                     <p className="text-[10px] text-gray-500 mt-1 font-medium">
-                      Architects, students &amp; builders
+                      Site Intelligence &amp; 3D Shadows
                     </p>
                   </div>
                 </div>
 
-                {/* 6. Backlink Velocity & Directory Drip */}
+                {/* 6. Curated Authority Platforms */}
                 <div
                   onClick={() => setActiveTab('directories')}
                   className="bg-white p-4 rounded-2xl shadow-xs border border-gray-200/80 hover:border-teal-500/50 hover:shadow-md transition cursor-pointer group flex flex-col justify-between"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Backlink Drip</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Directories</span>
                     <span className="p-2 rounded-xl bg-teal-50 text-teal-700 group-hover:scale-110 transition-transform">
                       <Link2 size={16} />
                     </span>
                   </div>
                   <div>
                     <div className="text-2xl font-black text-gray-900 tracking-tight">
-                      {directoryStats?.submitted || 2} <span className="text-xs text-gray-400 font-semibold">/ {directoryTargets.length || 600}</span>
+                      {directoryTargets.length || 600}
                     </div>
                     <p className="text-xs font-semibold text-teal-700 mt-0.5">
-                      ArchDaily DA 92 live
+                      Architecture Directories
                     </p>
                     <p className="text-[10px] text-gray-500 mt-1 font-medium">
-                      IndexNow Bing auto-ping
+                      IndexNow Bing &amp; Yandex indexing
                     </p>
                   </div>
                 </div>
 
               </div>
 
-              {/* ── High Priority: Global International Client Radar (Real Leads) ── */}
+              {/* ── Global Client Acquisition Radar (100% Real Live Prospects & Public Tenders) ── */}
               <div className="bg-white rounded-3xl border border-gray-200/80 shadow-xs p-6 sm:p-7 space-y-5">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="p-1.5 rounded-lg bg-emerald-100 text-emerald-800">
@@ -2786,100 +2788,118 @@ const Admin: React.FC = () => {
                       </span>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      Targeting high-paying international estates ($250 to $100k USD) across 7 continents with zero-cost public discovery.
+                      Direct architectural partnerships, public tenders, and high-ticket B2B outreach across UK, Australia, UAE, and India.
                     </p>
                   </div>
                   <button
                     onClick={() => setActiveTab('outreach')}
-                    className="text-xs font-extrabold text-emerald-800 hover:text-emerald-950 flex items-center gap-1 self-start sm:self-auto bg-emerald-50 hover:bg-emerald-100 px-3.5 py-2 rounded-xl border border-emerald-200 transition"
+                    className="text-xs font-extrabold text-emerald-800 hover:text-emerald-950 flex items-center gap-1 self-start sm:self-auto bg-emerald-50 hover:bg-emerald-100 px-3.5 py-2 rounded-xl border border-emerald-200 transition cursor-pointer"
                   >
-                    <span>Manage All {outreachLeads.length} Prospects</span>
+                    <span>Manage All {clientLeads.length} Prospects</span>
                     <ArrowRight size={13} />
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {clientLeads.slice(0, 6).map((lead: any) => {
-                    const country = getCountryBadge(lead.location);
-                    const isUsd = lead.estimated_project_value?.includes('$');
-                    return (
-                      <div
-                        key={lead.id}
-                        className="bg-gray-50/70 hover:bg-white rounded-2xl p-5 border border-gray-200/80 hover:border-emerald-400 hover:shadow-md transition flex flex-col justify-between space-y-4"
-                      >
-                        <div className="space-y-2.5">
-                          <div className="flex items-start justify-between gap-2">
-                            <div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-base" title={country.label}>{country.flag}</span>
-                                <h3 className="font-extrabold text-sm text-gray-900 leading-tight">
-                                  {lead.company}
-                                </h3>
+                {clientLeads.length === 0 ? (
+                  <div className="p-8 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200 space-y-2">
+                    <Target size={28} className="mx-auto text-gray-300" />
+                    <p className="text-xs font-bold text-gray-700">No Staged Prospects Yet</p>
+                    <p className="text-[11px] text-gray-500 max-w-sm mx-auto">
+                      Run <code className="font-mono bg-white px-1.5 py-0.5 rounded border border-gray-200">start_autopilot.bat</code> [Option 3] to harvest fresh verified leads from OpenStreetMap and Contracts Finder.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {clientLeads.slice(0, 6).map((lead: any) => {
+                      const country = getCountryBadge(lead.location);
+                      return (
+                        <div
+                          key={lead.id}
+                          className="bg-gray-50/70 hover:bg-white rounded-2xl p-5 border border-gray-200/80 hover:border-emerald-400 hover:shadow-md transition flex flex-col justify-between space-y-4"
+                        >
+                          <div className="space-y-2.5">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-base shrink-0" title={country.label}>{country.flag}</span>
+                                  <h3 className="font-extrabold text-sm text-gray-900 leading-tight truncate">
+                                    {lead.company}
+                                  </h3>
+                                </div>
+                                <p className="text-[11px] text-gray-500 mt-0.5 font-medium flex items-center gap-1 truncate">
+                                  <MapPin size={10} className="text-gray-400 shrink-0" />
+                                  <span>{lead.location}</span>
+                                </p>
                               </div>
-                              <p className="text-[11px] text-gray-500 mt-0.5 font-medium flex items-center gap-1">
-                                <MapPin size={10} className="text-gray-400 shrink-0" />
-                                {lead.location}
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg shrink-0 border bg-emerald-50 text-emerald-800 border-emerald-200">
+                                {lead.segment || 'Architecture Practice'}
+                              </span>
+                            </div>
+
+                            <div className="bg-white p-3 rounded-xl border border-gray-100 text-[11px] text-gray-600 space-y-1.5">
+                              <div className="flex items-center justify-between text-[10px]">
+                                <span className="font-semibold text-gray-400 uppercase tracking-wider">Contact / Focus:</span>
+                                <span className="font-bold text-gray-800 truncate max-w-[150px]">
+                                  {lead.contact_name && lead.contact_name !== 'Project Lead' ? lead.contact_name : (lead.name || 'Principal / Lead')}
+                                </span>
+                              </div>
+                              <p className="line-clamp-2 text-xs text-gray-700 italic font-sans leading-relaxed">
+                                &quot;{lead.pitch_subject || lead.subject || lead.pitch_angle || 'Design & 3D architectural collaboration'}&quot;
                               </p>
+                              {lead.source_name && (
+                                <div className="text-[10px] text-gray-400 font-medium truncate pt-1 border-t border-gray-50">
+                                  📍 {lead.source_name}
+                                </div>
+                              )}
                             </div>
-                            <span className={`text-[11px] font-black px-2.5 py-1 rounded-xl shrink-0 border ${
-                              isUsd
-                                ? 'bg-emerald-100/90 text-emerald-900 border-emerald-300'
-                                : 'bg-indigo-100/90 text-indigo-900 border-indigo-300'
-                            }`}>
-                              {lead.estimated_project_value || '$45,000 USD'}
-                            </span>
+
+                            <div className="flex items-center justify-between text-[10px] text-gray-400 font-mono">
+                              <span className="truncate max-w-[170px]" title={lead.email}>
+                                ✉️ {lead.email}
+                              </span>
+                              <span className={`font-bold px-1.5 py-0.5 rounded ${
+                                lead.status === 'sent'
+                                  ? 'bg-emerald-100 text-emerald-800'
+                                  : lead.status === 'replied'
+                                  ? 'bg-purple-100 text-purple-800'
+                                  : 'bg-gray-100 text-gray-700'
+                              }`}>
+                                {lead.status === 'sent' ? 'DISPATCHED' : lead.status === 'replied' ? 'REPLIED' : 'PITCH READY'}
+                              </span>
+                            </div>
                           </div>
 
-                          <div className="bg-white p-3 rounded-xl border border-gray-100 text-[11px] text-gray-600 space-y-1.5">
-                            <div className="flex items-center justify-between text-[10px]">
-                              <span className="font-semibold text-gray-400 uppercase tracking-wider">Land / Scale:</span>
-                              <span className="font-bold text-gray-800">{lead.land_size || '25 Acres'}</span>
-                            </div>
-                            <p className="line-clamp-2 text-gray-600 italic">
-                              "{lead.pitch_angle || lead.icp_fit}"
-                            </p>
-                          </div>
-
-                          <div className="flex items-center justify-between text-[10px] text-gray-400 font-mono">
-                            <span className="truncate max-w-[170px]" title={lead.email}>
-                              ✉️ {lead.email}
-                            </span>
-                            <span className="font-bold text-gray-600 bg-gray-200/60 px-1.5 py-0.5 rounded">
-                              {lead.status === 'sent' ? 'DISPATCHED' : lead.status === 'replied' ? 'REPLIED' : 'PITCH READY'}
-                            </span>
+                          <div className="pt-2 border-t border-gray-100 flex items-center gap-2">
+                            <button
+                              onClick={() => handleOpenInGmail(lead)}
+                              className="flex-1 bg-white hover:bg-gray-100 active:scale-95 text-gray-900 text-xs font-bold py-2 px-3 rounded-xl border border-gray-300 flex items-center justify-center gap-1.5 transition shadow-2xs cursor-pointer"
+                              title="Open direct Google Mail composer with pre-filled Ogilvy proposal"
+                            >
+                              <Mail size={12} className="text-rose-600" />
+                              <span>Open Gmail</span>
+                            </button>
+                            <button
+                              onClick={() => handleResendPitch(lead)}
+                              disabled={sendingResendId === lead.id}
+                              className="bg-emerald-700 hover:bg-emerald-800 active:scale-95 disabled:opacity-50 text-white text-xs font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1 transition shadow-2xs shrink-0 cursor-pointer"
+                              title="Dispatch email via verified Resend API"
+                            >
+                              {sendingResendId === lead.id ? (
+                                <RefreshCw size={12} className="animate-spin" />
+                              ) : (
+                                <Send size={12} />
+                              )}
+                              <span>Pitch</span>
+                            </button>
                           </div>
                         </div>
-
-                        <div className="pt-2 border-t border-gray-100 flex items-center gap-2">
-                          <button
-                            onClick={() => handleOpenInGmail(lead)}
-                            className="flex-1 bg-white hover:bg-gray-100 active:scale-95 text-gray-900 text-xs font-bold py-2 px-3 rounded-xl border border-gray-300 flex items-center justify-center gap-1.5 transition shadow-2xs"
-                            title="Open direct Google Mail composer with pre-filled Ogilvy proposal"
-                          >
-                            <Mail size={12} className="text-rose-600" />
-                            <span>Open Gmail</span>
-                          </button>
-                          <button
-                            onClick={() => handleResendPitch(lead)}
-                            disabled={sendingResendId === lead.id}
-                            className="bg-emerald-700 hover:bg-emerald-800 active:scale-95 disabled:opacity-50 text-white text-xs font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1 transition shadow-2xs shrink-0"
-                            title="Dispatch email via verified Resend API"
-                          >
-                            {sendingResendId === lead.id ? (
-                              <RefreshCw size={12} className="animate-spin" />
-                            ) : (
-                              <Send size={12} />
-                            )}
-                            <span>Pitch</span>
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
-              {/* ── 2-Column Command Hub: Live Inbound Feed + 4 Autonomous AI Ops ── */}
+              {/* ── 2-Column Command Hub: Live Inbound Feed + Real Local Growth Engine ── */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 
                 {/* Left Column (7 Cols): Live Inbound Inquiries Feed from Firestore */}
@@ -2904,7 +2924,7 @@ const Admin: React.FC = () => {
                       </div>
                       <button
                         onClick={() => setActiveTab('messages')}
-                        className="text-xs font-bold text-gray-600 hover:text-gray-900 flex items-center gap-1"
+                        className="text-xs font-bold text-gray-600 hover:text-gray-900 flex items-center gap-1 cursor-pointer"
                       >
                         View all ({messages.length}) &rarr;
                       </button>
@@ -2958,132 +2978,130 @@ const Admin: React.FC = () => {
                     <span>Active Inbound Channels: /contact · /estimator · /workshops</span>
                     <button
                       onClick={() => setActiveTab('messages')}
-                      className="font-bold text-rose-700 hover:text-rose-900"
+                      className="font-bold text-rose-700 hover:text-rose-900 cursor-pointer"
                     >
                       Open Messages Manager &rarr;
                     </button>
                   </div>
                 </div>
 
-                {/* Right Column (5 Cols): 4 Autonomous AI Ops & GitHub Action Agents */}
+                {/* Right Column (5 Cols): Real Local Growth Engine Command (start_autopilot.bat) */}
                 <div className="lg:col-span-5 bg-white rounded-3xl border border-gray-200/80 shadow-xs p-6 sm:p-7 space-y-4 flex flex-col justify-between">
                   <div className="space-y-3.5">
                     <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                       <div className="flex items-center gap-2">
-                        <span className="p-1.5 rounded-lg bg-purple-100 text-purple-800">
+                        <span className="p-1.5 rounded-lg bg-emerald-100 text-emerald-800">
                           <Cpu size={16} />
                         </span>
                         <div>
                           <h2 className="text-base font-extrabold text-gray-900 tracking-tight">
-                            Autonomous Operations
+                            Local Engine Command
                           </h2>
                           <p className="text-[11px] text-gray-500">
-                            Zero-cost GitHub Actions agents running 24/7.
+                            Python multi-agent engine via <code className="font-mono text-emerald-800 font-bold">start_autopilot.bat</code>.
                           </p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded-full">
-                        Automated
+                      <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">
+                        Local PC Safe
                       </span>
                     </div>
 
                     <div className="space-y-2.5">
-                      {/* Agent 1: Overnight Lead Scout */}
+                      {/* Mode 1: Continuous Growth Loop */}
                       <div className="p-3 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between gap-3">
                         <div className="space-y-0.5 min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="w-2 h-2 rounded-full bg-emerald-500" />
                             <h4 className="text-xs font-extrabold text-gray-900 truncate">
-                              Autonomous Lead Scout
+                              [1] Continuous 60m Growth Loop
                             </h4>
                           </div>
                           <p className="text-[10px] text-gray-500">
-                            2x Daily (02:30 &amp; 14:30 UTC) · Global 7 Continents
+                            Publishes technical guides as drafts &amp; stages social assets
                           </p>
                           <p className="text-[10px] text-emerald-700 font-bold">
-                            OpenStreetMap + Gemini Flash ($0 cost)
+                            Firestore safe-mode + auto-sync to git
                           </p>
                         </div>
                         <span className="text-[10px] font-mono font-bold text-gray-700 bg-white border border-gray-200 px-2 py-1 rounded-lg shrink-0">
-                          2x / Day
+                          Option 1
                         </span>
                       </div>
 
-                      {/* Agent 2: Daily Blog Agent */}
+                      {/* Mode 2: Single Nightly Cycle */}
                       <div className="p-3 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between gap-3">
                         <div className="space-y-0.5 min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                            <span className="w-2 h-2 rounded-full bg-blue-500" />
                             <h4 className="text-xs font-extrabold text-gray-900 truncate">
-                              Daily Blog &amp; SEO Agent
+                              [2] Single Daily Growth Cycle
                             </h4>
                           </div>
                           <p className="text-[10px] text-gray-500">
-                            Daily (03:30 UTC) · Ar. Archana Voice
+                            Generates today&apos;s architectural guide in Archana&apos;s voice
                           </p>
                           <p className="text-[10px] text-blue-700 font-bold">
-                            Dual identity + 3-5x keyword density
+                            5 standalone SLAY high-ticket lead posts
                           </p>
                         </div>
                         <span className="text-[10px] font-mono font-bold text-gray-700 bg-white border border-gray-200 px-2 py-1 rounded-lg shrink-0">
-                          1x / Day
+                          Option 2
                         </span>
                       </div>
 
-                      {/* Agent 3: Directory Drip */}
+                      {/* Mode 3: Weekly Sector Cohort Harvester */}
                       <div className="p-3 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between gap-3">
                         <div className="space-y-0.5 min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+                            <span className="w-2 h-2 rounded-full bg-indigo-500" />
                             <h4 className="text-xs font-extrabold text-gray-900 truncate">
-                              Directory Drip &amp; Backlinks
+                              [3] Weekly Sector Cohort Harvester
                             </h4>
                           </div>
                           <p className="text-[10px] text-gray-500">
-                            Daily (04:30 UTC) · 600 architectural registries
-                          </p>
-                          <p className="text-[10px] text-teal-700 font-bold">
-                            {directoryStats?.submitted || 2} submitted · IndexNow pings
-                          </p>
-                        </div>
-                        <span className="text-[10px] font-mono font-bold text-gray-700 bg-white border border-gray-200 px-2 py-1 rounded-lg shrink-0">
-                          1x / Day
-                        </span>
-                      </div>
-
-                      {/* Agent 4: Outreach Agent */}
-                      <div className="p-3 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between gap-3">
-                        <div className="space-y-0.5 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-                            <h4 className="text-xs font-extrabold text-gray-900 truncate">
-                              HNI Client Outreach Agent
-                            </h4>
-                          </div>
-                          <p className="text-[10px] text-gray-500">
-                            Daily (05:30 UTC) · Resend API + Gmail
+                            Rotational: Realtors · Cafes · Resorts · Architects (95% Global / 5% India)
                           </p>
                           <p className="text-[10px] text-indigo-700 font-bold">
-                            CC: ar.archanagavas@gmail.com
+                            ~40% Female · ~60% Male persona balance
                           </p>
                         </div>
                         <span className="text-[10px] font-mono font-bold text-gray-700 bg-white border border-gray-200 px-2 py-1 rounded-lg shrink-0">
-                          1x / Day
+                          Option 3
+                        </span>
+                      </div>
+
+                      {/* Mode 4: Automated Outreach Dispatcher */}
+                      <div className="p-3 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between gap-3">
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-teal-500" />
+                            <h4 className="text-xs font-extrabold text-gray-900 truncate">
+                              [4] Automated Live Outreach (40–50/Day)
+                            </h4>
+                          </div>
+                          <p className="text-[10px] text-gray-500">
+                            Dispatches verified pitches ($100 consultation funnel)
+                          </p>
+                          <p className="text-[10px] text-teal-700 font-bold">
+                            CC: ar.archanagavas@gmail.com · Logs to outreach_log.md
+                          </p>
+                        </div>
+                        <span className="text-[10px] font-mono font-bold text-gray-700 bg-white border border-gray-200 px-2 py-1 rounded-lg shrink-0">
+                          Option 4
                         </span>
                       </div>
                     </div>
                   </div>
 
                   <div className="pt-2 border-t border-gray-100 flex items-center justify-between text-xs">
-                    <span className="text-gray-400 font-medium">All crons synced with GitHub</span>
-                    <a
-                      href="https://github.com/archanagavas/anvitam.com/actions"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-bold text-purple-700 hover:text-purple-900 flex items-center gap-1"
+                    <span className="text-gray-500 font-medium font-mono text-[11px]">.\start_autopilot.bat</span>
+                    <button
+                      onClick={() => setActiveTab('outreach')}
+                      className="font-bold text-emerald-700 hover:text-emerald-900 flex items-center gap-1 cursor-pointer"
                     >
-                      View GitHub Runs &rarr;
-                    </a>
+                      View All Prospects &rarr;
+                    </button>
                   </div>
                 </div>
 
@@ -3192,7 +3210,7 @@ const Admin: React.FC = () => {
                       { name: 'Wind Rose Microclimate', href: '/site-analysis', category: 'Passive Cooling', icon: Compass, color: 'text-teal-600 bg-teal-50' },
                       { name: 'SoilGrids Global API REST', href: '/site-analysis', category: 'Permaculture', icon: Layers, color: 'text-emerald-600 bg-emerald-50' },
                       { name: 'Embodied Carbon Estimator', href: '/site-analysis', category: 'Net-Zero', icon: Zap, color: 'text-purple-600 bg-purple-50' },
-                      { name: 'AI Space & Home Restyle', href: '/tools/ai-home-design', category: 'Generative AI', icon: Sparkles, color: 'text-rose-600 bg-rose-50' },
+                      { name: 'Elevation & Slope Contours', href: '/site-analysis?tool=topography-slopes', category: 'Topography', icon: Mountain, color: 'text-slate-700 bg-slate-100' },
                     ].map((tool) => (
                       <div
                         key={tool.name}
@@ -5493,7 +5511,7 @@ const Admin: React.FC = () => {
                   <h3 className="text-sm font-bold">Separation of Automated vs. Manual Authority Listings</h3>
                 </div>
                 <p className="text-xs text-gray-300 leading-relaxed max-w-3xl">
-                  <strong>🤖 Autonomous Agent Drip:</strong> Free directories that accept programmatic ping/form submission without CAPTCHAs. Submitted 2x/day by GitHub Actions (`daily-directory-submit.yml`) with zero human effort.
+                  <strong>⚡ Programmatic Registry Drip:</strong> Free directories that accept programmatic ping/form submission without CAPTCHAs. Automated submission and IndexNow pings executed via local engine (<code className="bg-slate-800 px-1 py-0.5 rounded text-emerald-400 font-mono">start_autopilot.bat</code>).
                   <br />
                   <strong>✍️ Manual High-DA Authority Platforms:</strong> Prestigious DA 80–96 platforms (GitHub, Reddit, Trustpilot, SourceForge) that forbid automated bots. Use the <strong>&quot;Copy Pitch&quot;</strong> button to paste our pre-engineered pitch into the platform in 15 seconds.
                 </p>
@@ -5629,7 +5647,7 @@ const Admin: React.FC = () => {
                             <span className={`inline-flex items-center gap-1 font-bold px-2.5 py-1 rounded-md text-[10px] ${
                               isManual ? 'bg-purple-100 text-purple-800 border border-purple-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                             }`}>
-                              {isManual ? '✍️ Manual Authority Claim' : '🤖 GitHub Action Drip'}
+                              {isManual ? '✍️ Manual Authority Claim' : '⚡ Programmatic Drip'}
                             </span>
                           </td>
                           <td className="py-3 px-4">
@@ -5699,9 +5717,9 @@ const Admin: React.FC = () => {
                     <Mail size={20} />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-black text-gray-900 tracking-tight">1,000 High-Net-Worth Client Pipeline & Backlinks</h2>
+                    <h2 className="text-2xl font-black text-gray-900 tracking-tight">Verified Client Pipeline &amp; Outreach</h2>
                     <p className="text-xs text-gray-500 font-medium mt-0.5">
-                      Verified prospective client pipeline (luxury farm retreats, CXOs, builders) & high-DA architectural press contacts.
+                      Verified prospective client pipeline (public tenders, architectural practices, retreats) &amp; high-DA architectural press contacts.
                     </p>
                   </div>
                 </div>

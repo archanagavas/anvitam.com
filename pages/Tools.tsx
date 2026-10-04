@@ -8,7 +8,7 @@ import {
   Search, Check, ArrowRight, ShieldCheck, Crown, Zap, X, ChevronRight,
   Sparkles, CheckCircle2, Globe, FileText, Layers, Compass, Sliders
 } from 'lucide-react';
-import { TOOLS_SUITE, type ToolItem } from '../constants/toolsData';
+import { TOOLS_SUITE, SHOW_GENERATIVE_AI_STUDIOS, type ToolItem } from '../constants/toolsData';
 import { getToolUser } from '../utils/userAuth';
 import { ToolsAuthModal } from '../components/tools/ToolsAuthModal';
 import { DODO_PRODUCTS } from '../constants/dodoConfig';
@@ -39,7 +39,7 @@ export default function Tools() {
   const topupPrice = isIndia ? DODO_PRODUCTS.topup_10.priceINR : DODO_PRODUCTS.topup_10.priceUSD;
   const monthlyPrice = isIndia ? DODO_PRODUCTS.pro_monthly.priceINR : DODO_PRODUCTS.pro_monthly.priceUSD;
 
-  const categories = ['All Studios', 'Generative AI Studios', 'Site & Environmental Studios'];
+  const categories = ['All Studios', ...Array.from(new Set(TOOLS_SUITE.map(t => t.category)))];
 
   const filteredTools = TOOLS_SUITE.filter(tool => {
     const matchesSearch = tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -67,7 +67,12 @@ export default function Tools() {
     <>
       <Helmet>
         <title>Flagship Studio Suite | Anvitam Architectural Platforms</title>
-        <meta name="description" content="Access Anvitam's AI Space & Home Studio and 3D Site Intelligence Canvas for photorealistic renders and environmental site reports." />
+        <meta
+          name="description"
+          content={SHOW_GENERATIVE_AI_STUDIOS
+            ? "Access Anvitam's AI Space & Home Studio and 3D Site Intelligence Canvas for photorealistic renders and environmental site reports."
+            : "Access Anvitam's 3D Site Intelligence Canvas for solar shadow simulations, wind analysis, and environmental site reports."}
+        />
       </Helmet>
 
       <div className="w-full bg-white text-[#111111] min-h-screen font-sans overflow-hidden">
@@ -83,7 +88,7 @@ export default function Tools() {
               transition={{ duration: 0.4 }}
               className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#CCFF00] text-[#111] text-[11px] font-bold uppercase tracking-wider mb-4 shadow-sm border border-black/10"
             >
-              <Sparkles size={13} /> 2 Flagship Architectural Studios
+              <Sparkles size={13} /> {TOOLS_SUITE.length} Flagship Architectural Studio{TOOLS_SUITE.length > 1 ? 's' : ''}
             </motion.div>
 
             {/* Main Headline */}
@@ -103,7 +108,9 @@ export default function Tools() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto mb-8 leading-relaxed font-normal"
             >
-              🔥 Fire your interior designer! Upload a photo and transform your room, house exterior, or garden in 1 click. Plus simulate 3D sun shadows, wind, and soil health with zero effort.
+              {SHOW_GENERATIVE_AI_STUDIOS
+                ? '🔥 Fire your interior designer! Upload a photo and transform your room, house exterior, or garden in 1 click. Plus simulate 3D sun shadows, wind, and soil health with zero effort.'
+                : 'Simulate 3D sun shadows, wind microclimate vectors, soil health, rainwater harvesting, and embodied carbon with zero effort.'}
             </motion.p>
 
             {/* Search & Category Filter Bar */}
@@ -112,7 +119,9 @@ export default function Tools() {
                 <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search features like Interior, Facade, 3D Shadows, Wind, Soil, or Rain..."
+                  placeholder={SHOW_GENERATIVE_AI_STUDIOS
+                    ? "Search features like Interior, Facade, 3D Shadows, Wind, Soil, or Rain..."
+                    : "Search features like 3D Shadows, Sun Path, Wind, Soil, Rainwater, or Carbon..."}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-white border border-gray-300 rounded-full pl-11 pr-10 py-3.5 text-xs md:text-sm font-normal text-gray-900 placeholder-gray-400 outline-none focus:border-black shadow-xs transition-all focus:ring-2 focus:ring-black/5"
@@ -148,7 +157,7 @@ export default function Tools() {
           </div>
         </section>
 
-        {/* ── 2 FLAGSHIP STUDIOS GRID ── */}
+        {/* ── FLAGSHIP STUDIOS GRID ── */}
         <section className="py-12 md:py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
@@ -156,11 +165,11 @@ export default function Tools() {
               {selectedCategory === 'All Studios' ? 'Our Flagship Powerhouse Studios' : `${selectedCategory}`}
             </h2>
             <span className="text-xs font-semibold text-gray-600 bg-gray-50 px-3 py-1 rounded-full border border-gray-200">
-              Showing {filteredTools.length} Studio Platforms
+              Showing {filteredTools.length} Studio Platform{filteredTools.length === 1 ? '' : 's'}
             </span>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className={filteredTools.length === 1 ? "max-w-2xl mx-auto" : "grid grid-cols-1 lg:grid-cols-2 gap-8"}>
             {filteredTools.map((tool) => (
               <motion.div
                 key={tool.id}

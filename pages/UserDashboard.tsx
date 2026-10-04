@@ -10,7 +10,7 @@ import {
   MessageSquare, Send, Bot, Menu, Settings, History, Image as ImageIcon
 } from 'lucide-react';
 import { getToolUser, getOrCreateDefaultToolUser, logoutToolUser, backgroundSyncCredits, isUserAdmin, type ToolUser } from '../utils/userAuth';
-import { TOOLS_SUITE, type ToolItem } from '../constants/toolsData';
+import { TOOLS_SUITE, SHOW_GENERATIVE_AI_STUDIOS, type ToolItem } from '../constants/toolsData';
 import { ToolsAuthModal } from '../components/tools/ToolsAuthModal';
 import { ToolsPaywallOverlay } from '../components/tools/ToolsPaywallOverlay';
 import { AllToolsDrawer } from '../components/tools/AllToolsDrawer';
@@ -29,8 +29,9 @@ export default function UserDashboard() {
   const [historyData, setHistoryData] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
-  // Active Tool Selection from URL or default
-  const activeToolParam = searchParams.get('tool') || 'ai-home-design';
+  // Active Tool Selection from URL or default (site-analysis if generative AI is hidden)
+  const defaultTool = SHOW_GENERATIVE_AI_STUDIOS ? 'ai-home-design' : 'site-analysis';
+  const activeToolParam = searchParams.get('tool') || defaultTool;
   const [activeToolId, setActiveToolId] = useState<string>(activeToolParam);
   const [searchQuery, setSearchQuery] = useState('');
 

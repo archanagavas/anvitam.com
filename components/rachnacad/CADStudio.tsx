@@ -995,7 +995,7 @@ export default function CADStudio({ onExportDXF, onElementsChange, fullScreen = 
   const totalAreaSqFt = roomElements.reduce((sum, el) => sum + (el.areaSqFt || 0), 0) || 900;
   const estimatedCost = (totalAreaSqFt * 55).toLocaleString();
   const selectedElement = elements.find(e => e.id === selectedElementId);
-  const allLayers = [...new Set(elements.map(e => e.layer))];
+  const allLayers: string[] = Array.from(new Set(elements.map(e => e.layer)));
 
   if (showWelcomeHub) {
     return (
@@ -1588,7 +1588,7 @@ export default function CADStudio({ onExportDXF, onElementsChange, fullScreen = 
                     <button key={layer} onClick={() => toggleLayer(layer)}
                       className={`w-full flex items-center justify-between p-2 rounded-lg border transition-all font-mono text-[11px] ${hiddenLayers.has(layer)?'bg-gray-50 border-gray-200 text-gray-400':'bg-white border-gray-200 text-gray-800 hover:border-gray-300'}`}>
                       <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full" style={{backgroundColor: hiddenLayers.has(layer)?'#CBD5E1':(LAYER_COLORS[layer]??'#64748B')}} />
+                        <span className="w-2.5 h-2.5 rounded-full" style={{backgroundColor: hiddenLayers.has(layer)?'#CBD5E1':((LAYER_COLORS as Record<string, string>)[layer]??'#64748B')}} />
                         <span>{layer}</span>
                       </div>
                       <span className={`text-[9px] font-bold ${hiddenLayers.has(layer)?'text-gray-400':'text-emerald-600'}`}>

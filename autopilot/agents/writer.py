@@ -39,7 +39,7 @@ DISTRIBUTED NATURAL INTERNAL LINKING (1 PER MAJOR SECTION):
   * If a section is about soil, contour slopes, or excavation -> link to the Site Intelligence Tool or Permaculture/Soil Regeneration guides.
   * If a section is about villa costs, architecture, or shell construction -> link to Weekend Villas or Cement Walls cost analysis.
   * If a section is about monsoons, water drainage, or swimming ponds -> link to Living Pools or Traditional Rainwater Harvesting.
-  * If a section is about thermal mass, passive cooling, or breezes -> link to Farm Retreats or RachnaCAD architectural planner.
+  * If a section is about thermal mass, passive cooling, or breezes -> link to Farm Retreats or Site Intelligence Tool.
   * If a section is about contractor excuses, equipment, or mason skills -> link to Nest N Nurture Earth Workshops or Natural Building lifecycle costs.
   * If a section references a specific region -> link to that Destination guide (e.g. Alibaug, Karjat, Goa).
 - Each section must weave exactly 1 natural, contextual hyperlink inside normal sentence flow.
@@ -114,7 +114,7 @@ DELIVERABLE SPECIFICATIONS:
        - Soil / Excavation / Grading -> Link to Site Intelligence Tool (<a href="https://www.anvitam.com/site-analysis">Site Intelligence & Contour Hydrology Tool</a>) or Soil Degradation blog (<a href="https://www.anvitam.com/blog/soil-degradation-is-killing-indian-farms-and-how-permaculture-actually-fixes-it">reversing soil degradation</a>).
        - Villa Shell / Costs / Living -> Link to Weekend Villas (<a href="https://www.anvitam.com/services/weekend-villa">biophilic weekend villas</a>) or Cement Heat blog (<a href="https://www.anvitam.com/blog/why-cement-walls-are-quietly-making-buildings-hotter-costlier-and-unhealthier">why cement walls drive up cooling costs</a>).
        - Monsoons / Ponds / Water -> Link to Living Swimming Pools (<a href="https://www.anvitam.com/services/wellness-retreat">living swimming pool</a>) or Rainwater Catchment blog (<a href="https://www.anvitam.com/blog/why-rainwater-harvesting-systems-worked-better-than-modern-systems">gravity-fed rainwater harvesting</a>).
-       - Passive Cooling / Courtyards -> Link to Farm Retreats (<a href="https://www.anvitam.com/services/farm-retreat">sustainable farm retreats</a>) or RachnaCAD Planner (<a href="https://www.anvitam.com/tools/rachnacad">RachnaCAD architectural planner</a>).
+       - Passive Cooling / Courtyards -> Link to Farm Retreats (<a href="https://www.anvitam.com/services/farm-retreat">sustainable farm retreats</a>) or Site Intelligence Tool (<a href="https://www.anvitam.com/site-analysis">Site Intelligence & Contour Hydrology Tool</a>).
        - Contractors / Mason Training -> Link to Earth Workshops (<a href="https://www.anvitam.com/workshops">Nest N Nurture earth building workshops</a>) or Lifecycle Cost blog (<a href="https://www.anvitam.com/blog/bamboo-cottages-vs-brick-eco-cottages-what-actually-costs-less-over-15-years">what natural building materials actually cost over 15 years</a>).
        - Regional Town Insights -> Link to the destination guide (e.g. <a href="https://www.anvitam.com/destinations/alibaug">ecological architecture in Alibaug</a>).
        - Permaculture & Land -> Link to Permaculture Masterplanning (<a href="https://www.anvitam.com/services/permaculture-design">permaculture masterplanning</a>) or Odiyar Farm Project (<a href="https://www.anvitam.com/projects/odiyar-farm-and-homestay-permaculture">our Odiyar Farm Permaculture project</a>).
