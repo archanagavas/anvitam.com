@@ -142,5 +142,41 @@
     "why_targeted": "Global architectural practices frequently outsource drafting, 3D visualization, and site solar modeling to reduce overhead while keeping client delivery high.",
     "status": "SENT_LIVE",
     "sent_at": "2026-10-04 16:46:56"
+  },
+  {
+    "email": "land@hamptons.co.uk",
+    "contact_name": "Sarah Hughes",
+    "organization": "Hamptons International Land & Development",
+    "sector": "Realtors & Land Agents",
+    "location": "London, UK",
+    "gender": "female",
+    "subject": "3D site visuals & land planning for Hamptons International Land & Development",
+    "why_targeted": "Realtors with land listings need fast 3D site visuals and space planning to de-risk buyer hesitation and close high-ticket property sales.",
+    "status": "SENT_LIVE",
+    "sent_at": "2026-10-05 16:37:47"
+  },
+  {
+    "email": "rural.nsw@raywhite.com",
+    "contact_name": "Mark Henderson",
+    "organization": "Ray White Rural & Development Land",
+    "sector": "Realtors & Land Agents",
+    "location": "Sydney, Australia",
+    "gender": "male",
+    "subject": "3D site visuals & land planning for Ray White Rural & Development Land",
+    "why_targeted": "Realtors with land listings need fast 3D site visuals and space planning to de-risk buyer hesitation and close high-ticket property sales.",
+    "status": "SENT_LIVE",
+    "sent_at": "2026-10-05 16:38:32"
+  },
+  {
+    "email": "edinburgh@knightfrank.com",
+    "contact_name": "Fiona MacDonald",
+    "organization": "Knight Frank Country & Waterfront Estates",
+    "sector": "Realtors & Land Agents",
+    "location": "Edinburgh, UK",
+    "gender": "female",
+    "subject": "3D site visuals & land planning for Knight Frank Country & Waterfront Estates",
+    "why_targeted": "Realtors with land listings need fast 3D site visuals and space planning to de-risk buyer hesitation and close high-ticket property sales.",
+    "status": "SENT_LIVE",
+    "sent_at": "2026-10-05 16:39:25"
   }
 ]
