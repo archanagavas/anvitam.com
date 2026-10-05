@@ -178,5 +178,29 @@
     "why_targeted": "Realtors with land listings need fast 3D site visuals and space planning to de-risk buyer hesitation and close high-ticket property sales.",
     "status": "SENT_LIVE",
     "sent_at": "2026-10-05 16:39:25"
+  },
+  {
+    "email": "newdevelopment@elliman.com",
+    "contact_name": "David Vance",
+    "organization": "Douglas Elliman Development Marketing",
+    "sector": "Realtors & Land Agents",
+    "location": "Los Angeles, USA",
+    "gender": "male",
+    "subject": "3D site visuals & land planning for Douglas Elliman Development Marketing",
+    "why_targeted": "Realtors with land listings need fast 3D site visuals and space planning to de-risk buyer hesitation and close high-ticket property sales.",
+    "status": "SENT_LIVE",
+    "sent_at": "2026-10-05 16:40:09"
+  },
+  {
+    "email": "customercare@betterhomes.com",
+    "contact_name": "Rashid Al-Falasi",
+    "organization": "Betterhomes Luxury Land & Plots",
+    "sector": "Realtors & Land Agents",
+    "location": "Dubai, UAE",
+    "gender": "male",
+    "subject": "3D site visuals & land planning for Betterhomes Luxury Land & Plots",
+    "why_targeted": "Realtors with land listings need fast 3D site visuals and space planning to de-risk buyer hesitation and close high-ticket property sales.",
+    "status": "SENT_LIVE",
+    "sent_at": "2026-10-05 16:41:12"
   }
 ]
