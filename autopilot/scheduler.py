@@ -155,6 +155,13 @@ def run_scheduler(interval_minutes: int = 60, dry_run: bool = False, max_runs: i
 
             print(f"\n▶ [{now_str}] Launching Cycle #{run_count} (Day {current_day} of 30)...")
 
+            # Auto-Housekeeping: Purge local records & logs older than 24h
+            try:
+                from autopilot.cleanup import run_full_purge
+                run_full_purge(max_age_hours=24)
+            except Exception as e:
+                logger.debug(f"Housekeeping note: {e}")
+
             try:
                 result = engine.run_nightly_cycle(day_number=current_day, dry_run=dry_run)
                 title = result.get("article", {}).get("title", "Untitled")

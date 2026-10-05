@@ -93,6 +93,13 @@ def main():
         print(f"   CC Inbox: ar.archanagavas@gmail.com")
         print("=" * 70)
 
+        # Auto-Housekeeping: Purge local records & logs older than 24h
+        try:
+            from autopilot.cleanup import run_full_purge
+            run_full_purge(max_age_hours=24)
+        except Exception as e:
+            logger.debug(f"Housekeeping note: {e}")
+
         if args.mode in ["harvest", "all"]:
             run_harvest(cohort_name=chosen_cohort)
 

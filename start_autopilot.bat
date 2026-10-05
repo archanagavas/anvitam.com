@@ -32,7 +32,11 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo [3/3] Checking credentials and syndication status...
+echo [3/4] Auto-Housekeeping: Purging published records and logs older than 24h...
+python -m autopilot.cleanup --hours 24
+
+echo.
+echo [4/4] Checking credentials and syndication status...
 python -m autopilot.scheduler --test-connections
 
 echo.
