@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "Laterite vs CSEB vs Stabilized Rammed Earth: The Ultimate Guide to Building in Alibaug, Maharashtra",
+            "url": "https://www.anvitam.com/blog/laterite-vs-cseb-vs-stabilized-rammed-earth-alibaug",
+            "topics": [
+                "laterite",
+                "cseb",
+                "stabilized rammed earth",
+                "alibaug"
+            ],
+            "suggested_anchors": [
+                "our guide on laterite vs cseb vs stabilized rammed earth",
+                "Laterite vs CSEB vs Stabilized Rammed Earth: The Ultimate Guide to Building in Alibaug, Maharashtra"
+            ]
+        },
+        {
             "title": "Earthmovers Mistakes on Agricultural Land: A Comprehensive Guide to Avoiding Costly Errors in Alibaug, Maharashtra",
             "url": "https://www.anvitam.com/blog/earthmovers-mistakes-agricultural-land-alibaug",
             "topics": [
