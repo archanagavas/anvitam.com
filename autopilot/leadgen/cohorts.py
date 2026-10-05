@@ -26,12 +26,12 @@ COHORTS: Dict[str, Dict[str, Any]] = {
             'node["office"="property_management"]["contact:email"]',
             'node["office"="property_management"]["email"]'
         ],
-        "pain_point": "Raw land parcels, luxury plots, and unbuilt villas sit on the market because buyers cannot visualize what can be built within solar, slope, and ecological constraints.",
-        "pitch_angle": "Pre-construction 3D visual concepts & ecological site masterplans that help sell raw land, estates, and development plots 3x faster to high-net-worth buyers.",
-        "intro_offer_name": "30-min Pre-Construction Feasibility & Space Planning Audit ($100 introductory session)",
-        "why_target": "Realtors with land listings need fast 3D site visuals and space planning to de-risk buyer hesitation and close high-ticket property sales.",
-        "female_nuance": "Emphasizes visual elegance, lifestyle storytelling, spatial flow, and emotional buyer connection to the estate.",
-        "male_nuance": "Emphasizes speed of sale, pre-construction feasibility de-risking, and maximum square-footage utilization."
+        "pain_point": "When clients evaluate raw land, farm acreage, or estate parcels, they hesitate without architectural clarity on terrain slope, sun orientation, and what can actually be built.",
+        "pitch_angle": "Architectural design, farm retreat masterplans, and passive-cooled villa concepts that turn raw land into living, sustainable ecosystems for private buyers and developers.",
+        "intro_offer_name": "Complimentary Initial Site Feasibility & Terrain Orientation Review (Foot-in-the-door perk)",
+        "why_target": "Realtors and land agents frequently advise high-net-worth buyers and landowners who need an architectural design partner to evaluate and masterplan raw parcels.",
+        "female_nuance": "Emphasizes biophilic harmony, natural material palettes, and emotional connection to the landscape.",
+        "male_nuance": "Emphasizes site feasibility, passive cooling performance, and efficient land utilization."
     },
     "hospitality": {
         "id": "hospitality",

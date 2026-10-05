@@ -228,7 +228,7 @@ def stage_outreach_drafts(cohort_name: Optional[str] = None) -> List[Dict[str, A
         f"**Active Sector Cohort:** {active_cohort['name']} (Week {active_cohort['week_number']})  ",
         f"**Target Breakdown:** 95% Global / 5% India | ~40% Female / ~60% Male  ",
         f"**CC Notification:** `ar.archanagavas@gmail.com` on every dispatch  ",
-        f"**Offer:** {CONSULTATION_FEE_USD} Pre-Construction Feasibility & Space Planning Consultation\n",
+        f"**Offer:** Complimentary Initial Site Feasibility Review (Foot-in-the-Door Perk) & Architectural Design Partnership\n",
         "---\n"
     ]
 
