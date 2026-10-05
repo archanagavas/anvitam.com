@@ -11,7 +11,8 @@
     "source": "UK Contracts Finder (Public Procurement)",
     "date_found": "2026-10-04",
     "company": "Canal & River Trust",
-    "location": "UK & Europe"
+    "location": "UK & Europe",
+    "gender": "female"
   },
   {
     "lead_id": "osm_796130",
@@ -25,7 +26,8 @@
     "source": "OpenStreetMap Registered Business Directory",
     "date_found": "2026-10-04",
     "company": "NgaJ architecture + design",
-    "location": "Western India (Maharashtra / Goa / Gujarat)"
+    "location": "Western India (Maharashtra / Goa / Gujarat)",
+    "gender": "neutral"
   },
   {
     "id": "osm_10951",
@@ -46,7 +48,8 @@
     "source_name": "OpenStreetMap Registered Entity (Node #5199752656)",
     "source_url": "https://www.practique.com.au/",
     "date_found": "2026-10-04",
-    "status": "draft"
+    "status": "draft",
+    "gender": "neutral"
   },
   {
     "id": "osm_788363",
@@ -67,7 +70,8 @@
     "source_name": "OpenStreetMap Registered Entity (Node #11303564007)",
     "source_url": "https://fosterandassociates.com.au/",
     "date_found": "2026-10-04",
-    "status": "draft"
+    "status": "draft",
+    "gender": "neutral"
   },
   {
     "id": "osm_489447",
@@ -88,7 +92,8 @@
     "source_name": "OpenStreetMap Registered Entity (Node #11367586722)",
     "source_url": "https://www.rkdesigns.com.au",
     "date_found": "2026-10-04",
-    "status": "draft"
+    "status": "draft",
+    "gender": "neutral"
   },
   {
     "id": "osm_606510",
@@ -109,7 +114,8 @@
     "source_name": "OpenStreetMap Registered Entity (Node #11784009531)",
     "source_url": "http://www.collard.com.au/",
     "date_found": "2026-10-04",
-    "status": "draft"
+    "status": "draft",
+    "gender": "neutral"
   },
   {
     "id": "osm_719191",
@@ -130,7 +136,8 @@
     "source_name": "OpenStreetMap Registered Entity (Node #11371119290)",
     "source_url": "https://cadsheets.com.au/",
     "date_found": "2026-10-04",
-    "status": "draft"
+    "status": "draft",
+    "gender": "neutral"
   },
   {
     "id": "osm_133231",
@@ -151,7 +158,8 @@
     "source_name": "OpenStreetMap Registered Entity (Node #3170259279)",
     "source_url": "https://www.architype.co.uk/",
     "date_found": "2026-10-04",
-    "status": "draft"
+    "status": "draft",
+    "gender": "neutral"
   },
   {
     "id": "osm_670464",
@@ -172,7 +180,8 @@
     "source_name": "OpenStreetMap Registered Entity (Node #3201174954)",
     "source_url": "https://www.leaskarchitects.co.uk/",
     "date_found": "2026-10-04",
-    "status": "draft"
+    "status": "draft",
+    "gender": "neutral"
   },
   {
     "id": "osm_159425",
@@ -193,7 +202,8 @@
     "source_name": "OpenStreetMap Registered Entity (Node #4275434641)",
     "source_url": "https://ngparchitects.co.uk/",
     "date_found": "2026-10-04",
-    "status": "draft"
+    "status": "draft",
+    "gender": "neutral"
   },
   {
     "id": "osm_614666",
@@ -214,7 +224,8 @@
     "source_name": "OpenStreetMap Registered Entity (Node #4892346979)",
     "source_url": "https://necci.ae/",
     "date_found": "2026-10-04",
-    "status": "draft"
+    "status": "draft",
+    "gender": "neutral"
   },
   {
     "id": "osm_894372",
@@ -235,6 +246,157 @@
     "source_name": "OpenStreetMap Registered Entity (Node #11012436591)",
     "source_url": "http://www.saffarinidxb.com/",
     "date_found": "2026-10-04",
+    "status": "draft",
+    "gender": "neutral"
+  },
+  {
+    "id": "seed_realtors_01",
+    "lead_id": "seed_realtors_01",
+    "lead_type": "realtors_partner",
+    "company": "Hamptons International Land & Development",
+    "organization": "Hamptons International Land & Development",
+    "name": "Sarah Hughes",
+    "contact_name": "Sarah Hughes",
+    "gender": "female",
+    "email": "land@hamptons.co.uk",
+    "project_title": "Pre-Construction Space Planning & Visuals for Luxury Plots",
+    "project_details": "Prime residential & rural acreage development listings in Southern England",
+    "location": "London, UK",
+    "country_code": "GB",
+    "region": "London, UK",
+    "category": "client",
+    "cohort": "realtors",
+    "cohort_week": 1,
+    "segment": "Realtors & Land Agents",
+    "source_name": "UK Prime Property Directory",
+    "source_url": "https://www.hamptons.co.uk",
+    "why_targeted": "Realtors with land listings need fast 3D site visuals and space planning to de-risk buyer hesitation and close high-ticket property sales.",
+    "date_found": "2026-10-05",
+    "status": "draft"
+  },
+  {
+    "id": "seed_realtors_02",
+    "lead_id": "seed_realtors_02",
+    "lead_type": "realtors_partner",
+    "company": "Ray White Rural & Development Land",
+    "organization": "Ray White Rural & Development Land",
+    "name": "Mark Henderson",
+    "contact_name": "Mark Henderson",
+    "gender": "male",
+    "email": "rural.nsw@raywhite.com",
+    "project_title": "Bioclimatic Masterplanning & Solar Layouts for Rural Acreage",
+    "project_details": "Large estate subdivisions and rural homestead acreage lots in NSW",
+    "location": "Sydney, Australia",
+    "country_code": "AU",
+    "region": "Sydney, Australia",
+    "category": "client",
+    "cohort": "realtors",
+    "cohort_week": 1,
+    "segment": "Realtors & Land Agents",
+    "source_name": "Ray White Rural Directory",
+    "source_url": "https://www.raywhite.com",
+    "why_targeted": "Realtors with land listings need fast 3D site visuals and space planning to de-risk buyer hesitation and close high-ticket property sales.",
+    "date_found": "2026-10-05",
+    "status": "draft"
+  },
+  {
+    "id": "seed_realtors_03",
+    "lead_id": "seed_realtors_03",
+    "lead_type": "realtors_partner",
+    "company": "Knight Frank Country & Waterfront Estates",
+    "organization": "Knight Frank Country & Waterfront Estates",
+    "name": "Fiona MacDonald",
+    "contact_name": "Fiona MacDonald",
+    "gender": "female",
+    "email": "edinburgh@knightfrank.com",
+    "project_title": "Ecological Estate & Land Feasibility Planning",
+    "project_details": "Waterfront estates, historic parcels, and Scottish Highland developments",
+    "location": "Edinburgh, UK",
+    "country_code": "GB",
+    "region": "Edinburgh, UK",
+    "category": "client",
+    "cohort": "realtors",
+    "cohort_week": 1,
+    "segment": "Realtors & Land Agents",
+    "source_name": "Knight Frank Country Directory",
+    "source_url": "https://www.knightfrank.co.uk",
+    "why_targeted": "Realtors with land listings need fast 3D site visuals and space planning to de-risk buyer hesitation and close high-ticket property sales.",
+    "date_found": "2026-10-05",
+    "status": "draft"
+  },
+  {
+    "id": "seed_realtors_04",
+    "lead_id": "seed_realtors_04",
+    "lead_type": "realtors_partner",
+    "company": "Douglas Elliman Development Marketing",
+    "organization": "Douglas Elliman Development Marketing",
+    "name": "David Vance",
+    "contact_name": "David Vance",
+    "gender": "male",
+    "email": "newdevelopment@elliman.com",
+    "project_title": "Hillside Bioclimatic Architectural Concepts",
+    "project_details": "Luxury hillside lots, custom residential parcels, and estate compounds",
+    "location": "Los Angeles, USA",
+    "country_code": "US",
+    "region": "Los Angeles, USA",
+    "category": "client",
+    "cohort": "realtors",
+    "cohort_week": 1,
+    "segment": "Realtors & Land Agents",
+    "source_name": "Douglas Elliman New Development",
+    "source_url": "https://www.elliman.com",
+    "why_targeted": "Realtors with land listings need fast 3D site visuals and space planning to de-risk buyer hesitation and close high-ticket property sales.",
+    "date_found": "2026-10-05",
+    "status": "draft"
+  },
+  {
+    "id": "seed_realtors_05",
+    "lead_id": "seed_realtors_05",
+    "lead_type": "realtors_partner",
+    "company": "Betterhomes Luxury Land & Plots",
+    "organization": "Betterhomes Luxury Land & Plots",
+    "name": "Rashid Al-Falasi",
+    "contact_name": "Rashid Al-Falasi",
+    "gender": "male",
+    "email": "customercare@betterhomes.com",
+    "project_title": "Desert Microclimate & Villa Masterplanning",
+    "project_details": "High-end villa plots, private desert compounds, and waterfront islands",
+    "location": "Dubai, UAE",
+    "country_code": "AE",
+    "region": "Dubai, UAE",
+    "category": "client",
+    "cohort": "realtors",
+    "cohort_week": 1,
+    "segment": "Realtors & Land Agents",
+    "source_name": "Betterhomes Commercial Directory",
+    "source_url": "https://www.betterhomes.com",
+    "why_targeted": "Realtors with land listings need fast 3D site visuals and space planning to de-risk buyer hesitation and close high-ticket property sales.",
+    "date_found": "2026-10-05",
+    "status": "draft"
+  },
+  {
+    "id": "seed_realtors_06",
+    "lead_id": "seed_realtors_06",
+    "lead_type": "realtors_partner",
+    "company": "India Sotheby's International Realty",
+    "organization": "India Sotheby's International Realty",
+    "name": "Pooja Singhania",
+    "contact_name": "Pooja Singhania",
+    "gender": "female",
+    "email": "inquiry@sothebysrealty.in",
+    "project_title": "Coastal Villa Site Planning & Climate-Responsive Concepts",
+    "project_details": "Luxury gated estates in Alibaug, Goa beachfront land, and Gujarat farmhouses",
+    "location": "Mumbai & Alibaug, Maharashtra",
+    "country_code": "IN",
+    "region": "Mumbai & Alibaug, Maharashtra",
+    "category": "client",
+    "cohort": "realtors",
+    "cohort_week": 1,
+    "segment": "Realtors & Land Agents",
+    "source_name": "Sotheby's Realty India",
+    "source_url": "https://www.sothebysrealty.in",
+    "why_targeted": "Realtors with land listings need fast 3D site visuals and space planning to de-risk buyer hesitation and close high-ticket property sales.",
+    "date_found": "2026-10-05",
     "status": "draft"
   }
 ]

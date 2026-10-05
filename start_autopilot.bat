@@ -1,14 +1,14 @@
 @echo off
-TITLE 🌿 Anvitam Autopilot — Continuous Growth & Global Outreach Engine
+TITLE 🌿 Anvitam Autopilot — Master Dual-Engine Launcher
 COLOR 0A
 CD /D "%~dp0"
 
 echo ======================================================================
-echo    ANVITAM ARCHITECTURE & ECOLOGICAL DESIGN STUDIO
-echo    Autonomous Multi-Agent Engine & Global Client Acquisition
+echo    ANVITAM ARCHITECTURE + ECOLOGICAL DESIGN STUDIO
+echo    Autonomous Multi-Agent Engine + Global Client Acquisition
 echo ======================================================================
 echo.
-echo [1/2] Verifying Python environment...
+echo [1/3] Verifying Python installation...
 python --version >nul 2>&1
 if %errorlevel% neq 0 (
     echo [ERROR] Python was not found in PATH!
@@ -17,60 +17,55 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo [2/2] Checking credentials and syndication status...
+echo [2/3] Checking and auto-installing Python dependencies...
+python -c "import dotenv, requests, bs4, atproto, mastodon, tweepy, firebase_admin" >nul 2>&1
+if %errorlevel% neq 0 (
+    echo [NOTICE] Installing missing packages from requirements-autopilot.txt...
+    python -m pip install -r requirements-autopilot.txt
+    if %errorlevel% neq 0 (
+        echo [ERROR] Failed to install requirements!
+        pause
+        exit /b 1
+    )
+) else (
+    echo [OK] All core dependencies verified.
+)
+
+echo.
+echo [3/3] Checking credentials and syndication status...
 python -m autopilot.scheduler --test-connections
 
 echo.
 echo ======================================================================
-echo CHOOSE EXECUTION MODE:
+echo LAUNCHING BOTH AUTONOMOUS ENGINES IN INDEPENDENT LIVE TERMINALS:
 echo ======================================================================
-echo   [1] Continuous Growth Loop (Publishes Blogs & Socials Every 60m)
-echo   [2] Single Daily Growth Cycle (Master Guide + 5 Social Posts)
-echo   [3] Harvest & Stage Leads by Weekly Sector (Realtors / Cafes / Resorts / Architects)
-echo   [4] Automated Live Outreach Dispatch (40-50/day via Resend · CCs Archana)
-echo   [5] Full Autonomous Outreach (Auto-Harvest Active Cohort & Send Live)
+echo.
+echo   [Window 1] Content + Social Syndication Engine (60-Minute Loop)
+echo              - Publishes architectural master guides + 5 tailored posts
+echo              - Syndicates to Bluesky, Mastodon, Threads, Buffer, Twitter, Medium
+echo              - Updates link registry and auto-syncs to GitHub
+echo.
+echo   [Window 2] Global Lead Generation + Live Outreach Engine (Continuous Loop)
+echo              - Targets 95%% Global / 5%% India active weekly sector cohorts
+echo              - Verifies email deliverability + crafts tailored $100 audit pitches
+echo              - Dispatches live via Resend API (CCs ar.archanagavas@gmail.com)
+echo.
 echo ======================================================================
 echo.
 
-choice /C 12345 /N /T 10 /D 1 /M "Enter choice [1, 2, 3, 4, or 5] (Auto-starts [1] in 10s): "
-set user_choice=%errorlevel%
+:: Launch Window 1 (Content & Socials Loop)
+echo Starting Window 1: Content + Social Syndication Loop...
+start "🌿 Anvitam [Window 1] - Content + Social Syndication Engine" cmd /k "cd /d "%~dp0" && color 0B && python -m autopilot.scheduler --interval 60"
 
-if "%user_choice%"=="1" (
-    echo.
-    echo Launching Continuous 60-Minute Growth Engine...
-    echo Safe Mode: Master guides saved as DRAFT in Firestore + published_records/
-    echo Auto-Sync: Commits and pushes new records to GitHub automatically.
-    echo.
-    python -m autopilot.scheduler --interval 60
-)
-
-if "%user_choice%"=="2" (
-    echo.
-    echo Running Single Daily Cycle...
-    python -m autopilot.engine --mode run-all
-)
-
-if "%user_choice%"=="3" (
-    echo.
-    echo Harvesting 95%% Global / 5%% India leads for active weekly sector cohort...
-    python -m autopilot.leadgen.runner --mode all --dry-run
-)
-
-if "%user_choice%"=="4" (
-    echo.
-    echo Automatically dispatching staged outreach emails via Resend...
-    echo Notification: CCs ar.archanagavas@gmail.com on every email.
-    echo Audit Log: Writing detailed records to autopilot/leads/outreach_log.md
-    echo.
-    python -m autopilot.leadgen.runner --mode send --live
-)
-
-if "%user_choice%"=="5" (
-    echo.
-    echo Running Full Autonomous Outreach Pipeline (Harvest + Stage + Live Send)...
-    python -m autopilot.leadgen.runner --mode all --live
-)
+:: Launch Window 2 (Lead Gen & Outreach Loop)
+echo Starting Window 2: Global Lead Gen + Live Outreach Engine...
+start "🌿 Anvitam [Window 2] - Global Lead Gen + Live Outreach Engine" cmd /k "cd /d "%~dp0" && color 0E && python -m autopilot.leadgen.runner --mode all --live --loop --interval 240"
 
 echo.
-echo [NOTICE] Operation complete.
+echo ======================================================================
+echo [SUCCESS] Both autonomous engines are now executing live side-by-side!
+echo Keep both terminal windows open to allow continuous background runs.
+echo Press any key to close this launcher window (worker engines remain running).
+echo ======================================================================
+echo.
 pause
