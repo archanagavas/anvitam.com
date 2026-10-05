@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "Rural Estate Development Feasibility in Alibaug, Maharashtra: A Comprehensive Guide",
+            "url": "https://www.anvitam.com/blog/rural-estate-development-feasibility-alibaug-maharashtra",
+            "topics": [
+                "rural estate development",
+                "rammed earth construction",
+                "sustainable architecture",
+                "alibaug, maharashtra"
+            ],
+            "suggested_anchors": [
+                "our guide on rural estate development feasibility in alibaug, maharashtra",
+                "Rural Estate Development Feasibility in Alibaug, Maharashtra: A Comprehensive Guide"
+            ]
+        },
+        {
             "title": "Laterite vs CSEB vs Stabilized Rammed Earth: The Ultimate Guide to Building in Alibaug, Maharashtra",
             "url": "https://www.anvitam.com/blog/laterite-vs-cseb-vs-stabilized-rammed-earth-alibaug",
             "topics": [
