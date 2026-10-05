@@ -46,6 +46,7 @@ RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 
 # Buffer (Unified 1-Token Multi-Platform Publishing)
 BUFFER_ACCESS_TOKEN = os.getenv("BUFFER_ACCESS_TOKEN")
+SKIP_BUFFER_LINKEDIN = os.getenv("SKIP_BUFFER_LINKEDIN", "true").lower() in ("true", "1", "yes")
 
 # Social Platforms (Native APIs)
 BLUESKY_HANDLE = os.getenv("BLUESKY_HANDLE")

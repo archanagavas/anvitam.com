@@ -124,30 +124,50 @@ class BufferClient:
 
         published_ids = []
         errors = []
+        skip_linkedin = os.getenv("SKIP_BUFFER_LINKEDIN", "true").lower() in ("true", "1", "yes")
 
         for ch in channels:
             ch_id = ch["id"]
             service = ch.get("service", "unknown").lower()
             
+            # If user opted for manual LinkedIn, skip Buffer's LinkedIn channel
+            if service == "linkedin" and skip_linkedin:
+                self.logger.info(f"Skipping Buffer channel '{ch.get('name')}' (LinkedIn) because manual posting mode is active for Archana.")
+                continue
+
             # Use platform-tailored text if provided
             if platform_texts and service in platform_texts:
                 ch_text = platform_texts[service]
+            elif platform_texts and service in ("googlebusiness", "google_business") and ("googlebusiness" in platform_texts or "google_business" in platform_texts):
+                ch_text = platform_texts.get("googlebusiness") or platform_texts.get("google_business")
+            elif platform_texts and service == "facebook" and "facebook" in platform_texts:
+                ch_text = platform_texts["facebook"]
+            elif platform_texts and service == "facebook" and "linkedin" in platform_texts:
+                ch_text = platform_texts["linkedin"]
+                if link_url and link_url not in ch_text:
+                    ch_text = f"{ch_text}\n\n{link_url}"
             else:
                 ch_text = post_content
-                # Truncate text appropriately for Twitter (280 chars) if needed
-                if service == "twitter" and len(ch_text) > 280:
-                    if link_url and link_url in ch_text:
-                        prefix_limit = max(50, 280 - len(link_url) - 5)
-                        ch_text = f"{text[:prefix_limit]}...\n{link_url}"
-                    else:
-                        ch_text = ch_text[:280]
-                elif service == "threads" and len(ch_text) > 490:
-                    if link_url and link_url in ch_text:
-                        prefix_limit = max(50, 490 - len(link_url) - 5)
-                        ch_text = f"{text[:prefix_limit]}...\n{link_url}"
-                    else:
-                        ch_text = ch_text[:490]
 
+            # Enforce platform-specific limits and rules
+            if service in ("twitter", "x") and len(ch_text) > 280:
+                if link_url and link_url in ch_text:
+                    prefix_limit = max(50, 280 - len(link_url) - 5)
+                    ch_text = f"{text[:prefix_limit]}...\n{link_url}"
+                else:
+                    ch_text = ch_text[:280]
+            elif service == "threads" and len(ch_text) > 490:
+                if link_url and link_url in ch_text:
+                    prefix_limit = max(50, 490 - len(link_url) - 5)
+                    ch_text = f"{text[:prefix_limit]}...\n{link_url}"
+                else:
+                    ch_text = ch_text[:490]
+            elif service == "bluesky" and len(ch_text) > 280:
+                ch_text = ch_text[:275] + "…"
+            elif service == "mastodon" and len(ch_text) > 490:
+                ch_text = ch_text[:485] + "…"
+            elif service in ("googlebusiness", "google_business") and len(ch_text) > 1400:
+                ch_text = ch_text[:1390] + "…"
 
             payload = {
                 "channelId": ch_id,
