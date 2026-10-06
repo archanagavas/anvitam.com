@@ -1,17 +1,18 @@
 """
 Master Autopilot Engine & CLI Entrypoint.
-Orchestrates the 2:00 AM autonomous loop:
-1. Research Agent -> Scans competitors, maps, and reviews to find 6 gaps
-2. Strategy Agent -> Scores gaps and picks #1 winner
-3. Writing Agent -> Drafts 1,800-word guide in Archana's Raw Mentor voice
+Orchestrates the autonomous multi-agent growth & publishing loop:
+1. Research Agent -> Live SERP scraping, competitor H1/H2 inspection, decision-paralysis gaps
+2. Strategy Agent -> Scores gaps, evaluates Hormozi grand-slam offers, selects #1 winner
+3. Writing Agent -> Drafts 1,800-word decision-breaking guides in Archana's Raw Mentor voice
 4. Editor Agent -> Quality Gate audits against AEO and Stop-Slop (loops until >=92%)
-5. Publishing Agent -> Pushes live to anvitam.com, interlinks older post, sends Resend digest
-6. Syndication Hub -> Dispatches to Bluesky, Mastodon, Threads, X, LinkedIn, Medium, Substack
+5. Multi-Model Image Generator -> Creates photorealistic architectural imagery (Gemini/FLUX)
+6. Publishing Agent -> Stages in Firestore as DRAFT + saves local Markdown records
+7. Syndication Hub -> Dispatches to Bluesky, Mastodon, Threads, X, LinkedIn, Medium, Substack, Buffer
 
 Usage:
   python -m autopilot.engine --mode run-all
   python -m autopilot.engine --mode research-gaps
-  python -m autopilot.engine --mode write-topic --topic "Cost of rammed earth villa Alibaug"
+  python -m autopilot.engine --mode write-topic --topic "If you bought 2 acres of land roadmap"
   python -m autopilot.engine --dry-run
 """
 
@@ -38,6 +39,7 @@ from autopilot.agents.writer import WritingAgent
 from autopilot.agents.editor import EditorAgent
 from autopilot.agents.publisher import PublishingAgent
 from autopilot.syndication.syndicator import SyndicationHub
+from autopilot.image_generator import generate_architectural_image
 
 class AutopilotEngine:
     def __init__(self):
@@ -61,32 +63,45 @@ class AutopilotEngine:
         Executes the complete autonomous content & distribution cycle:
         1. Master Architectural Technical Guide -> Drafted in Archana's Raw Mentor Voice
         2. Editor Quality Gate -> Checked against AEO & Stop-Slop anti-robotic rules
-        3. Draft Publishing -> Saved as DRAFT in Firestore + Local Markdown review file
-        4. 5 Independent Lead-Generating Social Posts -> Spaced & dispatched to Buffer, Bluesky, Mastodon, Tumblr
+        3. Automated AI Image Generation -> Gemini Imagen / FLUX.1 visual generation
+        4. Draft Publishing -> Saved as DRAFT in Firestore + Local Markdown review file
+        5. 5 Independent Lead-Generating Social Posts -> Spaced & dispatched to Buffer, Bluesky, Mastodon, Tumblr
         """
         from autopilot.daily_blueprint import THIRTY_DAY_PLAN
 
-        # Determine target day
+        # Determine target day or dynamic expansion
         active_day = day_number or 1
-        day_idx = (active_day - 1) % len(THIRTY_DAY_PLAN)
-        day_plan = THIRTY_DAY_PLAN[day_idx]
+        is_dynamic_expansion = active_day > len(THIRTY_DAY_PLAN)
+        
+        if not is_dynamic_expansion:
+            day_idx = (active_day - 1) % len(THIRTY_DAY_PLAN)
+            day_plan = THIRTY_DAY_PLAN[day_idx]
+            day_theme = day_plan.get('theme')
+        else:
+            day_theme = f"Dynamic Expansion Milestone — Cycle {active_day}"
+            day_plan = {
+                "day": active_day,
+                "theme": day_theme,
+                "master_blog": None,
+                "social_posts": []
+            }
 
         self.logger.info("=" * 70)
-        self.logger.info(f"🌿 STARTING AUTONOMOUS GROWTH ENGINE — DAY {day_plan.get('day')}: {day_plan.get('theme')}")
+        self.logger.info(f"🌿 STARTING AUTONOMOUS GROWTH ENGINE — DAY {active_day}: {day_theme}")
         self.logger.info("=" * 70)
 
-        # ── Step 1: Research Agent ──────────────────────────────────────────
-        effective_topic = topic_override or day_plan.get("master_blog", {}).get("title")
+        # ── Step 1: Research Agent with Live SERP Inspection ────────────────
+        effective_topic = topic_override or (day_plan.get("master_blog", {}).get("title") if day_plan.get("master_blog") else None)
         if effective_topic:
             self.logger.info(f"Blueprint / Target topic directive: '{effective_topic}'")
             candidate_gaps = [{
                 "gap_id": 1,
                 "target_query": effective_topic,
-                "town": region_override or "Western India (Alibaug / Maharashtra / Gujarat)",
-                "competitor_reference": "30-Day High-Ticket Architectural Blueprint",
-                "customer_pain_point": day_plan.get("master_blog", {}).get("focus", "Urgent cost and soil construction clarity"),
-                "buyer_persona": "High-net-worth estate, villa, or resort developer",
-                "search_intent": "Commercial Investigation"
+                "town": region_override or "Global Acreage / Western India (Alibaug / Goa / Gujarat)",
+                "competitor_reference": "Pre-vetted 30-Day Architectural Blueprint",
+                "customer_pain_point": "Decision paralysis on costs, water hydrology, and sequencing after buying land",
+                "buyer_persona": "Tech Founder / Merchant Navy / Developer / HNW Landowner ($100k+ capital)",
+                "search_intent": "Commercial Investigation & Actionable Blueprint"
             }]
         else:
             candidate_gaps = self.researcher.run(region_override=region_override)
@@ -129,11 +144,18 @@ class AutopilotEngine:
             self.logger.warning("Reached max editorial loops without 92+ score. Proceeding with best current draft.")
             approved_draft = draft
 
-        # ── Step 5: Publishing & Review Staging ──────────────────────────────
+        # ── Step 5: Multi-Model AI Image Generation ─────────────────────────
+        self.logger.info("🎨 Image Generator: Creating publication-grade visual asset...")
+        img_concept = approved_draft.get("cover_image_prompt") or approved_draft.get("title") or winning_topic
+        img_result = generate_architectural_image(concept=img_concept, aspect_ratio="16:9", image_type="hero")
+        approved_draft["cover_image"] = img_result.get("local_path")
+        self.logger.info(f"✔ Blog Cover Image Ready ({img_result.get('source')}): {img_result.get('local_path')}")
+
+        # ── Step 6: Publishing & Review Staging ──────────────────────────────
         pub_result = self.publisher.publish_article(draft=approved_draft, dry_run=dry_run)
         self.logger.info(f"Master Article Staging Complete: {pub_result}")
 
-        # ── Step 6: Multi-Platform Syndication Hub ──────────────────────────
+        # ── Step 7: Multi-Platform Syndication Hub ──────────────────────────
         syndication_results = {}
         social_dispatches = []
 
@@ -146,6 +168,7 @@ class AutopilotEngine:
                 "excerpt": approved_draft.get("excerpt") or approved_draft.get("meta_description"),
                 "content_html": approved_draft.get("content_html"),
                 "tags": approved_draft.get("tags"),
+                "image_url": approved_draft.get("cover_image"),
                 "is_draft": pub_result.get("is_draft", True)
             }
             syndication_results = self.syndicator.syndicate_all(
@@ -153,18 +176,18 @@ class AutopilotEngine:
                 dry_run=dry_run
             )
 
-            # B. Dispatch the 5 Independent Daily Social Posts from the 30-Day Blueprint
+            # B. Dispatch Independent Daily Social Posts
             daily_posts = day_plan.get("social_posts", [])
             print("\n" + "=" * 70)
-            print(f"🌿 5 INDEPENDENT SOCIAL ASSETS — DAY {day_plan.get('day')}: {day_plan.get('theme')}")
+            print(f"🌿 INDEPENDENT SOCIAL ASSETS — DAY {active_day}: {day_theme}")
             print(f"Engine: SLAY Copywriting Framework (Short Lines, Double Spacing, Zero Hashtags)")
             print("=" * 70)
 
             records_markdown = [
-                f"# 🌿 Anvitam Social Assets — Day {day_plan.get('day')}",
-                f"**Theme:** {day_plan.get('theme')}  ",
+                f"# 🌿 Anvitam Social Assets — Day {active_day}",
+                f"**Theme:** {day_theme}  ",
                 f"**Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}  ",
-                f"**Cadence:** 5 Standalone High-Ticket Lead Assets (SLAY Framework)\n",
+                f"**Cadence:** Standalone High-Ticket Lead Assets (SLAY Framework)\n",
                 "---\n"
             ]
 
@@ -176,7 +199,7 @@ class AutopilotEngine:
                 cta = post.get("cta", "")
                 
                 print(f"\n┌──────────────────────────────────────────────────────────────────┐")
-                print(f"│ 📢 ASSET #{idx}/5 [{slot}] — {p_type.upper()}")
+                print(f"│ 📢 ASSET #{idx}/{len(daily_posts)} [{slot}] — {p_type.upper()}")
                 print(f"│ Concept: {concept}")
                 print(f"└──────────────────────────────────────────────────────────────────┘")
                 print(f"{full_text}\n")
@@ -211,25 +234,26 @@ class AutopilotEngine:
             social_records_dir = os.path.join(os.path.dirname(__file__), "published_records", "socials")
             os.makedirs(social_records_dir, exist_ok=True)
             today_str = datetime.now().strftime("%Y-%m-%d")
-            social_record_file = os.path.join(social_records_dir, f"day_{day_plan.get('day')}_{today_str}.md")
+            social_record_file = os.path.join(social_records_dir, f"day_{active_day}_{today_str}.md")
             with open(social_record_file, "w", encoding="utf-8") as f:
                 f.write("\n".join(records_markdown))
             print(f"\n📁 Local Social Archive Saved: {social_record_file}")
 
         self.logger.info("=" * 70)
-        self.logger.info(f"🌿 DAY {day_plan.get('day')} AUTONOMOUS MULTI-ASSET CYCLE COMPLETE")
+        self.logger.info(f"🌿 DAY {active_day} AUTONOMOUS MULTI-ASSET CYCLE COMPLETE")
         self.logger.info(f"Master Guide Staged: {pub_result.get('url', 'Simulated')} (isDraft: True)")
-        self.logger.info(f"Independent Social Posts Dispatched: {len(social_dispatches)}/5")
+        self.logger.info(f"Independent Social Posts Dispatched: {len(social_dispatches)}")
         self.logger.info("=" * 70)
 
         return {
-            "day": day_plan.get("day"),
-            "theme": day_plan.get("theme"),
+            "day": active_day,
+            "theme": day_theme,
             "strategy": strategy_brief,
             "article": {
                 "title": approved_draft.get("title"),
                 "slug": approved_draft.get("slug"),
-                "score": approved_draft.get("editorial_score")
+                "score": approved_draft.get("editorial_score"),
+                "image": approved_draft.get("cover_image")
             },
             "publication": pub_result,
             "syndication": syndication_results,
@@ -238,11 +262,11 @@ class AutopilotEngine:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Anvitam Autopilot: Autonomous Competitor Loop & 8-Platform Syndication")
+    parser = argparse.ArgumentParser(description="Anvitam Autopilot: Autonomous Competitor Loop & Multi-Platform Syndication")
     parser.add_argument("--mode", choices=["run-all", "research-gaps", "write-topic", "syndicate", "day"], default="run-all", help="Execution mode")
-    parser.add_argument("--day", type=int, default=1, help="Day number in 30-day blueprint (1-30)")
+    parser.add_argument("--day", type=int, default=1, help="Day number in blueprint (1-30 or continuous expansion)")
     parser.add_argument("--topic", type=str, help="Manual topic override to research and write")
-    parser.add_argument("--region", type=str, help="Target region/town (e.g. 'Alibaug', 'Vadodara', 'Goa')")
+    parser.add_argument("--region", type=str, help="Target region/corridor (e.g. 'Global Acreage', 'Alibaug', 'Goa')")
     parser.add_argument("--dry-run", action="store_true", help="Simulate without publishing live or dispatching posts")
     parser.add_argument("--skip-syndication", action="store_true", help="Only publish to website, skip social networks")
 
@@ -252,7 +276,7 @@ def main():
 
     if args.mode == "research-gaps":
         gaps = engine.researcher.run(region_override=args.region)
-        print("\n🔍 6 UNCOVERED COMPETITOR SEARCH GAPS FOUND:")
+        print("\n🔍 6 UNCOVERED SEARCH GAPS FOUND WITH LIVE SERP INTEL:")
         print(json.dumps(gaps, indent=2))
         return
 

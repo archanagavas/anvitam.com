@@ -44,13 +44,16 @@ echo ======================================================================
 echo LAUNCHING BOTH AUTONOMOUS ENGINES IN INDEPENDENT LIVE TERMINALS:
 echo ======================================================================
 echo.
-echo   [Window 1] Content + Social Syndication Engine (60-Minute Loop)
+echo   [Window 1] Content + Social Syndication Engine (Paced 3-Hour Cadence, Max 2 Blogs/Day)
+echo              - Live SERP scraper & competitor H1/H2 research
+echo              - Automated Gemini / FLUX.1 architectural image generation
 echo              - Publishes architectural master guides + 5 tailored posts
 echo              - Syndicates to Bluesky, Mastodon, Threads, Buffer, Twitter, Medium
 echo              - Updates link registry and auto-syncs to GitHub
 echo.
-echo   [Window 2] Global Lead Generation + Live Outreach Engine (Continuous Loop)
-echo              - Targets 95%% Global / 5%% India active weekly sector cohorts
+echo   [Window 2] Global Lead Generation + Live Outreach Engine (4-Hour Loop)
+echo              - Targets 90%% Global / 10%% India active weekly sector cohorts
+echo              - Targets Tech Founders, Developers, Merchant Navy, Industrialists, Cafes, Retreats
 echo              - Verifies email deliverability + crafts tailored $100 audit pitches
 echo              - Dispatches live via Resend API (CCs ar.archanagavas@gmail.com)
 echo.
@@ -59,7 +62,7 @@ echo.
 
 :: Launch Window 1 (Content & Socials Loop)
 echo Starting Window 1: Content + Social Syndication Loop...
-start "🌿 Anvitam [Window 1] - Content + Social Syndication Engine" cmd /k "cd /d "%~dp0" && color 0B && python -m autopilot.scheduler --interval 60"
+start "🌿 Anvitam [Window 1] - Content + Social Syndication Engine" cmd /k "cd /d "%~dp0" && color 0B && python -m autopilot.scheduler --interval 180 --max-blogs 2"
 
 :: Launch Window 2 (Lead Gen & Outreach Loop)
 echo Starting Window 2: Global Lead Gen + Live Outreach Engine...

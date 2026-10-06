@@ -1,12 +1,13 @@
 """
 Local Continuous Scheduler for Anvitam Autopilot.
-Runs locally on PC to generate and syndicate high-converting content every N minutes (default: 60 mins / 1 hour).
+Runs locally on PC to generate and syndicate high-converting content with intelligent pacing.
+
 Features:
-- State persistence (autopilot/state.json): remembers current day, advances 1-30 sequentially.
-- Automated Git Commit & Push: pushes newly generated records, markdown archives, and link registry to GitHub after every cycle.
-- Automatic graceful fallback: skips platforms whose keys are missing without crashing.
-- Live countdown & rich console reporting.
-- Diagnostic connection tester: python -m autopilot.scheduler --test-connections
+- Pacing Gate: Enforces max 1-2 master blogs per 24 hours to prevent burning through monthly calendars in hours.
+- Spaced Distribution: Automatically spaces daily social posts across natural business hours.
+- State Persistence (autopilot/state.json): Remembers current day, advances sequentially into evergreen dynamic expansion.
+- Automated Git Commit & Push: Pushes newly generated records, markdown archives, and link registry to GitHub after every cycle.
+- Diagnostic Connection Tester: python -m autopilot.scheduler --test-connections
 """
 
 import os
@@ -55,6 +56,8 @@ def load_autopilot_state() -> dict:
         "current_day": 1,
         "completed_cycles": 0,
         "last_run_timestamp": None,
+        "last_run_date": None,
+        "blogs_published_today": 0,
         "last_article_title": None
     }
 
@@ -129,11 +132,15 @@ def test_social_connections():
     print("Add missing keys to: g:\\CODE\\anvitam\\.env.local or .env.autopilot\n")
 
 
-def run_scheduler(interval_minutes: int = 60, dry_run: bool = False, max_runs: int = 0):
+def run_scheduler(
+    interval_minutes: int = 180,
+    max_blogs_per_day: int = 2,
+    dry_run: bool = False,
+    max_runs: int = 0
+):
     """
-    Continuous local runner executing the autonomous multi-agent and syndication loop
-    every `interval_minutes` minutes (default: 60 minutes).
-    Automatically pushes generated records to GitHub upon completion of each cycle.
+    Continuous local runner executing the autonomous multi-agent and syndication loop.
+    Default interval: 180 mins (3 hours), with max 1-2 blogs per day pacing.
     """
     engine = AutopilotEngine()
     state = load_autopilot_state()
@@ -141,9 +148,10 @@ def run_scheduler(interval_minutes: int = 60, dry_run: bool = False, max_runs: i
 
     print("\n" + "=" * 70)
     print(f"🌿 ANVITAM AUTONOMOUS GROWTH ENGINE ACTIVE")
-    print(f"Loop Cadence: Every {interval_minutes} Minutes (Continuous 24/7 Loop)")
+    print(f"Loop Cadence: Every {interval_minutes} Minutes ({interval_minutes / 60:.1f} hours)")
+    print(f"Daily Blog Cap: Max {max_blogs_per_day} Blog(s) per 24h Day")
     print(f"Execution Mode: {'[DRY-RUN - Staging Only]' if dry_run else '[LIVE POSTING]'}")
-    print(f"Current Blueprint Day: Day {state.get('current_day', 1)} of 30")
+    print(f"Current Blueprint Day: Day {state.get('current_day', 1)}")
     print("Keep this terminal window open. Press Ctrl+C to stop anytime.")
     print("=" * 70 + "\n")
 
@@ -151,9 +159,23 @@ def run_scheduler(interval_minutes: int = 60, dry_run: bool = False, max_runs: i
         while True:
             run_count += 1
             current_day = state.get("current_day", 1)
-            now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            now = datetime.now()
+            now_str = now.strftime("%Y-%m-%d %H:%M:%S")
+            today_date = now.strftime("%Y-%m-%d")
 
-            print(f"\n▶ [{now_str}] Launching Cycle #{run_count} (Day {current_day} of 30)...")
+            # Check daily blog limits
+            last_date = state.get("last_run_date")
+            if last_date != today_date:
+                state["blogs_published_today"] = 0
+                state["last_run_date"] = today_date
+
+            blogs_today = state.get("blogs_published_today", 0)
+            skip_blog = blogs_today >= max_blogs_per_day
+
+            if skip_blog:
+                print(f"ℹ Daily Blog Cap Reached ({blogs_today}/{max_blogs_per_day} for {today_date}). Running social syndication & maintenance...")
+
+            print(f"\n▶ [{now_str}] Launching Cycle #{run_count} (Day {current_day})...")
 
             # Auto-Housekeeping: Purge local records & logs older than 24h
             try:
@@ -169,14 +191,14 @@ def run_scheduler(interval_minutes: int = 60, dry_run: bool = False, max_runs: i
                 social_dispatched = len(result.get("social_posts_dispatched", []))
 
                 print(f"✔ Cycle #{run_count} Complete: Master Guide '{title}' (Editor Score: {score}/100, Staged as DRAFT)")
-                print(f"✔ Multi-Asset Distribution: {social_dispatched} Independent Lead Posts Dispatched across Buffer, Bluesky, Mastodon, Tumblr")
+                print(f"✔ Multi-Asset Distribution: {social_dispatched} Independent Lead Posts Dispatched")
 
-                # Advance day sequentially (Day 1 -> Day 2 -> ... -> Day 30 -> Day 1)
-                total_days = max(len(THIRTY_DAY_PLAN), 30)
-                next_day = (current_day % total_days) + 1
-                state["current_day"] = next_day
+                # Update state
+                state["blogs_published_today"] = blogs_today + 1
+                state["current_day"] = current_day + 1
                 state["completed_cycles"] = run_count
                 state["last_run_timestamp"] = now_str
+                state["last_run_date"] = today_date
                 state["last_article_title"] = title
                 save_autopilot_state(state)
 
@@ -193,13 +215,13 @@ def run_scheduler(interval_minutes: int = 60, dry_run: bool = False, max_runs: i
 
             next_run_time = datetime.now() + timedelta(minutes=interval_minutes)
             print(f"\n⏳ Cycle #{run_count} finished. Next cycle at: {next_run_time.strftime('%H:%M:%S')} (in {interval_minutes} mins)")
-            print(f"🌿 Next Day Queue: Day {state.get('current_day')} of 30")
+            print(f"🌿 Next Day Queue: Day {state.get('current_day')}")
 
             # Sleep in 60-second chunks to allow clean Ctrl+C response
             sleep_seconds = interval_minutes * 60
             for remaining in range(sleep_seconds, 0, -60):
                 mins_left = remaining // 60
-                if mins_left % 15 == 0 and mins_left > 0:
+                if mins_left % 30 == 0 and mins_left > 0:
                     print(f"   ... Next run in {mins_left} minutes ({next_run_time.strftime('%H:%M:%S')})")
                 time.sleep(min(60, remaining))
 
@@ -208,8 +230,9 @@ def run_scheduler(interval_minutes: int = 60, dry_run: bool = False, max_runs: i
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Anvitam Autopilot Local 1-Hour Continuous Growth Scheduler")
-    parser.add_argument("--interval", type=int, default=60, help="Posting interval in minutes (default: 60)")
+    parser = argparse.ArgumentParser(description="Anvitam Autopilot Local Continuous Growth Scheduler")
+    parser.add_argument("--interval", type=int, default=180, help="Cycle interval in minutes (default: 180 / 3 hours)")
+    parser.add_argument("--max-blogs", type=int, default=2, help="Max blogs to publish per 24 hours (default: 2)")
     parser.add_argument("--dry-run", action="store_true", help="Simulate without publishing live")
     parser.add_argument("--test-connections", action="store_true", help="Inspect credentials for all social platforms")
     parser.add_argument("--max-runs", type=int, default=0, help="Exit after N runs (default: 0 = continuous)")
@@ -222,6 +245,7 @@ def main():
 
     run_scheduler(
         interval_minutes=args.interval,
+        max_blogs_per_day=args.max_blogs,
         dry_run=args.dry_run,
         max_runs=args.max_runs
     )
@@ -229,4 +253,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
