@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "If You Bought 2-10 Acres of Land in Alibaug: The 5-Step Masterplan Roadmap Before Hiring a Contractor",
+            "url": "https://www.anvitam.com/blog/alibaug-land-masterplan-roadmap",
+            "topics": [
+                "zero-waste luxury residence design",
+                "sustainable architecture",
+                "alibaug",
+                "permaculture masterplan"
+            ],
+            "suggested_anchors": [
+                "our guide on if you bought 2-10 acres of land in alibaug",
+                "If You Bought 2-10 Acres of Land in Alibaug: The 5-Step Masterplan Roadmap Before Hiring a Contractor"
+            ]
+        },
+        {
             "title": "Rural Estate Development Feasibility in Alibaug, Maharashtra: A Comprehensive Guide",
             "url": "https://www.anvitam.com/blog/rural-estate-development-feasibility-alibaug-maharashtra",
             "topics": [
