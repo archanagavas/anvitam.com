@@ -47,19 +47,58 @@ NEGATIVE_NOISE_TERMS = [
     "waste collection", "catering", "cleaning", "geodemographics"
 ]
 
-# Global Metropolitan Search Centers (95% target: UK, Australia, US, UAE, Europe)
+# Top 20 Global Tourism & High-Yield Travel Destination Centers (90% target)
 GLOBAL_CITIES = [
+    # 1. France
+    ("Paris, France", 48.8566, 2.3522, "FR"),
+    ("Nice & French Riviera, France", 43.7102, 7.2620, "FR"),
+    # 2. Spain
+    ("Barcelona & Costa Brava, Spain", 41.3879, 2.1699, "ES"),
+    ("Ibiza & Balearic Islands, Spain", 38.9067, 1.4206, "ES"),
+    # 3. United States
+    ("Los Angeles, USA", 34.0522, -118.2437, "US"),
+    ("Miami, USA", 25.7617, -80.1918, "US"),
+    # 4. Italy
+    ("Florence & Tuscany, Italy", 43.7696, 11.2558, "IT"),
+    ("Rome & Amalfi, Italy", 41.9028, 12.4964, "IT"),
+    # 5. Turkey
+    ("Bodrum & Aegean Coast, Turkey", 37.0344, 27.4305, "TR"),
+    ("Istanbul, Turkey", 41.0082, 28.9784, "TR"),
+    # 6. Mexico
+    ("Tulum & Riviera Maya, Mexico", 20.2114, -87.4654, "MX"),
+    ("Los Cabos, Mexico", 22.8905, -109.9167, "MX"),
+    # 7. United Kingdom
     ("London, UK", 51.5074, -0.1278, "GB"),
-    ("Sydney, Australia", -33.8688, 151.2093, "AU"),
-    ("Melbourne, Australia", -37.8136, 144.9631, "AU"),
     ("Edinburgh, UK", 55.9533, -3.1883, "GB"),
-    ("Dubai, UAE", 25.2048, 55.2708, "AE"),
-    ("Brisbane, Australia", -27.4698, 153.0251, "AU"),
-    ("Manchester, UK", 53.4808, -2.2426, "GB"),
-    ("Los Angeles, USA", 34.0522, -118.2437, "US")
+    # 8. Germany
+    ("Munich & Bavaria, Germany", 48.1351, 11.5820, "DE"),
+    # 9. Greece
+    ("Athens & Cyclades, Greece", 37.9838, 23.7275, "GR"),
+    # 10. Austria
+    ("Salzburg & Alps, Austria", 47.8095, 13.0550, "AT"),
+    # 11. Japan
+    ("Kyoto, Japan", 35.0116, 135.7681, "JP"),
+    ("Tokyo, Japan", 35.6762, 139.6503, "JP"),
+    # 12. Thailand
+    ("Phuket & Islands, Thailand", 7.8804, 98.3923, "TH"),
+    ("Bangkok, Thailand", 13.7563, 100.5018, "TH"),
+    # 13. Portugal
+    ("Lisbon & Algarve, Portugal", 38.7223, -9.1393, "PT"),
+    # 14. Canada
+    ("Vancouver & BC, Canada", 49.2827, -123.1207, "CA"),
+    # 15. Switzerland
+    ("Zurich & Swiss Alps, Switzerland", 47.3769, 8.5417, "CH"),
+    # 16. Netherlands
+    ("Amsterdam, Netherlands", 52.3676, 4.9041, "NL"),
+    # 17. Croatia
+    ("Dubrovnik & Adriatic Coast, Croatia", 42.6507, 18.0944, "HR"),
+    # 18. New Zealand
+    ("Queenstown & South Island, NZ", -45.0312, 168.6626, "NZ"),
+    # 19. Norway
+    ("Oslo & Fjords, Norway", 59.9139, 10.7522, "NO")
 ]
 
-# Indian High-Ticket Regional Centers (5% target)
+# 20. Indian High-Ticket Regional Centers (10% target)
 INDIAN_CITIES = [
     ("Mumbai & Alibaug, Maharashtra", 18.9220, 72.8347, "IN"),
     ("North Goa & Coastal Goa", 15.5494, 73.7535, "IN"),
