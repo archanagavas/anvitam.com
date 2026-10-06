@@ -351,6 +351,20 @@ LINK_TAXONOMY = {
     "technical_engineering_and_architecture_blogs": [
         {
             "title": "If You Bought 2-10 Acres of Land in Alibaug: The 5-Step Masterplan Roadmap Before Hiring a Contractor",
+            "url": "https://www.anvitam.com/blog/if-you-bought-2-10-acres-land-alibaug-masterplan-roadmap",
+            "topics": [
+                "rammed earth alibaug",
+                "monsoon-resistant construction",
+                "sustainable architecture",
+                "luxury eco-resorts"
+            ],
+            "suggested_anchors": [
+                "our guide on if you bought 2-10 acres of land in alibaug",
+                "If You Bought 2-10 Acres of Land in Alibaug: The 5-Step Masterplan Roadmap Before Hiring a Contractor"
+            ]
+        },
+        {
+            "title": "If You Bought 2-10 Acres of Land in Alibaug: The 5-Step Masterplan Roadmap Before Hiring a Contractor",
             "url": "https://www.anvitam.com/blog/alibaug-land-masterplan-roadmap",
             "topics": [
                 "zero-waste luxury residence design",
