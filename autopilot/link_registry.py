@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "Luxury Villas on Steep Slopes: The 5-Step Masterplan Roadmap",
+            "url": "https://www.anvitam.com/blog/luxury-villas-on-steep-slopes-masterplan-roadmap",
+            "topics": [
+                "luxury villas",
+                "steep slopes",
+                "karjat",
+                "pune"
+            ],
+            "suggested_anchors": [
+                "our guide on luxury villas on steep slopes",
+                "Luxury Villas on Steep Slopes: The 5-Step Masterplan Roadmap"
+            ]
+        },
+        {
             "title": "If You Bought 2-10 Acres of Land in Alibaug: The 5-Step Masterplan Roadmap Before Hiring a Contractor",
             "url": "https://www.anvitam.com/blog/if-you-bought-2-10-acres-land-alibaug-masterplan-roadmap",
             "topics": [
