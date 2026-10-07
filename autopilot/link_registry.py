@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "If You Bought 2 Acres of Land: The 5\u2011Step Water\u2011Autonomy Roadmap Before Hiring a Contractor",
+            "url": "https://www.anvitam.com/blog/if-you-bought-2-acres-land-water-autonomy-roadmap",
+            "topics": [
+                "you",
+                "bought",
+                "acres",
+                "land"
+            ],
+            "suggested_anchors": [
+                "our guide on if you bought 2 acres of land",
+                "If You Bought 2 Acres of Land: The 5\u2011Step Water\u2011Autonomy Roadmap Before Hiring a Contractor"
+            ]
+        },
+        {
             "title": "If You Bought 2-10 Acres of Land in Coorg: The 5-Step Masterplan Roadmap for a Luxury Coffee Farmstay",
             "url": "https://www.anvitam.com/blog/if-you-bought-2-10-acres-land-coorg-masterplan-roadmap",
             "topics": [
@@ -1048,12 +1062,13 @@ def format_link_registry_for_prompt() -> str:
     for category, links in LINK_TAXONOMY.items():
         cat_name = category.replace("_", " ").title()
         output.append(f"#### {cat_name}:")
-        for item in links:
-            topics_str = ", ".join(item["topics"][:4])
+        # Include top 3 most relevant items per category to keep token budget pristine
+        for item in links[:4]:
+            topics_str = ", ".join(item["topics"][:3])
             anchors_str = " | ".join([f'"{a}"' for a in item["suggested_anchors"][:2]])
             output.append(f"- **<{item['url']}>** ({item['title']})")
-            output.append(f"  * Best used when section discusses: {topics_str}")
-            output.append(f"  * Recommended Anchor Phrasings: {anchors_str}")
+            output.append(f"  * When section discusses: {topics_str}")
+            output.append(f"  * Recommended Anchor: {anchors_str}")
         output.append("")
 
     return "\n".join(output)

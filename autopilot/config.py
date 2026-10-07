@@ -10,6 +10,7 @@ import logging
 import sys
 from pathlib import Path
 from typing import Optional, Dict, Any, List
+import time
 import requests
 from dotenv import load_dotenv
 
@@ -118,55 +119,48 @@ def call_nvidia_nim(
     return None
 
 
-def call_openrouter(
+def call_gemini(
     prompt: str,
     system_instruction: Optional[str] = None,
-    json_mode: bool = False,
-    model: str = "meta-llama/llama-3.3-70b-instruct"
+    json_mode: bool = False
 ) -> Optional[str]:
-    """Call OpenRouter OpenAI-compatible API."""
-    if not OPENROUTER_API_KEY:
+    """Call Google Gemini API with fallback across flash models."""
+    if not GEMINI_API_KEY:
         return None
-    url = "https://openrouter.ai/api/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    messages = []
-    if system_instruction:
-        messages.append({"role": "system", "content": system_instruction})
-    messages.append({"role": "user", "content": prompt})
+    for model_name in ["gemini-flash-latest", "gemini-2.5-flash-lite", "gemini-pro-latest"]:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={GEMINI_API_KEY}"
+        contents = []
+        if system_instruction:
+            contents.append({"role": "user", "parts": [{"text": f"System Directive: {system_instruction}"}]})
+            contents.append({"role": "model", "parts": [{"text": "Understood. I will strictly follow this directive."}]})
+        contents.append({"role": "user", "parts": [{"text": prompt}]})
 
-    models_to_try = [model, "deepseek/deepseek-chat"]
-    for m in models_to_try:
-        payload = {
-            "model": m,
-            "messages": messages,
-            "temperature": 0.2 if json_mode else 0.7,
-            "max_tokens": 3000
-        }
+        payload: Dict[str, Any] = {"contents": contents}
         if json_mode:
-            payload["response_format"] = {"type": "json_object"}
+            payload["generationConfig"] = {"responseMimeType": "application/json"}
 
         try:
-            res = requests.post(url, headers=headers, json=payload, timeout=60)
+            res = requests.post(url, json=payload, timeout=30)
             if res.status_code == 200:
                 data = res.json()
-                return data["choices"][0]["message"]["content"]
+                candidates = data.get("candidates", [])
+                if candidates and "content" in candidates[0]:
+                    parts = candidates[0]["content"].get("parts", [])
+                    if parts and "text" in parts[0]:
+                        return parts[0]["text"]
             else:
-                logger.warning(f"OpenRouter ({m}) error {res.status_code}: {res.text[:150]}")
+                logger.debug(f"Gemini ({model_name}) returned {res.status_code}: {res.text[:120]}")
         except Exception as e:
-            logger.warning(f"OpenRouter call failed for {m}: {e}")
+            logger.debug(f"Gemini call error for {model_name}: {e}")
     return None
 
 
 def call_groq(
     prompt: str,
     system_instruction: Optional[str] = None,
-    json_mode: bool = False,
-    model: str = "llama-3.3-70b-versatile"
+    json_mode: bool = False
 ) -> Optional[str]:
-    """Call Groq API."""
+    """Call Groq API with robust active models and rate-limit backoff."""
     if not GROQ_API_KEY:
         return None
     url = "https://api.groq.com/openai/v1/chat/completions"
@@ -179,22 +173,89 @@ def call_groq(
         messages.append({"role": "system", "content": system_instruction})
     messages.append({"role": "user", "content": prompt})
 
-    payload = {
-        "model": model,
-        "messages": messages,
-        "temperature": 0.2 if json_mode else 0.7,
-        "max_tokens": 4096
-    }
-    if json_mode:
-        payload["response_format"] = {"type": "json_object"}
+    models_to_try = ["qwen/qwen3.8-27b", "openai/gpt-oss-120b"]
+    for m in models_to_try:
+        cur_messages = list(messages)
+        payload = {
+            "model": m,
+            "messages": cur_messages,
+            "temperature": 0.2 if json_mode else 0.7,
+            "max_tokens": 2400
+        }
+        if json_mode:
+            has_json = ("json" in prompt.lower()) or (system_instruction and "json" in system_instruction.lower())
+            if not has_json:
+                cur_messages[-1] = {"role": "user", "content": cur_messages[-1]["content"] + "\n\nRespond strictly with a valid JSON object."}
 
-    try:
-        res = requests.post(url, headers=headers, json=payload, timeout=60)
-        if res.status_code == 200:
-            data = res.json()
-            return data["choices"][0]["message"]["content"]
-    except Exception as e:
-        logger.warning(f"Groq call failed: {e}")
+        for attempt in range(5):
+            try:
+                res = requests.post(url, headers=headers, json=payload, timeout=45)
+                if res.status_code == 200:
+                    data = res.json()
+                    return data["choices"][0]["message"]["content"]
+                elif res.status_code == 429:
+                    retry_header = res.headers.get("retry-after")
+                    try:
+                        base_sleep = int(float(retry_header)) if retry_header else (10 + attempt * 5)
+                    except Exception:
+                        base_sleep = 10 + attempt * 5
+                    sleep_duration = max(base_sleep, 10 + attempt * 5)
+                    logger.info(f"Groq ({m}) rate limited (429). Waiting {sleep_duration}s for token bucket replenishment (attempt {attempt + 1}/5)...")
+                    time.sleep(sleep_duration)
+                    continue
+                else:
+                    logger.debug(f"Groq ({m}) error {res.status_code}: {res.text[:120]}")
+                    break
+            except Exception as e:
+                logger.debug(f"Groq call failed for {m}: {e}")
+                break
+    return None
+
+
+def call_openrouter(
+    prompt: str,
+    system_instruction: Optional[str] = None,
+    json_mode: bool = False
+) -> Optional[str]:
+    """Call OpenRouter API with free and standard model fallbacks."""
+    if not OPENROUTER_API_KEY:
+        return None
+    url = "https://openrouter.ai/api/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    messages = []
+    if system_instruction:
+        messages.append({"role": "system", "content": system_instruction})
+    messages.append({"role": "user", "content": prompt})
+
+    models_to_try = [
+        "google/gemini-2.0-flash-exp:free",
+        "meta-llama/llama-3.3-70b-instruct:free",
+        "deepseek/deepseek-r1:free",
+        "meta-llama/llama-3.3-70b-instruct",
+        "deepseek/deepseek-chat"
+    ]
+    for m in models_to_try:
+        payload = {
+            "model": m,
+            "messages": messages,
+            "temperature": 0.2 if json_mode else 0.7,
+            "max_tokens": 3000
+        }
+        if json_mode:
+            payload["response_format"] = {"type": "json_object"}
+
+        try:
+            res = requests.post(url, headers=headers, json=payload, timeout=45)
+            if res.status_code == 200:
+                data = res.json()
+                return data["choices"][0]["message"]["content"]
+            else:
+                logger.debug(f"OpenRouter ({m}) error {res.status_code}: {res.text[:120]}")
+        except Exception as e:
+            logger.debug(f"OpenRouter call failed for {m}: {e}")
     return None
 
 
@@ -204,23 +265,29 @@ def generate_llm_response(
     json_mode: bool = False
 ) -> str:
     """
-    Generate response with fallback across free tier models:
-    1. NVIDIA NIM (Llama 3.3 70B)
-    2. OpenRouter (Gemini 2.0 Flash)
-    3. Groq (Llama 3.3 70B)
+    Generate response with resilient fallback across providers:
+    1. Groq (High speed, 120B / Qwen)
+    2. Google Gemini (Native API)
+    3. OpenRouter (Free + Standard catalog)
+    4. NVIDIA NIM
     """
-    # 1. Try NVIDIA NIM
-    result = call_nvidia_nim(prompt, system_instruction, json_mode)
+    # 1. Try Groq (Primary high-speed)
+    result = call_groq(prompt, system_instruction, json_mode)
     if result:
         return result.strip()
 
-    # 2. Try OpenRouter
+    # 2. Try Gemini
+    result = call_gemini(prompt, system_instruction, json_mode)
+    if result:
+        return result.strip()
+
+    # 3. Try OpenRouter
     result = call_openrouter(prompt, system_instruction, json_mode)
     if result:
         return result.strip()
 
-    # 3. Try Groq
-    result = call_groq(prompt, system_instruction, json_mode)
+    # 4. Try NVIDIA NIM
+    result = call_nvidia_nim(prompt, system_instruction, json_mode)
     if result:
         return result.strip()
 

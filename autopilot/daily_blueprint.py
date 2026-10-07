@@ -138,13 +138,38 @@ THIRTY_DAY_PLAN: List[Dict[str, Any]] = [
     }
 ]
 
-# Seamlessly load days 3 through 30 from the complete blueprint catalog
+# Seamlessly load complete 60-day blueprint catalog
 try:
-    from autopilot.blueprint_data import FULL_THIRTY_DAY_PLAN
-    if len(FULL_THIRTY_DAY_PLAN) >= 30:
-        THIRTY_DAY_PLAN.extend(FULL_THIRTY_DAY_PLAN[2:])
+    from autopilot.blueprint_data import FULL_SIXTY_DAY_PLAN
+    if len(FULL_SIXTY_DAY_PLAN) >= 60:
+        # Keep high-craft days 1 & 2, extend with days 3 through 60
+        SIXTY_DAY_PLAN: List[Dict[str, Any]] = [THIRTY_DAY_PLAN[0], THIRTY_DAY_PLAN[1]] + FULL_SIXTY_DAY_PLAN[2:]
+    else:
+        SIXTY_DAY_PLAN = FULL_SIXTY_DAY_PLAN
 except Exception as _e:
-    logger.warning(f"Could not load extended 30-day catalog: {_e}")
+    logger.warning(f"Could not load extended 60-day catalog: {_e}")
+    SIXTY_DAY_PLAN = THIRTY_DAY_PLAN
+
+# Update THIRTY_DAY_PLAN for backward-compatibility
+THIRTY_DAY_PLAN = SIXTY_DAY_PLAN[:30]
+
+
+def get_blueprint_day(day_number: int) -> Dict[str, Any]:
+    """
+    Retrieves the strategic blueprint for any day number.
+    Seamlessly rolls over across 60-day cycles (e.g. Day 61 -> Day 1 of Cycle #2),
+    guaranteeing rich continuous social posts and topics that never run dry.
+    """
+    total_days = len(SIXTY_DAY_PLAN) if SIXTY_DAY_PLAN else 60
+    day_idx = (day_number - 1) % total_days
+    cycle_num = ((day_number - 1) // total_days) + 1
+    
+    plan_entry = dict(SIXTY_DAY_PLAN[day_idx])
+    # Keep active day number and track cycle
+    plan_entry["day"] = day_number
+    plan_entry["cycle_number"] = cycle_num
+    plan_entry["base_day"] = day_idx + 1
+    return plan_entry
 
 
 def send_milestone_review_email(current_day: int = 30) -> Dict[str, Any]:

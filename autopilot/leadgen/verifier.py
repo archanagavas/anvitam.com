@@ -85,13 +85,12 @@ def verify_lead_email(email: str) -> Tuple[bool, str]:
     if clean_email in sent_emails:
         return False, f"Already contacted previously: '{clean_email}'"
 
-    # 4. Domain DNS / MX Reachability (Zero-cost native socket lookup)
+    # 4. Domain DNS / Host Reachability (Zero-cost native socket lookup)
     try:
-        # Check if domain resolves to at least one valid address
-        socket.getaddrinfo(domain_part, 25, socket.AF_INET, socket.SOCK_STREAM)
+        socket.gethostbyname(domain_part)
     except socket.gaierror:
         try:
-            socket.getaddrinfo(domain_part, 80, socket.AF_INET, socket.SOCK_STREAM)
+            socket.getaddrinfo(domain_part, None)
         except socket.gaierror:
             return False, f"Unresolvable domain (DNS host not found): '{domain_part}'"
     except Exception as e:

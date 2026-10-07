@@ -365,13 +365,14 @@ Return strictly a valid JSON object matching this schema:
         post_data: Any,
         link_url: Optional[str] = None,
         title: Optional[str] = None,
+        image_url: Optional[str] = None,
         platforms: Optional[List[str]] = None,
         dry_run: bool = False
     ) -> Dict[str, Any]:
         """
         Dispatches an individual standalone social post across all active channels:
-        Buffer (Twitter, LinkedIn, Threads) + Bluesky + Mastodon + Tumblr.
-        Strictly enforces platform character limits and uses the SLAY framework.
+        Buffer (Twitter, LinkedIn, Threads, Facebook) + Bluesky + Mastodon + Tumblr.
+        Strictly enforces platform character limits and attaches architectural imagery.
         """
         if isinstance(post_data, dict):
             facebook_text = post_data.get("facebook_story") or post_data.get("text") or post_data.get("linkedin_post", "")
@@ -407,7 +408,7 @@ Return strictly a valid JSON object matching this schema:
             bluesky_text = twitter_text[:275]
             mastodon_text = facebook_text[:475] + "…" if len(facebook_text) > 485 else facebook_text
 
-        self.logger.info(f"Syndication Hub: Dispatching Archana's story to Facebook & channels (Story: {len(facebook_text)} chars, X: {len(twitter_text)} chars)...")
+        self.logger.info(f"Syndication Hub: Dispatching Archana's story to Facebook & channels (Story: {len(facebook_text)} chars, X: {len(twitter_text)} chars, Image: {bool(image_url)})...")
 
         if dry_run:
             self.logger.info(f"[DRY-RUN] Simulating dispatch of social asset: '{facebook_text[:60]}...'")
@@ -431,14 +432,16 @@ Return strictly a valid JSON object matching this schema:
             results["buffer"] = self.buffer.publish_update(
                 text=fb_payload,
                 link_url=link_url,
-                platform_texts=platform_texts
+                platform_texts=platform_texts,
+                image_url=image_url
             )
 
         # 2. Bluesky (Strictly <= 280 chars)
         if not platforms or "bluesky" in platforms:
             results["bluesky"] = self.bluesky.publish(
                 text=bluesky_text,
-                link_url=link_url
+                link_url=link_url,
+                image_url=image_url
             )
 
         # 3. Mastodon (Strictly <= 490 chars)
@@ -448,9 +451,13 @@ Return strictly a valid JSON object matching this schema:
                 link_url=link_url
             )
 
-        # 4. Tumblr (Rich HTML with proper spacing)
+        # 4. Tumblr (Rich HTML with proper spacing + image)
         if not platforms or "tumblr" in platforms:
-            html_body = "".join(f"<p>{p.strip()}</p>" for p in linkedin_text.split("\n\n") if p.strip())
+            html_parts = []
+            if image_url:
+                html_parts.append(f'<p><img src="{image_url}" alt="{title or "Anvitam Architectural Concept"}" style="max-width:100%; border-radius:8px;" /></p>')
+            html_parts.extend(f"<p>{p.strip()}</p>" for p in linkedin_text.split("\n\n") if p.strip())
+            html_body = "".join(html_parts)
             results["tumblr"] = self.tumblr.publish(
                 title=title or "Anvitam Architectural Insight",
                 content_html=html_body,

@@ -85,12 +85,13 @@ class BufferClient:
         link_url: Optional[str] = None,
         title: Optional[str] = None,
         description: Optional[str] = None,
+        image_url: Optional[str] = None,
         publish_now: bool = True,
         platform_texts: Optional[Dict[str, str]] = None
     ) -> Dict[str, Any]:
         """
         Publishes an update to all connected Buffer channels simultaneously via GraphQL createPost.
-        Supports platform-specific customized text via `platform_texts`.
+        Supports platform-specific customized text via `platform_texts` and image attachments via `image_url`.
         """
         token = os.getenv("BUFFER_ACCESS_TOKEN")
         if not token:
@@ -169,15 +170,25 @@ class BufferClient:
             elif service in ("googlebusiness", "google_business") and len(ch_text) > 1400:
                 ch_text = ch_text[:1390] + "…"
 
-            payload = {
+            buffer_mode_env = os.getenv("BUFFER_POST_MODE", "shareNow").strip().lower()
+            use_queue = (buffer_mode_env in ("queue", "addtoqueue")) or (not publish_now)
+            post_mode = "addToQueue" if use_queue else "shareNow"
+
+            payload: Dict[str, Any] = {
                 "channelId": ch_id,
                 "text": ch_text,
-                "mode": "shareNow" if publish_now else "addToQueue",
+                "mode": post_mode,
                 "schedulingType": "automatic",
                 "needsApproval": False,
                 "saveToDraft": False,
                 "assets": []
             }
+
+            if image_url:
+                payload["assets"] = [{"image": {"url": image_url}}]
+
+            if service == "facebook":
+                payload["metadata"] = {"facebook": {"type": "post"}}
 
             try:
                 res = requests.post(

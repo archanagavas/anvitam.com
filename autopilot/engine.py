@@ -67,24 +67,17 @@ class AutopilotEngine:
         4. Draft Publishing -> Saved as DRAFT in Firestore + Local Markdown review file
         5. 5 Independent Lead-Generating Social Posts -> Spaced & dispatched to Buffer, Bluesky, Mastodon, Tumblr
         """
-        from autopilot.daily_blueprint import THIRTY_DAY_PLAN
+        from autopilot.daily_blueprint import get_blueprint_day, SIXTY_DAY_PLAN
 
-        # Determine target day or dynamic expansion
+        # Determine target day and load rich continuous 60-day plan
         active_day = day_number or 1
-        is_dynamic_expansion = active_day > len(THIRTY_DAY_PLAN)
+        day_plan = get_blueprint_day(active_day)
+        day_theme = day_plan.get('theme')
+        cycle_num = day_plan.get('cycle_number', 1)
+        base_day = day_plan.get('base_day', active_day)
         
-        if not is_dynamic_expansion:
-            day_idx = (active_day - 1) % len(THIRTY_DAY_PLAN)
-            day_plan = THIRTY_DAY_PLAN[day_idx]
-            day_theme = day_plan.get('theme')
-        else:
-            day_theme = f"Dynamic Expansion Milestone — Cycle {active_day}"
-            day_plan = {
-                "day": active_day,
-                "theme": day_theme,
-                "master_blog": None,
-                "social_posts": []
-            }
+        if cycle_num > 1:
+            day_theme = f"{day_theme} (Cycle #{cycle_num} Rotation)"
 
         self.logger.info("=" * 70)
         self.logger.info(f"🌿 STARTING AUTONOMOUS GROWTH ENGINE — DAY {active_day}: {day_theme}")
@@ -206,28 +199,49 @@ class AutopilotEngine:
                 if cta:
                     print(f"💬 DISCUSSION / CTA: {cta}\n")
 
+                # Generate bespoke architectural visual asset for this specific social asset
+                post_img_concept = post.get("image_prompt") or post.get("concept") or f"{day_theme}: {concept}"
+                img_asset = generate_architectural_image(
+                    concept=post_img_concept,
+                    aspect_ratio="1:1" if slot in ["08:30 AM", "11:30 AM"] else "16:9",
+                    image_type=f"social_day{active_day}_{idx}"
+                )
+                post_img_url = img_asset.get("direct_url") or img_asset.get("local_path")
+                post["image_url"] = post_img_url
+                post["image_local"] = img_asset.get("local_path")
+
+                print(f"🎨 Visual Asset Generated: {img_asset.get('source')} ({img_asset.get('local_path')})")
+
                 res = self.syndicator.syndicate_social_post(
                     post_data=post,
                     title=f"Anvitam: {concept}",
                     link_url="https://topmate.io/archanagavas",
+                    image_url=post_img_url,
                     dry_run=dry_run
                 )
                 social_dispatches.append({
                     "slot": slot,
                     "type": p_type,
                     "concept": concept,
+                    "image": post_img_url,
                     "results": res
                 })
                 active_channels = [k for k, v in res.items() if isinstance(v, dict) and v.get("status") in ["success", "simulated"]]
-                print(f"✔ Dispatched across {len(active_channels)} channels: {active_channels}")
+                print(f"✔ Dispatched across {len(active_channels)} channels with image: {active_channels}")
                 
                 records_markdown.append(f"## Asset {idx}: [{slot}] {p_type} — {concept}\n")
+                records_markdown.append(f"**Visual Prompt / Asset:** `{post_img_concept}`  \n**Image:** {post_img_url}\n\n")
                 records_markdown.append(f"### LinkedIn / Longform (SLAY Format)\n```\n{full_text}\n\n{cta}\n```\n")
                 if post.get("twitter_text"):
                     records_markdown.append(f"### Twitter / X & Bluesky (≤275 Chars)\n```\n{post.get('twitter_text')}\n```\n")
                 if post.get("threads_text"):
                     records_markdown.append(f"### Threads / Mastodon (≤450 Chars)\n```\n{post.get('threads_text')}\n```\n")
                 records_markdown.append(f"**Syndication Status:** {json.dumps(res)}\n\n---\n")
+
+                # Respect platform rate limits between rapid social dispatches
+                if not dry_run and idx < len(daily_posts):
+                    import time
+                    time.sleep(8)
 
             # Save local records
             import os

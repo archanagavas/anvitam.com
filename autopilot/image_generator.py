@@ -136,14 +136,20 @@ def generate_architectural_image(
     # 1. Try Gemini Imagen 3
     img_path = generate_gemini_image(prompt, filename)
     if img_path:
-        return {"local_path": img_path, "prompt": prompt, "source": "gemini_imagen"}
+        encoded_prompt = urllib.parse.quote(prompt)
+        direct_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1280&height=720&model=flux&nologo=true"
+        return {"local_path": img_path, "direct_url": direct_url, "prompt": prompt, "source": "gemini_imagen"}
 
     # 2. Try Hugging Face FLUX.1
     img_path = generate_flux_huggingface(prompt, filename)
     if img_path:
-        return {"local_path": img_path, "prompt": prompt, "source": "huggingface_flux"}
+        encoded_prompt = urllib.parse.quote(prompt)
+        direct_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1280&height=720&model=flux&nologo=true"
+        return {"local_path": img_path, "direct_url": direct_url, "prompt": prompt, "source": "huggingface_flux"}
 
     # 3. Fast Pollinations FLUX fallback
     width, height = (1280, 720) if aspect_ratio == "16:9" else (1080, 1080)
+    encoded_prompt = urllib.parse.quote(prompt)
+    direct_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width={width}&height={height}&model=flux&nologo=true&enhance=true"
     img_path = generate_pollinations_image(prompt, filename, width=width, height=height)
-    return {"local_path": img_path, "prompt": prompt, "source": "pollinations_flux"}
+    return {"local_path": img_path, "direct_url": direct_url, "prompt": prompt, "source": "pollinations_flux"}
