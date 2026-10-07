@@ -21,7 +21,34 @@ TOP_TRAVEL_DESTINATIONS = [
     "France", "Spain", "United States", "Italy", "Turkey", "Mexico",
     "United Kingdom", "Germany", "Greece", "Austria", "Japan", "Thailand",
     "Portugal", "Canada", "Switzerland", "Netherlands", "Croatia",
-    "New Zealand", "Norway", "India"
+    "New Zealand", "Norway", "India", "United Arab Emirates", "Australia"
+]
+
+# Explicit Global Luxury Acreage & NRI Corridors
+GLOBAL_LUXURY_CORRIDORS = [
+    "USA (California Napa/Sonoma/Big Sur, Texas Hill Country Austin/Fredericksburg, Pacific NW, Hudson Valley NY)",
+    "UK (Cotswolds, Sussex, South Downs, London)",
+    "Australia (Byron Bay & Northern Rivers, Mornington Peninsula, Sydney, Melbourne)",
+    "UAE/Gulf (Dubai luxury desert eco-villas, Abu Dhabi)",
+    "Southern Europe (Portugal Alentejo & Algarve, Spain finca corridors Mallorca/Ibiza/Andalusia, Italy Tuscany)"
+]
+
+# Indian High-Ticket Retreat Corridors
+INDIAN_LUXURY_CORRIDORS = [
+    "Alibaug (Mumbai's coastal weekend villas)",
+    "North & South Goa (CRZ clearance, laterite, high humidity cross-ventilation)",
+    "Bangalore Peri-Urban (Sarjapur, Kanakapura, Doddaballapur 1–3 acre water autonomy)",
+    "Coorg & Western Ghats (15-key luxury coffee farmstays, Chikmagalur, Wayanad)",
+    "Nilgiris (Ooty & Kodaikanal steep-slope pin foundations)",
+    "Udaipur & Gujarat (thermal mass, stabilized rammed earth)"
+]
+
+# Core Target Ideal Customer Profiles (ICPs)
+TARGET_ICPS = [
+    "HNW Landowners & Generational Estate Buyers: Buying 1–10 acres needing site contour hydrology, subsoil bearing tests, and passive climate engineering before breaking ground (Tech Executives, CXOs, NRI Investors, Merchant Navy Captains, Industrialists).",
+    "Boutique Hospitality & Agro-Tourism Developers: Planning 8–20 key eco-resorts or farmstays requiring minimal canopy felling, natural living pools, and high RevPAR masterplans.",
+    "Luxury Real Estate Brokers & Acreage Land Agents: Recommending architectural feasibility audits to buyers before closing land deals.",
+    "Global Architectural Studios & Design-Build Practices: Seeking specialized ecological masterplanning, bioclimatic 3D modeling, and passive thermal engineering."
 ]
 
 COHORTS: Dict[str, Dict[str, Any]] = {

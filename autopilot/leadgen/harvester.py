@@ -49,18 +49,24 @@ NEGATIVE_NOISE_TERMS = [
     "waste collection", "catering", "cleaning", "geodemographics"
 ]
 
-# Top 20 Global Tourism & High-Yield Travel Destination Centers (90% target)
+# Top Global Luxury Acreage & NRI Corridors (90% target)
 GLOBAL_CITIES = [
-    ("London, UK", 51.5074, -0.1278, "GB"),
+    ("London & Cotswolds, UK", 51.8330, -1.8433, "GB"),
+    ("Sussex & South Downs, UK", 50.9184, -0.1706, "GB"),
     ("Edinburgh, UK", 55.9533, -3.1883, "GB"),
-    ("Sydney, Australia", -33.8688, 151.2093, "AU"),
-    ("Melbourne, Australia", -37.8136, 144.9631, "AU"),
+    ("California (Napa/Sonoma/Carmel), USA", 38.2975, -122.2869, "US"),
+    ("Texas Hill Country (Austin/Fredericksburg), USA", 30.2740, -98.8719, "US"),
+    ("Pacific NW (Seattle/Oregon), USA", 47.6062, -122.3321, "US"),
+    ("Hudson Valley, USA", 41.7004, -73.9210, "US"),
     ("Los Angeles, USA", 34.0522, -118.2437, "US"),
     ("Miami, USA", 25.7617, -80.1918, "US"),
-    ("Dubai, UAE", 25.2048, 55.2708, "AE"),
-    ("Paris, France", 48.8566, 2.3522, "FR"),
-    ("Nice & French Riviera, France", 43.7102, 7.2620, "FR"),
+    ("Byron Bay & Northern Rivers, Australia", -28.6474, 153.6020, "AU"),
+    ("Mornington Peninsula & Melbourne, Australia", -38.3544, 144.9782, "AU"),
+    ("Sydney Rural Acreage, Australia", -33.8688, 151.2093, "AU"),
+    ("Dubai Desert Luxury Eco-Villas, UAE", 25.0757, 55.1888, "AE"),
+    ("Alentejo, Portugal", 38.5714, -7.9065, "PT"),
     ("Lisbon & Algarve, Portugal", 38.7223, -9.1393, "PT"),
+    ("Mallorca & Ibiza (Finca Corridors), Spain", 39.6953, 3.0176, "ES"),
     ("Florence & Tuscany, Italy", 43.7696, 11.2558, "IT"),
     ("Zurich & Swiss Alps, Switzerland", 47.3769, 8.5417, "CH"),
     ("Vancouver & BC, Canada", 49.2827, -123.1207, "CA"),
@@ -68,13 +74,14 @@ GLOBAL_CITIES = [
     ("Kyoto, Japan", 35.0116, 135.7681, "JP")
 ]
 
-# Indian High-Ticket Regional Centers (10% target)
+# Indian High-Ticket Retreat Corridors (10% target)
 INDIAN_CITIES = [
-    ("Mumbai & Alibaug, Maharashtra", 18.9220, 72.8347, "IN"),
-    ("North Goa & Coastal Goa", 15.5494, 73.7535, "IN"),
-    ("Vadodara & Ahmedabad, Gujarat", 22.3072, 73.1812, "IN"),
-    ("Coorg & Western Ghats, Karnataka", 12.3375, 75.8069, "IN"),
-    ("Bangalore Peri-Urban, Karnataka", 12.9716, 77.5946, "IN")
+    ("Alibaug Coastal & Mumbai Weekend Villas, Maharashtra", 18.6414, 72.8722, "IN"),
+    ("North & South Goa (CRZ & Laterite Corridors)", 15.2993, 74.1240, "IN"),
+    ("Bangalore Peri-Urban (Sarjapur, Kanakapura, Doddaballapur)", 12.9716, 77.5946, "IN"),
+    ("Coorg & Western Ghats (Coffee Farmstays & Chikmagalur)", 12.3375, 75.8069, "IN"),
+    ("Nilgiris (Ooty & Kodaikanal Steep-Slope Foundations)", 11.4102, 76.6950, "IN"),
+    ("Udaipur & Gujarat (Thermal Mass & Rammed Earth)", 24.5854, 73.7125, "IN")
 ]
 
 COHORT_SEEDS: Dict[str, List[Dict[str, Any]]] = {
@@ -779,12 +786,31 @@ def harvest_ai_enriched_leads(cohort_info: Dict[str, Any], count: int = 25) -> L
     seen_emails = set()
 
     prompt = f"""
-You are a Senior B2B Spatial Lead Researcher for Anvitam Studio (an ecological architecture and site planning practice).
-Identify {count} REAL, authentic businesses for our active marketing cohort:
+You are a Senior B2B Spatial Lead Researcher for Anvitam Studio (an ecological architecture and site planning practice led by Ar. Archana Gavas).
+Identify {count} REAL, authentic businesses or decision-makers for our active marketing cohort:
 Cohort: "{cohort_info['name']}" (Short name: {cohort_info['short_name']})
-Target Scope:
-- 95% Global (London/Edinburgh UK, Sydney/Melbourne Australia, Los Angeles/Miami USA, Dubai UAE, Nice/Tuscany/Algarve Europe).
-- 5% High-Ticket Indian Regional (Alibaug coastal, North Goa, Bangalore peri-urban, Coorg).
+
+Target Corridors & Geography:
+- Global Luxury Acreage & NRI Corridors (90%):
+  • USA: California (Napa, Sonoma, Big Sur), Texas Hill Country (Austin, Fredericksburg), Pacific NW (Seattle, Oregon), Hudson Valley NY.
+  • UK: Cotswolds, Sussex, South Downs, London, Edinburgh.
+  • Australia: Byron Bay & Northern Rivers, Mornington Peninsula, Sydney/Melbourne rural acreage.
+  • UAE/Gulf: Dubai luxury desert eco-villas, Abu Dhabi.
+  • Southern Europe: Portugal (Alentejo, Algarve), Spain (Mallorca, Ibiza, Andalusia finca corridors), Italy (Tuscany, Florence).
+- Indian High-Ticket Retreat Corridors (10%):
+  • Alibaug (Mumbai's coastal weekend villas)
+  • North & South Goa (CRZ clearance, laterite, high humidity cross-ventilation)
+  • Bangalore Peri-Urban (Sarjapur, Kanakapura, Doddaballapur 1–3 acre water autonomy)
+  • Coorg & Western Ghats (15-key luxury coffee farmstays, Chikmagalur, Wayanad)
+  • Nilgiris (Ooty & Kodaikanal steep-slope pin foundations)
+  • Udaipur & Gujarat (thermal mass, stabilized rammed earth)
+
+Target Ideal Customer Profiles (ICPs):
+1. HNW Landowners & Generational Estate Buyers (Tech Founders, CXOs, NRI Investors, Merchant Navy Captains, Industrialists) buying 1–10 acres needing site contour hydrology, subsoil bearing tests, and passive climate engineering before breaking ground.
+2. Boutique Hospitality & Agro-Tourism Developers planning 8–20 key eco-resorts or farmstays requiring minimal canopy felling, natural living pools, and high RevPAR masterplans.
+3. Luxury Real Estate Brokers & Acreage Land Agents recommending architectural feasibility audits to buyers before closing land deals.
+4. Architectural Studios & Design-Build Contractors seeking ecological masterplanning, BIM visuals, and passive thermal engineering.
+
 - Mix of ~40% Female Principals / ~60% Male Principals.
 - Focus on real entities with public business inquiry or direct partner emails (info@, land@, contact@, hello@, rural@, inquiries@, or partner emails).
 - No fictional companies or mock domains.
@@ -796,8 +822,8 @@ Return strictly a valid JSON array matching this schema:
     "name": "Key Partner or Lead Name (or 'Head of Development')",
     "email": "inquiry_email@companydomain.com",
     "location": "City, Country",
-    "country_code": "GB, AU, US, AE, FR, PT, IT, or IN",
-    "project_title": "Specific Spatial Specialization (e.g. Acreage Subdivisions / Heritage Villas / Boutique Dining)",
+    "country_code": "GB, AU, US, AE, PT, ES, IT, or IN",
+    "project_title": "Specific Spatial Specialization (e.g. 5-Acre Vineyard Eco-Villa / 12-Key Farmstay / Contour Masterplan)",
     "project_details": "1-2 sentences on their estate portfolio or design requirements",
     "source_url": "https://..."
   }}
