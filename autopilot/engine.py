@@ -57,15 +57,16 @@ class AutopilotEngine:
         region_override: Optional[str] = None,
         topic_override: Optional[str] = None,
         dry_run: bool = False,
-        skip_syndication: bool = False
+        skip_syndication: bool = False,
+        skip_blog: bool = False
     ) -> Dict[str, Any]:
         """
         Executes the complete autonomous content & distribution cycle:
-        1. Master Architectural Technical Guide -> Drafted in Archana's Raw Mentor Voice
+        1. Master Architectural Technical Guide -> Drafted in Archana's Raw Mentor Voice (Skipped if daily cap reached)
         2. Editor Quality Gate -> Checked against AEO & Stop-Slop anti-robotic rules
         3. Automated AI Image Generation -> Gemini Imagen / FLUX.1 visual generation
         4. Draft Publishing -> Saved as DRAFT in Firestore + Local Markdown review file
-        5. 5 Independent Lead-Generating Social Posts -> Spaced & dispatched to Buffer, Bluesky, Mastodon, Tumblr
+        5. 5 Independent Lead-Generating Social Posts -> Spaced & dispatched to Buffer, Bluesky, Mastodon, Tumblr with images
         """
         from autopilot.daily_blueprint import get_blueprint_day, SIXTY_DAY_PLAN
 
@@ -83,70 +84,77 @@ class AutopilotEngine:
         self.logger.info(f"🌿 STARTING AUTONOMOUS GROWTH ENGINE — DAY {active_day}: {day_theme}")
         self.logger.info("=" * 70)
 
-        # ── Step 1: Research Agent with Live SERP Inspection ────────────────
-        effective_topic = topic_override or (day_plan.get("master_blog", {}).get("title") if day_plan.get("master_blog") else None)
-        if effective_topic:
-            self.logger.info(f"Blueprint / Target topic directive: '{effective_topic}'")
-            candidate_gaps = [{
-                "gap_id": 1,
-                "target_query": effective_topic,
-                "town": region_override or "Global Acreage / Western India (Alibaug / Goa / Gujarat)",
-                "competitor_reference": "Pre-vetted 30-Day Architectural Blueprint",
-                "customer_pain_point": "Decision paralysis on costs, water hydrology, and sequencing after buying land",
-                "buyer_persona": "Tech Founder / Merchant Navy / Developer / HNW Landowner ($100k+ capital)",
-                "search_intent": "Commercial Investigation & Actionable Blueprint"
-            }]
-        else:
-            candidate_gaps = self.researcher.run(region_override=region_override)
-            self.logger.info(f"Research Agent identified {len(candidate_gaps)} competitor search gaps.")
-
-        # ── Step 2: Strategy Agent ──────────────────────────────────────────
-        strategy_brief = self.strategist.run(candidate_gaps=candidate_gaps)
-        winning_topic = strategy_brief.get("primary_keyword")
-        self.logger.info(f"Strategy Agent selected winning keyword: '{winning_topic}' (Score: {strategy_brief.get('total_score')})")
-
-        # ── Step 3 & 4: Writing Agent & Editor Quality Gate Loop ────────────
-        max_editorial_loops = 3
-        current_loop = 1
-        revision_feedback = None
+        strategy_brief = {}
         approved_draft = None
+        pub_result = {}
 
-        while current_loop <= max_editorial_loops:
-            self.logger.info(f"Writing Loop {current_loop}/{max_editorial_loops}: Generating draft...")
-            draft = self.writer.run(strategy_brief=strategy_brief, revision_feedback=revision_feedback)
-
-            self.logger.info(f"Editor Quality Gate: Auditing draft (Loop {current_loop})...")
-            audit = self.editor.audit(draft=draft, strategy_brief=strategy_brief)
-            score = audit.get("overall_score", 0)
-            passed = audit.get("passed", False)
-
-            self.logger.info(f"Editor Result: Score {score}/100 | Passed: {passed}")
-
-            if passed or score >= 92:
-                self.logger.info(f"Quality gate PASSED on loop {current_loop} with score {score}/100!")
-                approved_draft = draft
-                approved_draft["editorial_score"] = score
-                approved_draft["editorial_audit"] = audit
-                break
+        if not skip_blog:
+            # ── Step 1: Research Agent with Live SERP Inspection ────────────────
+            effective_topic = topic_override or (day_plan.get("master_blog", {}).get("title") if day_plan.get("master_blog") else None)
+            if effective_topic:
+                self.logger.info(f"Blueprint / Target topic directive: '{effective_topic}'")
+                candidate_gaps = [{
+                    "gap_id": 1,
+                    "target_query": effective_topic,
+                    "town": region_override or "Global Acreage / Western India (Alibaug / Goa / Gujarat)",
+                    "competitor_reference": "Pre-vetted 30-Day Architectural Blueprint",
+                    "customer_pain_point": "Decision paralysis on costs, water hydrology, and sequencing after buying land",
+                    "buyer_persona": "Tech Founder / Merchant Navy / Developer / HNW Landowner ($100k+ capital)",
+                    "search_intent": "Commercial Investigation & Actionable Blueprint"
+                }]
             else:
-                self.logger.warning(f"Quality gate rejected draft. Issues found: {audit.get('issues_to_fix')}")
-                revision_feedback = audit.get("revision_instructions_for_writer")
-                current_loop += 1
+                candidate_gaps = self.researcher.run(region_override=region_override)
+                self.logger.info(f"Research Agent identified {len(candidate_gaps)} competitor search gaps.")
 
-        if not approved_draft:
-            self.logger.warning("Reached max editorial loops without 92+ score. Proceeding with best current draft.")
-            approved_draft = draft
+            # ── Step 2: Strategy Agent ──────────────────────────────────────────
+            strategy_brief = self.strategist.run(candidate_gaps=candidate_gaps)
+            winning_topic = strategy_brief.get("primary_keyword")
+            self.logger.info(f"Strategy Agent selected winning keyword: '{winning_topic}' (Score: {strategy_brief.get('total_score')})")
 
-        # ── Step 5: Multi-Model AI Image Generation ─────────────────────────
-        self.logger.info("🎨 Image Generator: Creating publication-grade visual asset...")
-        img_concept = approved_draft.get("cover_image_prompt") or approved_draft.get("title") or winning_topic
-        img_result = generate_architectural_image(concept=img_concept, aspect_ratio="16:9", image_type="hero")
-        approved_draft["cover_image"] = img_result.get("local_path")
-        self.logger.info(f"✔ Blog Cover Image Ready ({img_result.get('source')}): {img_result.get('local_path')}")
+            # ── Step 3 & 4: Writing Agent & Editor Quality Gate Loop ────────────
+            max_editorial_loops = 3
+            current_loop = 1
+            revision_feedback = None
 
-        # ── Step 6: Publishing & Review Staging ──────────────────────────────
-        pub_result = self.publisher.publish_article(draft=approved_draft, dry_run=dry_run)
-        self.logger.info(f"Master Article Staging Complete: {pub_result}")
+            while current_loop <= max_editorial_loops:
+                self.logger.info(f"Writing Loop {current_loop}/{max_editorial_loops}: Generating draft...")
+                draft = self.writer.run(strategy_brief=strategy_brief, revision_feedback=revision_feedback)
+
+                self.logger.info(f"Editor Quality Gate: Auditing draft (Loop {current_loop})...")
+                audit = self.editor.audit(draft=draft, strategy_brief=strategy_brief)
+                score = audit.get("overall_score", 0)
+                passed = audit.get("passed", False)
+
+                self.logger.info(f"Editor Result: Score {score}/100 | Passed: {passed}")
+
+                if passed or score >= 92:
+                    self.logger.info(f"Quality gate PASSED on loop {current_loop} with score {score}/100!")
+                    approved_draft = draft
+                    approved_draft["editorial_score"] = score
+                    approved_draft["editorial_audit"] = audit
+                    break
+                else:
+                    self.logger.warning(f"Quality gate rejected draft. Issues found: {audit.get('issues_to_fix')}")
+                    revision_feedback = audit.get("revision_instructions_for_writer")
+                    current_loop += 1
+
+            if not approved_draft:
+                self.logger.warning("Reached max editorial loops without 92+ score. Proceeding with best current draft.")
+                approved_draft = draft
+
+            # ── Step 5: Multi-Model AI Image Generation ─────────────────────────
+            self.logger.info("🎨 Image Generator: Creating publication-grade visual asset...")
+            img_concept = approved_draft.get("cover_image_prompt") or approved_draft.get("title") or winning_topic
+            img_result = generate_architectural_image(concept=img_concept, aspect_ratio="16:9", image_type="hero")
+            approved_draft["cover_image"] = img_result.get("local_path")
+            self.logger.info(f"✔ Blog Cover Image Ready ({img_result.get('source')}): {img_result.get('local_path')}")
+
+            # ── Step 6: Publishing & Review Staging ──────────────────────────────
+            pub_result = self.publisher.publish_article(draft=approved_draft, dry_run=dry_run)
+            self.logger.info(f"Master Article Staging Complete: {pub_result}")
+        else:
+            self.logger.info("ℹ [Daily Blog Cap Active] Skipping article generation. Proceeding directly to independent social assets syndication.")
+            pub_result = {"status": "skipped", "reason": "daily_blog_cap_reached"}
 
         # ── Step 7: Multi-Platform Syndication Hub ──────────────────────────
         syndication_results = {}
@@ -154,20 +162,21 @@ class AutopilotEngine:
 
         if not skip_syndication:
             # A. Article overview to social channels (Protected by DRAFT safety)
-            article_payload = {
-                "title": approved_draft.get("title"),
-                "slug": pub_result.get("slug"),
-                "url": pub_result.get("url"),
-                "excerpt": approved_draft.get("excerpt") or approved_draft.get("meta_description"),
-                "content_html": approved_draft.get("content_html"),
-                "tags": approved_draft.get("tags"),
-                "image_url": approved_draft.get("cover_image"),
-                "is_draft": pub_result.get("is_draft", True)
-            }
-            syndication_results = self.syndicator.syndicate_all(
-                article_data=article_payload,
-                dry_run=dry_run
-            )
+            if approved_draft:
+                article_payload = {
+                    "title": approved_draft.get("title"),
+                    "slug": pub_result.get("slug"),
+                    "url": pub_result.get("url"),
+                    "excerpt": approved_draft.get("excerpt") or approved_draft.get("meta_description"),
+                    "content_html": approved_draft.get("content_html"),
+                    "tags": approved_draft.get("tags"),
+                    "image_url": approved_draft.get("cover_image"),
+                    "is_draft": pub_result.get("is_draft", True)
+                }
+                syndication_results = self.syndicator.syndicate_all(
+                    article_data=article_payload,
+                    dry_run=dry_run
+                )
 
             # B. Dispatch Independent Daily Social Posts
             daily_posts = day_plan.get("social_posts", [])
@@ -264,10 +273,10 @@ class AutopilotEngine:
             "theme": day_theme,
             "strategy": strategy_brief,
             "article": {
-                "title": approved_draft.get("title"),
-                "slug": approved_draft.get("slug"),
-                "score": approved_draft.get("editorial_score"),
-                "image": approved_draft.get("cover_image")
+                "title": approved_draft.get("title") if approved_draft else "Skipped (Daily Blog Cap Active)",
+                "slug": approved_draft.get("slug") if approved_draft else None,
+                "score": approved_draft.get("editorial_score") if approved_draft else None,
+                "image": approved_draft.get("cover_image") if approved_draft else None
             },
             "publication": pub_result,
             "syndication": syndication_results,

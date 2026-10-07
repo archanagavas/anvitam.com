@@ -185,21 +185,30 @@ def run_scheduler(
                 logger.debug(f"Housekeeping note: {e}")
 
             try:
-                result = engine.run_nightly_cycle(day_number=current_day, dry_run=dry_run)
+                result = engine.run_nightly_cycle(
+                    day_number=current_day,
+                    dry_run=dry_run,
+                    skip_blog=skip_blog
+                )
                 title = result.get("article", {}).get("title", "Untitled")
                 score = result.get("article", {}).get("score", "N/A")
                 social_dispatched = len(result.get("social_posts_dispatched", []))
 
-                print(f"✔ Cycle #{run_count} Complete: Master Guide '{title}' (Editor Score: {score}/100, Staged as DRAFT)")
-                print(f"✔ Multi-Asset Distribution: {social_dispatched} Independent Lead Posts Dispatched")
+                if not skip_blog:
+                    print(f"✔ Cycle #{run_count} Complete: Master Guide '{title}' (Editor Score: {score}/100, Staged as DRAFT)")
+                else:
+                    print(f"✔ Cycle #{run_count} Complete: Master Guide skipped (Daily Blog Cap {max_blogs_per_day} active for today)")
+                print(f"✔ Multi-Asset Distribution: {social_dispatched} Independent Lead Posts Dispatched with Images")
 
                 # Update state
-                state["blogs_published_today"] = blogs_today + 1
+                if not skip_blog:
+                    state["blogs_published_today"] = blogs_today + 1
                 state["current_day"] = current_day + 1
                 state["completed_cycles"] = run_count
                 state["last_run_timestamp"] = now_str
                 state["last_run_date"] = today_date
-                state["last_article_title"] = title
+                if not skip_blog:
+                    state["last_article_title"] = title
                 save_autopilot_state(state)
 
                 # Automatically push new records to GitHub

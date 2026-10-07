@@ -465,6 +465,15 @@ Return strictly a valid JSON object matching this schema:
                 tags=["architecture", "ecologicaldesign", "permaculture", "rammedearth"]
             )
 
+        # 5. Google Business Profile (Direct Local Post if configured)
+        if (not platforms or "google_business" in platforms) and os.getenv("GOOGLE_BUSINESS_REFRESH_TOKEN"):
+            results["google_business"] = self.google_business.publish_local_post(
+                text=f"{title}\n\n{threads_text}" if title else threads_text,
+                link_url=link_url or "https://topmate.io/archanagavas",
+                image_url=image_url,
+                action_type="BOOK"
+            )
+
         return results
 
 

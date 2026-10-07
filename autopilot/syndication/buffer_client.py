@@ -125,7 +125,7 @@ class BufferClient:
 
         published_ids = []
         errors = []
-        skip_linkedin = os.getenv("SKIP_BUFFER_LINKEDIN", "true").lower() in ("true", "1", "yes")
+        skip_linkedin = os.getenv("SKIP_BUFFER_LINKEDIN", "false").lower() in ("true", "1", "yes")
 
         for ch in channels:
             ch_id = ch["id"]
@@ -170,7 +170,7 @@ class BufferClient:
             elif service in ("googlebusiness", "google_business") and len(ch_text) > 1400:
                 ch_text = ch_text[:1390] + "…"
 
-            buffer_mode_env = os.getenv("BUFFER_POST_MODE", "shareNow").strip().lower()
+            buffer_mode_env = os.getenv("BUFFER_POST_MODE", "queue").strip().lower()
             use_queue = (buffer_mode_env in ("queue", "addtoqueue")) or (not publish_now)
             post_mode = "addToQueue" if use_queue else "shareNow"
 
