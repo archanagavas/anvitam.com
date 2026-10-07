@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "Building in Goa: The Ultimate Guide to Luxury Eco-Resorts and Biophilic Weekend Villas",
+            "url": "https://www.anvitam.com/blog/building-in-goa-ultimate-guide",
+            "topics": [
+                "goa",
+                "luxury eco-resorts",
+                "biophilic weekend villas",
+                "laterite stone"
+            ],
+            "suggested_anchors": [
+                "our guide on building in goa",
+                "Building in Goa: The Ultimate Guide to Luxury Eco-Resorts and Biophilic Weekend Villas"
+            ]
+        },
+        {
             "title": "Luxury Villas on Steep Slopes: The 5-Step Masterplan Roadmap",
             "url": "https://www.anvitam.com/blog/luxury-villas-on-steep-slopes-masterplan-roadmap",
             "topics": [
