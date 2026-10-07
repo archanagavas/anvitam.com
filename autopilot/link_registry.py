@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "The Ancient Plaster Nobody Remembers That Can Still Outlast Cement by 4,000 Years",
+            "url": "https://www.anvitam.com/blog/the-ancient-plaster-that-can-outlast-cement-4000-years",
+            "topics": [
+                "natural plaster",
+                "lime plaster",
+                "surkhi",
+                "tadelakt"
+            ],
+            "suggested_anchors": [
+                "our guide on the ancient plaster nobody remembers that can still outlast cement by 4,000 years",
+                "The Ancient Plaster Nobody Remembers That Can Still Outlast Cement by 4,000 Years"
+            ]
+        },
+        {
             "title": "If You Bought 2 Acres of Land: The 5\u2011Step Water\u2011Autonomy Roadmap Before Hiring a Contractor",
             "url": "https://www.anvitam.com/blog/if-you-bought-2-acres-land-water-autonomy-roadmap",
             "topics": [

@@ -58,21 +58,21 @@ DRAFT TO AUDIT:
 - Title: {draft.get('title')}
 - Meta Description: {draft.get('meta_description')}
 - Suggested Slug: {draft.get('slug')}
-- Word Count: {word_count} words (Requirement: Minimum 1,000 to 1,600 words)
+- Word Count: {word_count} words (Strict Requirement: Minimum 1,500 to 2,400 words matching Archana's standard)
 - Full HTML Content:
-{content[:6000]}
+{content[:8000]}
 
 FAQ Count: {len(draft.get('faqs', []))}
 Banned AI Slop Detected: {json.dumps(slop_found)}
 Mechanical Link Slop Detected: {json.dumps(link_slop_found)}
 
 AUDIT CRITERIA (100 TOTAL POINTS):
-1. AEO / Direct Answer Moat (20 pts): Does the opening 120 words provide an immediate, unambiguous answer to '{strategy_brief.get('primary_keyword')}' with clear numbers, metrics, and summary answer?
-2. Empirical Depth & Technical Moat (25 pts): Does the content include real engineering specifications, thermal lag data, soil physics (black cotton clay vs laterite), or specific dimensions? Or does it read like a junior writer re-summarizing Wikipedia?
-3. Comprehensive Length & Substance (20 pts): Is this a true, comprehensive master guide? If word count is under 900 words, DEDUCT 15 POINTS IMMEDIATELY. Each section needs 2-4 rich paragraphs, not single-line summaries.
-4. Archana's "Raw Mentor" Voice & Anti-Slop (15 pts): Are paragraphs concise (1-3 sentences) with generous breathing room? Is it direct, warm, and authentic? Are AI clichés completely absent?
+1. AEO / Direct Answer Moat (20 pts): Does the opening 120 words provide an immediate, unambiguous answer to '{strategy_brief.get('primary_keyword')}' with clear numbers, metrics, and sequential roadmap?
+2. Empirical Depth & Technical Moat (25 pts): Does the content include real engineering specifications, thermal lag data, soil physics (black cotton clay vs laterite vs basalt), exact volume mix ratios, site tests (jar/sausage tests), or specific dimensions? If it reads like a junior writer re-summarizing Wikipedia, score under 10/25.
+3. Comprehensive Length & Substance (20 pts): Is this a true, master-grade guide matching Archana's Ancient Plaster standard? If word count is under 1,300 words, DEDUCT 15 POINTS IMMEDIATELY. Each section needs 3-5 rich paragraphs, not single-line summaries.
+4. Archana's "Raw Mentor" Voice & Anti-Slop (15 pts): Are paragraphs concise (1-3 sentences) with generous breathing room? Is it direct, warm, and authentic? Are AI clichés completely absent? Does it sign off with 'Archana ❤️' and a heartfelt P.S.?
 5. ZERO Mechanical Link Spam (10 pts): Are robotic formulas like "For more information, visit our..." or "To learn more..." 100% ABSENT? Automatic failure (<70 score) if mechanical link sentences exist.
-6. Local Town Specificity (10 pts): Does it speak specifically to the soil, climate, and construction realities of {strategy_brief.get('target_town')}?
+6. Local Town Specificity (10 pts): Does it speak specifically to the soil, climate, microclimates, and construction realities of {strategy_brief.get('target_town')}?
 
 PASS THRESHOLD: 92/100.
 If score < 92, you MUST specify 2 to 4 concrete, actionable things the writer must fix in the next iteration.
