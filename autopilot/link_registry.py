@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "If You Bought 2-10 Acres of Land in Coorg: The 5-Step Masterplan Roadmap for a Luxury Coffee Farmstay",
+            "url": "https://www.anvitam.com/blog/if-you-bought-2-10-acres-land-coorg-masterplan-roadmap",
+            "topics": [
+                "coorg",
+                "luxury coffee farmstay",
+                "permaculture masterplan",
+                "sustainable architecture"
+            ],
+            "suggested_anchors": [
+                "our guide on if you bought 2-10 acres of land in coorg",
+                "If You Bought 2-10 Acres of Land in Coorg: The 5-Step Masterplan Roadmap for a Luxury Coffee Farmstay"
+            ]
+        },
+        {
             "title": "Building in Goa: The Ultimate Guide to Luxury Eco-Resorts and Biophilic Weekend Villas",
             "url": "https://www.anvitam.com/blog/building-in-goa-ultimate-guide",
             "topics": [
