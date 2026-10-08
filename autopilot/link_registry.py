@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "If You Bought Land in 45\u00b0C Heat: The 5-Step EAT Sizing Roadmap Before You Dig",
+            "url": "https://www.anvitam.com/blog/earth-air-tunnel-sizing-cost-45c-heat-alibaug-goa",
+            "topics": [
+                "you",
+                "bought",
+                "land",
+                "heat"
+            ],
+            "suggested_anchors": [
+                "our guide on if you bought land in 45\u00b0c heat",
+                "If You Bought Land in 45\u00b0C Heat: The 5-Step EAT Sizing Roadmap Before You Dig"
+            ]
+        },
+        {
             "title": "If You Bought 1\u20113 Acres Near Bangalore: The 5\u2011Step Water\u2011Autonomy Masterplan Before You Dig a Concrete Tank",
             "url": "https://www.anvitam.com/blog/if-you-bought-1-3-acres-bangalore-water-autonomy-masterplan",
             "topics": [
