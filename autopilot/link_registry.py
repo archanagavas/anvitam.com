@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "If You Bought 1\u20113 Acres Near Bangalore: The 5\u2011Step Water\u2011Autonomy Masterplan Before You Dig a Concrete Tank",
+            "url": "https://www.anvitam.com/blog/if-you-bought-1-3-acres-bangalore-water-autonomy-masterplan",
+            "topics": [
+                "you",
+                "bought",
+                "acres",
+                "near"
+            ],
+            "suggested_anchors": [
+                "our guide on if you bought 1\u20113 acres near bangalore",
+                "If You Bought 1\u20113 Acres Near Bangalore: The 5\u2011Step Water\u2011Autonomy Masterplan Before You Dig a Concrete Tank"
+            ]
+        },
+        {
             "title": "The Ancient Plaster Nobody Remembers That Can Still Outlast Cement by 4,000 Years",
             "url": "https://www.anvitam.com/blog/the-ancient-plaster-that-can-outlast-cement-4000-years",
             "topics": [
