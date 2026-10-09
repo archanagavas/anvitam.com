@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "DEWATS for Luxury Rural Villas: The Zero-Electricity Masterplan for Alibaug, Goa & Gujarat",
+            "url": "https://www.anvitam.com/blog/dewats-luxury-rural-villas-zero-electricity-masterplan",
+            "topics": [
+                "dewats",
+                "luxury",
+                "rural",
+                "villas"
+            ],
+            "suggested_anchors": [
+                "our guide on dewats for luxury rural villas",
+                "DEWATS for Luxury Rural Villas: The Zero-Electricity Masterplan for Alibaug, Goa & Gujarat"
+            ]
+        },
+        {
             "title": "If You Bought 2 Acres in Western India: The 5-Step Keyline Roadmap to Capture 100% of Monsoon Rain",
             "url": "https://www.anvitam.com/blog/keyline-design-indian-farmsteads-capturing-100-monsoon-rainfall",
             "topics": [
