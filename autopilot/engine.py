@@ -241,10 +241,9 @@ class AutopilotEngine:
                 records_markdown.append(f"## Asset {idx}: [{slot}] {p_type} — {concept}\n")
                 records_markdown.append(f"**Visual Prompt / Asset:** `{post_img_concept}`  \n**Image:** {post_img_url}\n\n")
                 records_markdown.append(f"### LinkedIn / Longform (SLAY Format)\n```\n{full_text}\n\n{cta}\n```\n")
-                if post.get("twitter_text"):
-                    records_markdown.append(f"### Twitter / X & Bluesky (≤275 Chars)\n```\n{post.get('twitter_text')}\n```\n")
-                if post.get("threads_text"):
-                    records_markdown.append(f"### Threads / Mastodon (≤450 Chars)\n```\n{post.get('threads_text')}\n```\n")
+                x_post_record = post.get("twitter_text") or post.get("threads_text")
+                if x_post_record:
+                    records_markdown.append(f"### X / Threads / Bluesky / Mastodon Format (Complete, ≤275 Chars)\n```\n{x_post_record}\n```\n")
                 records_markdown.append(f"**Syndication Status:** {json.dumps(res)}\n\n---\n")
 
                 # Respect platform rate limits between rapid social dispatches

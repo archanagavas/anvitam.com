@@ -376,10 +376,32 @@ Return strictly a valid JSON object matching this schema:
         """
         if isinstance(post_data, dict):
             facebook_text = post_data.get("facebook_story") or post_data.get("text") or post_data.get("linkedin_post", "")
-            twitter_text = post_data.get("twitter_text") or facebook_text[:270]
-            threads_text = post_data.get("threads_text") or facebook_text[:450]
-            bluesky_text = post_data.get("bluesky_text") or twitter_text[:275]
-            mastodon_text = post_data.get("mastodon_text") or threads_text[:480]
+
+            # 1. Format complete X post (<=275 chars, double spaced, no trailing ellipses)
+            raw_x = (post_data.get("twitter_text") or post_data.get("x_text") or "").strip()
+            if raw_x.endswith(("…", "...")):
+                raw_x = raw_x.rstrip("…. ").strip()
+                if not raw_x.endswith((".", "?", "!")):
+                    raw_x += "."
+
+            if not raw_x:
+                concept = post_data.get("concept") or post_data.get("title") or "Ecological Architecture"
+                concept = concept.strip().rstrip(".")
+                cta_q = post_data.get("cta") or "Are you building with physics or contractor guesswork?"
+                raw_x = f"{concept}.\n\nEmpirical engineering beats contractor shortcuts.\n\n{cta_q}"
+
+            if len(raw_x) > 275:
+                raw_x = raw_x[:270].rsplit(" ", 1)[0] + "."
+
+            # 2. Per user directive: Threads, Mastodon, and Bluesky share this complete formatted X post
+            twitter_text = raw_x
+            bluesky_text = post_data.get("bluesky_text") or raw_x
+            threads_text = raw_x
+            mastodon_text = raw_x
+
+            if bluesky_text.strip().endswith(("…", "...")):
+                bluesky_text = raw_x
+
             cta_text = post_data.get("cta", "")
             if cta_text and cta_text not in facebook_text:
                 facebook_text = f"{facebook_text}\n\n{cta_text}"
@@ -391,28 +413,32 @@ Return strictly a valid JSON object matching this schema:
             if "- Archana" not in facebook_text:
                 facebook_text = f"{facebook_text}\n\n- Archana ❤️"
             linkedin_text = facebook_text
-            # Create clean short versions for Twitter and Bluesky if length exceeds limits
-            if len(facebook_text) > 275:
-                paragraphs = [p.strip() for p in facebook_text.split("\n\n") if p.strip()]
-                hook = paragraphs[0] if paragraphs else facebook_text[:120]
-                question = paragraphs[-1] if len(paragraphs) > 1 and "?" in paragraphs[-1] else ""
-                short_candidate = f"{hook}\n\n{question}".strip()
-                if len(short_candidate) <= 275 and len(short_candidate) > 50:
-                    twitter_text = short_candidate
-                else:
-                    twitter_text = facebook_text[:265] + "…"
-            else:
-                twitter_text = facebook_text
 
-            threads_text = facebook_text[:440] + "…" if len(facebook_text) > 450 else facebook_text
-            bluesky_text = twitter_text[:275]
-            mastodon_text = facebook_text[:475] + "…" if len(facebook_text) > 485 else facebook_text
+            # Create clean, complete short version formatted as X post
+            paragraphs = [p.strip() for p in facebook_text.split("\n\n") if p.strip()]
+            hook = paragraphs[0] if paragraphs else facebook_text[:120]
+            if len(hook) > 130:
+                hook = hook[:125].rsplit(" ", 1)[0] + "."
+            question = paragraphs[-1] if len(paragraphs) > 1 and "?" in paragraphs[-1] else "Are you building with physics or contractor guesswork?"
+            if len(question) > 90:
+                question = question[:85].rsplit(" ", 1)[0] + "?"
 
-        self.logger.info(f"Syndication Hub: Dispatching Archana's story to Facebook & channels (Story: {len(facebook_text)} chars, X: {len(twitter_text)} chars, Image: {bool(image_url)})...")
+            x_candidate = f"{hook}\n\nEmpirical engineering beats contractor shortcuts.\n\n{question}"
+            if len(x_candidate) > 275:
+                x_candidate = f"{hook}\n\n{question}"
+            if len(x_candidate) > 275:
+                x_candidate = hook[:260].rsplit(" ", 1)[0] + "."
+
+            twitter_text = x_candidate
+            bluesky_text = x_candidate
+            threads_text = x_candidate
+            mastodon_text = x_candidate
+
+        self.logger.info(f"Syndication Hub: Dispatching Archana's story & X-formatted posts across socials (Story: {len(facebook_text)} chars, X/Threads/Mastodon/Bluesky: {len(twitter_text)} chars, Image: {bool(image_url)})...")
 
         if dry_run:
             self.logger.info(f"[DRY-RUN] Simulating dispatch of social asset: '{facebook_text[:60]}...'")
-            return {"status": "simulated", "platforms": ["buffer", "bluesky", "mastodon", "tumblr"]}
+            return {"status": "simulated", "platforms": ["buffer", "bluesky", "mastodon", "threads", "tumblr"]}
 
         results = {}
         import os
@@ -436,7 +462,7 @@ Return strictly a valid JSON object matching this schema:
                 image_url=image_url
             )
 
-        # 2. Bluesky (Strictly <= 280 chars)
+        # 2. Bluesky (Strictly <= 280 chars, formatted as X post)
         if not platforms or "bluesky" in platforms:
             results["bluesky"] = self.bluesky.publish(
                 text=bluesky_text,
@@ -444,14 +470,24 @@ Return strictly a valid JSON object matching this schema:
                 image_url=image_url
             )
 
-        # 3. Mastodon (Strictly <= 490 chars)
+        # 3. Mastodon (Strictly <= 490 chars, formatted as X post with optional image)
         if not platforms or "mastodon" in platforms:
             results["mastodon"] = self.mastodon.publish(
                 status_text=mastodon_text,
-                link_url=link_url
+                link_url=link_url,
+                image_url=image_url
             )
 
-        # 4. Tumblr (Rich HTML with proper spacing + image)
+        # 4. Meta Threads (Direct API dispatch if configured)
+        if (not platforms or "threads" in platforms) and os.getenv("THREADS_ACCESS_TOKEN") and os.getenv("THREADS_USER_ID"):
+            buffer_has_threads = bool(results.get("buffer", {}).get("published") and any(p.get("service") == "threads" for p in results["buffer"]["published"]))
+            if not buffer_has_threads:
+                results["threads"] = self.threads.publish(
+                    text=threads_text,
+                    image_url=image_url
+                )
+
+        # 5. Tumblr (Rich HTML with proper spacing + image)
         if not platforms or "tumblr" in platforms:
             html_parts = []
             if image_url:
@@ -465,7 +501,7 @@ Return strictly a valid JSON object matching this schema:
                 tags=["architecture", "ecologicaldesign", "permaculture", "rammedearth"]
             )
 
-        # 5. Google Business Profile (Direct Local Post if configured)
+        # 6. Google Business Profile (Direct Local Post if configured)
         if (not platforms or "google_business" in platforms) and os.getenv("GOOGLE_BUSINESS_REFRESH_TOKEN"):
             results["google_business"] = self.google_business.publish_local_post(
                 text=f"{title}\n\n{threads_text}" if title else threads_text,

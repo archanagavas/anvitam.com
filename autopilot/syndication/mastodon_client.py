@@ -13,10 +13,11 @@ class MastodonClient:
     def publish(
         self,
         status_text: str,
-        link_url: Optional[str] = None
+        link_url: Optional[str] = None,
+        image_url: Optional[str] = None
     ) -> Dict[str, Any]:
         """
-        Publishes a status update to Mastodon instance.
+        Publishes a status update to Mastodon instance with optional architectural image.
         """
         if not MASTODON_ACCESS_TOKEN:
             self.logger.warning("Mastodon credentials not configured (MASTODON_ACCESS_TOKEN). Skipping.")
@@ -34,8 +35,30 @@ class MastodonClient:
             if link_url and link_url not in full_status:
                 full_status = f"{status_text}\n\nRead full architectural breakdown: {link_url}"
 
+            media_ids = []
+            if image_url:
+                try:
+                    import requests, tempfile, os
+                    img_resp = requests.get(image_url, timeout=15)
+                    if img_resp.status_code == 200:
+                        with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
+                            tmp.write(img_resp.content)
+                            tmp_path = tmp.name
+                        media_dict = mastodon.media_post(tmp_path)
+                        if media_dict and "id" in media_dict:
+                            media_ids.append(media_dict["id"])
+                        try:
+                            os.remove(tmp_path)
+                        except Exception:
+                            pass
+                except Exception as me:
+                    self.logger.warning(f"Mastodon image upload notice: {me}")
+
             # Mastodon standard limit is 500 characters
-            toot = mastodon.status_post(status=full_status[:495])
+            toot = mastodon.status_post(
+                status=full_status[:495],
+                media_ids=media_ids if media_ids else None
+            )
             self.logger.info(f"Published to Mastodon successfully: {toot.get('url')}")
             return {"platform": "mastodon", "status": "success", "url": toot.get("url")}
         except Exception as e:
