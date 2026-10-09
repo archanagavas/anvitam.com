@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "If You Bought 2 Acres in Western India: The 5-Step Keyline Roadmap to Capture 100% of Monsoon Rain",
+            "url": "https://www.anvitam.com/blog/keyline-design-indian-farmsteads-capturing-100-monsoon-rainfall",
+            "topics": [
+                "you",
+                "bought",
+                "acres",
+                "western"
+            ],
+            "suggested_anchors": [
+                "our guide on if you bought 2 acres in western india",
+                "If You Bought 2 Acres in Western India: The 5-Step Keyline Roadmap to Capture 100% of Monsoon Rain"
+            ]
+        },
+        {
             "title": "If You Bought Land in 45\u00b0C Heat: The 5-Step EAT Sizing Roadmap Before You Dig",
             "url": "https://www.anvitam.com/blog/earth-air-tunnel-sizing-cost-45c-heat-alibaug-goa",
             "topics": [
