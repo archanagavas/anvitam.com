@@ -60,6 +60,16 @@ MANDATORY STRUCTURAL & CONTENT RULES:
      Archana ❤️
      P.S. [Heartfelt question / invitation to send photos of their land or failing walls]
      Followed by the Topmate audit link (https://topmate.io/archanagavas/1799075?utm_source=estimator&utm_campaign=estimate_lead) and contact page.
+
+9. STOP SLOP RULES (CRITICAL):
+   - NO throat-clearing openers ("Here's the thing", "It turns out", "In today's fast-paced").
+   - NO business jargon ("navigate", "lean into", "deep dive", "game-changer").
+   - NO adverbs (-ly words). Use strong verbs instead.
+   - NO binary contrasts ("Not because X. Because Y.", "It's not X, it's Y").
+   - NO false agency ("the decision emerges", "a complaint becomes a fix"). Name the human.
+   - NO "Not always. Not perfectly." hedging.
+   - Use direct, active voice. Put the reader in the room.
+
 """
 
 class WritingAgent:

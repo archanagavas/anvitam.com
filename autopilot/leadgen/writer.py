@@ -68,8 +68,7 @@ def craft_landowner_lead_email(lead: Dict[str, Any], gender: str = "neutral") ->
     Private Landowners, Farmstead Owners & Acreage Buyers.
     Anvitam Architecture & Ecological Design: Farmhouses, Weekend Villas & Permaculture Masterplanning.
     """
-    first_name = lead.get("contact_name", "").split()[0] if lead.get("contact_name") and lead.get("contact_name") not in ["Project Lead", "there"] else "there"
-    location = lead.get("location") or "your land"
+        location = lead.get("location") or "your land"
     terrain = extract_terrain_context(lead)
 
     if terrain == "coastal":
@@ -88,7 +87,7 @@ def craft_landowner_lead_email(lead: Dict[str, Any], gender: str = "neutral") ->
         site_nuance = "passive cooling, water harvesting, and villa layouts that sit naturally on the landscape"
         subject = f"Architectural design for your land in {location}"
 
-    body = f"""Hi {first_name}, hope you're having a great week.
+    body = f"""Hi,
 
 I'm Archana, an architect specializing in ecological farm retreats, weekend villas, and land masterplanning.
 
@@ -98,7 +97,7 @@ If you're exploring what to build on your parcel and want a second set of eyes o
 
 A few recent villa and farm retreat projects: {PORTFOLIO_URL}
 
-If you're not planning to build right now, completely understand. Feel free to keep our portfolio handy down the road. Are you thinking about developing the land this year?
+If you're not planning to build right now, completely understand. Keep our portfolio handy.
 
 Warmly,
 {ARCHANA_NAME}
@@ -113,13 +112,12 @@ def craft_developer_lead_email(lead: Dict[str, Any], gender: str = "neutral") ->
     Estate Developers, Land Subdividers & Community Masterplanners.
     Anvitam Architecture & Ecological Design: Sustainable Masterplans, Villa Typologies & Infrastructure.
     """
-    first_name = lead.get("contact_name", "").split()[0] if lead.get("contact_name") and lead.get("contact_name") not in ["Project Lead", "there"] else "there"
-    org_name = lead.get("organization") or lead.get("company") or "your team"
+        org_name = lead.get("organization") or lead.get("company") or "your team"
     location = lead.get("location") or "your region"
 
     subject = f"Ecological masterplanning & villa concepts for {org_name}"
 
-    body = f"""Hi {first_name}, hope you're having a productive week.
+    body = f"""Hi,
 
 I'm Archana, an architect specializing in ecological masterplanning, farm retreat communities, and bioclimatic villa typologies.
 
@@ -129,7 +127,7 @@ If you're currently evaluating an upcoming parcel or masterplan layout, I'd be g
 
 A few recent masterplan and villa projects: {PORTFOLIO_URL}
 
-If your masterplanning is already set for this cycle, no worries at all. Feel free to keep us in mind for future phases. Are you launching any new acreage projects this year?
+If your masterplanning is already set for this cycle, no worries at all. Keep us in mind for future phases.
 
 Warmly,
 {ARCHANA_NAME}
@@ -144,14 +142,13 @@ def craft_media_press_email(lead: Dict[str, Any]) -> Dict[str, str]:
     Architecture Press, Sustainability Media & Editorial Desks (Backlink Outreach).
     Shares real empirical research case studies (rammed earth, passive cooling, constructed wetlands).
     """
-    first_name = lead.get("contact_name", "").split()[0] if lead.get("contact_name") and lead.get("contact_name") not in ["Editorial Desk", "Features Editor", "Project Lead", "there"] else "there"
-    org_name = lead.get("company") or lead.get("organization") or "your publication"
+        org_name = lead.get("company") or lead.get("organization") or "your publication"
     pitch_angle = lead.get("pitch_angle") or "Empirical study on passive bioclimatic cooling and rammed earth vs. conventional RCC in Western India"
 
     story_topic = pitch_angle.split(":")[0] if ":" in pitch_angle else "Ecological Architecture Research"
     subject = f"Editorial story pitch for {org_name}: {story_topic}"
 
-    body = f"""Hi {first_name}, hope you're having a good week.
+    body = f"""Hi,
 
 I'm Archana, principal architect at Anvitam Architecture & Ecological Design. I've been following {org_name}'s coverage on sustainable habitats and vernacular building.
 
@@ -161,7 +158,7 @@ We have the high-res photography, thermal data sets, and architectural working d
 
 A brief look at our completed work: {PORTFOLIO_URL}
 
-If your editorial lineup is currently full, no problem at all. Feel free to keep us in mind for future ecological design stories.
+If your editorial lineup is currently full, no problem at all. Keep us in mind for future ecological design stories.
 
 Warmly,
 {ARCHANA_NAME}
@@ -177,8 +174,7 @@ def craft_realtor_lead_email(lead: Dict[str, Any], gender: str = "neutral") -> D
     Anvitam Architecture & Ecological Design: Farm Retreats, Weekend Villas & Masterplanning.
     Tone: Warm, human, peer-to-peer, zero sales pressure, generous perk, graceful exit.
     """
-    first_name = lead.get("contact_name", "").split()[0] if lead.get("contact_name") and lead.get("contact_name") not in ["Project Lead", "there"] else "there"
-    org_name = lead.get("organization") or lead.get("company") or "your team"
+        org_name = lead.get("organization") or lead.get("company") or "your team"
     location = lead.get("location") or "your area"
     terrain = extract_terrain_context(lead)
 
@@ -200,7 +196,7 @@ def craft_realtor_lead_email(lead: Dict[str, Any], gender: str = "neutral") -> D
 
     subject = f"Architectural & land masterplanning for {org_name}"
 
-    body = f"""Hi {first_name}, hope you're having a great week.
+    body = f"""Hi,
 
 I'm Archana, an architect specializing in ecological farm retreats, weekend villas, and land masterplanning.
 
@@ -210,7 +206,7 @@ If you or a client are ever sizing up a tricky parcel and want a quick second se
 
 A few recent retreat and villa projects: {PORTFOLIO_URL}
 
-If you don't have anything on your desk right now, no worries at all. Feel free to keep us in mind down the road. Are you seeing much interest in acreage or retreat plots this season?
+If you don't have anything on your desk right now, no worries at all. Keep us in mind.
 
 Warmly,
 {ARCHANA_NAME}
@@ -225,12 +221,11 @@ def craft_hospitality_lead_email(lead: Dict[str, Any], gender: str = "neutral") 
     Week 2: Cafes, Restaurants & Boutique Hospitality.
     Anvitam Architecture & Ecological Design: Biophilic Interiors, Courtyard Airflow & Natural Materials.
     """
-    first_name = lead.get("contact_name", "").split()[0] if lead.get("contact_name") and lead.get("contact_name") not in ["Project Lead", "there"] else "there"
-    org_name = lead.get("organization") or lead.get("company") or "your venue"
+        org_name = lead.get("organization") or lead.get("company") or "your venue"
 
     subject = f"Biophilic spatial design & natural airflow for {org_name}"
 
-    body = f"""Hi {first_name}, hope you're having a good week.
+    body = f"""Hi,
 
 I'm Archana, an architect specializing in biophilic spaces, natural material palettes (earth, lime, and timber), and indoor-outdoor dining flow.
 
@@ -255,8 +250,7 @@ def craft_retreat_lead_email(lead: Dict[str, Any], gender: str = "neutral") -> D
     Week 3: Eco-Resorts, Wellness Retreats & Agritourism Estates.
     Anvitam Architecture & Ecological Design: Passive-Cooled Cottages, Closed-Loop Water & Food Forests.
     """
-    first_name = lead.get("contact_name", "").split()[0] if lead.get("contact_name") and lead.get("contact_name") not in ["Project Lead", "there"] else "there"
-    org_name = lead.get("organization") or lead.get("company") or "your retreat"
+        org_name = lead.get("organization") or lead.get("company") or "your retreat"
     terrain = extract_terrain_context(lead)
 
     if terrain == "coastal":
@@ -270,7 +264,7 @@ def craft_retreat_lead_email(lead: Dict[str, Any], gender: str = "neutral") -> D
 
     subject = f"Ecological masterplanning & retreat design for {org_name}"
 
-    body = f"""Hi {first_name}, hope you're having a wonderful week.
+    body = f"""Hi,
 
 I'm Archana, an architect specializing in {retreat_context}.
 
@@ -280,7 +274,7 @@ If you're ever planning a new phase, adding guest villas, or looking at land exp
 
 A few recent farm retreat projects: {PORTFOLIO_URL}
 
-If you're not building or expanding right now, completely understand. Feel free to keep our portfolio handy down the road. Are you working on any new projects this season?
+If you're not building or expanding right now, completely understand. Keep our portfolio handy.
 
 Warmly,
 {ARCHANA_NAME}
@@ -295,12 +289,11 @@ def craft_architect_lead_email(lead: Dict[str, Any], gender: str = "neutral") ->
     Week 4: Architectural Studios & Design-Build Practices.
     Anvitam Architecture & Ecological Design: Bioclimatic Collaboration, 3D Modeling & Drawing Support.
     """
-    first_name = lead.get("contact_name", "").split()[0] if lead.get("contact_name") and lead.get("contact_name") not in ["Project Lead", "there"] else "there"
-    org_name = lead.get("organization") or lead.get("company") or "your studio"
+        org_name = lead.get("organization") or lead.get("company") or "your studio"
 
     subject = f"Design collaboration & 3D documentation with {org_name}"
 
-    body = f"""Hi {first_name}, hope you're having a productive week.
+    body = f"""Hi,
 
 I'm Archana, principal architect at Anvitam. We specialize in bioclimatic architecture, ecological masterplanning, and detailed 3D design documentation.
 
@@ -325,13 +318,12 @@ def craft_procurement_rfp_email(lead: Dict[str, Any]) -> Dict[str, str]:
     Refurbishment, Heritage & Public Tenders.
     Anvitam Architecture & Ecological Design: Bioclimatic & Heritage Architecture, Space Planning.
     """
-    first_name = lead.get("contact_name", "").split()[0] if lead.get("contact_name") and lead.get("contact_name") not in ["Public Body", "Project Lead", "there"] else "there"
-    org_name = lead.get("organization") or lead.get("company") or "your team"
+        org_name = lead.get("organization") or lead.get("company") or "your team"
     project_title = lead.get("project_title", "architectural and refurbishment project")
 
     subject = f"Architectural & space planning support for {org_name}"
 
-    body = f"""Hi {first_name}, hope you're well.
+    body = f"""Hi,
 
 I'm Archana, principal architect at Anvitam Architecture & Ecological Design.
 
