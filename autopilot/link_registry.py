@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "Water Independence Calculation for Rural Villas: The Exact Hydro-Structural Math for Alibaug",
+            "url": "https://www.anvitam.com/blog/water-independence-calculation-rural-villas-alibaug",
+            "topics": [
+                "water",
+                "independence",
+                "calculation",
+                "rural"
+            ],
+            "suggested_anchors": [
+                "our guide on water independence calculation for rural villas",
+                "Water Independence Calculation for Rural Villas: The Exact Hydro-Structural Math for Alibaug"
+            ]
+        },
+        {
             "title": "Green Roof Drainage Sizing for 3,000mm Rainfall: The Exact Calculation for Alibaug & Goa",
             "url": "https://www.anvitam.com/blog/green-roof-drainage-sizing-3000mm-rainfall-alibaug-goa",
             "topics": [
