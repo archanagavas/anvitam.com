@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "Green Roof Drainage Sizing for 3,000mm Rainfall: The Exact Calculation for Alibaug & Goa",
+            "url": "https://www.anvitam.com/blog/green-roof-drainage-sizing-3000mm-rainfall-alibaug-goa",
+            "topics": [
+                "green",
+                "roof",
+                "drainage",
+                "sizing"
+            ],
+            "suggested_anchors": [
+                "our guide on green roof drainage sizing for 3,000mm rainfall",
+                "Green Roof Drainage Sizing for 3,000mm Rainfall: The Exact Calculation for Alibaug & Goa"
+            ]
+        },
+        {
             "title": "DEWATS for Luxury Rural Villas: The Zero-Electricity Masterplan for Alibaug, Goa & Gujarat",
             "url": "https://www.anvitam.com/blog/dewats-luxury-rural-villas-zero-electricity-masterplan",
             "topics": [
