@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "Stabilized Rammed Earth vs RCC: The 100-Year Cost Truth for Coastal India",
+            "url": "https://www.anvitam.com/blog/stabilized-rammed-earth-vs-rcc-coastal-india-cost",
+            "topics": [
+                "stabilized",
+                "rammed",
+                "earth",
+                "rcc"
+            ],
+            "suggested_anchors": [
+                "our guide on stabilized rammed earth vs rcc",
+                "Stabilized Rammed Earth vs RCC: The 100-Year Cost Truth for Coastal India"
+            ]
+        },
+        {
             "title": "Water Independence Calculation for Rural Villas: The Exact Hydro-Structural Math for Alibaug",
             "url": "https://www.anvitam.com/blog/water-independence-calculation-rural-villas-alibaug",
             "topics": [
