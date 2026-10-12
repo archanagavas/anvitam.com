@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "The 1.8-Meter Eave: Passive Cooling Math for Western India Villas",
+            "url": "https://www.anvitam.com/blog/passive-cooling-eave-depth-calculator-western-india-villas",
+            "topics": [
+                "meter",
+                "eave",
+                "passive",
+                "cooling"
+            ],
+            "suggested_anchors": [
+                "our guide on the 1.8-meter eave",
+                "The 1.8-Meter Eave: Passive Cooling Math for Western India Villas"
+            ]
+        },
+        {
             "title": "Stabilized Rammed Earth vs RCC: The 100-Year Cost Truth for Coastal India",
             "url": "https://www.anvitam.com/blog/stabilized-rammed-earth-vs-rcc-coastal-india-cost",
             "topics": [
