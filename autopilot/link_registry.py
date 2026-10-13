@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "If You Bought 2 Acres in Alibaug: The 18\u2011Month Masterplan Roadmap for an Eco\u2011Villa",
+            "url": "https://www.anvitam.com/blog/if-you-bought-2-acres-alibaug-eco-villa-masterplan",
+            "topics": [
+                "you",
+                "bought",
+                "acres",
+                "alibaug"
+            ],
+            "suggested_anchors": [
+                "our guide on if you bought 2 acres in alibaug",
+                "If You Bought 2 Acres in Alibaug: The 18\u2011Month Masterplan Roadmap for an Eco\u2011Villa"
+            ]
+        },
+        {
             "title": "The Eco-Resort CapEx Trap: Why 'Green' Costs Less and Earns More in Alibaug & Goa",
             "url": "https://www.anvitam.com/blog/eco-resort-capex-revpar-economics-india",
             "topics": [
