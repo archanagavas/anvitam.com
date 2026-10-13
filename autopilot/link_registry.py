@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "The Eco-Resort CapEx Trap: Why 'Green' Costs Less and Earns More in Alibaug & Goa",
+            "url": "https://www.anvitam.com/blog/eco-resort-capex-revpar-economics-india",
+            "topics": [
+                "eco",
+                "resort",
+                "capex",
+                "trap"
+            ],
+            "suggested_anchors": [
+                "our guide on the eco-resort capex trap",
+                "The Eco-Resort CapEx Trap: Why 'Green' Costs Less and Earns More in Alibaug & Goa"
+            ]
+        },
+        {
             "title": "The 1.8-Meter Eave: Passive Cooling Math for Western India Villas",
             "url": "https://www.anvitam.com/blog/passive-cooling-eave-depth-calculator-western-india-villas",
             "topics": [
