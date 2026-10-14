@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "Subsurface Root-Zone Wetland Sizing Calculator: The Odor-Free Sewage Math for Western India",
+            "url": "https://www.anvitam.com/blog/subsurface-root-zone-wetland-sizing-calculator-odor-free-sewage",
+            "topics": [
+                "subsurface",
+                "root",
+                "zone",
+                "wetland"
+            ],
+            "suggested_anchors": [
+                "our guide on subsurface root-zone wetland sizing calculator",
+                "Subsurface Root-Zone Wetland Sizing Calculator: The Odor-Free Sewage Math for Western India"
+            ]
+        },
+        {
             "title": "Engineered Bamboo in Alibaug: The 50-Year Structural Truth for High-Moisture Coasts",
             "url": "https://www.anvitam.com/blog/engineered-bamboo-structural-life-alibaug-high-moisture",
             "topics": [
