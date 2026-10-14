@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "Engineered Bamboo in Alibaug: The 50-Year Structural Truth for High-Moisture Coasts",
+            "url": "https://www.anvitam.com/blog/engineered-bamboo-structural-life-alibaug-high-moisture",
+            "topics": [
+                "engineered",
+                "bamboo",
+                "alibaug",
+                "year"
+            ],
+            "suggested_anchors": [
+                "our guide on engineered bamboo in alibaug",
+                "Engineered Bamboo in Alibaug: The 50-Year Structural Truth for High-Moisture Coasts"
+            ]
+        },
+        {
             "title": "If You Bought 2 Acres in Alibaug: The 18\u2011Month Masterplan Roadmap for an Eco\u2011Villa",
             "url": "https://www.anvitam.com/blog/if-you-bought-2-acres-alibaug-eco-villa-masterplan",
             "topics": [
