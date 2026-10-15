@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "If You Bought 2 Acres of Land: The 5-Step Masterplan Roadmap Before Hiring a Contractor",
+            "url": "https://www.anvitam.com/blog/if-you-bought-2-acres-land-masterplan-roadmap",
+            "topics": [
+                "ecological architecture",
+                "alibaug",
+                "termitproofing",
+                "rammed earth"
+            ],
+            "suggested_anchors": [
+                "our guide on if you bought 2 acres of land",
+                "If You Bought 2 Acres of Land: The 5-Step Masterplan Roadmap Before Hiring a Contractor"
+            ]
+        },
+        {
             "title": "Regenerative Earthworks for Chemical-Damaged Farmland in Alibaug: The 5-Step Masterplan",
             "url": "https://www.anvitam.com/blog/regenerative-earthworks-chemical-damaged-farmland-alibaug",
             "topics": [
