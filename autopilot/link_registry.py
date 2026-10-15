@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "Regenerative Earthworks for Chemical-Damaged Farmland in Alibaug: The 5-Step Masterplan",
+            "url": "https://www.anvitam.com/blog/regenerative-earthworks-chemical-damaged-farmland-alibaug",
+            "topics": [
+                "regenerative",
+                "earthworks",
+                "chemical",
+                "damaged"
+            ],
+            "suggested_anchors": [
+                "our guide on regenerative earthworks for chemical-damaged farmland in alibaug",
+                "Regenerative Earthworks for Chemical-Damaged Farmland in Alibaug: The 5-Step Masterplan"
+            ]
+        },
+        {
             "title": "Subsurface Root-Zone Wetland Sizing Calculator: The Odor-Free Sewage Math for Western India",
             "url": "https://www.anvitam.com/blog/subsurface-root-zone-wetland-sizing-calculator-odor-free-sewage",
             "topics": [
