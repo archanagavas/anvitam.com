@@ -350,6 +350,20 @@ LINK_TAXONOMY = {
     ],
     "technical_engineering_and_architecture_blogs": [
         {
+            "title": "Alibaug Coastal Architecture: The 5-Step Corrosion-Resistant Masterplan",
+            "url": "https://www.anvitam.com/blog/alibaug-coastal-corrosion-resistant-architecture-masterplan",
+            "topics": [
+                "alibaug",
+                "coastal",
+                "architecture",
+                "step"
+            ],
+            "suggested_anchors": [
+                "our guide on alibaug coastal architecture",
+                "Alibaug Coastal Architecture: The 5-Step Corrosion-Resistant Masterplan"
+            ]
+        },
+        {
             "title": "If You Bought 2 Acres of Land: The 5-Step Masterplan Roadmap Before Hiring a Contractor",
             "url": "https://www.anvitam.com/blog/if-you-bought-2-acres-land-masterplan-roadmap",
             "topics": [
