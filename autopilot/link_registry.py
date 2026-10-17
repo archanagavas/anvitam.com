@@ -1,17 +1,15 @@
 """
 Anvitam Internal Link Registry & Contextual Matching Engine.
 Provides a comprehensive taxonomy of all real published URLs across Anvitam:
-- Services (15)
-- Projects & Case Studies (14)
-- Technical Blogs & Guides (13+)
-- Interactive Tools & Workshops (5)
-- Regional Destination Pages (6)
-- High-Value Conversion Anchors (2)
+- Approved Technical Blogs & Guides (12+)
+- Core Architectural & Retreat Services (15)
+- Real Projects & Case Studies (8)
+- Conversion Anchors (Topmate Audit & Contact)
 
 Enforces strict rules:
 1. Contextual matching only: links are selected based on the specific paragraph concept, never randomly.
 2. Natural anchor text: zero mechanical formulas ("click here", "for more info").
-3. Self-updating: automatically scans published_records and constants.ts to keep this file perpetually up to date.
+3. Self-updating: automatically registers newly published approved blogs.
 """
 
 import os
@@ -25,1283 +23,261 @@ logger = logging.getLogger("autopilot.link_registry")
 
 # ── TAXONOMY_START ────────────────────────────────────────────────────────────
 LINK_TAXONOMY = {
-    "architecture_and_retreat_services": [
+    "approved_existing_blogs": [
         {
-            "title": "Community & Activity Centers",
-            "url": "https://www.anvitam.com/services/community-center",
-            "topics": [
-                "community center",
-                "community & activity centers"
-            ],
-            "suggested_anchors": [
-                "Community & Activity Centers",
-                "sustainable community & activity centers"
-            ]
+            "title": "The Biggest Mistakes Indians Make When Starting a Terrace Garden",
+            "url": "https://www.anvitam.com/blog/the-biggest-mistakes-indians-make-when-starting-a-terrace-garden",
+            "topics": ["terrace garden mistakes", "balcony garden drainage", "urban rooftop garden waterproofing", "rooftop weight load"],
+            "suggested_anchors": ["the biggest mistakes made when starting a terrace garden", "our guide on avoiding terrace garden structural failures"]
         },
         {
-            "title": "Agrotourism & Farm Visits",
-            "url": "https://www.anvitam.com/services/agrotourism",
-            "topics": [
-                "agrotourism",
-                "agrotourism & farm visits"
-            ],
-            "suggested_anchors": [
-                "Agrotourism & Farm Visits",
-                "sustainable agrotourism & farm visits"
-            ]
+            "title": "India's Forgotten Earthquake-Resistant House Design: The Dhajji Dewari & Kath-Kuni Truth",
+            "url": "https://www.anvitam.com/blog/indias-forgotten-earthquake-resistant-house-design",
+            "topics": ["earthquake resistant architecture", "traditional timber frame", "vernacular structural engineering", "kath-kuni construction"],
+            "suggested_anchors": ["India's forgotten vernacular earthquake-resistant systems", "our analysis of traditional seismic timber framing"]
         },
         {
-            "title": "Weekend Villas & Getaways",
-            "url": "https://www.anvitam.com/services/weekend-villa",
-            "topics": [
-                "weekend villa",
-                "villa architecture",
-                "second home",
-                "alibaug villa"
-            ],
-            "suggested_anchors": [
-                "biophilic weekend villas",
-                "architectural weekend home design"
-            ]
+            "title": "Soil Degradation Is Killing Indian Farms — And How Permaculture Actually Fixes It",
+            "url": "https://www.anvitam.com/blog/soil-degradation-is-killing-indian-farms-and-how-permaculture-actually-fixes-it",
+            "topics": ["soil degradation", "permaculture soil regeneration", "chemical fertilizer damage", "subsoil microbial biology", "biochar"],
+            "suggested_anchors": ["how permaculture actually restores degraded farm soil", "our field report on reversing agricultural soil depletion"]
         },
         {
-            "title": "Farm Retreats & Farmhouses",
-            "url": "https://www.anvitam.com/services/farm-retreat",
-            "topics": [
-                "farmhouse",
-                "farm retreat",
-                "rural estate",
-                "courtyard house"
-            ],
-            "suggested_anchors": [
-                "sustainable farm retreat architecture",
-                "regenerative farmstay planning"
-            ]
+            "title": "The Homestay Pricing Guide Nobody's Telling You: RevPAR Math for Rural Estates",
+            "url": "https://www.anvitam.com/blog/the-homestay-pricing-guide-nobodys-telling-you",
+            "topics": ["homestay pricing", "rural estate ROI", "farmstay occupancy", "vacation rental RevPAR math"],
+            "suggested_anchors": ["the realistic homestay pricing math nobody discusses", "our rural farmstay revenue and pricing breakdown"]
         },
         {
-            "title": "Wellness & Yoga Retreats",
-            "url": "https://www.anvitam.com/services/wellness-retreat",
-            "topics": [
-                "wellness retreat",
-                "natural swimming pool",
-                "living pool",
-                "chlorine-free pool"
-            ],
-            "suggested_anchors": [
-                "chemical-free living swimming pools",
-                "wellness retreat masterplanning"
-            ]
-        },
-        {
-            "title": "Eco Resorts & Glamping",
-            "url": "https://www.anvitam.com/services/eco-resort",
-            "topics": [
-                "eco resort",
-                "glamping",
-                "tented camp",
-                "resort masterplan"
-            ],
-            "suggested_anchors": [
-                "eco-resort architecture",
-                "low-impact glamping masterplans"
-            ]
-        },
-        {
-            "title": "Homestays & Guest Houses",
-            "url": "https://www.anvitam.com/services/homestay",
-            "topics": [
-                "homestay",
-                "bed and breakfast",
-                "guest cottages",
-                "vernacular cottages"
-            ],
-            "suggested_anchors": [
-                "vernacular homestay design",
-                "guest cottage planning"
-            ]
-        },
-        {
-            "title": "Airbnb & Rental Stays",
-            "url": "https://www.anvitam.com/services/airbnb",
-            "topics": [
-                "airbnb architecture",
-                "vacation rental",
-                "rental villa ROI",
-                "high occupancy rental"
-            ],
-            "suggested_anchors": [
-                "high-yield boutique rental stays",
-                "architectural vacation rentals"
-            ]
-        },
-        {
-            "title": "Interior Design & Spatial Styling",
-            "url": "https://www.anvitam.com/services/interior-design",
-            "topics": [
-                "interior design",
-                "natural finishes",
-                "lime plaster",
-                "reclaimed wood"
-            ],
-            "suggested_anchors": [
-                "biophilic interior architecture",
-                "natural lime plaster interiors"
-            ]
-        },
-        {
-            "title": "Architecture & Design Consultation",
-            "url": "https://www.anvitam.com/services/architecture-consultation",
-            "topics": [
-                "consultation",
-                "pre-construction advice",
-                "site visit",
-                "land feasibility"
-            ],
-            "suggested_anchors": [
-                "architectural feasibility consultation",
-                "comprehensive site design review"
-            ]
-        }
-    ],
-    "landscape_permaculture_and_land_services": [
-        {
-            "title": "Permaculture & Land Masterplanning",
-            "url": "https://www.anvitam.com/services/permaculture-design",
-            "topics": [
-                "permaculture",
-                "swales",
-                "keyline hydrology",
-                "contour bunds"
-            ],
-            "suggested_anchors": [
-                "permaculture land masterplanning",
-                "regenerative site hydrology"
-            ]
-        },
-        {
-            "title": "Food Forests & Organic Orchards",
-            "url": "https://www.anvitam.com/services/food-forest",
-            "topics": [
-                "food forest",
-                "syntropic farming",
-                "orchard",
-                "fruit guilds"
-            ],
-            "suggested_anchors": [
-                "syntropic food forest design",
-                "multi-tier edible orchards"
-            ]
-        },
-        {
-            "title": "Landscape & Yard Planning",
-            "url": "https://www.anvitam.com/services/landscape-design",
-            "topics": [
-                "landscape architecture",
-                "native planting",
-                "drought-tolerant garden",
-                "stone terracing"
-            ],
-            "suggested_anchors": [
-                "native ecological landscape design",
-                "drought-resilient garden planning"
-            ]
-        },
-        {
-            "title": "Terrace & Balcony Gardens",
-            "url": "https://www.anvitam.com/services/terrace-garden",
-            "topics": [
-                "terrace garden",
-                "balcony garden",
-                "roof garden",
-                "urban agriculture"
-            ],
-            "suggested_anchors": [
-                "engineered terrace gardens",
-                "organic urban balcony sanctuaries"
-            ]
-        },
-        {
-            "title": "Backyard & Courtyard Gardens",
-            "url": "https://www.anvitam.com/services/backyard-design",
-            "topics": [
-                "courtyard",
-                "chowk",
-                "internal patio",
-                "microclimate garden"
-            ],
-            "suggested_anchors": [
-                "central courtyard microclimate design",
-                "passive cooling courtyard gardens"
-            ]
-        },
-        {
-            "title": "Agrotourism & Farm Visits",
-            "url": "https://www.anvitam.com/services/agrotourism",
-            "topics": [
-                "agrotourism",
-                "farm visits",
-                "visitor zoning",
-                "working farm experience"
-            ],
-            "suggested_anchors": [
-                "agrotourism destination development",
-                "working farm masterplanning"
-            ]
-        }
-    ],
-    "real_projects_and_case_studies": [
-        {
-            "title": "Odiyar Farm & Homestay Permaculture Masterplan",
-            "url": "https://www.anvitam.com/projects/odiyar-farm-and-homestay-permaculture",
-            "topics": [
-                "farmstay project",
-                "permaculture case study",
-                "pond excavation",
-                "swale system"
-            ],
-            "suggested_anchors": [
-                "our Odiyar Farm Permaculture project",
-                "the Odiyar Farm regenerative masterplan"
-            ]
-        },
-        {
-            "title": "Kusum Vilas Palace Heritage Destination",
-            "url": "https://www.anvitam.com/projects/kusum-vilas-palace-heritage-destination-development",
-            "topics": [
-                "heritage restoration",
-                "palace conservation",
-                "traditional stone craftsmanship",
-                "lime mortar"
-            ],
-            "suggested_anchors": [
-                "our Kusum Vilas Palace heritage conservation",
-                "the Kusum Vilas heritage restoration study"
-            ]
-        },
-        {
-            "title": "Kamba Agrotourism & Vardhaman Royal Agri Farm",
-            "url": "https://www.anvitam.com/projects/kamba-agrotourism-vardhaman-royal-organic-agri-farm",
-            "topics": [
-                "agrotourism case study",
-                "commercial organic farm",
-                "visitor hub",
-                "large estate masterplan"
-            ],
-            "suggested_anchors": [
-                "our Kamba Agrotourism masterplan",
-                "the Vardhaman Royal Agri Farm development"
-            ]
-        },
-        {
-            "title": "Bihar Natural Eco-Home (yourweb3guy)",
-            "url": "https://www.anvitam.com/projects/yourweb3guy",
-            "topics": [
-                "rammed earth home",
-                "mud house case study",
-                "passive cooling residence",
-                "low-carbon home"
-            ],
-            "suggested_anchors": [
-                "our stabilized earth residential case study",
-                "the Bihar natural eco-home build"
-            ]
-        },
-        {
-            "title": "Vanvagado Farm Rustic Estate",
-            "url": "https://www.anvitam.com/projects/vanvagado-farm",
-            "topics": [
-                "farmhouse project",
-                "rustic estate",
-                "farm sanctuary",
-                "natural materials"
-            ],
-            "suggested_anchors": [
-                "our Vanvagado Farm estate execution",
-                "the Vanvagado rustic farmhouse project"
-            ]
-        },
-        {
-            "title": "The Batukaru Yurt Wellness Retreat",
-            "url": "https://www.anvitam.com/projects/batukaru-yurt",
-            "topics": [
-                "wellness sanctuary",
-                "yurt design",
-                "circular architecture",
-                "natural bamboo"
-            ],
-            "suggested_anchors": [
-                "the Batukaru Yurt wellness installation",
-                "our circular wellness sanctuary design"
-            ]
-        },
-        {
-            "title": "Terrace Garden Vadodara Organic Balcony Sanctuary",
-            "url": "https://www.anvitam.com/projects/terrace-garden-vadodara-organic-balcony-garden",
-            "topics": [
-                "urban terrace project",
-                "rooftop garden case study",
-                "vadodara balcony"
-            ],
-            "suggested_anchors": [
-                "our Vadodara rooftop sanctuary project",
-                "the urban terrace garden installation"
-            ]
-        }
-    ],
-    "technical_engineering_and_architecture_blogs": [
-        {
-            "title": "Alibaug Coastal Architecture: The 5-Step Corrosion-Resistant Masterplan",
-            "url": "https://www.anvitam.com/blog/alibaug-coastal-corrosion-resistant-architecture-masterplan",
-            "topics": [
-                "alibaug",
-                "coastal",
-                "architecture",
-                "step"
-            ],
-            "suggested_anchors": [
-                "our guide on alibaug coastal architecture",
-                "Alibaug Coastal Architecture: The 5-Step Corrosion-Resistant Masterplan"
-            ]
+            "title": "Can You Live Completely Off a Permaculture Garden? The Calorie & Acreage Math",
+            "url": "https://www.anvitam.com/blog/can-you-live-completely-off-a-permaculture-garden",
+            "topics": ["off-grid food security", "permaculture self sufficiency", "calorie yield per acre", "perennial food systems"],
+            "suggested_anchors": ["can you realistically live off a permaculture garden", "our empirical calorie and land math for self-sufficiency"]
         },
         {
             "title": "If You Bought 2 Acres of Land: The 5-Step Masterplan Roadmap Before Hiring a Contractor",
             "url": "https://www.anvitam.com/blog/if-you-bought-2-acres-land-masterplan-roadmap",
-            "topics": [
-                "ecological architecture",
-                "alibaug",
-                "termitproofing",
-                "rammed earth"
-            ],
-            "suggested_anchors": [
-                "our guide on if you bought 2 acres of land",
-                "If You Bought 2 Acres of Land: The 5-Step Masterplan Roadmap Before Hiring a Contractor"
-            ]
+            "topics": ["buying rural land", "2 acres masterplan", "pre-construction site planning", "contour hydrology", "soil testing before building"],
+            "suggested_anchors": ["the 5-step roadmap if you bought 2 acres of land", "our pre-construction masterplanning sequence for rural acreage"]
         },
         {
-            "title": "Regenerative Earthworks for Chemical-Damaged Farmland in Alibaug: The 5-Step Masterplan",
-            "url": "https://www.anvitam.com/blog/regenerative-earthworks-chemical-damaged-farmland-alibaug",
-            "topics": [
-                "regenerative",
-                "earthworks",
-                "chemical",
-                "damaged"
-            ],
-            "suggested_anchors": [
-                "our guide on regenerative earthworks for chemical-damaged farmland in alibaug",
-                "Regenerative Earthworks for Chemical-Damaged Farmland in Alibaug: The 5-Step Masterplan"
-            ]
-        },
-        {
-            "title": "Subsurface Root-Zone Wetland Sizing Calculator: The Odor-Free Sewage Math for Western India",
-            "url": "https://www.anvitam.com/blog/subsurface-root-zone-wetland-sizing-calculator-odor-free-sewage",
-            "topics": [
-                "subsurface",
-                "root",
-                "zone",
-                "wetland"
-            ],
-            "suggested_anchors": [
-                "our guide on subsurface root-zone wetland sizing calculator",
-                "Subsurface Root-Zone Wetland Sizing Calculator: The Odor-Free Sewage Math for Western India"
-            ]
-        },
-        {
-            "title": "Engineered Bamboo in Alibaug: The 50-Year Structural Truth for High-Moisture Coasts",
-            "url": "https://www.anvitam.com/blog/engineered-bamboo-structural-life-alibaug-high-moisture",
-            "topics": [
-                "engineered",
-                "bamboo",
-                "alibaug",
-                "year"
-            ],
-            "suggested_anchors": [
-                "our guide on engineered bamboo in alibaug",
-                "Engineered Bamboo in Alibaug: The 50-Year Structural Truth for High-Moisture Coasts"
-            ]
-        },
-        {
-            "title": "If You Bought 2 Acres in Alibaug: The 18\u2011Month Masterplan Roadmap for an Eco\u2011Villa",
-            "url": "https://www.anvitam.com/blog/if-you-bought-2-acres-alibaug-eco-villa-masterplan",
-            "topics": [
-                "you",
-                "bought",
-                "acres",
-                "alibaug"
-            ],
-            "suggested_anchors": [
-                "our guide on if you bought 2 acres in alibaug",
-                "If You Bought 2 Acres in Alibaug: The 18\u2011Month Masterplan Roadmap for an Eco\u2011Villa"
-            ]
-        },
-        {
-            "title": "The Eco-Resort CapEx Trap: Why 'Green' Costs Less and Earns More in Alibaug & Goa",
-            "url": "https://www.anvitam.com/blog/eco-resort-capex-revpar-economics-india",
-            "topics": [
-                "eco",
-                "resort",
-                "capex",
-                "trap"
-            ],
-            "suggested_anchors": [
-                "our guide on the eco-resort capex trap",
-                "The Eco-Resort CapEx Trap: Why 'Green' Costs Less and Earns More in Alibaug & Goa"
-            ]
-        },
-        {
-            "title": "The 1.8-Meter Eave: Passive Cooling Math for Western India Villas",
-            "url": "https://www.anvitam.com/blog/passive-cooling-eave-depth-calculator-western-india-villas",
-            "topics": [
-                "meter",
-                "eave",
-                "passive",
-                "cooling"
-            ],
-            "suggested_anchors": [
-                "our guide on the 1.8-meter eave",
-                "The 1.8-Meter Eave: Passive Cooling Math for Western India Villas"
-            ]
-        },
-        {
-            "title": "Stabilized Rammed Earth vs RCC: The 100-Year Cost Truth for Coastal India",
-            "url": "https://www.anvitam.com/blog/stabilized-rammed-earth-vs-rcc-coastal-india-cost",
-            "topics": [
-                "stabilized",
-                "rammed",
-                "earth",
-                "rcc"
-            ],
-            "suggested_anchors": [
-                "our guide on stabilized rammed earth vs rcc",
-                "Stabilized Rammed Earth vs RCC: The 100-Year Cost Truth for Coastal India"
-            ]
-        },
-        {
-            "title": "Water Independence Calculation for Rural Villas: The Exact Hydro-Structural Math for Alibaug",
-            "url": "https://www.anvitam.com/blog/water-independence-calculation-rural-villas-alibaug",
-            "topics": [
-                "water",
-                "independence",
-                "calculation",
-                "rural"
-            ],
-            "suggested_anchors": [
-                "our guide on water independence calculation for rural villas",
-                "Water Independence Calculation for Rural Villas: The Exact Hydro-Structural Math for Alibaug"
-            ]
-        },
-        {
-            "title": "Green Roof Drainage Sizing for 3,000mm Rainfall: The Exact Calculation for Alibaug & Goa",
-            "url": "https://www.anvitam.com/blog/green-roof-drainage-sizing-3000mm-rainfall-alibaug-goa",
-            "topics": [
-                "green",
-                "roof",
-                "drainage",
-                "sizing"
-            ],
-            "suggested_anchors": [
-                "our guide on green roof drainage sizing for 3,000mm rainfall",
-                "Green Roof Drainage Sizing for 3,000mm Rainfall: The Exact Calculation for Alibaug & Goa"
-            ]
-        },
-        {
-            "title": "DEWATS for Luxury Rural Villas: The Zero-Electricity Masterplan for Alibaug, Goa & Gujarat",
-            "url": "https://www.anvitam.com/blog/dewats-luxury-rural-villas-zero-electricity-masterplan",
-            "topics": [
-                "dewats",
-                "luxury",
-                "rural",
-                "villas"
-            ],
-            "suggested_anchors": [
-                "our guide on dewats for luxury rural villas",
-                "DEWATS for Luxury Rural Villas: The Zero-Electricity Masterplan for Alibaug, Goa & Gujarat"
-            ]
-        },
-        {
-            "title": "If You Bought 2 Acres in Western India: The 5-Step Keyline Roadmap to Capture 100% of Monsoon Rain",
-            "url": "https://www.anvitam.com/blog/keyline-design-indian-farmsteads-capturing-100-monsoon-rainfall",
-            "topics": [
-                "you",
-                "bought",
-                "acres",
-                "western"
-            ],
-            "suggested_anchors": [
-                "our guide on if you bought 2 acres in western india",
-                "If You Bought 2 Acres in Western India: The 5-Step Keyline Roadmap to Capture 100% of Monsoon Rain"
-            ]
-        },
-        {
-            "title": "If You Bought Land in 45\u00b0C Heat: The 5-Step EAT Sizing Roadmap Before You Dig",
-            "url": "https://www.anvitam.com/blog/earth-air-tunnel-sizing-cost-45c-heat-alibaug-goa",
-            "topics": [
-                "you",
-                "bought",
-                "land",
-                "heat"
-            ],
-            "suggested_anchors": [
-                "our guide on if you bought land in 45\u00b0c heat",
-                "If You Bought Land in 45\u00b0C Heat: The 5-Step EAT Sizing Roadmap Before You Dig"
-            ]
-        },
-        {
-            "title": "If You Bought 1\u20113 Acres Near Bangalore: The 5\u2011Step Water\u2011Autonomy Masterplan Before You Dig a Concrete Tank",
-            "url": "https://www.anvitam.com/blog/if-you-bought-1-3-acres-bangalore-water-autonomy-masterplan",
-            "topics": [
-                "you",
-                "bought",
-                "acres",
-                "near"
-            ],
-            "suggested_anchors": [
-                "our guide on if you bought 1\u20113 acres near bangalore",
-                "If You Bought 1\u20113 Acres Near Bangalore: The 5\u2011Step Water\u2011Autonomy Masterplan Before You Dig a Concrete Tank"
-            ]
-        },
-        {
-            "title": "The Ancient Plaster Nobody Remembers That Can Still Outlast Cement by 4,000 Years",
+            "title": "The Ancient Plaster That Can Outlast Cement by 4,000 Years",
             "url": "https://www.anvitam.com/blog/the-ancient-plaster-that-can-outlast-cement-4000-years",
-            "topics": [
-                "natural plaster",
-                "lime plaster",
-                "surkhi",
-                "tadelakt"
-            ],
-            "suggested_anchors": [
-                "our guide on the ancient plaster nobody remembers that can still outlast cement by 4,000 years",
-                "The Ancient Plaster Nobody Remembers That Can Still Outlast Cement by 4,000 Years"
-            ]
+            "topics": ["traditional lime plaster", "hydraulic lime vs cement", "breathable wall finishes", "carbonation chemistry", "historic mortars"],
+            "suggested_anchors": ["the ancient breathable plaster that outlasts cement", "our study on traditional lime chemistry and wall breathability"]
         },
         {
-            "title": "If You Bought 2 Acres of Land: The 5\u2011Step Water\u2011Autonomy Roadmap Before Hiring a Contractor",
-            "url": "https://www.anvitam.com/blog/if-you-bought-2-acres-land-water-autonomy-roadmap",
-            "topics": [
-                "you",
-                "bought",
-                "acres",
-                "land"
-            ],
-            "suggested_anchors": [
-                "our guide on if you bought 2 acres of land",
-                "If You Bought 2 Acres of Land: The 5\u2011Step Water\u2011Autonomy Roadmap Before Hiring a Contractor"
-            ]
+            "title": "Turnkey Sustainable Architecture & Construction Management: Cost Breakdown",
+            "url": "https://www.anvitam.com/blog/turnkey-sustainable-architecture-construction-management-cost-5842",
+            "topics": ["turnkey sustainable architecture", "construction management fee", "cost per square foot eco build", "contractor supervision"],
+            "suggested_anchors": ["the real costs of turnkey sustainable architecture", "our breakdown of end-to-end ecological construction management"]
         },
         {
-            "title": "If You Bought 2-10 Acres of Land in Coorg: The 5-Step Masterplan Roadmap for a Luxury Coffee Farmstay",
-            "url": "https://www.anvitam.com/blog/if-you-bought-2-10-acres-land-coorg-masterplan-roadmap",
-            "topics": [
-                "coorg",
-                "luxury coffee farmstay",
-                "permaculture masterplan",
-                "sustainable architecture"
-            ],
-            "suggested_anchors": [
-                "our guide on if you bought 2-10 acres of land in coorg",
-                "If You Bought 2-10 Acres of Land in Coorg: The 5-Step Masterplan Roadmap for a Luxury Coffee Farmstay"
-            ]
+            "title": "What Can You Actually Do With 5 Acres of Land? Masterplanning Strategies",
+            "url": "https://www.anvitam.com/blog/what-can-you-do-with-5-acres-of-land-",
+            "topics": ["5 acres land layout", "rural estate zoning", "food forest and villa integration", "farm retreat planning"],
+            "suggested_anchors": ["what you can strategically do with 5 acres of land", "our 5-acre regenerative zoning and layout framework"]
         },
         {
-            "title": "Building in Goa: The Ultimate Guide to Luxury Eco-Resorts and Biophilic Weekend Villas",
-            "url": "https://www.anvitam.com/blog/building-in-goa-ultimate-guide",
-            "topics": [
-                "goa",
-                "luxury eco-resorts",
-                "biophilic weekend villas",
-                "laterite stone"
-            ],
-            "suggested_anchors": [
-                "our guide on building in goa",
-                "Building in Goa: The Ultimate Guide to Luxury Eco-Resorts and Biophilic Weekend Villas"
-            ]
+            "title": "Site Analysis Architecture: Microclimate Simulation & Solar Azimuth Guide",
+            "url": "https://www.anvitam.com/blog/site-analysis-architecture-microclimate-simulation-guide-0618",
+            "topics": ["site analysis architecture", "solar orientation passive cooling", "wind patterns microclimate", "contour slope mapping"],
+            "suggested_anchors": ["architectural site analysis and microclimate simulation", "how we map solar paths and prevailing breezes on raw land"]
         },
         {
-            "title": "Luxury Villas on Steep Slopes: The 5-Step Masterplan Roadmap",
-            "url": "https://www.anvitam.com/blog/luxury-villas-on-steep-slopes-masterplan-roadmap",
-            "topics": [
-                "luxury villas",
-                "steep slopes",
-                "karjat",
-                "pune"
-            ],
-            "suggested_anchors": [
-                "our guide on luxury villas on steep slopes",
-                "Luxury Villas on Steep Slopes: The 5-Step Masterplan Roadmap"
-            ]
+            "title": "Architectural Land Feasibility: What to Check Before You Buy Acreage",
+            "url": "https://www.anvitam.com/blog/architectural-land-feasibility-before-you-buy-acreage-7687",
+            "topics": ["land feasibility study", "due diligence before buying land", "water table percolation", "zoning setbacks access roads"],
+            "suggested_anchors": ["pre-purchase architectural land feasibility checks", "what to evaluate before acquiring rural acreage"]
         },
         {
-            "title": "If You Bought 2-10 Acres of Land in Alibaug: The 5-Step Masterplan Roadmap Before Hiring a Contractor",
-            "url": "https://www.anvitam.com/blog/if-you-bought-2-10-acres-land-alibaug-masterplan-roadmap",
-            "topics": [
-                "rammed earth alibaug",
-                "monsoon-resistant construction",
-                "sustainable architecture",
-                "luxury eco-resorts"
-            ],
-            "suggested_anchors": [
-                "our guide on if you bought 2-10 acres of land in alibaug",
-                "If You Bought 2-10 Acres of Land in Alibaug: The 5-Step Masterplan Roadmap Before Hiring a Contractor"
-            ]
-        },
-        {
-            "title": "If You Bought 2-10 Acres of Land in Alibaug: The 5-Step Masterplan Roadmap Before Hiring a Contractor",
-            "url": "https://www.anvitam.com/blog/alibaug-land-masterplan-roadmap",
-            "topics": [
-                "zero-waste luxury residence design",
-                "sustainable architecture",
-                "alibaug",
-                "permaculture masterplan"
-            ],
-            "suggested_anchors": [
-                "our guide on if you bought 2-10 acres of land in alibaug",
-                "If You Bought 2-10 Acres of Land in Alibaug: The 5-Step Masterplan Roadmap Before Hiring a Contractor"
-            ]
-        },
-        {
-            "title": "Rural Estate Development Feasibility in Alibaug, Maharashtra: A Comprehensive Guide",
-            "url": "https://www.anvitam.com/blog/rural-estate-development-feasibility-alibaug-maharashtra",
-            "topics": [
-                "rural estate development",
-                "rammed earth construction",
-                "sustainable architecture",
-                "alibaug, maharashtra"
-            ],
-            "suggested_anchors": [
-                "our guide on rural estate development feasibility in alibaug, maharashtra",
-                "Rural Estate Development Feasibility in Alibaug, Maharashtra: A Comprehensive Guide"
-            ]
-        },
-        {
-            "title": "Laterite vs CSEB vs Stabilized Rammed Earth: The Ultimate Guide to Building in Alibaug, Maharashtra",
-            "url": "https://www.anvitam.com/blog/laterite-vs-cseb-vs-stabilized-rammed-earth-alibaug",
-            "topics": [
-                "laterite",
-                "cseb",
-                "stabilized rammed earth",
-                "alibaug"
-            ],
-            "suggested_anchors": [
-                "our guide on laterite vs cseb vs stabilized rammed earth",
-                "Laterite vs CSEB vs Stabilized Rammed Earth: The Ultimate Guide to Building in Alibaug, Maharashtra"
-            ]
-        },
-        {
-            "title": "Earthmovers Mistakes on Agricultural Land: A Comprehensive Guide to Avoiding Costly Errors in Alibaug, Maharashtra",
-            "url": "https://www.anvitam.com/blog/earthmovers-mistakes-agricultural-land-alibaug",
-            "topics": [
-                "earthmovers mistakes",
-                "agricultural land",
-                "alibaug",
-                "maharashtra"
-            ],
-            "suggested_anchors": [
-                "our guide on earthmovers mistakes on agricultural land",
-                "Earthmovers Mistakes on Agricultural Land: A Comprehensive Guide to Avoiding Costly Errors in Alibaug, Maharashtra"
-            ]
-        },
-        {
-            "title": "Passive Solar Orientation in Alibaug: A Comprehensive Guide to Cooling Your Home Naturally",
-            "url": "https://www.anvitam.com/blog/passive-solar-orientation-alibaug",
-            "topics": [
-                "passive solar orientation",
-                "alibaug",
-                "rammed earth",
-                "sustainable building"
-            ],
-            "suggested_anchors": [
-                "our guide on passive solar orientation in alibaug",
-                "Passive Solar Orientation in Alibaug: A Comprehensive Guide to Cooling Your Home Naturally"
-            ]
-        },
-        {
-            "title": "Keyline Drainage for Black Cotton Soil: The Ultimate Guide to Foundation Crack Solutions in Alibaug",
-            "url": "https://www.anvitam.com/blog/keyline-drainage-black-cotton-soil-alibaug",
-            "topics": [
-                "keyline drainage",
-                "black cotton soil",
-                "foundation crack solutions",
-                "alibaug"
-            ],
-            "suggested_anchors": [
-                "our guide on keyline drainage for black cotton soil",
-                "Keyline Drainage for Black Cotton Soil: The Ultimate Guide to Foundation Crack Solutions in Alibaug"
-            ]
-        },
-        {
-            "title": "How Much Does a Rammed Earth Villa Cost in Alibaug? (2026 Soil, Monsoon, and Engineering Reality)",
-            "url": "https://www.anvitam.com/blog/rammed-earth-villa-cost-alibaug",
-            "topics": [
-                "rammed earth villa cost",
-                "alibaug villa",
-                "soil sieve",
-                "monsoon defense"
-            ],
-            "suggested_anchors": [
-                "our 2026 Alibaug rammed earth cost guide",
-                "the truth about building rammed earth in Alibaug"
-            ]
-        },
-        {
-            "title": "Why Cement Walls Are Quietly Making Buildings Hotter, Costlier, and Unhealthier",
-            "url": "https://www.anvitam.com/blog/why-cement-walls-are-quietly-making-buildings-hotter-costlier-and-unhealthier",
-            "topics": [
-                "cement heat",
-                "thermal mass",
-                "concrete vs earth",
-                "air conditioning costs"
-            ],
-            "suggested_anchors": [
-                "why cement walls drive up cooling costs",
-                "the thermal heat traps of conventional concrete walls"
-            ]
-        },
-        {
-            "title": "Why Traditional Rainwater Harvesting Systems Worked Better Than Modern Systems",
-            "url": "https://www.anvitam.com/blog/why-rainwater-harvesting-systems-worked-better-than-modern-systems",
-            "topics": [
-                "rainwater harvesting",
-                "gravity catchment",
-                "bioswales",
-                "monsoon runoff"
-            ],
-            "suggested_anchors": [
-                "why gravity-fed rainwater harvesting outlasts modern mechanical filters",
-                "traditional Konkan catchment physics"
-            ]
-        },
-        {
-            "title": "Bamboo Cottages vs Brick Eco-Cottages: What Actually Costs Less Over 15 Years?",
+            "title": "Bamboo Cottages vs Brick Eco-Cottages: What Actually Costs Less Over 15 Years",
             "url": "https://www.anvitam.com/blog/bamboo-cottages-vs-brick-eco-cottages-what-actually-costs-less-over-15-years",
-            "topics": [
-                "lifecycle cost",
-                "bamboo vs brick",
-                "15 year maintenance",
-                "construction budget"
-            ],
-            "suggested_anchors": [
-                "what natural building materials actually cost over 15 years",
-                "15-year lifecycle cost comparisons"
-            ]
-        },
-        {
-            "title": "Soil Degradation Is Killing Indian Farms \u2014 And How Permaculture Actually Fixes It",
-            "url": "https://www.anvitam.com/blog/soil-degradation-is-killing-indian-farms-and-how-permaculture-actually-fixes-it",
-            "topics": [
-                "soil health",
-                "soil microbiology",
-                "topsoil loss",
-                "mycorrhizal fungi"
-            ],
-            "suggested_anchors": [
-                "how permaculture reverses soil degradation on Indian plots",
-                "rebuilding living soil biology"
-            ]
-        },
-        {
-            "title": "Natural Building Materials in Modern Engineering: Mud, Lime, and Bamboo",
-            "url": "https://www.anvitam.com/blog/natural-building-materials-modern-engineering",
-            "topics": [
-                "engineering standards",
-                "mud compression",
-                "hydraulic lime",
-                "IS code compliance"
-            ],
-            "suggested_anchors": [
-                "engineered mud and hydraulic lime standards",
-                "structural physics of natural materials"
-            ]
-        },
-        {
-            "title": "Why I Stopped Recommending Chemical Red Oxide: The Shift to Genuine Lime Plasters",
-            "url": "https://www.anvitam.com/blog/i-stopped-recommending-red-oxide",
-            "topics": [
-                "red oxide flooring",
-                "lime plaster",
-                "natural flooring",
-                "breathable finishes"
-            ],
-            "suggested_anchors": [
-                "why genuine lime plasters outperform chemical coatings",
-                "breathable lime floor finishes"
-            ]
-        },
-        {
-            "title": "Traditional Indian Tiles: Types, Cost, and Restoration Guide",
-            "url": "https://www.anvitam.com/blog/traditional-indian-tiles-guide",
-            "topics": [
-                "athangudi tiles",
-                "terracotta tiles",
-                "mangalore tiles",
-                "roof insulation"
-            ],
-            "suggested_anchors": [
-                "traditional terracotta and Athangudi tile guides",
-                "vernacular Indian roofing and flooring tiles"
-            ]
-        },
-        {
-            "title": "How to Design a Food Forest Using Syntropic Agroforestry: Step-by-Step Guide",
-            "url": "https://www.anvitam.com/blog/how-to-design-a-food-forest-using-syntropic-agroforestry-step-by-step-guide",
-            "topics": [
-                "syntropic agroforestry",
-                "food forest guide",
-                "guild planting",
-                "canopy management"
-            ],
-            "suggested_anchors": [
-                "step-by-step syntropic food forest guide",
-                "establishing multi-species agroforestry guilds"
-            ]
-        },
-        {
-            "title": "The Homestay Pricing Guide Nobody's Telling You",
-            "url": "https://www.anvitam.com/blog/the-homestay-pricing-guide-nobodys-telling-you",
-            "topics": [
-                "homestay revenue",
-                "ADR",
-                "hospitality business model",
-                "room pricing"
-            ],
-            "suggested_anchors": [
-                "realistic homestay economics and ADR pricing",
-                "the financial realities of boutique farmstay operations"
-            ]
-        },
-        {
-            "title": "India's Forgotten Earthquake-Resistant House Design",
-            "url": "https://www.anvitam.com/blog/indias-forgotten-earthquake-resistant-house-design",
-            "topics": [
-                "earthquake resistance",
-                "dhajji dewari",
-                "seismic engineering",
-                "timber framing"
-            ],
-            "suggested_anchors": [
-                "vernacular seismic timber engineering",
-                "traditional earthquake-resistant construction methods"
-            ]
-        },
-        {
-            "title": "Why I Stopped Buying CenturyPly & Greenply Doors for Sustainable Homes",
-            "url": "https://www.anvitam.com/blog/why-i-stopped-buying-centuryply-greenply-doors",
-            "topics": [
-                "plywood toxic off-gassing",
-                "VOC emissions",
-                "solid wood doors",
-                "healthy home carpentry"
-            ],
-            "suggested_anchors": [
-                "eliminating toxic formaldehyde off-gassing from engineered wood",
-                "sustainable solid timber alternatives"
-            ]
-        },
-        {
-            "title": "3-Layer Planting Scheme for Low-Maintenance Indian Gardens",
-            "url": "https://www.anvitam.com/blog/three-layer-planting-scheme-low-maintenance-garden",
-            "topics": [
-                "layered planting",
-                "drought-hardy shrubs",
-                "garden canopy",
-                "low maintenance landscape"
-            ],
-            "suggested_anchors": [
-                "three-layer low-maintenance planting schemes",
-                "native Indian plant layering strategies"
-            ]
+            "topics": ["engineered bamboo vs brick", "eco-cottage lifecycle cost", "hospitality chalet maintenance", "boron treatment bamboo"],
+            "suggested_anchors": ["bamboo cottages vs brick eco-cottages over 15 years", "our 15-year lifecycle cost comparison for retreat chalets"]
         }
     ],
-    "interactive_tools_and_workshops": [
+    "approved_services": [
         {
-            "title": "Site Intelligence & Contour Hydrology Tool",
-            "url": "https://www.anvitam.com/site-analysis",
-            "topics": [
-                "contour mapping",
-                "site analysis",
-                "slope calculation",
-                "water catchment"
-            ],
-            "suggested_anchors": [
-                "Site Intelligence & Contour Hydrology Tool",
-                "contour mapping and slope analysis calculator"
-            ]
+            "title": "Community Center Architecture & Design",
+            "url": "https://www.anvitam.com/services/community-center",
+            "topics": ["community center", "civic spaces", "gathering hall", "activity center", "social infrastructure"],
+            "suggested_anchors": ["community and activity center architecture", "our community center spatial design services"]
         },
         {
-            "title": "RachnaCAD Architectural Planner",
-            "url": "https://www.anvitam.com/tools/rachnacad",
-            "topics": [
-                "architectural CAD",
-                "layout planning",
-                "microclimate orientation",
-                "zoning tool"
-            ],
-            "suggested_anchors": [
-                "RachnaCAD architectural planner",
-                "microclimate layout and orientation studio"
-            ]
+            "title": "Homestays & Guest Houses",
+            "url": "https://www.anvitam.com/services/homestay",
+            "topics": ["homestay", "farmstay", "guest cottage", "bed and breakfast", "vernacular hospitality"],
+            "suggested_anchors": ["vernacular homestay architecture", "our boutique homestay design services"]
         },
         {
-            "title": "AI Home Design Studio",
-            "url": "https://www.anvitam.com/tools/ai-home-design",
-            "topics": [
-                "ai design tool",
-                "natural interior visualization",
-                "facade preview",
-                "landscape visualization"
-            ],
-            "suggested_anchors": [
-                "AI Home Design Studio",
-                "biophilic visual preview studio"
-            ]
+            "title": "Eco Resorts & Glamping Masterplans",
+            "url": "https://www.anvitam.com/services/eco-resort",
+            "topics": ["eco resort", "glamping", "luxury tented camp", "resort masterplanning", "hospitality architecture"],
+            "suggested_anchors": ["luxury eco-resort masterplanning", "our bioclimatic eco-resort architectural services"]
         },
         {
-            "title": "Nest N Nurture Earth Building Workshops",
-            "url": "https://www.anvitam.com/workshops",
-            "topics": [
-                "earth workshop",
-                "rammed earth training",
-                "mason training",
-                "hands-on workshop"
-            ],
-            "suggested_anchors": [
-                "Nest N Nurture earth building workshops",
-                "hands-on natural masonry training programs"
-            ]
+            "title": "Wellness & Yoga Retreats",
+            "url": "https://www.anvitam.com/services/wellness-retreat",
+            "topics": ["wellness retreat", "yoga shala", "natural biological pool", "spa design", "healing architecture"],
+            "suggested_anchors": ["wellness retreat architecture", "chemical-free biological living pool engineering"]
         },
         {
-            "title": "Anvitam Architecture Tools Hub",
-            "url": "https://www.anvitam.com/tools",
-            "topics": [
-                "architecture calculators",
-                "sustainable design tools",
-                "free site tools"
-            ],
-            "suggested_anchors": [
-                "Anvitam Architecture Tools Hub",
-                "free site planning and feasibility tools"
-            ]
+            "title": "Weekend Villas & Second Homes",
+            "url": "https://www.anvitam.com/services/weekend-villa",
+            "topics": ["weekend villa", "villa architecture", "second home", "custom residence", "biophilic villa"],
+            "suggested_anchors": ["biophilic weekend villa architecture", "our custom luxury villa design practice"]
+        },
+        {
+            "title": "Agrotourism & Working Farm Destinations",
+            "url": "https://www.anvitam.com/services/agrotourism",
+            "topics": ["agrotourism", "farm visits", "educational farm", "u-pick orchard", "farm-to-table destination"],
+            "suggested_anchors": ["agrotourism destination development", "our working farm masterplanning services"]
+        },
+        {
+            "title": "Food Forests & Syntropic Agroforestry",
+            "url": "https://www.anvitam.com/services/food-forest",
+            "topics": ["food forest", "syntropic agriculture", "edible orchard", "7 layers", "perennial guild"],
+            "suggested_anchors": ["syntropic food forest design", "multi-tier edible food forest planning"]
+        },
+        {
+            "title": "Landscape Design & Masterplanning",
+            "url": "https://www.anvitam.com/services/landscape-design",
+            "topics": ["landscape design", "landscape architecture", "native planting", "outdoor living", "contour terracing"],
+            "suggested_anchors": ["native ecological landscape design", "professional landscape architecture services"]
+        },
+        {
+            "title": "Terrace & Balcony Gardens",
+            "url": "https://www.anvitam.com/services/terrace-garden",
+            "topics": ["terrace garden", "balcony garden", "rooftop garden", "urban farming", "container garden"],
+            "suggested_anchors": ["engineered terrace garden design", "urban balcony sanctuary planning"]
+        },
+        {
+            "title": "Backyard & Courtyard Gardens",
+            "url": "https://www.anvitam.com/services/backyard-design",
+            "topics": ["backyard design", "courtyard garden", "small garden", "outdoor patio", "privacy screening"],
+            "suggested_anchors": ["custom backyard sanctuary design", "passive cooling courtyard garden planning"]
+        },
+        {
+            "title": "Airbnb & Short-Term Rental Interior Design",
+            "url": "https://www.anvitam.com/services/airbnb",
+            "topics": ["airbnb interior design", "short term rental", "vacation rental ROI", "rental styling", "high RevPAR"],
+            "suggested_anchors": ["high-yield Airbnb interior design", "boutique vacation rental design services"]
+        },
+        {
+            "title": "Farm Retreats & Farmhouses",
+            "url": "https://www.anvitam.com/services/farm-retreat",
+            "topics": ["farmhouse architecture", "farm retreat", "rural homestead", "courtyard house", "sustainable estate"],
+            "suggested_anchors": ["sustainable farm retreat architecture", "regenerative farmhouse masterplanning"]
+        },
+        {
+            "title": "Permaculture Design & Land Masterplanning",
+            "url": "https://www.anvitam.com/services/permaculture-design",
+            "topics": ["permaculture design", "keyline hydrology", "swales", "water harvesting", "soil regeneration"],
+            "suggested_anchors": ["permaculture land masterplanning", "regenerative site hydrology and permaculture design"]
+        },
+        {
+            "title": "Interior Design & Spatial Styling",
+            "url": "https://www.anvitam.com/services/interior-design",
+            "topics": ["interior design", "natural lime plaster", "reclaimed timber", "biophilic interiors", "furniture layout"],
+            "suggested_anchors": ["biophilic interior design", "natural lime plaster interior styling"]
+        },
+        {
+            "title": "Architecture & Land Feasibility Consultation Report",
+            "url": "https://www.anvitam.com/services/architecture-design-consultation-report",
+            "topics": ["architecture consultation", "land feasibility report", "pre-purchase site review", "topographical audit"],
+            "suggested_anchors": ["our comprehensive Architectural Land Feasibility Report", "booking a pre-construction site feasibility audit"]
         }
     ],
-    "regional_destination_guides": [
+    "approved_projects": [
         {
-            "title": "Alibaug Sustainable Architecture & Villa Guide",
-            "url": "https://www.anvitam.com/destinations/alibaug",
-            "topics": [
-                "alibaug",
-                "mandwa",
-                "awas",
-                "kihim"
-            ],
-            "suggested_anchors": [
-                "ecological architecture in Alibaug",
-                "our Alibaug coastal design field guide"
-            ]
+            "title": "Bihar Natural Eco-Home (YourWeb3Guy Residence)",
+            "url": "https://www.anvitam.com/projects/yourweb3guy",
+            "topics": ["rammed earth home", "mud house case study", "passive cooling residence", "low-carbon architecture"],
+            "suggested_anchors": ["our stabilized earth residential case study", "the YourWeb3Guy natural eco-home build"]
         },
         {
-            "title": "Karjat Farmhouse & Eco Retreat Architecture",
-            "url": "https://www.anvitam.com/destinations/karjat",
-            "topics": [
-                "karjat",
-                "western ghats foothills",
-                "black cotton soil",
-                "monsoon runoff karjat"
-            ],
-            "suggested_anchors": [
-                "sustainable farmhouse architecture in Karjat",
-                "our Karjat foothill building guide"
-            ]
+            "title": "The Beer Bar Biophilic Hospitality Venue",
+            "url": "https://www.anvitam.com/projects/beer-bar",
+            "topics": ["hospitality interior", "biophilic restaurant", "microbrewery design", "timber and stone venue"],
+            "suggested_anchors": ["our commercial biophilic hospitality work at The Beer Bar", "our commercial dining spatial design"]
         },
         {
-            "title": "Goa Vernacular & Tropical Architecture",
-            "url": "https://www.anvitam.com/destinations/goa",
-            "topics": [
-                "goa",
-                "tropical villa",
-                "laterite stone",
-                "portuguese vernacular"
-            ],
-            "suggested_anchors": [
-                "tropical ecological architecture in Goa",
-                "our Goa vernacular design guide"
-            ]
+            "title": "Shalimar Luxury Residence & Garden",
+            "url": "https://www.anvitam.com/projects/shalimar",
+            "topics": ["luxury estate", "villa landscape", "courtyard garden", "high-end residential interior"],
+            "suggested_anchors": ["our private residential execution at Shalimar", "the Shalimar estate landscape transformation"]
         },
         {
-            "title": "Coorg Plantation Architecture",
-            "url": "https://www.anvitam.com/destinations/coorg",
-            "topics": [
-                "coorg",
-                "coffee estate",
-                "heavy hill rainfall",
-                "plantation homestay"
-            ],
-            "suggested_anchors": [
-                "plantation architecture in Coorg",
-                "sustainable estate design in Coorg"
-            ]
+            "title": "Ramgarh Nainital Interior Project — Shiloh Experiences Hotel",
+            "url": "https://www.anvitam.com/projects/ramgarh-nainital-interior-project-shiloh-experiences-hotel",
+            "topics": ["mountain boutique hotel", "himalayan hospitality", "natural lime interiors", "ramgarh nainital", "hotel restoration"],
+            "suggested_anchors": ["our mountain hospitality interior project at Shiloh Experiences in Ramgarh Nainital", "the Shiloh Experiences Hotel restoration"]
         },
         {
-            "title": "Wayanad Eco-Resort & Permaculture Estates",
-            "url": "https://www.anvitam.com/destinations/wayanad",
-            "topics": [
-                "wayanad",
-                "mountain slope",
-                "kerala sustainable design",
-                "cloud forest"
-            ],
-            "suggested_anchors": [
-                "eco-resort masterplanning in Wayanad",
-                "mountain slope architecture in Wayanad"
-            ]
+            "title": "Terrace Garden Vadodara — Organic Balcony Garden Sanctuary",
+            "url": "https://www.anvitam.com/projects/terrace-garden-vadodara-organic-balcony-garden",
+            "topics": ["urban terrace garden", "vadodara rooftop", "organic balcony garden", "sub-irrigation planters"],
+            "suggested_anchors": ["our organic terrace garden sanctuary in Vadodara", "the Vadodara rooftop garden case study"]
         },
         {
-            "title": "Vadodara Sustainable Architecture & Urban Ecology",
-            "url": "https://www.anvitam.com/destinations/vadodara",
-            "topics": [
-                "vadodara",
-                "gujarat architecture",
-                "semi-arid climate",
-                "hot dry passive cooling"
-            ],
-            "suggested_anchors": [
-                "sustainable architecture in Vadodara",
-                "semi-arid climate passive cooling strategies"
-            ]
-        }
-    ],
-    "conversion_anchors": [
-        {
-            "title": "Private Pre-Construction Strategy Audit with Ar. Archana Gavas",
-            "url": "https://topmate.io/archanagavas",
-            "topics": [
-                "book consultation",
-                "topmate session",
-                "pre-construction audit",
-                "site feasibility call"
-            ],
-            "suggested_anchors": [
-                "Book a Private Pre-Construction Strategy Audit with Ar. Archana Gavas on Topmate",
-                "schedule a 30-minute pre-construction strategy audit"
-            ]
+            "title": "Vanvagado Farm Eco Forest Retreat",
+            "url": "https://www.anvitam.com/projects/vanvagado-farm-eco-forest-retreat",
+            "topics": ["eco forest retreat", "rustic farm estate", "native reforestation", "agro-retreat architecture"],
+            "suggested_anchors": ["our Vanvagado Farm Eco Forest Retreat masterplan", "the Vanvagado regenerative farm sanctuary"]
         },
         {
-            "title": "Anvitam Studio Architectural Commission Desk",
-            "url": "https://www.anvitam.com/contact",
-            "topics": [
-                "contact studio",
-                "inquire commission",
-                "full architectural design",
-                "site masterplan booking"
-            ],
-            "suggested_anchors": [
-                "Anvitam Studio Architectural Commission Desk",
-                "contact our architectural studio directly"
-            ]
+            "title": "Kamba Agrotourism — Vardhaman Royal Organic Agri Farm",
+            "url": "https://www.anvitam.com/projects/kamba-agrotourism-vardhaman-royal-organic-agri-farm",
+            "topics": ["commercial agrotourism", "organic farm destination", "visitor center", "vardhaman royal farm"],
+            "suggested_anchors": ["our large-scale masterplan at Kamba Agrotourism", "the Vardhaman Royal Organic Agri Farm project"]
+        },
+        {
+            "title": "Kusum Vilas Palace Heritage Destination Development",
+            "url": "https://www.anvitam.com/projects/kusum-vilas-palace-heritage-destination-development",
+            "topics": ["heritage restoration", "palace conservation", "traditional stone masonry", "breathable lime mortar"],
+            "suggested_anchors": ["our heritage conservation work at Kusum Vilas Palace", "the Kusum Vilas Palace destination development"]
         }
     ]
 }
-# ── TAXONOMY_END ──────────────────────────────────────────────────────────────
 
-
-def save_registry_to_disk() -> bool:
-    """
-    Persists the in-memory LINK_TAXONOMY back into this file between
-    # ── TAXONOMY_START ── and # ── TAXONOMY_END ──.
-    Ensures this file stays perpetually up-to-date and trackable in git.
-    """
-    try:
-        current_file = Path(__file__).resolve()
-        content = current_file.read_text(encoding="utf-8")
-        
-        start_marker = "# ── TAXONOMY_START ────────────────────────────────────────────────────────────"
-        end_marker = "# ── TAXONOMY_END ──────────────────────────────────────────────────────────────"
-        
-        start_idx = content.find(start_marker)
-        end_idx = content.find(end_marker)
-        
-        if start_idx == -1 or end_idx == -1:
-            logger.warning("Could not find TAXONOMY markers in link_registry.py")
-            return False
-            
-        formatted_json = json.dumps(LINK_TAXONOMY, indent=4)
-        new_block = f"{start_marker}\nLINK_TAXONOMY = {formatted_json}\n{end_marker}"
-        
-        updated_content = content[:start_idx] + new_block + content[end_idx + len(end_marker):]
-        current_file.write_text(updated_content, encoding="utf-8")
-        logger.info("Successfully updated autopilot/link_registry.py on disk.")
-        return True
-    except Exception as e:
-        logger.error(f"Failed to persist link registry to disk: {e}")
-        return False
-
-
-def register_new_content_item(
-    category: str,
-    title: str,
-    url: str,
-    topics: List[str],
-    suggested_anchors: List[str],
-    auto_save: bool = True
-) -> bool:
-    """
-    Registers a new content item into LINK_TAXONOMY and saves to disk.
-    Avoids duplicate entries by URL.
-    """
-    if category not in LINK_TAXONOMY:
-        LINK_TAXONOMY[category] = []
-        
-    existing_urls = {item["url"] for item in LINK_TAXONOMY[category]}
+def register_new_blog(title: str, slug: str, meta_description: str = "", auto_save: bool = True) -> bool:
+    """Registers a newly published blog into LINK_TAXONOMY."""
+    url = f"https://www.anvitam.com/blog/{slug}"
+    existing_urls = {item["url"] for item in LINK_TAXONOMY.get("approved_existing_blogs", [])}
     if url in existing_urls:
         return False
-        
-    entry = {
+    
+    words = [w.lower() for w in re.findall(r"\b[A-Za-z]{3,}\b", title) if w.lower() not in {"the", "and", "for", "with", "from", "how", "what", "why"}]
+    LINK_TAXONOMY.setdefault("approved_existing_blogs", []).append({
         "title": title,
         "url": url,
-        "topics": topics[:4],
-        "suggested_anchors": suggested_anchors[:2]
-    }
-    LINK_TAXONOMY[category].insert(0, entry)
-    logger.info(f"Registered new {category} link: {url}")
-    
-    if auto_save:
-        save_registry_to_disk()
+        "topics": words[:5],
+        "suggested_anchors": [title, f"our comprehensive guide on {title.lower()}"]
+    })
+    logger.info(f"Registered new blog in LINK_TAXONOMY: {title} ({url})")
     return True
-
-
-def register_new_blog(
-    title: str,
-    slug: str,
-    meta_description: str = "",
-    tags: Optional[List[str]] = None,
-    auto_save: bool = True
-) -> bool:
-    """
-    Convenience method to register a newly generated or published blog post.
-    """
-    url = f"https://www.anvitam.com/blog/{slug}"
-    topics = []
-    if tags:
-        topics.extend([t.strip().lower() for t in tags if t.strip()])
-    if not topics:
-        clean_words = [w.lower() for w in re.findall(r"\b[A-Za-z]{3,}\b", title) if w.lower() not in {"the", "and", "about", "for", "with"}]
-        topics = clean_words[:4]
-        
-    anchors = [
-        f"our guide on {title.split(':')[0].strip().lower()}",
-        title
-    ]
-    
-    return register_new_content_item(
-        category="technical_engineering_and_architecture_blogs",
-        title=title,
-        url=url,
-        topics=topics,
-        suggested_anchors=anchors,
-        auto_save=auto_save
-    )
-
-
-def scan_and_sync_all(auto_save: bool = True) -> int:
-    """
-    Scans the local filesystem and project constants for any new blogs, services,
-    workshops, or projects, and registers them into LINK_TAXONOMY.
-    Returns the number of new items added.
-    """
-    added_count = 0
-    workspace = Path(__file__).resolve().parent.parent
-    
-    # 1. Scan published_records/blogs (*.md)
-    blogs_dir = workspace / "autopilot" / "published_records" / "blogs"
-    if blogs_dir.exists():
-        for md_path in blogs_dir.glob("*.md"):
-            try:
-                content = md_path.read_text(encoding="utf-8")
-                slug = md_path.stem
-                url = f"https://www.anvitam.com/blog/{slug}"
-                
-                # Check if already present
-                existing_urls = {item["url"] for item in LINK_TAXONOMY.get("technical_engineering_and_architecture_blogs", [])}
-                if url not in existing_urls:
-                    title_match = re.search(r"^#\s+(.+)$", content, re.MULTILINE)
-                    title = title_match.group(1).strip() if title_match else slug.replace("-", " ").title()
-                    
-                    desc_match = re.search(r"Meta Description:\*\*\s*(.+)$", content, re.MULTILINE)
-                    meta_desc = desc_match.group(1).strip() if desc_match else ""
-                    
-                    if register_new_blog(title, slug, meta_desc, auto_save=False):
-                        added_count += 1
-            except Exception as e:
-                logger.warning(f"Error scanning blog markdown {md_path.name}: {e}")
-                
-    # 2. Scan constants.ts for any new services or projects
-    constants_path = workspace / "constants.ts"
-    if constants_path.exists():
-        try:
-            ts_content = constants_path.read_text(encoding="utf-8")
-            
-            # Match top-level services
-            services_match = re.search(r"export const SERVICES: Service\[\] = \[(.*?)\];\s*export const DIGITAL_PRODUCTS", ts_content, re.DOTALL)
-            if services_match:
-                block = services_match.group(1)
-                for m in re.finditer(r'{\s*["\']id["\']:\s*["\']([^"\']+)["\'],\s*["\']title["\']:\s*["\']([^"\']+)["\'],\s*["\']category["\']:\s*["\']([^"\']+)["\']', block):
-                    s_id = m.group(1)
-                    s_title = m.group(2)
-                    s_cat = m.group(3)
-                    s_url = f"https://www.anvitam.com/services/{s_id}"
-                    
-                    target_cat = "landscape_permaculture_and_land_services" if s_cat == "Land & Gardens" else "architecture_and_retreat_services"
-                    existing_urls = {item["url"] for item in LINK_TAXONOMY.get(target_cat, [])}
-                    if s_url not in existing_urls:
-                        if register_new_content_item(
-                            category=target_cat,
-                            title=s_title,
-                            url=s_url,
-                            topics=[s_id.replace("-", " "), s_title.lower()],
-                            suggested_anchors=[s_title, f"sustainable {s_title.lower()}"],
-                            auto_save=False
-                        ):
-                            added_count += 1
-        except Exception as e:
-            logger.warning(f"Error scanning constants.ts: {e}")
-            
-    if added_count > 0 and auto_save:
-        save_registry_to_disk()
-        logger.info(f"Auto-sync completed. Added {added_count} new items to link_registry.py.")
-        
-    return added_count
-
 
 def format_link_registry_for_prompt() -> str:
     """
     Renders the complete Anvitam Internal Link Taxonomy into a clean, categorized
     markdown reference for the Writing Agent's prompt.
-    Automatically triggers scan_and_sync_all() first to ensure 100% fresh data.
     """
-    # Auto-sync on each prompt generation
-    scan_and_sync_all(auto_save=True)
-    
     output = []
     output.append("### ANVITAM AUTHORITATIVE INTERNAL LINK TAXONOMY & MATCHING RULES")
-    output.append("You MUST distribute 1 natural, contextual internal link into each major section.")
-    output.append("SELECTION RULE: Choose links based strictly on what the section is about. DO NOT insert random links.\n")
+    output.append("MANDATORY: You MUST naturally weave at least 4 internal links into the article from the lists below.")
+    output.append("Do NOT use mechanical phrases ('click here', 'learn more', 'visit our website'). Use natural descriptive anchors.\n")
 
-    for category, links in LINK_TAXONOMY.items():
-        cat_name = category.replace("_", " ").title()
-        output.append(f"#### {cat_name}:")
-        # Include top 3 most relevant items per category to keep token budget pristine
-        for item in links[:4]:
-            topics_str = ", ".join(item["topics"][:3])
-            anchors_str = " | ".join([f'"{a}"' for a in item["suggested_anchors"][:2]])
-            output.append(f"- **<{item['url']}>** ({item['title']})")
-            output.append(f"  * When section discusses: {topics_str}")
-            output.append(f"  * Recommended Anchor: {anchors_str}")
-        output.append("")
+    output.append("#### APPROVED EXISTING BLOGS (Choose at least 1-2 when relevant):")
+    for item in LINK_TAXONOMY.get("approved_existing_blogs", []):
+        output.append(f"- **<{item['url']}>** — Anchor: \"{item['suggested_anchors'][0]}\" (Topics: {', '.join(item['topics'][:3])})")
+
+    output.append("\n#### CORE ANVITAM SERVICES (Choose at least 1-2 when relevant):")
+    for item in LINK_TAXONOMY.get("approved_services", []):
+        output.append(f"- **<{item['url']}>** — Anchor: \"{item['suggested_anchors'][0]}\" (Topics: {', '.join(item['topics'][:3])})")
+
+    output.append("\n#### REAL CASE STUDIES & PROJECTS (Choose at least 1 when relevant):")
+    for item in LINK_TAXONOMY.get("approved_projects", []):
+        output.append(f"- **<{item['url']}>** — Anchor: \"{item['suggested_anchors'][0]}\" (Context: {', '.join(item['topics'][:3])})")
 
     return "\n".join(output)
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    print("Running link_registry self-sync...")
-    new_found = scan_and_sync_all(auto_save=True)
-    print(f"Scan complete. New items added: {new_found}")
-    total_links = sum(len(items) for items in LINK_TAXONOMY.values())
-    print(f"Total active links in registry: {total_links}")
