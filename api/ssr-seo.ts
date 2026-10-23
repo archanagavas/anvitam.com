@@ -442,7 +442,7 @@ function generateSchemas(section: string, idOrSlug: string, data: { blog?: any, 
           "name": "Do you handle food forest design?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes — edible garden design services and food forest design are core to our offering and can be added to any retreat or villa landscape project."
+            "text": "Yes. Edible garden design and food forest planning are core to our architectural practice, available for private estates, retreats, and homestays."
           }
         }
       ]
@@ -534,7 +534,7 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
 
   const footerHtml = `
     <footer style="background-color: #03160E; color: #A3B8AF; padding: 40px 20px; font-family: 'Inter', sans-serif; font-size: 14px; text-align: center; border-top: 1px solid rgba(163, 184, 175, 0.1);">
-      <p style="color: #FAFAFA; font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 10px;">Anvitam — Sustainable Architecture & Eco Design Studio</p>
+      <p style="color: #FAFAFA; font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 10px;">Anvitam | Sustainable Architecture & Eco Design Studio</p>
       <p style="margin-bottom: 20px;">Vadodara, Gujarat, India | Designing for the World</p>
       <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;">
         <a href="https://www.linkedin.com/in/archana-gavas/" style="color: #CCFF00; text-decoration: none;">LinkedIn</a>
@@ -544,7 +544,7 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
       <div style="margin: 20px 0;">
         <p style="color: #FAFAFA; font-size: 14px; margin-bottom: 12px;">As Seen On &amp; Featured In</p>
         <div style="display: flex; justify-content: center; gap: 15px; align-items: center; flex-wrap: wrap;">
-          <a href="https://submitforbacklinks.com/product/anvitam?utm_source=badge&utm_medium=embed&utm_campaign=anvitam&ref=submitforbacklinks" target="_blank" rel="noopener" data-s4b-token="zRY280VBHOeqyS1Mvd0jKnJd" data-s4b-theme="light"><img src="https://submitforbacklinks.com/api/badge/zRY280VBHOeqyS1Mvd0jKnJd.svg?variant=verified&theme=light" alt="Anvitam — Verified on SubmitForBacklinks" width="220" height="48" loading="lazy"></a>
+          <a href="https://submitforbacklinks.com/product/anvitam?utm_source=badge&utm_medium=embed&utm_campaign=anvitam&ref=submitforbacklinks" target="_blank" rel="noopener" data-s4b-token="zRY280VBHOeqyS1Mvd0jKnJd" data-s4b-theme="light"><img src="https://submitforbacklinks.com/api/badge/zRY280VBHOeqyS1Mvd0jKnJd.svg?variant=verified&theme=light" alt="Anvitam: Verified on SubmitForBacklinks" width="220" height="48" loading="lazy"></a>
           <a href="https://indiehunt.io/project/anvitam" target="_blank" rel="noopener"><img src="https://indiehunt.io/badges/indiehunt-badge-light.svg" alt="Featured on IndieHunt" width="265" height="58" /></a>
           <a href="https://makerhunt.io/project/anvitam" target="_blank" rel="noopener" title="Featured on MakerHunt"><img src="https://makerhunt.io/badges/makerhunt-badge-light.svg" alt="Featured on MakerHunt" width="200" height="60" /></a>
           <a href="https://sidehunt.io/project/anvitam" target="_blank" rel="noopener" title="View project on Sidehunt"><img src="https://sidehunt.io/badges/sidehunt-badge-light.svg" alt="Featured on Sidehunt" width="200" height="60" /></a>
@@ -790,7 +790,7 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
     bodyHtml = `
       <main style="max-width: 900px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', sans-serif; line-height: 1.8;">
         <h1 style="font-family: 'Playfair Display', serif; font-size: 40px; color: #03160E; margin-bottom: 20px;">Why Sustainable Design?</h1>
-        <p style="font-size: 18px; color: #666; margin-bottom: 40px;">Conventional construction drives over 39% of global energy-related carbon emissions. Sustainable architecture is not a luxury—it is an absolute necessity for our planet and our health.</p>
+        <p style="font-size: 18px; color: #666; margin-bottom: 40px;">Conventional construction drives over 39% of global energy-related carbon emissions. Sustainable architecture is not a luxury, it is an essential foundation for our wellbeing and our planet.</p>
         
         <h2>Passive Solar & Climate-Responsive Architecture</h2>
         <p>We analyze sun paths, seasonal winds, and microclimates to design structures that naturally maintain comfortable temperatures. By maximizing natural daylight and integrating passive cooling/heating techniques, we slash lifelong energy demands.</p>
@@ -799,7 +799,7 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
         <p>Traditional industrial buildings off-gas toxic volatile organic compounds (VOCs). We build exclusively with natural, non-toxic materials like earth, stone, timber, bamboo, and lime. These materials are breathable, regulate indoor humidity, prevent mold, and lock carbon inside the building fabric.</p>
 
         <h2>Closing Ecosystem Loops</h2>
-        <p>A building should act like a tree—generating energy, harvesting water, and feeding the soil. We integrate graywater filtration, compost systems, rainwater collection, and food forestry into the immediate architectural environment, turning waste back into resource loops.</p>
+        <p>A building should act like a living tree: generating energy, harvesting water, and feeding the soil. We integrate graywater filtration, compost systems, rainwater collection, and food forestry into the immediate architectural environment, turning waste back into resource loops.</p>
       </main>
     `;
   } else if (section === 'about' || section === 'team') {
@@ -856,7 +856,7 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
     const phaseNames: Record<string, { title: string; desc: string }> = {
       'understand': {
         title: 'Phase 1: Understand',
-        desc: 'Every project begins with understanding—listening to client visions, sensing the site, and learning from local microclimates.'
+        desc: 'Every project begins with understanding: listening to client visions, sensing the site, and learning from local microclimates.'
       },
       'design': {
         title: 'Phase 2: Design',
@@ -1122,8 +1122,8 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
             </div>
           </div>
           <blockquote style="border-left: 4px solid #CCFF00; padding-left: 20px; margin: 20px 0; font-style: italic; color: #555;">
-            "Human habitats should act like trees—generating energy, purifying water, and nourishing the soil. True design excellence does not build on the land, it builds with the land, ensuring that every project enhances local ecosystems for generations to come."
-            <cite style="display: block; margin-top: 10px; font-weight: bold; font-style: normal; color: #03160E;">— Ar. Archana Gavas, Principal Architect (published in Anvitam Ecological Journal, 2025)</cite>
+            "Human habitats should act like trees: generating energy, purifying water, and nourishing the soil. True design excellence does not build on the land, it builds with the land, ensuring that every project enhances local ecosystems for generations to come."
+            <cite style="display: block; margin-top: 10px; font-weight: bold; font-style: normal; color: #03160E;">Ar. Archana Gavas, Principal Architect (published in Anvitam Ecological Journal, 2025)</cite>
           </blockquote>
         </section>
 
@@ -1226,7 +1226,7 @@ function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, 
           <p style="color: #A3B8AF; font-size: 15px; line-height: 1.6; margin-bottom: 20px;">Absolutely. We offer full digital discovery, remote design consultations, and partnered local build management across the USA and Australia.</p>
           
           <h3 style="font-size: 18px; color: #CCFF00; margin-top: 20px;">Do you handle food forest design?</h3>
-          <p style="color: #A3B8AF; font-size: 15px; line-height: 1.6; margin-bottom: 20px;">Yes — edible garden design services and food forest design are core to our offering and can be added to any retreat or villa landscape project.</p>
+          <p style="color: #A3B8AF; font-size: 15px; line-height: 1.6; margin-bottom: 20px;">Yes. Edible garden design and food forest planning are core to our architectural practice, available for private estates, retreats, and homestays.</p>
         </section>
 
         <section style="margin-bottom: 60px; text-align: center;">
@@ -1437,7 +1437,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       // Strictly maintain self-referencing canonical to avoid GSC "Google chose different canonical than user"
       const formattedTitle = idOrSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
       title = `${formattedTitle} | Projects | Anvitam`;
-      desc = `Explore sustainable architecture project ${formattedTitle} by Anvitam — farm retreats, eco-resorts, permaculture landscapes, and biophilic homes.`;
+      desc = `Explore sustainable architecture project ${formattedTitle} by Anvitam: farm retreats, eco-resorts, permaculture landscapes, and biophilic homes.`;
       canonicalUrl = `https://www.anvitam.com/projects/${idOrSlug}`;
       robots = 'index, follow, max-image-preview:large';
     }
@@ -1498,7 +1498,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       // Strictly maintain self-referencing canonical to avoid GSC "Google chose different canonical than user"
       const formattedTitle = idOrSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
       title = `${formattedTitle} | Services | Anvitam`;
-      desc = `Explore ${formattedTitle} sustainable design services by Anvitam — permaculture, farm retreats, eco-resorts, biophilic architecture, and more.`;
+      desc = `Explore ${formattedTitle} sustainable design services by Anvitam: permaculture, farm retreats, eco-resorts, biophilic architecture, and more.`;
       canonicalUrl = `https://www.anvitam.com/services/${idOrSlug}`;
       robots = 'index, follow, max-image-preview:large';
     }
@@ -1705,7 +1705,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
   template = template.replace(/<link[^>]*rel="publisher"[^>]*>/gi, '');
 
   // Inject the single canonical link
-  const canonicalTag = `<link rel="canonical" href="${canonicalUrl}" />`;
+  const canonicalTag = `<link rel="canonical" href="${canonicalUrl}" data-rh="true" id="canonical-url" />`;
   template = template.replace('</head>', `  ${canonicalTag}\n</head>`);
 
   // --- Inject JSON-LD Schema Marks ---

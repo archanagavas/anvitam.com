@@ -27,14 +27,14 @@ const DEFAULT_STEPS: Step[] = [
     n: '02',
     title: 'Read the Site',
     icon: '🗺️',
-    body: 'Before designing buildings, we decode the natural ecosystem — analyzing microclimate, sun movement, wind patterns, topography, water flow, and soil health.',
+    body: 'Before designing buildings, we decode the natural ecosystem: analyzing microclimate, sun movement, wind patterns, topography, water flow, and soil health.',
     tags: ['Sun & Wind Study', 'Waterflow Analysis', 'Soil & Contour Mapping']
   },
   {
     n: '03',
     title: 'Build the System',
     icon: '🌿',
-    body: 'We integrate living infrastructure into a cohesive masterplan — placing water harvesting, food production, energy loops, and ecological buffers.',
+    body: 'We integrate living infrastructure into a cohesive masterplan, organizing water harvesting, food production, energy loops, and ecological buffers.',
     tags: ['Rainwater Harvesting', 'Food Forest Layout', 'Eco Infrastructure']
   },
   {
@@ -68,7 +68,7 @@ const VerticalTimeline: React.FC<VerticalTimelineProps> = ({ steps = DEFAULT_STE
         </h2>
 
         <p className="text-gray-600 text-base sm:text-lg leading-relaxed">
-          Every project follows a disciplined 5-phase sequence. We don't force architecture onto land — we let the land guide the architecture.
+          Every project follows a disciplined 5-phase sequence. We never force architecture onto land. We let the land guide the architecture.
         </p>
 
         {/* Value Bullet Points */}

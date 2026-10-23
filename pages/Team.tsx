@@ -94,35 +94,35 @@ const Team: React.FC = () => {
             <div className="space-y-10 leading-relaxed text-lg">
               <motion.div variants={itemVariants}>
                 <p>
-                  As a freelance architect, I wore every hat. From concept to execution, budgeting to supervision. What kept me going was the hope that every space I touched—whether a <strong>farm retreat architecture</strong> project or a <strong>community centre design</strong>—might help someone feel seen, safe, or inspired.
+                  As a freelance architect, I wore every hat. From concept to execution, budgeting to on-site coordination. What kept me going was the conviction that every space I touched, whether a <strong>farm retreat</strong> or a <strong>community space</strong>, should help people feel grounded, safe, and deeply connected to their land.
                 </p>
                 
                 <p>
-                  That belief shaped <strong>Anvitam</strong> — my independent architecture studio, built from the ground up. I’ve led 10+ projects spanning residential architecture, commercial space design, community-driven architecture, and landscape planning. Each one rooted in context, emotion, and honest simplicity.
+                  That conviction became <strong>Anvitam</strong>, my independent architectural studio built from the ground up. I’ve led 10+ projects spanning residential architecture, off-grid farmstays, community-driven spaces, and permaculture masterplanning. Each one rooted in context, emotion, and honest simplicity.
                 </p>
               </motion.div>
 
               <motion.div variants={itemVariants}>
                 <p>
-                  But creativity, to me, doesn’t end at walls and plans. It belongs in classrooms, offices, and playgrounds too. That’s why I founded <em>Nest N Nurture</em> — a space for creative workshops that bring imagination back into design. We invite people — especially children — to transform their own spaces using color, stories, and collaboration. It’s not just a makeover. It’s ownership.
+                  Architecture does not end at concrete walls and floor plans. It belongs in schoolyards, courtyards, and open soil. That is why I founded <em>Nest N Nurture</em>, an initiative bringing hands-on design workshops and ecological making to students and communities. We invite people, especially young minds, to shape their own surroundings with natural materials, birdhouses, and collaborative storytelling. It is not just about aesthetics; it is about building deep ownership.
                 </p>
 
                 <div className="relative pl-8 py-6 my-16 italic text-[#0a0a0a] text-2xl font-serif border-l border-[#5A5A40]/30">
-                  "My process is Raw. Intentional. Rooted in <strong>permaculture landscape design</strong>, nature-based systems, and user-centered thinking."
+                  "My process is raw, intentional, and rooted in <strong>permaculture landscape design</strong>, living soil, and climate-responsive architecture."
                 </div>
               </motion.div>
 
               <motion.div variants={itemVariants}>
                 <p>
-                  Whether it’s a <strong>backyard garden design</strong>, a classroom, or a <strong>wellness retreat architecture</strong> project — I design for how people feel, grow, and belong in a space.
+                  Whether designing a productive <strong>backyard food garden</strong>, an experiential classroom, or an expansive <strong>wellness retreat</strong>, I design for how people breathe, live, and belong in a space.
                 </p>
 
                 <p>
-                  Yes, the road’s been rough. Being a solo woman founder in architecture comes with its weight. But I’ve learned to trust the quiet power of consistency, intuition, and care. I don’t follow trends. I follow stories. People. Place. Possibility.
+                  Being a solo woman founder in architecture comes with real challenges. But I’ve learned to trust the quiet power of consistency, honest craft, and deep care. I don’t follow glossy trends. I follow the soil, the sun, the wind, and the human beings who will call this space home.
                 </p>
 
                 <p className="font-serif text-[#0a0a0a] text-2xl mt-16 border-t border-[#0a0a0a]/10 pt-12">
-                  If you believe design can be deeper — let’s build something meaningful together.
+                  If you believe architecture should work with the land, let's build something lasting together.
                 </p>
               </motion.div>
             </div>

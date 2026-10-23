@@ -98,7 +98,7 @@ const Blog: React.FC = () => {
         <meta name="description" content="Stay updated with the latest news, architectural features, project stories and sustainable design trends and updates." />
         <meta name="keywords" content="architecture blog, sustainable architecture news, permaculture articles, eco design journal, farm retreat design ideas" />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://www.anvitam.com/blog" />
+        <link rel="canonical" href="https://www.anvitam.com/blog" data-rh="true" id="canonical-url" />
       </Helmet>
 
       {/* Header */}

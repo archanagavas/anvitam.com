@@ -95,9 +95,20 @@ class PublishingAgent:
         output_dir = Path(__file__).resolve().parent.parent / "published_records" / "blogs"
         output_dir.mkdir(parents=True, exist_ok=True)
         md_file = output_dir / f"{slug}.md"
+        title_vars = draft.get("title_variations", [])
+        title_vars_str = "\n".join(f"- {v}" for v in title_vars) if title_vars else ""
+
+        tldr_section = ""
+        if draft.get("tldr_bullets"):
+            tldr_section = "### Key Takeaways (TL;DR)\n\n" + "\n".join(f"- {b}" for b in draft.get("tldr_bullets", [])) + "\n\n"
+
+        infographic_section = ""
+        if draft.get("infographic_ideas"):
+            infographic_section = "\n\n### Suggested Infographic Concepts\n\n" + "\n".join(f"{i+1}. {info}" for i, info in enumerate(draft.get("infographic_ideas", []))) + "\n\n"
+
         faq_section = ""
         if draft.get("faqs"):
-            faq_section = "\n\n### Practical Frequently Asked Questions\n\n" + "\n\n".join(
+            faq_section = "\n\n### Frequently Asked Questions (Top Search Queries)\n\n" + "\n\n".join(
                 f"**Q: {item.get('question')}**\n\n{item.get('answer')}"
                 for item in draft.get("faqs", [])
             )
@@ -109,9 +120,12 @@ class PublishingAgent:
                 f"> **Author:** Ar. Archana Gavas | **Date:** {today_str} | **Slug:** `{slug}`\n"
                 f"> **Meta Description:** {draft.get('meta_description')}\n"
                 f"> **Estimated Read:** {draft.get('estimated_read_time', '8 min')}\n\n"
+                f"{('### Title Variations:\n' + title_vars_str + '\n\n') if title_vars_str else ''}"
                 f"---\n\n"
+                f"{tldr_section}"
                 f"{draft.get('content_html')}\n"
                 f"{faq_section}\n"
+                f"{infographic_section}"
             )
         self.logger.info(f"Saved local blog reading draft to: {md_file}")
 

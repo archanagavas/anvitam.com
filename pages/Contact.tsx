@@ -3,6 +3,8 @@ import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
 import { ArrowRight, Plus, Minus, CheckCircle, Calendar, MapPin, Mail, Phone, Navigation, Clock, Calculator, Sparkles } from 'lucide-react';
 import FlowButton from '../components/ui/flow-button';
+import PhoneInput from '../components/ui/PhoneInput';
+import { checkClientRateLimit, recordClientSubmission } from '../utils/rateLimiter';
 
 const Contact: React.FC = () => {
   const { addMessage } = useContent();
@@ -36,6 +38,14 @@ const Contact: React.FC = () => {
       return;
     }
 
+    // Rate limit check: max 4 attempts per 10 minutes, 15s cooldown
+    const rl = checkClientRateLimit({ key: 'contact', cooldownSeconds: 15, maxAttempts: 4, windowMinutes: 10 });
+    if (!rl.allowed) {
+      setSubmitError(rl.message || 'Please wait a moment before sending another message.');
+      setStatus('error');
+      return;
+    }
+
     // ── Email format validation ──────────────────────────────────────
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email || !emailRegex.test(formData.email)) {
@@ -44,9 +54,16 @@ const Contact: React.FC = () => {
       return;
     }
 
+    // ── Phone validation ─────────────────────────────────────────────
+    const digits = (formData.phone || '').replace(/[^\d]/g, '');
+    if (!formData.phone || digits.length < 7) {
+      setSubmitError('Please enter a valid phone number with your country code.');
+      setStatus('error');
+      return;
+    }
+
     setStatus('submitting');
     setSubmitError(null);
-
 
     const formattedMessage = `[DIRECT CONTACT INQUIRY]
 Service Requested: ${formData.serviceType}
@@ -78,26 +95,32 @@ ${formData.message}`;
     }
 
     // ── Always save to local admin panel & trigger email alert ───────
-    await addMessage({
-      id: crypto.randomUUID(),
-      name: `${formData.firstName} ${formData.lastName}`.trim(),
-      email: formData.email,
-      message: formattedMessage,
-      date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
-    });
-
-    setStatus('success');
-    setFormData({
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      serviceType: 'Farm Retreat Architecture',
-      location: '',
-      area: '',
-      timeline: '1-3 Months (Immediate)',
-      message: ''
-    });
+    try {
+      await addMessage({
+        id: crypto.randomUUID(),
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        email: formData.email,
+        message: formattedMessage,
+        date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
+      });
+      recordClientSubmission('contact', 10);
+      setStatus('success');
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        serviceType: 'Farm Retreat Architecture',
+        location: '',
+        area: '',
+        timeline: '1-3 Months (Immediate)',
+        message: ''
+      });
+    } catch (err: any) {
+      console.error('[Contact] Submission error:', err);
+      setSubmitError(err?.message || 'Failed to send message. Please check your connection and try again.');
+      setStatus('error');
+    }
   };
 
   const faqData: Record<string, {q: string, a: string}[]> = {
@@ -322,13 +345,17 @@ ${formData.message}`;
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-[#111] ml-1">Phone Number *</label>
-                    <input 
-                      type="tel" 
+                    <PhoneInput 
                       required
+                      variant="pill"
                       value={formData.phone}
-                      onChange={e => setFormData({...formData, phone: e.target.value})}
-                      className="w-full bg-white border border-gray-200 rounded-full px-5 py-3 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-all font-medium text-sm text-[#111]" 
-                      placeholder="+91 99999 99999"
+                      onChange={(fullNumber, country) => {
+                        setFormData(prev => ({
+                          ...prev,
+                          phone: fullNumber,
+                          location: prev.location || country.name,
+                        }));
+                      }}
                     />
                   </div>
                 </div>

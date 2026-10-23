@@ -343,7 +343,7 @@ export const SolarCard: React.FC<Props> = ({ data, lat }) => {
         <div>
           <p className="rec-title text-xs font-black text-emerald-900">Optimal Architectural Orientation</p>
           <p className="rec-text text-xs text-emerald-800 leading-relaxed">
-            {data.optimal_orientation} — maximises winter solar heat gain ({data.winter_solstice_noon_alt}° noon altitude) and facilitates deep daylighting.
+            {data.optimal_orientation}: maximises winter solar heat gain ({data.winter_solstice_noon_alt}° noon altitude) and facilitates deep daylighting.
           </p>
           {data.is_sub_tropical_north && (
             <p className="text-[11px] text-emerald-900 font-semibold mt-1 bg-emerald-100/60 p-1.5 rounded-lg border border-emerald-200/60">

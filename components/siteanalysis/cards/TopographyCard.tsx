@@ -63,20 +63,20 @@ export const TopographyCard: React.FC<Props> = ({ elevation, lat, lon }) => {
   const catchmentProfile = isLowland
     ? {
         basinRole: 'Depression / Alluvial Basin',
-        runoffVelocity: 'Slow (<0.4 m/s) — High Ponding Risk',
+        runoffVelocity: 'Slow (<0.4 m/s) with high ponding risk',
         waterTable: 'Shallow (1.0m – 2.5m bgl)',
         lidGuidance: 'Permeable swales, surface bio-retention ponds, and non-submersible foundation waterproofing.',
       }
     : isHilly || isMountain
     ? {
         basinRole: 'Ridge / Watershed Shedding Zone',
-        runoffVelocity: 'Rapid (1.2 – 2.5 m/s) — High Scour Hazard',
+        runoffVelocity: 'Rapid (1.2 to 2.5 m/s) with high scour hazard',
         waterTable: 'Deep (>6.0m bgl)',
         lidGuidance: 'Contour bunding, stepped rock check-dams, and contour bioswales to arrest erosion velocity.',
       }
     : {
         basinRole: 'Mid-Slope Flow Plane',
-        runoffVelocity: 'Moderate (0.5 – 0.9 m/s) — Self-Cleansing',
+        runoffVelocity: 'Moderate (0.5 to 0.9 m/s), self-cleansing',
         waterTable: 'Moderate (3.0m – 5.0m bgl)',
         lidGuidance: 'Perimeter French drains, gravity-fed rain garden cells, and standard infiltration pits.',
       };
@@ -196,10 +196,10 @@ export const TopographyCard: React.FC<Props> = ({ elevation, lat, lon }) => {
           <p className="text-xs font-bold text-slate-900">Geotechnical Foundation Guidance</p>
           <p className="text-[11px] text-slate-600 font-normal leading-relaxed mt-0.5">
             {elevation < 50
-              ? 'Coastal / Lowland site — verify local High Flood Level (HFL), sulfate corrosion potential in ground water, and minimum 1.5m foundation depth.'
+              ? 'Coastal / Lowland site: verify local High Flood Level (HFL), sulfate corrosion potential in ground water, and minimum 1.5m foundation depth.'
               : elevation > 1000
-              ? 'Montane site — design foundation against frost-heave, seismic acceleration, and downslope shear forces.'
-              : 'Plains terrain — standard isolated/raft footings feasible. Perform 3-point borehole SPT soil investigation before final structural sign-off.'}
+              ? 'Montane site: design foundation against frost-heave, seismic acceleration, and downslope shear forces.'
+              : 'Plains terrain: standard isolated/raft footings feasible. Perform 3-point borehole SPT soil investigation before final structural sign-off.'}
           </p>
         </div>
       </div>

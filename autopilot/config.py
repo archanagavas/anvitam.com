@@ -127,7 +127,7 @@ def call_gemini(
     """Call Google Gemini API with fallback across flash models."""
     if not GEMINI_API_KEY:
         return None
-    for model_name in ["gemini-flash-latest", "gemini-2.5-flash-lite", "gemini-pro-latest"]:
+    for model_name in ["gemini-3.8-flash", "gemini-flash-latest", "gemini-3.1-flash-lite", "gemini-pro-latest"]:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={GEMINI_API_KEY}"
         contents = []
         if system_instruction:
@@ -160,7 +160,7 @@ def call_groq(
     system_instruction: Optional[str] = None,
     json_mode: bool = False
 ) -> Optional[str]:
-    """Call Groq API with robust active models and rate-limit backoff."""
+    """Call Groq API with robust active models and fast fallback on rate limit."""
     if not GROQ_API_KEY:
         return None
     url = "https://api.groq.com/openai/v1/chat/completions"
@@ -173,42 +173,35 @@ def call_groq(
         messages.append({"role": "system", "content": system_instruction})
     messages.append({"role": "user", "content": prompt})
 
-    models_to_try = ["qwen/qwen3.8-27b", "openai/gpt-oss-120b"]
+    # Prioritize 120b and 20b which have high rate limits, then qwen
+    models_to_try = ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"]
     for m in models_to_try:
         cur_messages = list(messages)
         payload = {
             "model": m,
             "messages": cur_messages,
             "temperature": 0.2 if json_mode else 0.7,
-            "max_tokens": 2400
+            "max_tokens": 3000
         }
         if json_mode:
             has_json = ("json" in prompt.lower()) or (system_instruction and "json" in system_instruction.lower())
             if not has_json:
                 cur_messages[-1] = {"role": "user", "content": cur_messages[-1]["content"] + "\n\nRespond strictly with a valid JSON object."}
 
-        for attempt in range(5):
-            try:
-                res = requests.post(url, headers=headers, json=payload, timeout=45)
-                if res.status_code == 200:
-                    data = res.json()
-                    return data["choices"][0]["message"]["content"]
-                elif res.status_code == 429:
-                    retry_header = res.headers.get("retry-after")
-                    try:
-                        base_sleep = int(float(retry_header)) if retry_header else (10 + attempt * 5)
-                    except Exception:
-                        base_sleep = 10 + attempt * 5
-                    sleep_duration = max(base_sleep, 10 + attempt * 5)
-                    logger.info(f"Groq ({m}) rate limited (429). Waiting {sleep_duration}s for token bucket replenishment (attempt {attempt + 1}/5)...")
-                    time.sleep(sleep_duration)
-                    continue
-                else:
-                    logger.debug(f"Groq ({m}) error {res.status_code}: {res.text[:120]}")
-                    break
-            except Exception as e:
-                logger.debug(f"Groq call failed for {m}: {e}")
-                break
+        try:
+            res = requests.post(url, headers=headers, json=payload, timeout=45)
+            if res.status_code == 200:
+                data = res.json()
+                return data["choices"][0]["message"]["content"]
+            elif res.status_code == 429:
+                logger.info(f"Groq ({m}) rate limited (429). Switching immediately to next fallback model...")
+                continue
+            else:
+                logger.debug(f"Groq ({m}) error {res.status_code}: {res.text[:120]}")
+                continue
+        except Exception as e:
+            logger.debug(f"Groq call failed for {m}: {e}")
+            continue
     return None
 
 

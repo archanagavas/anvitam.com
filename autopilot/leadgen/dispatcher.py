@@ -6,6 +6,7 @@ logs transparently to autopilot/leads/outreach_log.md (WHO was sent and WHY),
 and syncs real leads directly into Google Cloud Firestore (collection: client_leads).
 """
 
+import sys
 import time
 import json
 import random
@@ -14,6 +15,14 @@ import requests
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 from pathlib import Path
+
+# Ensure UTF-8 output on Windows
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 from .config import (
     WORKSPACE_ROOT,
@@ -414,4 +423,34 @@ def dispatch_staged_leads(
     print(f"📁 Detailed Audit Ledger: {OUTREACH_AUDIT_LOG_FILE}")
     print("=" * 70)
 
-    return {"status": "complete", "dispatched": dispatched, "dry_run": dry_run}
+    # Check if all leads in the staged queue have been completed
+    if len(remaining_staged) == 0:
+        alert_msg = (
+            "\n" + "=" * 70 + "\n"
+            "🚨 [LEAD PIPELINE EMPTY / COMPLETE]\n"
+            "✔ All verified leads in the active queue have been dispatched!\n"
+            "📢 Please replenish or provide a new batch of verified leads.\n"
+            "=" * 70 + "\n"
+        )
+        print(alert_msg)
+        logger.info("🚨 All verified leads in the active queue have been dispatched.")
+
+        if not dry_run:
+            try:
+                send_single_email_resend(
+                    to_email=ARCHANA_EMAIL,
+                    subject="🚨 Anvitam Lead Pipeline Complete — Ready for New Lead Batch",
+                    body=(
+                        f"Hi Archana,\n\n"
+                        f"All verified leads in the active queue have been successfully dispatched.\n\n"
+                        f"Total processed: {dispatched} prospects at 5-minute intervals.\n"
+                        f"Detailed audit log: {OUTREACH_AUDIT_LOG_FILE}\n\n"
+                        f"The queue is now empty. Please add or request a new batch of verified leads to continue outreach.\n\n"
+                        f"Best,\nAnvitam Autopilot Engine"
+                    )
+                )
+                print(f"📧 Notification sent to {ARCHANA_EMAIL} alerting that the list is complete.")
+            except Exception as ne:
+                logger.warning(f"Note sending pipeline complete notification: {ne}")
+
+    return {"status": "complete", "dispatched": dispatched, "remaining": len(remaining_staged), "dry_run": dry_run}

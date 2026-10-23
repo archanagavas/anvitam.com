@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, FileText, Link as LinkIcon, Lock, ArrowRight, CheckCircle, ExternalLink, ShieldCheck, Sparkles } from 'lucide-react';
 import { ProjectDocument } from '../types';
+import PhoneInput from './ui/PhoneInput';
+import { checkClientRateLimit, recordClientSubmission } from '../utils/rateLimiter';
 
 const SESSION_KEY = 'anvitam_doc_access_granted';
 
@@ -38,14 +40,23 @@ const LeadGateModal: React.FC<LeadGateModalProps> = ({ doc, contextTitle, onClos
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!name.trim() || !email.trim() || !phone.trim()) {
-      setError('Please fill in all required fields to continue.');
+
+    // Rate limit check: max 4 attempts per 10 minutes, 15s cooldown
+    const rl = checkClientRateLimit({ key: 'doc_lead', cooldownSeconds: 15, maxAttempts: 4, windowMinutes: 10 });
+    if (!rl.allowed) {
+      setError(rl.message || 'Please wait a moment before submitting again.');
+      return;
+    }
+
+    const digits = phone.replace(/[^\d]/g, '');
+    if (!name.trim() || !email.trim() || digits.length < 7) {
+      setError('Please fill in your name, email, and a valid phone number.');
       return;
     }
     setBusy(true);
     try {
       const msg = `[DOCUMENT ACCESS REQUEST]\nDocument: ${doc.label}\nContext: ${contextTitle}\nPhone: ${phone}`;
-      await fetch('/api/messages', {
+      const res = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -55,14 +66,19 @@ const LeadGateModal: React.FC<LeadGateModalProps> = ({ doc, contextTitle, onClos
           date: new Date().toISOString(),
         }),
       });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Server error: ${res.status}`);
+      }
+      recordClientSubmission('doc_lead', 10);
       grantAccess();
       setDone(true);
       setTimeout(() => {
         onSuccess();
         onClose();
       }, 1000);
-    } catch (err) {
-      setError('Something went wrong. Please try again.');
+    } catch (err: any) {
+      setError(err?.message || 'Something went wrong. Please try again.');
     } finally {
       setBusy(false);
     }
@@ -148,25 +164,45 @@ const LeadGateModal: React.FC<LeadGateModalProps> = ({ doc, contextTitle, onClos
                 Enter your details to instantly view and download this resource. You'll also receive priority updates on architectural insights by Ar. Archana Gavas.
               </p>
 
-              {[
-                { label: 'Full Name', key: 'name', type: 'text', placeholder: 'e.g. Rahul Sharma', value: name, set: setName },
-                { label: 'Email Address', key: 'email', type: 'email', placeholder: 'you@example.com', value: email, set: setEmail },
-                { label: 'Phone Number', key: 'phone', type: 'tel', placeholder: '+91 98765 43210', value: phone, set: setPhone },
-              ].map(f => (
-                <div key={f.key}>
-                  <label className="block text-[10px] font-extrabold uppercase tracking-widest text-white/60 mb-1.5">
-                    {f.label} <span className="text-[#CCFF00]">*</span>
-                  </label>
-                  <input
-                    required
-                    type={f.type}
-                    placeholder={f.placeholder}
-                    value={f.value}
-                    onChange={e => f.set(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-white/30 outline-none focus:border-[#CCFF00] focus:ring-1 focus:ring-[#CCFF00]/40 transition-all font-medium"
-                  />
-                </div>
-              ))}
+              <div>
+                <label className="block text-[10px] font-extrabold uppercase tracking-widest text-white/60 mb-1.5">
+                  Full Name <span className="text-[#CCFF00]">*</span>
+                </label>
+                <input
+                  required
+                  type="text"
+                  placeholder="e.g. Rahul Sharma"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-white/30 outline-none focus:border-[#CCFF00] focus:ring-1 focus:ring-[#CCFF00]/40 transition-all font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-extrabold uppercase tracking-widest text-white/60 mb-1.5">
+                  Email Address <span className="text-[#CCFF00]">*</span>
+                </label>
+                <input
+                  required
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-white/30 outline-none focus:border-[#CCFF00] focus:ring-1 focus:ring-[#CCFF00]/40 transition-all font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-extrabold uppercase tracking-widest text-white/60 mb-1.5">
+                  Phone Number <span className="text-[#CCFF00]">*</span>
+                </label>
+                <PhoneInput
+                  required
+                  variant="rounded"
+                  value={phone}
+                  onChange={(fullNumber) => setPhone(fullNumber)}
+                />
+              </div>
 
               {error && (
                 <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/30 rounded-xl px-3.5 py-2.5">

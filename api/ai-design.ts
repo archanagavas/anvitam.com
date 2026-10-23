@@ -43,7 +43,7 @@ import {
   generateWithCloudflare,
   generateWithReplicate,
   generateWithControlNet,
-  generateWithPollinations,
+  generateWithGeminiImage,
   HF_MODELS,
 } from './hf-image-gen.js';
 
@@ -846,7 +846,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
           if (!generatedImageB64) {
              // Fallback to standard cascade if ControlNet fails or no sourceImage was provided
              if (modelTier === 'instant-free') {
-               generatedImageB64 = await generateWithPollinations(positive) || '';
+               generatedImageB64 = await generateWithGeminiImage(positive) || '';
              } else {
                const timeoutMs = (modelTier === 'hard-master' || modelTier === 'realistic') ? 45000 : (modelTier === 'med-balanced' || modelTier === 'sdxl' ? 15000 : 8000);
                const selectedModel = (modelTier === 'hard-master' || modelTier === 'realistic') ? HF_MODELS.realistic : (modelTier === 'med-balanced' || modelTier === 'sdxl' ? HF_MODELS.sdxl : HF_MODELS.flux_schnell);
@@ -855,7 +855,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
                 (await generateWithHuggingFace(positive, selectedModel, timeoutMs)) ||
                 (await generateWithCloudflare(positive, 8000)) ||
                 (await generateWithReplicate(positive, 8000)) ||
-                (await generateWithPollinations(positive)) ||
+                (await generateWithGeminiImage(positive)) ||
                 '';
              }
           }
@@ -867,7 +867,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       // Guarantee output image is NEVER identical to input sourceImage
       let finalOutputImage = generatedImageB64;
       if (!finalOutputImage) {
-        finalOutputImage = (await generateWithPollinations(`${style} ${roomType} high luxury design`)) ||
+        finalOutputImage = (await generateWithGeminiImage(`${style} ${roomType} high luxury design`)) ||
           'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200&auto=format&fit=crop';
       }
 

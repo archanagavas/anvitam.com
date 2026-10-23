@@ -73,6 +73,7 @@ export default function Tools() {
             ? "Access Anvitam's AI Space & Home Studio and 3D Site Intelligence Canvas for photorealistic renders and environmental site reports."
             : "Access Anvitam's 3D Site Intelligence Canvas for solar shadow simulations, wind analysis, and environmental site reports."}
         />
+        <link rel="canonical" href="https://www.anvitam.com/tools" data-rh="true" id="canonical-url" />
       </Helmet>
 
       <div className="w-full bg-white text-[#111111] min-h-screen font-sans overflow-hidden">
@@ -311,7 +312,7 @@ export default function Tools() {
                     </li>
                     <li className="flex items-center gap-2.5">
                       <CheckCircle2 size={16} className="text-[#CCFF00] shrink-0" />
-                      <span>Pay once — zero monthly automatic bills</span>
+                      <span>Pay once, with no automatic monthly bills</span>
                     </li>
                     <li className="flex items-center gap-2.5">
                       <CheckCircle2 size={16} className="text-[#CCFF00] shrink-0" />
@@ -487,7 +488,7 @@ export default function Tools() {
         <StickyConsultationBar
           title="Planning an eco-resort, farm retreat, or passive villa?"
           subtitle="Have Ar. Archana Gavas review your land contours, climate data, and water harvesting plan."
-          ctaText="Book 1-on-1 Review →"
+          ctaText="Book 1-on-1 Review"
         />
 
       </div>

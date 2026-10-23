@@ -967,7 +967,7 @@ export default function CADStudio({ onExportDXF, onElementsChange, fullScreen = 
             if (parsed.settings.wallThickness) setWallThickness(parsed.settings.wallThickness);
             if (parsed.settings.wallMaterial) setWallMaterial(parsed.settings.wallMaterial);
           }
-          setCommandHistory(prev => [...prev, `Opened: ${file.name} — ${parsed.elements.length} elements`]);
+          setCommandHistory(prev => [...prev, `Opened: ${file.name} (${parsed.elements.length} elements)`]);
         }
       } catch { alert('Invalid .rcad or .json project file.'); }
     };
@@ -1392,7 +1392,7 @@ export default function CADStudio({ onExportDXF, onElementsChange, fullScreen = 
               </div>
               {drawingStart && (
                 <div className="absolute top-3 right-3 z-10 bg-[#1E40AF] text-white px-3 py-1 rounded-xl text-xs font-mono shadow-xs">
-                  {activeTool.toUpperCase()} — click to complete, Esc to cancel
+                  {activeTool.toUpperCase()}: click to complete, Esc to cancel
                 </div>
               )}
               <canvas

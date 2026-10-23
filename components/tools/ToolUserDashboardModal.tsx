@@ -131,7 +131,7 @@ export const ToolUserDashboardModal: React.FC<ToolUserDashboardModalProps> = ({
                 <div className="flex items-center justify-between pt-2">
                   <p className="text-[11px] text-gray-400">
                     {user.is_subscribed
-                      ? '⚡ Pro Plan Active — 250 monthly credits automatically refilled.'
+                      ? '⚡ Pro Plan Active: 250 monthly credits automatically refilled.'
                       : `Trial expires in ${user.trial_days_remaining} days.`}
                   </p>
                   <button

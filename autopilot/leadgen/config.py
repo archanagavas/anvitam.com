@@ -33,8 +33,8 @@ ARCHANA_STUDIO = "Anvitam Studio"
 ARCHANA_EMAIL = os.getenv("ARCHANA_NOTIFICATION_EMAIL", "ar.archanagavas@gmail.com")
 CC_NOTIFICATIONS = ["ar.archanagavas@gmail.com"]
 
-# Action Links & 2-Step Consultation Funnel ($100 initial feasibility audit -> full architectural masterplan)
-TOPMATE_BOOKING_URL = "https://topmate.io/archanagavas/2322246?utm_source=estimator&utm_campaign=estimate_lead"
+# Action Links & 2-Step Consultation Funnel
+TOPMATE_BOOKING_URL = "https://topmate.io/archanagavas/2322246?utm_source=public_profile&utm_campaign=archanagavas"
 PORTFOLIO_URL = "https://www.anvitam.com/projects"
 SITE_ANALYSIS_URL = "https://www.anvitam.com/site-analysis"
 CONSULTATION_FEE_USD = "$100"
@@ -48,13 +48,13 @@ INDIAN_TARGET_RATIO = 0.05
 FEMALE_TARGET_RATIO = 0.40
 MALE_TARGET_RATIO = 0.60
 
-# Safe Sending Caps: 40-50 emails/day across 15-hour operating window (07:00 to 22:00)
-# Spaced at 30-75s intervals (~3 emails/hour average across the day) for pristine SPF/DKIM inbox delivery.
-MAX_DAILY_SENDS = 45
+# Safe Sending Caps: Max 100 emails/day (Resend Tier Cap)
+# Spaced at ~5 minute intervals (290-310s) as requested by Archana.
+MAX_DAILY_SENDS = 100
 DAILY_OPERATING_START_HOUR = 7   # 07:00 AM
-DAILY_OPERATING_END_HOUR = 22    # 10:00 PM (15-hour daily operating window)
-MIN_SECONDS_BETWEEN_EMAILS = 30
-MAX_SECONDS_BETWEEN_EMAILS = 75
+DAILY_OPERATING_END_HOUR = 23    # 11:00 PM
+MIN_SECONDS_BETWEEN_EMAILS = 290 # ~5 minutes
+MAX_SECONDS_BETWEEN_EMAILS = 310 # ~5 minutes
 
 # Resend Config (anvitam.com is verified!)
 RESEND_API_KEY = os.getenv("RESEND_API_KEY")

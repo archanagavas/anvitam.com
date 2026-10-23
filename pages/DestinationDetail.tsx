@@ -213,7 +213,7 @@ export const DESTINATIONS: Record<string, DestinationData> = {
     faqs: [
       {
         question: 'Can you restore old Portuguese homes in Goa sustainably?',
-        answer: 'Yes. We specialize in sensitive heritage retrofitting—replacing cement patches with breathable slaked lime, restoring timber trusses, and introducing discreet modern plumbing and solar heating.'
+        answer: 'Yes. We specialize in sensitive heritage retrofitting, replacing cement patches with breathable slaked lime, restoring timber trusses, and introducing discreet modern plumbing and solar heating.'
       },
       {
         question: 'Why choose natural pools over conventional chemical pools for Goan luxury villas?',
@@ -280,7 +280,7 @@ const DestinationDetail: React.FC = () => {
       <Helmet>
         <title>{`${data.heroHeadline} | Anvitam Architects`}</title>
         <meta name="description" content={data.subheadline} />
-        <link rel="canonical" href={canonicalUrl} />
+        <link rel="canonical" href={canonicalUrl} data-rh="true" id="canonical-url" />
         <meta property="og:title" content={`${data.heroHeadline} | Anvitam Architects`} />
         <meta property="og:description" content={data.subheadline} />
         <meta property="og:url" content={canonicalUrl} />

@@ -126,6 +126,20 @@ COHORTS: Dict[str, Dict[str, Any]] = {
         "why_target": "Global architectural practices frequently outsource drafting, while private investors seek authoritative guidance to de-risk high-ticket projects.",
         "female_nuance": "Emphasizes peer-to-peer design synergy, collaborative aesthetic alignment, and meticulous detailing.",
         "male_nuance": "Emphasizes production turnaround speed, construction-ready drawing compliance, and seamless remote coordination."
+    },
+    "landowners": {
+        "id": "landowners",
+        "week_number": 5,
+        "name": "NRIs, Private Landowners, Farmstead Owners & Estate Developers",
+        "short_name": "Landowners & NRI Investors",
+        "target_geos": TOP_TRAVEL_DESTINATIONS,
+        "osm_filters": [],
+        "pain_point": "HNW professionals, NRI investors, and private landowners buying 1-10 acres in prime rural corridors want to build a family retreat or farm villa but don't know how to orient the home, manage slopes, or control contractor costs before breaking ground.",
+        "pitch_angle": "Architectural space planning, villa typologies, bioclimatic orientation, and 3D visualization that give landowners clarity on cost, layout, and build before concrete is poured.",
+        "intro_offer_name": "30-min Land & Space Planning Feasibility Call ($100 introductory session)",
+        "why_target": "Private landowners are the highest-ticket direct architectural clients seeking full masterplanning, space planning, and 3D visual packages.",
+        "female_nuance": "Emphasizes biophilic harmony, natural light, family sanctuary, and natural material health.",
+        "male_nuance": "Emphasizes site feasibility, budget protection, structural durability, and maximum usable land value."
     }
 }
 

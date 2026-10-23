@@ -125,7 +125,7 @@ const Shop: React.FC = () => {
         <meta name="description" content="Explore Anvitam's curated e-books, guides, resources, and online courses on sustainable architecture, permaculture design, farm retreats, and eco homestays." />
         <meta name="keywords" content="sustainable architecture course, permaculture design guide, eco retreat ebook, farm stay design resources, architecture consultation" />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://www.anvitam.com/shop" />
+        <link rel="canonical" href="https://www.anvitam.com/shop" data-rh="true" id="canonical-url" />
         <meta property="og:title" content="Shop & Courses | Anvitam" />
         <meta property="og:description" content="E-books, guides, and courses on sustainable architecture and permaculture design." />
       </Helmet>
@@ -154,7 +154,7 @@ const Shop: React.FC = () => {
                 <Video size={12} /> Online Courses
               </div>
               <h2 className="text-3xl md:text-4xl font-bold text-[#111] tracking-tight">Learn From Archana Gavas</h2>
-              <p className="text-[#555] text-sm mt-1">All courses are hosted on Topmate — click to book or buy</p>
+              <p className="text-[#555] text-sm mt-1">All courses are hosted on Topmate. Click any course to enroll directly.</p>
             </div>
           </motion.div>
 

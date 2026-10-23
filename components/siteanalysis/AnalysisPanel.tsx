@@ -348,7 +348,7 @@ ${r.swot?.threats?.map(t => `- **${t.title}** (${t.tag}): ${t.desc}`).join('\n')
             <div className="flex items-center gap-4 text-[10px] font-mono text-gray-800 bg-gray-50 px-3 py-1 rounded-xl border border-gray-300">
               <span className="font-bold flex items-center gap-1 text-red-700">▲ TRUE NORTH (0°)</span>
               <span>|</span>
-              <span>SCALE 1:1000 (0 — 50m — 100m)</span>
+              <span>SCALE 1:1000 (0 - 50m - 100m)</span>
               <span>|</span>
               <span>DATUM: WGS 84 / EPSG:3857</span>
             </div>

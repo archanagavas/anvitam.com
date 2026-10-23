@@ -387,27 +387,36 @@ export async function generateWithControlNet(prompt: string, sourceImageB64: str
   }
 }
 
-// ── Pollinations AI Fallback (100% Free, Zero Key Required) ────────────────────
+// ── Google Gemini Imagen Fallback ─────────────────────────────────────────────
 
-export async function generateWithPollinations(prompt: string): Promise<string | null> {
+export async function generateWithGeminiImage(prompt: string): Promise<string | null> {
+  const geminiKey = process.env.GEMINI_API_KEY;
+  if (!geminiKey) return null;
   try {
-    const seed = Math.floor(Math.random() * 1000000);
-    const cleanPrompt = prompt.substring(0, 300);
-    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?width=1024&height=1024&nologo=true&seed=${seed}`;
-    const res = await fetch(url);
-    if (!res.ok) {
-      console.warn(`[hf-image-gen/pollinations] Status: ${res.status}`);
-      return null;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${geminiKey}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        instances: [{ prompt: prompt.substring(0, 400) }],
+        parameters: { sampleCount: 1, aspectRatio: '1:1', outputMimeType: 'image/jpeg' }
+      })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const b64 = data?.predictions?.[0]?.bytesBase64Encoded;
+      if (b64) {
+        return `data:image/jpeg;base64,${b64}`;
+      }
     }
-    const buf = await res.arrayBuffer();
-    const b64 = Buffer.from(buf).toString('base64');
-    const contentType = res.headers.get('content-type') || 'image/jpeg';
-    return `data:${contentType};base64,${b64}`;
   } catch (err) {
-    console.error('[hf-image-gen/pollinations] Error:', err);
-    return null;
+    console.warn('[hf-image-gen/gemini] Gemini Imagen call failed:', err);
   }
+  return null;
 }
+
+// Backwards-compatibility alias so callers never crash
+export const generateWithPollinations = generateWithGeminiImage;
 
 // ── Main Handler ──────────────────────────────────────────────────────────────
 
@@ -553,10 +562,10 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     timeoutMs = 45000; // 45 seconds (gives Vercel 15s to gracefully failover before 60s hard limit)
   }
 
-  // If user requested instant-free, skip the heavy models
+  // If user requested instant-free, use Gemini
   let imageB64: string | null = null;
   if (modelTier === 'instant-free') {
-    imageB64 = await generateWithPollinations(positivePrompt);
+    imageB64 = await generateWithGeminiImage(positivePrompt);
   } else {
     // 1. Try HuggingFace FLUX.1-schnell (free)
     imageB64 = await generateWithHuggingFace(positivePrompt, selectedModel, timeoutMs);
@@ -580,10 +589,10 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     }
   }
 
-  // 5. Absolute Final Fallback: Pollinations (Instant, Free, Zero Key)
+  // 5. Final Fallback: Gemini Imagen
   if (!imageB64) {
-    console.log('[hf-image-gen] All keys failed or timed out. Falling back to Pollinations.ai...');
-    imageB64 = await generateWithPollinations(positivePrompt);
+    console.log('[hf-image-gen] Trying Gemini Imagen fallback...');
+    imageB64 = await generateWithGeminiImage(positivePrompt);
   }
 
   if (!imageB64) {

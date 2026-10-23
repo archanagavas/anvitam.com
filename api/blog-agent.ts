@@ -210,8 +210,35 @@ async function generateAndUploadCoverImage(promptText: string, slug: string): Pr
 
   let imageBuffer: Buffer | null = null;
 
-  // 1. Try HuggingFace Serverless FLUX.1-schnell
-  if (hfKey) {
+  // 1. Try Google Gemini Imagen API
+  const geminiKey = process.env.GEMINI_API_KEY;
+  if (geminiKey && !imageBuffer) {
+    try {
+      console.log('[blog-agent] Generating architectural cover with Gemini Imagen API...');
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${geminiKey}`;
+      const gResp = await fetch(geminiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          instances: [{ prompt: enrichedPrompt }],
+          parameters: { sampleCount: 1, aspectRatio: '16:9', outputMimeType: 'image/jpeg' }
+        })
+      });
+      if (gResp.ok) {
+        const gData = await gResp.json();
+        const b64 = gData?.predictions?.[0]?.bytesBase64Encoded;
+        if (b64) {
+          imageBuffer = Buffer.from(b64, 'base64');
+          console.log('[blog-agent] Image generated via Gemini Imagen');
+        }
+      }
+    } catch (err: any) {
+      console.warn('[blog-agent] Gemini image generation note:', err.message);
+    }
+  }
+
+  // 2. Try HuggingFace Serverless FLUX.1-schnell
+  if (hfKey && !imageBuffer) {
     try {
       console.log('[blog-agent] Generating image with HF FLUX.1-schnell...');
       const controller = new AbortController();
@@ -234,22 +261,6 @@ async function generateAndUploadCoverImage(promptText: string, slug: string): Pr
       }
     } catch (err: any) {
       console.warn('[blog-agent] HF image gen failed or timed out:', err.message);
-    }
-  }
-
-  // 2. Fallback to Pollinations.ai (100% free, fast, zero key needed)
-  if (!imageBuffer) {
-    try {
-      console.log('[blog-agent] Falling back to Pollinations image generation...');
-      const seed = Math.floor(Math.random() * 89999) + 10000;
-      const pollUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(enrichedPrompt)}?width=1280&height=720&nologo=true&seed=${seed}&model=flux`;
-      const pResp = await fetch(pollUrl);
-      if (pResp.ok) {
-        const arrayBuf = await pResp.arrayBuffer();
-        imageBuffer = Buffer.from(arrayBuf);
-      }
-    } catch (err: any) {
-      console.warn('[blog-agent] Pollinations failed:', err.message);
     }
   }
 

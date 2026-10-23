@@ -51,11 +51,11 @@ echo              - Publishes architectural master guides + 5 tailored posts
 echo              - Syndicates to Bluesky, Mastodon, Threads, Buffer, Twitter, Medium
 echo              - Updates link registry and auto-syncs to GitHub
 echo.
-echo   [Window 2] Global Lead Generation + Live Outreach Engine (4-Hour Loop)
-echo              - Targets 90%% Global / 10%% India active weekly sector cohorts
-echo              - Targets Tech Founders, Developers, Merchant Navy, Industrialists, Cafes, Retreats
-echo              - Verifies email deliverability + crafts tailored $100 audit pitches
-echo              - Dispatches live via Resend API (CCs ar.archanagavas@gmail.com)
+echo   [Window 2] Global Lead Generation + Live Outreach Engine (1 Email Every 5 Mins)
+echo              - Dispatches to 100+ verified leads (Restaurants, Landowners/NRIs, Retreats, Realtors, Architects)
+echo              - Exact 5-minute spacing between sends for pristine inbox reputation
+echo              - Dispatches live via Resend API (CCs ar.archanagavas@gmail.com on every send)
+echo              - Automatically emails an alert to ar.archanagavas@gmail.com when queue completes
 echo.
 echo ======================================================================
 echo.
@@ -66,7 +66,7 @@ start "🌿 Anvitam [Window 1] - Content + Social Syndication Engine" cmd /k "cd
 
 :: Launch Window 2 (Lead Gen & Outreach Loop)
 echo Starting Window 2: Global Lead Gen + Live Outreach Engine...
-start "🌿 Anvitam [Window 2] - Global Lead Gen + Live Outreach Engine" cmd /k "cd /d "%~dp0" && color 0E && python -m autopilot.leadgen.runner --mode all --live --loop --interval 240"
+start "🌿 Anvitam [Window 2] - Global Lead Gen + Live Outreach Engine" cmd /k "cd /d "%~dp0" && color 0E && python -m autopilot.leadgen.runner --mode all --live --loop --interval 10"
 
 echo.
 echo ======================================================================

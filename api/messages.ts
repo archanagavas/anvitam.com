@@ -147,7 +147,65 @@ Direct consultation booking: topmate.io/archanagavas/1799075
 
 GOLDEN RULE: Every conversation should end with the visitor feeling: "I need to talk to Archana." Not "let me find someone else." You are Archana's ambassador — represent her expertise, warmth and unique approach in every single reply.`;
 
+// ── Server-side IP Rate Limiter ─────────────────────────────────────────
+interface RateLimitRecord {
+  timestamps: number[];
+}
+const leadRateLimitMap = new Map<string, RateLimitRecord>();
+const chatRateLimitMap = new Map<string, RateLimitRecord>();
+
+// Cleanup stale IP entries every 15 minutes
+setInterval(() => {
+  const now = Date.now();
+  const maxAge = 15 * 60 * 1000;
+  for (const [ip, record] of leadRateLimitMap.entries()) {
+    record.timestamps = record.timestamps.filter(ts => now - ts < maxAge);
+    if (record.timestamps.length === 0) leadRateLimitMap.delete(ip);
+  }
+  for (const [ip, record] of chatRateLimitMap.entries()) {
+    record.timestamps = record.timestamps.filter(ts => now - ts < maxAge);
+    if (record.timestamps.length === 0) chatRateLimitMap.delete(ip);
+  }
+}, 15 * 60 * 1000);
+
+function getClientIp(req: VercelRequest): string {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (typeof forwarded === 'string') {
+    return forwarded.split(',')[0].trim();
+  }
+  if (Array.isArray(forwarded) && forwarded[0]) {
+    return forwarded[0].split(',')[0].trim();
+  }
+  return (req.headers['x-real-ip'] as string) || (req.socket?.remoteAddress as string) || '127.0.0.1';
+}
+
+function checkRateLimit(
+  map: Map<string, RateLimitRecord>,
+  ip: string,
+  limit: number,
+  windowMs: number
+): { allowed: boolean; remaining: number; resetTime: number } {
+  const now = Date.now();
+  let record = map.get(ip);
+  if (!record) {
+    record = { timestamps: [] };
+    map.set(ip, record);
+  }
+  // Filter out expired timestamps
+  record.timestamps = record.timestamps.filter(ts => now - ts < windowMs);
+
+  if (record.timestamps.length >= limit) {
+    const oldest = record.timestamps[0];
+    const resetTime = Math.ceil((windowMs - (now - oldest)) / 1000);
+    return { allowed: false, remaining: 0, resetTime };
+  }
+
+  record.timestamps.push(now);
+  return { allowed: true, remaining: limit - record.timestamps.length, resetTime: Math.ceil(windowMs / 1000) };
+}
+
 export default createHandler(async function handler(req: VercelRequest, res: VercelResponse) {
+  const clientIp = getClientIp(req);
   const urlParts = (req.url || '').split('?')[0].split('/');
   const lastPart = urlParts[urlParts.length - 1];
   const id = (req.query.id as string | undefined) ||
@@ -159,6 +217,17 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
   // Model: llama-3.1-8b-instruct (fast) instead of 70B (slow)
   // ──────────────────────────────────────────────────────────
   if (req.query.chat === 'true' && req.method === 'POST') {
+    // Chat rate limit: max 30 queries per 5 minutes per IP
+    const chatLimit = checkRateLimit(chatRateLimitMap, clientIp, 30, 5 * 60 * 1000);
+    res.setHeader('X-RateLimit-Limit', '30');
+    res.setHeader('X-RateLimit-Remaining', String(chatLimit.remaining));
+    if (!chatLimit.allowed) {
+      return res.status(429).json({
+        reply: null,
+        error: `Chat request limit reached. Please wait ${chatLimit.resetTime} seconds before sending another message.`
+      });
+    }
+
     const body = typeof req.body === 'string' ? (req.body ? JSON.parse(req.body) : {}) : (req.body ?? {});
     const { userQuery, history } = body;
     if (!userQuery) return res.status(400).json({ error: 'userQuery is required.' });
@@ -281,8 +350,20 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
 
   // ──────────────────────────────────────────────────────────
-  // STANDARD MESSAGES / LEAD HANDLING
+  // STANDARD MESSAGES / LEAD HANDLING (RATE LIMITED)
   // ──────────────────────────────────────────────────────────
+
+  if (req.method === 'POST') {
+    // Rate limit lead, contact, estimator, and newsletter submissions: max 5 per 10 minutes per IP
+    const leadLimit = checkRateLimit(leadRateLimitMap, clientIp, 5, 10 * 60 * 1000);
+    res.setHeader('X-RateLimit-Limit', '5');
+    res.setHeader('X-RateLimit-Remaining', String(leadLimit.remaining));
+    if (!leadLimit.allowed) {
+      return res.status(429).json({
+        error: `Submission rate limit reached. Please wait ${leadLimit.resetTime} seconds before sending another message.`
+      });
+    }
+  }
 
   if (!isDbConfigured) {
     if (req.method === 'GET') {

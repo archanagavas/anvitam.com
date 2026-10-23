@@ -340,32 +340,32 @@ const Why: React.FC = () => {
               {
                 icon: '🌿',
                 title: 'Biophilic by Design',
-                body: 'Nature is the starting point, not an add-on. Every project is shaped through living systems, natural materials, light, air, and organic spatial relationships.',
+                body: 'Nature is the starting foundation, never an afterthought. Every space is shaped by natural daylight, prevailing breeze, earth textures, and living plants that thrive together.',
               },
               {
                 icon: '🤝',
                 title: 'Collaborative at the Core',
-                body: 'We listen closely before we draw. Your intent, the site, and its constraints guide the work—our role is to translate them with care, clarity, and ecological insight.',
+                body: 'We listen deeply before a single line is drawn. Your lifestyle, the land\'s slope, and practical budgets guide every decision. Our role is translating your vision into calm, buildable architecture.',
               },
               {
                 icon: '🌍',
                 title: 'Global Outlook, Local Intelligence',
-                body: 'Working across India, the USA, Australia, Bali, and worldwide, we apply global standards while responding deeply to local climate, culture, and construction traditions.',
+                body: 'Working across India, the USA, Australia, Bali, and worldwide, we blend international design standards with indigenous climate wisdom, local masonry, and vernacular building crafts.',
               },
               {
                 icon: '♻️',
                 title: 'Material Responsibility',
-                body: 'We prefer locally available, low-embodied-energy materials — reinterpreted to create contemporary expressions that are both relevant and timeless.',
+                body: 'We choose breathable, earth-friendly materials like local stone, sun-dried clay, slaked lime, and timber. These keep rooms naturally cool in summer and age with grace over decades.',
               },
               {
                 icon: '💡',
                 title: 'Thoughtful Experimentation',
-                body: 'We approach design with curiosity and care—open to exploration, yet grounded in responsibility. Serious work does not require seriousness in spirit.',
+                body: 'We explore creative spatial ideas while staying anchored in ground reality. Every acre has its own microclimate, and we test site-proven solutions so your place feels effortless to live in.',
               },
               {
                 icon: '📐',
                 title: 'Careful Execution',
-                body: 'From early concepts to on-site coordination, we stay involved to ensure each space is built with integrity, precision, and respect for the original intent.',
+                body: 'From initial conceptual layouts to on-site coordination, we stay close to the work. We ensure every wall, courtyard, and water channel is executed with precision and care.',
               },
             ].map((v, i) => (
               <FadeUp key={i} delay={i * 0.08}>
@@ -390,7 +390,7 @@ const Why: React.FC = () => {
               <div className="md:w-1/3 relative">
                 <img
                   src="/archana.webp"
-                  alt="Archana Gavas — Principal Architect, Anvitam"
+                  alt="Archana Gavas, Principal Architect at Anvitam"
                   className="w-full h-80 md:h-full object-cover object-top"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:bg-gradient-to-r" />
@@ -439,8 +439,7 @@ const Why: React.FC = () => {
               <span className="text-[#888] font-light italic font-serif">with Nature?</span>
             </h2>
             <p className="text-[#555] text-base max-w-xl mx-auto mb-10">
-              Whether it's a farm retreat, wellness centre, or urban home — we'd love to hear about your
-              vision. Let's start with a design consultation or estimate your project fit.
+              Whether you are planning a secluded farm retreat, a wellness sanctuary, or a natural family home, we would love to hear your vision. Let's start with a design consultation or estimate your project fit.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4">
               <a href={TOPMATE} target="_blank" rel="noreferrer" className={neonBtn}>

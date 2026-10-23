@@ -9,7 +9,7 @@ const FarmRetreats: React.FC = () => {
       <Helmet>
         <title>Farm Retreat Architecture &amp; Design | Anvitam</title>
         <meta name="description" content="Discover sustainable farm retreat architecture and design by Anvitam. We build eco-friendly farm stays integrated with nature, permaculture, and natural building materials." />
-        <link rel="canonical" href={canonical} />
+        <link rel="canonical" href={canonical} data-rh="true" id="canonical-url" />
         <meta property="og:title" content="Farm Retreat Architecture &amp; Design | Anvitam" />
         <meta property="og:description" content="Discover sustainable farm retreat architecture and design by Anvitam. We build eco-friendly farm stays integrated with nature, permaculture, and natural building materials." />
         <meta property="og:url" content={canonical} />
@@ -19,7 +19,7 @@ const FarmRetreats: React.FC = () => {
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold text-[#111] mb-6">Farm Retreat Architecture &amp; Design</h1>
         <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-          Anvitam specializes in sustainable farm retreat architecture — designing off-grid farm stays, agritourism retreats, and eco-friendly hospitality properties that blend seamlessly with their natural surroundings using earth, stone, bamboo, and lime.
+          Anvitam creates sustainable farm retreat architecture, designing off-grid stays, agritourism estates, and eco-friendly hospitality sanctuaries that blend into their surroundings using local stone, bamboo, clay, and lime.
         </p>
         <Link to="/services/farm-retreat" className="inline-flex items-center bg-[#CCFF00] text-[#111] px-6 py-3 rounded-full text-sm font-bold hover:bg-[#bce600] transition-colors mr-4">
           Explore Farm Retreat Service →

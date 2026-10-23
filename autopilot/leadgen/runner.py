@@ -42,7 +42,7 @@ def main():
     )
     parser.add_argument(
         "--cohort",
-        choices=["auto", "realtors", "hospitality", "retreats", "architects"],
+        choices=["auto", "realtors", "hospitality", "retreats", "architects", "landowners"],
         default="auto",
         help="Weekly sector cohort to target (Default: auto based on week of month)"
     )
@@ -71,8 +71,8 @@ def main():
     parser.add_argument(
         "--interval",
         type=int,
-        default=240,
-        help="Interval between cycles in minutes when --loop is active (Default: 240 / 4 hours)"
+        default=10,
+        help="Interval between cycles in minutes when --loop is active (Default: 10 mins)"
     )
 
     args = parser.parse_args()

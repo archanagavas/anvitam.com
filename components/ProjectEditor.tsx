@@ -514,7 +514,7 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
                   <Video size={15} className="text-red-500" /> Project Videos
                 </h4>
                 <p className="text-xs text-gray-500 mt-1">
-                  Paste a <strong>YouTube</strong> or <strong>Instagram</strong> video/reel link — it will be automatically embedded on the project page.
+                  Paste a <strong>YouTube</strong> or <strong>Instagram</strong> video/reel link to embed it on the project page.
                 </p>
               </div>
               <button
@@ -605,7 +605,7 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
               <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-xl">
                 <Video size={24} className="mx-auto text-gray-300 mb-2" />
                 <p className="text-xs text-gray-400 font-medium">No videos added yet.</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">Add YouTube or Instagram links — they'll be embedded automatically.</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">Add YouTube or Instagram links to embed them automatically.</p>
               </div>
             )}
           </div>
@@ -688,7 +688,7 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
                         className="rounded border-gray-300 text-black focus:ring-black h-3.5 w-3.5"
                       />
                       <Lock size={12} className="text-amber-600 shrink-0" />
-                      <span className="text-xs text-amber-800 font-bold">Gated Access — visitors must enter Name, Email & Phone before viewing this link</span>
+                      <span className="text-xs text-amber-800 font-bold">Gated Access: visitors must enter Name, Email & Phone before viewing this link</span>
                     </label>
                   </div>
                 ))}
@@ -697,7 +697,7 @@ const ProjectEditor: React.FC<ProjectEditorProps> = ({ initial, onSave, onCancel
               <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-xl">
                 <FileText size={24} className="mx-auto text-gray-300 mb-2" />
                 <p className="text-xs text-gray-400 font-medium">No documents added yet.</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">Add Google Drive, Dropbox or any file links — with optional lead gate.</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">Add Google Drive, Dropbox or any file links with optional lead gate.</p>
               </div>
             )}
           </div>

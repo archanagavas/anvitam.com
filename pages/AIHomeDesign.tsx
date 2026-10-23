@@ -34,7 +34,7 @@ const STYLE_OPTIONS = [
   { id: 'contemporary', name: '✨ Studio Contemporary', desc: 'Current trends, subtle sophistication, clean lines', img: 'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?q=80&w=300&auto=format&fit=crop' },
   { id: 'simple', name: '◻️ Honest Simple', desc: 'Pure functionality, zero excess, breathable open space', img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=300&auto=format&fit=crop' },
   // ── JAPANESE & ZEN ──
-  { id: 'japandi', name: '🎋 Japandi Harmony', desc: 'Japanese-Scandi fusion — wabi-sabi meets Nordic calm', img: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?q=80&w=300&auto=format&fit=crop' },
+  { id: 'japandi', name: '🎋 Japandi Harmony', desc: 'Japanese-Scandi fusion, where wabi-sabi meets Nordic calm', img: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?q=80&w=300&auto=format&fit=crop' },
   { id: 'zen', name: '☮️ Tokyo Zen', desc: 'Tranquility, natural materials, traditional Japanese flow', img: 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=300&auto=format&fit=crop' },
   { id: 'japanese', name: '⛩️ Kyoto Design', desc: 'Minimalism, shoji screens, low furniture, tatami spirit', img: 'https://images.unsplash.com/photo-1580130775562-0ef92da028de?q=80&w=300&auto=format&fit=crop' },
   // ── LUXURY & FORMAL ──
@@ -57,10 +57,10 @@ const STYLE_OPTIONS = [
   // ── BOHEMIAN & ECLECTIC ──
   { id: 'boho', name: '🔮 Free Spirit Boho', desc: 'Layered textiles, global patterns, eclectic freedom', img: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=300&auto=format&fit=crop' },
   { id: 'modern_boho', name: '🌸 Modern Boho', desc: 'Relaxed eclectic decor with contemporary touches', img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=300&auto=format&fit=crop' },
-  { id: 'bohochic', name: '🦚 Boho-Chic Edit', desc: 'Fashionable bohemian — patterns mixed with refinement', img: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=300&auto=format&fit=crop' },
+  { id: 'bohochic', name: '🦚 Boho-Chic Edit', desc: 'Fashionable bohemian style with curated patterns', img: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=300&auto=format&fit=crop' },
   { id: 'eclectic', name: '🎨 Eclectic Collector', desc: 'Curated mix of eras, textures, colors for unique personality', img: 'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?q=80&w=300&auto=format&fit=crop' },
   { id: 'tribal', name: '🪶 Global Tribal', desc: 'Indigenous patterns, earthy warmth, cultural heritage art', img: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=300&auto=format&fit=crop' },
-  { id: 'maximalist', name: '🎭 Bold Maximalist', desc: 'More is more — layered textures, vibrant colors, rich patterns', img: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=300&auto=format&fit=crop' },
+  { id: 'maximalist', name: '🎭 Bold Maximalist', desc: 'More is more: layered textures, vibrant colors, rich patterns', img: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=300&auto=format&fit=crop' },
   // ── INDUSTRIAL & URBAN ──
   { id: 'industrial', name: '🏭 Raw Industrial', desc: 'Exposed brick, concrete, steel, warehouse aesthetic', img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=300&auto=format&fit=crop' },
   { id: 'loft', name: '🧱 Urban Loft', desc: 'Open-plan concrete, ductwork exposed, city edge energy', img: 'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?q=80&w=300&auto=format&fit=crop' },
@@ -69,11 +69,11 @@ const STYLE_OPTIONS = [
   { id: 'futuristic', name: '🚀 Space Age', desc: 'Sleek innovation, advanced tech surfaces, forward-thinking', img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=300&auto=format&fit=crop' },
   { id: 'vaporwave', name: '🌐 Vaporwave Retro', desc: 'Pastel neons, 80s-90s digital nostalgia, cyber motifs', img: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=300&auto=format&fit=crop' },
   { id: 'gaming', name: '🎮 Gaming Den', desc: 'Multiple screens, LED strips, ergonomic setup, gamer soul', img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=300&auto=format&fit=crop' },
-  { id: 'retro_future', name: '🤖 Retro-Futurist', desc: 'The future as imagined in the past — atomic age meets tomorrow', img: 'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?q=80&w=300&auto=format&fit=crop' },
+  { id: 'retro_future', name: '🤖 Retro-Futurist', desc: 'The future as imagined in the past, atomic age meets tomorrow', img: 'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?q=80&w=300&auto=format&fit=crop' },
   // ── VINTAGE & HISTORICAL ──
   { id: 'midcentury', name: '🕰️ Mid-Century Studio', desc: 'Sleek lines, organic shapes, 1950s-60s functional design', img: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=300&auto=format&fit=crop' },
   { id: 'vintage', name: '📻 Vintage Collector', desc: 'Curated pieces with history, nostalgic textures and patina', img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=300&auto=format&fit=crop' },
-  { id: 'retro', name: '🕹️ Retro Revival', desc: '50s-70s revival — nostalgia meets modern function', img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=300&auto=format&fit=crop' },
+  { id: 'retro', name: '🕹️ Retro Revival', desc: '50s-70s revival, nostalgia meets modern function', img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=300&auto=format&fit=crop' },
   { id: 'art_nouveau', name: '🌸 Art Nouveau Flow', desc: 'Flowing organic lines, floral motifs, nature-inspired craft', img: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=300&auto=format&fit=crop' },
   { id: 'medieval', name: '⚔️ Medieval Keep', desc: 'Heavy wood, stone walls, wrought iron, fortress warmth', img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=300&auto=format&fit=crop' },
   { id: 'gothic', name: '🦇 Gothic Revival', desc: 'Dark drama, rich jewel tones, ornate gothic elegance', img: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=300&auto=format&fit=crop' },
@@ -87,12 +87,12 @@ const STYLE_OPTIONS = [
   { id: 'cottagecore', name: '🌷 Cottagecore Dream', desc: 'Rural nostalgia, floral patterns, handmade coziness', img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=300&auto=format&fit=crop' },
   { id: 'shabby_chic', name: '🌹 Shabby Chic', desc: 'Vintage elegance, distressed finishes, romantic comfort', img: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=300&auto=format&fit=crop' },
   // ── FESTIVE & SEASONAL ──
-  { id: 'christmas', name: '🎄 Festive Christmas', desc: 'Red, green, gold — holiday warmth and celebration', img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=300&auto=format&fit=crop' },
+  { id: 'christmas', name: '🎄 Festive Christmas', desc: 'Red, green, gold holiday warmth and celebration', img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=300&auto=format&fit=crop' },
   { id: 'halloween', name: '🎃 Dark Halloween', desc: 'Spooky gothic, orange and black, dramatic seasonal decor', img: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=300&auto=format&fit=crop' },
   { id: 'cny', name: '🏮 Lunar New Year', desc: 'Red and gold, lanterns, prosperity symbols, festive energy', img: 'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?q=80&w=300&auto=format&fit=crop' },
   { id: 'easter', name: '🐣 Spring Easter', desc: 'Pastel palette, floral accents, fresh seasonal lightness', img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=300&auto=format&fit=crop' },
   // ── SPECIALTY ──
-  { id: 'hot_pink', name: '💗 Hot Pink Statement', desc: 'Bold and vibrant — hot pink as the dominant hero color', img: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=300&auto=format&fit=crop' },
+  { id: 'hot_pink', name: '💗 Hot Pink Statement', desc: 'Bold and vibrant with hot pink as the dominant hero color', img: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=300&auto=format&fit=crop' },
   { id: 'airbnb', name: '🏡 Airbnb-Ready', desc: 'Welcoming, versatile, comfortable for all guests', img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=300&auto=format&fit=crop' },
   { id: 'post_apocalyptic', name: '💀 Post-Apocalyptic', desc: 'Weathered survival aesthetic, distressed industrial grit', img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=300&auto=format&fit=crop' },
   { id: 'soviet', name: '⚒️ Soviet Brutalist', desc: 'Utilitarian concrete, monumental scale, austere dignity', img: 'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?q=80&w=300&auto=format&fit=crop' },
@@ -109,10 +109,10 @@ const SAMPLE_PHOTOS = [
 ];
 
 const AI_MODEL_ENGINES = [
-  { id: 'instant-free', name: '💨 Instant Render (Fallback) — 1 Cred', creditCost: 1, level: 'Basic', speed: '< 5s Guaranteed', desc: 'Fastest 1024x1024 generation using open-source models. No wait.', icon: '💨' },
-  { id: 'low-fast', name: '⚡ Fast Draft (Low Complexity) — 1 Cred', creditCost: 1, level: 'Low', speed: '5-15s Fast GPU', desc: 'Fast initial drafts & quick color restyles', icon: '⚡' },
-  { id: 'med-balanced', name: '🚀 Balanced Pro (Med Complexity) — 2 Creds', creditCost: 2, level: 'Med', speed: '15-30s High Photorealism', desc: 'Balanced photorealism with lighting & texture synthesis', icon: '🚀' },
-  { id: 'hard-master', name: '💎 Ultra HD Master (Hard Reasoning) — 3 Creds', creditCost: 3, level: 'Hard', speed: '30-55s Max 4K Depth', desc: 'Max depth reasoning, raytraced lighting & architectural precision', icon: '👑' },
+  { id: 'instant-free', name: '💨 Instant Render (1 Cred)', creditCost: 1, level: 'Basic', speed: '< 5s Guaranteed', desc: 'Fastest 1024x1024 generation using open-source models. No wait.', icon: '💨' },
+  { id: 'low-fast', name: '⚡ Fast Draft (1 Cred)', creditCost: 1, level: 'Low', speed: '5-15s Fast GPU', desc: 'Fast initial drafts & quick color restyles', icon: '⚡' },
+  { id: 'med-balanced', name: '🚀 Balanced Pro (2 Creds)', creditCost: 2, level: 'Med', speed: '15-30s High Photorealism', desc: 'Balanced photorealism with lighting & texture synthesis', icon: '🚀' },
+  { id: 'hard-master', name: '💎 Ultra HD Master (3 Creds)', creditCost: 3, level: 'Hard', speed: '30-55s Max 4K Depth', desc: 'Max depth reasoning, raytraced lighting & architectural precision', icon: '👑' },
 ];
 
 const DEFAULT_HOTSPOT_PINS = [

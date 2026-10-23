@@ -112,7 +112,7 @@ export const COMPARISONS: Record<string, ComparisonData> = {
       embodiedCarbon: 'Low (Natural gravel, bio-membrane, indigenous plants)',
       lifespan: 'Permanent ecological asset that matures over time',
       pros: [
-        '100% free of chlorine, ozone, or chemical algicides — drinkable quality water.',
+        '100% free of chlorine, ozone, or chemical algicides, yielding pure, drinkable quality freshwater.',
         'No burning eyes, chemical smells, or dry skin for swimmers.',
         'Attracts beneficial dragonflies, birds, and creates an Instagram-magnet amenity.',
         'Water never needs draining; can be repurposed directly for farm irrigation.'
@@ -199,7 +199,7 @@ export const COMPARISONS: Record<string, ComparisonData> = {
         'Does nothing to address failing borewells, soil compaction, or high wind exposure.'
       ]
     },
-    architectVerdict: 'On plots greater than 1 acre, conventional ornamental landscaping is an expensive, water-guzzling trap. A permaculture masterplanner designs living infrastructure—water security, living soil, and edible abundance—that increases property value year after year.',
+    architectVerdict: 'On plots greater than 1 acre, conventional ornamental landscaping is an expensive, water-guzzling trap. A permaculture masterplanner designs living infrastructure: water security, rich living soil, and edible abundance that increases property value year after year.',
     caseStudyAnchor: {
       title: 'Kamba Agrotourism 45-Acre Masterplan',
       link: '/projects/kamba-agrotourism-vardhaman-royal-organic-agri-farm',
@@ -212,7 +212,7 @@ export const COMPARISONS: Record<string, ComparisonData> = {
       },
       {
         question: 'Can permaculture design look luxurious and manicured?',
-        answer: 'Absolutely. We design "organized wildness"—combining structured stone pathways, flowering perennial borders, and reflection ponds with dense multi-tier food forests, creating a sophisticated biophilic sanctuary.'
+        answer: 'Absolutely. We design organized wildness by combining structured stone pathways, flowering perennial borders, and reflection ponds with dense multi-tier food forests, creating a sophisticated biophilic sanctuary.'
       }
     ]
   }
@@ -235,7 +235,7 @@ const ComparisonDetail: React.FC = () => {
       <Helmet>
         <title>{`${data.title} | Anvitam Architecture`}</title>
         <meta name="description" content={data.subtitle} />
-        <link rel="canonical" href={canonicalUrl} />
+        <link rel="canonical" href={canonicalUrl} data-rh="true" id="canonical-url" />
         <meta property="og:title" content={`${data.title} | Anvitam Architecture`} />
         <meta property="og:description" content={data.subtitle} />
         <meta property="og:url" content={canonicalUrl} />

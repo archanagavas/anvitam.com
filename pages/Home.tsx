@@ -207,10 +207,10 @@ const Home: React.FC = () => {
 
       <Helmet>
         <title>Anvitam | Regenerative Architecture for Farms, Retreats & Resorts</title>
-        <meta name="description" content="Anvitam combines architecture, landscape, permaculture and climate-responsive design to create places that work with their land — not against it. Working across India, USA, Australia & globally." />
+        <meta name="description" content="Anvitam integrates architecture, landscape, and permaculture to craft spaces that work with the land, not against it. Working across India, the USA, Australia, and worldwide." />
         <meta name="keywords" content="regenerative architecture, sustainable architecture, farm retreat architect, eco resort architect, permaculture designer, food forest design, natural building" />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://www.anvitam.com/" />
+        <link rel="canonical" href="https://www.anvitam.com/" data-rh="true" id="canonical-url" />
       </Helmet>
 
       {/* ══════════════════════════════════════════
@@ -971,20 +971,20 @@ function FaqSection() {
   const tabs = ['Working with Us', 'Our Services', 'Process & Cost'];
   const faqs = [
     [
-      { q: 'What locations do you serve?', a: 'We work with clients globally across India, USA, Australia, and internationally. Site visits and consultations are scheduled based on project scope.' },
-      { q: 'What happens after I get in touch?', a: 'You share details about your site and vision. We have an initial conversation to understand your project. If it\'s a good fit, we discuss scope and next steps — there\'s no commitment required from that first conversation.' },
-      { q: 'Do you work with international clients?', a: 'Yes. We work with clients across India and internationally, including remote consultations and digital project management for early-stage design work.' },
+      { q: 'What locations do you serve?', a: 'We work with clients globally across India, the USA, Australia, and internationally. Site visits and technical consultations are scheduled based on project scope.' },
+      { q: 'What happens after I get in touch?', a: 'You share details about your site and vision. We have an initial conversation to understand your goals. If it is a good fit, we outline scope and next steps with zero commitment required from that first call.' },
+      { q: 'Do you work with international clients?', a: 'Yes. We work with clients across India and worldwide, combining remote design masterplanning with local material analysis and digital coordination.' },
     ],
     [
-      { q: 'Do you design complete farm retreats, or just consult?', a: 'We can do both — from full architectural design and masterplanning to focused permaculture or landscape consultations depending on what stage you\'re at and what you need.' },
-      { q: 'Do you provide only architecture, or landscape and permaculture too?', a: 'Anvitam integrates architecture, landscape design, permaculture and natural building as a single practice. You don\'t need to hire separate consultants for each discipline.' },
-      { q: 'Do you work on agricultural land?', a: 'Yes. A significant part of our work involves farm land — whether for farm retreats, food forests, agroforestry systems or permaculture masterplanning on agricultural plots.' },
-      { q: 'Can you design a food forest?', a: 'Yes. Syntropic agroforestry and food forest design are core to our practice — we design multi-layered food systems that integrate with buildings and landscape.' },
+      { q: 'Do you design complete farm retreats, or just consult?', a: 'We do both, ranging from comprehensive architectural masterplans to focused permaculture and landscape consultations depending on your project stage.' },
+      { q: 'Do you provide only architecture, or landscape and permaculture too?', a: 'Anvitam integrates architecture, landscape design, permaculture, and natural building as one continuous practice. You do not need to coordinate between separate disconnected consultants.' },
+      { q: 'Do you work on agricultural land?', a: 'Yes. A major part of our work involves agricultural acreage, whether for off-grid farm retreats, multi-tier food forests, or permaculture zoning on rural plots.' },
+      { q: 'Can you design a food forest?', a: 'Yes. Syntropic agroforestry and food forest design are core to our practice. We design productive, multi-layered food systems that integrate naturally with your buildings and topography.' },
     ],
     [
-      { q: 'How much does a project cost?', a: 'Cost depends heavily on the scope, site, scale and services required. We don\'t publish a fixed rate because a site analysis for a farm and a full eco-resort masterplan are very different engagements. We discuss fees after understanding your project.' },
-      { q: 'How long does a project take?', a: 'Early-stage consultations can move quickly. Full design and masterplanning projects typically run over several months depending on complexity, approvals and the build phase.' },
-      { q: 'What happens during the process?', a: 'We begin by understanding your site and vision. We read the land — climate, water, soil, vegetation. Then we build a design strategy that integrates architecture, landscape and ecological systems before producing drawings and plans.' },
+      { q: 'How much does a project cost?', a: 'Cost depends on project scope, acreage, and services needed. A focused site analysis for a family farm and a full eco-resort masterplan are very different engagements. We share transparent estimates after learning about your land.' },
+      { q: 'How long does a project take?', a: 'Early-stage consultations move quickly within 1 to 2 weeks. Comprehensive design and masterplanning phases typically span 2 to 4 months depending on approvals and construction scale.' },
+      { q: 'What happens during the process?', a: 'We begin by listening to your vision and studying the land: microclimate, water paths, soil biology, and wind corridors. Then we craft an integrated design strategy before producing construction-ready drawings.' },
     ],
   ];
 
@@ -1132,7 +1132,7 @@ function AsSeenOnSection() {
       dataS4bToken: 'zRY280VBHOeqyS1Mvd0jKnJd',
       dataS4bTheme: 'light',
       imgSrc: 'https://submitforbacklinks.com/api/badge/zRY280VBHOeqyS1Mvd0jKnJd.svg?variant=verified&theme=light',
-      alt: 'Anvitam — Verified on SubmitForBacklinks',
+      alt: 'Anvitam: Verified on SubmitForBacklinks',
       width: 220,
       height: 48,
       imgClass: 'h-9 sm:h-11 w-auto object-contain',

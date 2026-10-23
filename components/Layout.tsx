@@ -8,16 +8,33 @@ import MorphicNavbar from './MorphicNavbar';
 import AIChatWidget from './AIChatWidget';
 import { useContent } from '../context/ContentContext';
 
+import { checkClientRateLimit, recordClientSubmission } from '../utils/rateLimiter';
+
 // ── Newsletter Section Component ───────────────────────────────────────
 const NewsletterSection: React.FC = () => {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const contentCtx = useContent();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
+
+    // Rate limit check: max 3 attempts per 10 minutes, 30s cooldown
+    const rl = checkClientRateLimit({ key: 'newsletter', cooldownSeconds: 30, maxAttempts: 3, windowMinutes: 10 });
+    if (!rl.allowed) {
+      setErrorMessage(rl.message || 'Please wait a moment before trying again.');
+      setStatus('error');
+      setTimeout(() => {
+        setStatus('idle');
+        setErrorMessage(null);
+      }, 4000);
+      return;
+    }
+
     setStatus('submitting');
+    setErrorMessage(null);
     try {
       if (contentCtx?.addMessage) {
         await contentCtx.addMessage({
@@ -28,7 +45,7 @@ const NewsletterSection: React.FC = () => {
           date: new Date().toISOString(),
         });
       } else {
-        await fetch('/api/messages', {
+        const res = await fetch('/api/messages', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -38,13 +55,22 @@ const NewsletterSection: React.FC = () => {
             date: new Date().toISOString(),
           }),
         });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || `Server error: ${res.status}`);
+        }
       }
+      recordClientSubmission('newsletter', 10);
       setStatus('success');
       setEmail('');
       setTimeout(() => setStatus('idle'), 4000);
-    } catch {
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Failed to subscribe. Please try again.');
       setStatus('error');
-      setTimeout(() => setStatus('idle'), 3000);
+      setTimeout(() => {
+        setStatus('idle');
+        setErrorMessage(null);
+      }, 3500);
     }
   };
 
@@ -92,7 +118,7 @@ const NewsletterSection: React.FC = () => {
                 </button>
               </div>
               {status === 'error' && (
-                <p className="text-red-400 text-xs px-2">Something went wrong. Please try again.</p>
+                <p className="text-red-400 text-xs px-2">{errorMessage || 'Something went wrong. Please try again.'}</p>
               )}
               <p className="text-white/30 text-xs px-2">No spam, ever. Unsubscribe anytime.</p>
             </form>
@@ -160,10 +186,32 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     : location.pathname;
   const canonicalUrl = `https://www.anvitam.com${cleanPath}`;
 
+  // Robust client-side canonical sync: eliminates duplicate tags & guarantees self-referencing canonical
+  useEffect(() => {
+    try {
+      const allCanonicals = document.querySelectorAll('link[rel="canonical"]');
+      allCanonicals.forEach((el, index) => {
+        if (index > 0) el.remove();
+      });
+
+      let mainCanonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+      if (!mainCanonical) {
+        mainCanonical = document.createElement('link');
+        mainCanonical.rel = 'canonical';
+        document.head.appendChild(mainCanonical);
+      }
+      mainCanonical.href = canonicalUrl;
+      mainCanonical.setAttribute('data-rh', 'true');
+      mainCanonical.id = 'canonical-url';
+    } catch (e) {
+      console.warn('[Layout] Canonical sync error:', e);
+    }
+  }, [canonicalUrl]);
+
   return (
     <div className="flex flex-col min-h-screen font-sans bg-[#EFEFEB] text-[#111] relative z-10">
       <Helmet>
-        <link rel="canonical" href={canonicalUrl} />
+        <link rel="canonical" href={canonicalUrl} data-rh="true" id="canonical-url" />
       </Helmet>
 
       {/* ── FLOATING MINIMAL NAVBAR ── */}

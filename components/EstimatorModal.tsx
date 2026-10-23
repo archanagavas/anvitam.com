@@ -6,6 +6,8 @@ import { useContent } from '../context/ContentContext';
 import { INITIAL_ESTIMATOR_SERVICES } from '../constants';
 import { EstimatorService } from '../types';
 import { PPP_COUNTRIES, calculatePPPPrice, getCountryByCode, AREA_UNITS, getAreaMultiplier, AreaUnit } from '../utils/pppPricing';
+import PhoneInput from './ui/PhoneInput';
+import { checkClientRateLimit, recordClientSubmission } from '../utils/rateLimiter';
 
 const TOPMATE = 'https://topmate.io/archanagavas/1799075?utm_source=estimator&utm_campaign=estimate_lead';
 
@@ -49,8 +51,22 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setBusy(true);
     setSubmitError(null);
+
+    // Rate limit check: max 4 attempts per 10 minutes, 15s cooldown
+    const rl = checkClientRateLimit({ key: 'estimator', cooldownSeconds: 15, maxAttempts: 4, windowMinutes: 10 });
+    if (!rl.allowed) {
+      setSubmitError(rl.message || 'Please wait a moment before submitting again.');
+      return;
+    }
+
+    const digitsOnly = (form.phone || '').replace(/[^\d]/g, '');
+    if (!form.phone || digitsOnly.length < 7) {
+      setSubmitError('Please enter a valid phone number with your country code.');
+      return;
+    }
+
+    setBusy(true);
     const areaUnitLabel = AREA_UNITS.find(u => u.code === form.areaUnit)?.label || 'Sq. Ft.';
     const areaDisplay = form.area ? `${form.area} ${areaUnitLabel}` : 'Standard';
     const subList = selected.map(i => `${svc?.subs[i]} (${getFormattedPrice(svc?.baseINR[i] || 0)})`).filter(Boolean).join(' · ');
@@ -70,9 +86,11 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
           body: JSON.stringify({ name: form.name, email: form.email, message: msg, date: new Date().toISOString() }),
         });
         if (!res.ok) {
-          throw new Error(`Server returned HTTP ${res.status}`);
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || `Server returned HTTP ${res.status}`);
         }
       }
+      recordClientSubmission('estimator', 10);
       setBusy(false);
       setStep('result');
     } catch (err: any) {
@@ -211,23 +229,52 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
               </div>
               <p className="text-xs sm:text-sm text-[#555] mb-4">Enter your details to receive your customized proposal within 24 hours.</p>
               <div className="space-y-3.5">
-                {[
-                  { label: 'Full Name', key: 'name', type: 'text', placeholder: 'Your name' },
-                  { label: 'Email Address', key: 'email', type: 'email', placeholder: 'you@email.com' },
-                  { label: 'Phone Number', key: 'phone', type: 'tel', placeholder: '+91 99999 99999' },
-                ].map(f => (
-                  <div key={f.key}>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-[#777] mb-1.5">{f.label} *</label>
-                    <input
-                      required
-                      type={f.type}
-                      placeholder={f.placeholder}
-                      value={(form as any)[f.key]}
-                      onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
-                      className="w-full bg-white border border-black/12 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-[#111] placeholder-[#aaa] outline-none focus:border-[#111] transition-colors cursor-text"
-                    />
-                  </div>
-                ))}
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#777] mb-1.5">Full Name *</label>
+                  <input
+                    required
+                    type="text"
+                    placeholder="Your name"
+                    value={form.name}
+                    onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+                    className="w-full bg-white border border-black/12 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-[#111] placeholder-[#aaa] outline-none focus:border-[#111] transition-colors cursor-text"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#777] mb-1.5">Email Address *</label>
+                  <input
+                    required
+                    type="email"
+                    placeholder="you@email.com"
+                    value={form.email}
+                    onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
+                    className="w-full bg-white border border-black/12 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-[#111] placeholder-[#aaa] outline-none focus:border-[#111] transition-colors cursor-text"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#777] mb-1.5">Phone Number *</label>
+                  <PhoneInput
+                    required
+                    variant="rounded"
+                    value={form.phone}
+                    selectedCountryCode={form.country}
+                    onChange={(fullNumber, country) => {
+                      setForm(p => ({
+                        ...p,
+                        phone: fullNumber,
+                        country: country.code !== 'OTHER' ? country.code : p.country,
+                      }));
+                    }}
+                    onCountryChange={country => {
+                      if (country.code !== 'OTHER') {
+                        setForm(p => ({ ...p, country: country.code }));
+                      }
+                    }}
+                  />
+                </div>
+
                 <div>
                   <label className="block text-[10px] font-bold uppercase tracking-widest text-[#777] mb-1.5">Project / Land Area</label>
                   <div className="flex items-center gap-2">

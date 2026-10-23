@@ -595,7 +595,7 @@ Additional Notes: ${formState.notes || 'None'}`;
             Aligned with NEP 2020 &amp; STEAM Curriculum
           </h2>
           <p className="text-gray-600 text-xs sm:text-sm max-w-xl mx-auto font-normal leading-relaxed">
-            Our workshops go beyond simple crafts—they build tangible vocational skills, spatial geometry, and environmental responsibility required by modern education standards.
+            Our workshops go beyond simple crafts. Students build tangible vocational skills, spatial intuition, and environmental responsibility.
           </p>
         </div>
 
@@ -710,7 +710,7 @@ Additional Notes: ${formState.notes || 'None'}`;
               How It Works in 3 Simple Steps
             </h2>
             <p className="text-gray-600 text-xs sm:text-sm font-normal">
-              From initial selection to live campus transformation—we handle materials, tools, and instructor logistics from start to finish.
+              From initial selection to live campus transformation, our team handles all natural materials, tools, and mentor logistics.
             </p>
           </div>
 
@@ -1134,9 +1134,9 @@ Additional Notes: ${formState.notes || 'None'}`;
                         onChange={(e) => setSelectedPlan(e.target.value)}
                         className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2 text-xs font-bold text-gray-800 focus:outline-none focus:border-black transition cursor-pointer"
                       >
-                        <option value="1-Day Workshop">1-Day Workshop — ₹200 per student</option>
-                        <option value="2-5 Days Bootcamp / Makeover">2-5 Days Bootcamp / Makeover — ₹40,000 - ₹2,00,000</option>
-                        <option value="1-Month Subscription">1-Month Campus Eco-Subscription — ₹75,000 / month</option>
+                        <option value="1-Day Workshop">1-Day Workshop (₹200 per student)</option>
+                        <option value="2-5 Days Bootcamp / Makeover">2-5 Days Bootcamp / Makeover (₹40,000 - ₹2,00,000)</option>
+                        <option value="1-Month Subscription">1-Month Campus Eco-Subscription (₹75,000 / month)</option>
                         <option value="Custom Proposal Request">Custom Campus Package Request</option>
                         <option value="Audience: Schools & K-12 Institutes">Audience: Schools & K-12 Institutes</option>
                         <option value="Audience: Colleges & Design Universities">Audience: Colleges & Design Universities</option>
