@@ -11,7 +11,8 @@ async function sendOtpEmail(email: string, otp: string, name?: string): Promise<
   const htmlBody = `
     <div style="font-family: Arial, -apple-system, BlinkMacSystemFont, sans-serif; padding: 32px; color: #111; max-width: 520px; margin: auto; border: 1px solid #e0e0e0; border-radius: 16px; background-color: #ffffff;">
       <div style="text-align: center; margin-bottom: 20px;">
-        <span style="font-size: 13px; font-weight: 700; letter-spacing: 2px; color: #2b5711; text-transform: uppercase;">ANVITAM ARCHITECTURE</span>
+        <span style="font-size: 14px; font-weight: 800; letter-spacing: 2px; color: #2b5711; text-transform: uppercase;">ANVITAM ARCHITECT</span>
+        <div style="font-size: 11px; color: #666; letter-spacing: 1px; margin-top: 4px;">www.anvitam.com</div>
       </div>
       <h2 style="color: #111; margin-top: 0; text-align: center; font-size: 22px;">Confirm Your Email</h2>
       <p style="font-size: 15px; color: #444; line-height: 1.5; text-align: center;">
@@ -22,7 +23,7 @@ async function sendOtpEmail(email: string, otp: string, name?: string): Promise<
       </div>
       <p style="font-size: 13px; color: #666; text-align: center; margin: 0 0 16px 0;">This code is valid for 10 minutes. Do not share it with anyone.</p>
       <p style="font-size: 11px; color: #999; border-top: 1px solid #eee; padding-top: 14px; text-align: center; margin: 0;">
-        Anvitam Sustainable Architecture · anvitam.com
+        Anvitam Architect · <a href="https://anvitam.com" style="color: #2b5711; text-decoration: underline;">www.anvitam.com</a>
       </p>
     </div>
   `;
@@ -48,7 +49,7 @@ async function sendOtpEmail(email: string, otp: string, name?: string): Promise<
             'Accept': 'application/json'
           },
           body: JSON.stringify({
-            sender: { name: 'Anvitam Architecture', email: senderEmail },
+            sender: { name: 'Anvitam Architect', email: senderEmail },
             to: [{ email, name: name || 'Valued Client' }],
             subject: `Your Anvitam Verification Code: ${otp}`,
             htmlContent: htmlBody
@@ -68,7 +69,7 @@ async function sendOtpEmail(email: string, otp: string, name?: string): Promise<
 
   // 2. Resend Fallback (if configured and Brevo not present)
   if (RESEND_API_KEY) {
-    const senders = ['Anvitam Verification <verify@anvitam.com>', 'Anvitam Verification <onboarding@resend.dev>'];
+    const senders = ['Anvitam Architect <verify@anvitam.com>', 'Anvitam Architect <onboarding@resend.dev>'];
     for (const sender of senders) {
       try {
         const resp = await fetch('https://api.resend.com/emails', {
