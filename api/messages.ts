@@ -416,6 +416,7 @@ interface OtpRecord {
   verified: boolean;
 }
 const leadRateLimitMap = new Map<string, RateLimitRecord>();
+const newsletterRateLimitMap = new Map<string, RateLimitRecord>();
 const chatRateLimitMap = new Map<string, RateLimitRecord>();
 const otpRateLimitMap = new Map<string, RateLimitRecord>();
 const otpStore = new Map<string, OtpRecord>();
@@ -427,6 +428,10 @@ setInterval(() => {
   for (const [ip, record] of leadRateLimitMap.entries()) {
     record.timestamps = record.timestamps.filter(ts => now - ts < maxAge);
     if (record.timestamps.length === 0) leadRateLimitMap.delete(ip);
+  }
+  for (const [ip, record] of newsletterRateLimitMap.entries()) {
+    record.timestamps = record.timestamps.filter(ts => now - ts < maxAge);
+    if (record.timestamps.length === 0) newsletterRateLimitMap.delete(ip);
   }
   for (const [ip, record] of chatRateLimitMap.entries()) {
     record.timestamps = record.timestamps.filter(ts => now - ts < maxAge);
@@ -758,14 +763,30 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
   // ──────────────────────────────────────────────────────────
 
   if (req.method === 'POST') {
-    // Strict SaaS Rate Limit: Max 2 submissions per 15 minutes per IP address to block bot scrapers & spam
-    const leadLimit = checkRateLimit(leadRateLimitMap, clientIp, 2, 15 * 60 * 1000);
-    res.setHeader('X-RateLimit-Limit', '2');
-    res.setHeader('X-RateLimit-Remaining', String(leadLimit.remaining));
-    if (!leadLimit.allowed) {
-      return res.status(429).json({
-        error: `Submission rate limit reached (max 2 per 15 minutes). Please wait ${leadLimit.resetTime} seconds before sending another message.`
-      });
+    const rawBody = typeof req.body === 'string' ? (req.body ? JSON.parse(req.body) : {}) : (req.body ?? {});
+    const isNewsletter = rawBody.name === 'Newsletter Subscriber' ||
+      (typeof rawBody.message === 'string' && rawBody.message.toLowerCase().includes('newsletter'));
+
+    if (isNewsletter) {
+      // Newsletter Rate Limit: Max 5 subscriptions per 15 minutes per IP address
+      const newsletterLimit = checkRateLimit(newsletterRateLimitMap, clientIp, 5, 15 * 60 * 1000);
+      res.setHeader('X-RateLimit-Limit', '5');
+      res.setHeader('X-RateLimit-Remaining', String(newsletterLimit.remaining));
+      if (!newsletterLimit.allowed) {
+        return res.status(429).json({
+          error: `Newsletter subscription limit reached (max 5 per 15 minutes per IP). Please wait ${newsletterLimit.resetTime} seconds.`
+        });
+      }
+    } else {
+      // Strict SaaS Rate Limit: Max 2 submissions per 15 minutes per IP address to block bot scrapers & spam
+      const leadLimit = checkRateLimit(leadRateLimitMap, clientIp, 2, 15 * 60 * 1000);
+      res.setHeader('X-RateLimit-Limit', '2');
+      res.setHeader('X-RateLimit-Remaining', String(leadLimit.remaining));
+      if (!leadLimit.allowed) {
+        return res.status(429).json({
+          error: `Submission rate limit reached (max 2 per 15 minutes). Please wait ${leadLimit.resetTime} seconds before sending another message.`
+        });
+      }
     }
   }
 

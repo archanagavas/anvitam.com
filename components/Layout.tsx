@@ -21,8 +21,8 @@ const NewsletterSection: React.FC = () => {
     e.preventDefault();
     if (!email.trim()) return;
 
-    // Rate limit check: max 3 attempts per 10 minutes, 30s cooldown
-    const rl = checkClientRateLimit({ key: 'newsletter', cooldownSeconds: 30, maxAttempts: 3, windowMinutes: 10 });
+    // Rate limit check: max 5 attempts per 15 minutes, 15s cooldown
+    const rl = checkClientRateLimit({ key: 'newsletter', cooldownSeconds: 15, maxAttempts: 5, windowMinutes: 15 });
     if (!rl.allowed) {
       setErrorMessage(rl.message || 'Please wait a moment before trying again.');
       setStatus('error');
@@ -60,7 +60,7 @@ const NewsletterSection: React.FC = () => {
           throw new Error(errData.error || `Server error: ${res.status}`);
         }
       }
-      recordClientSubmission('newsletter', 10);
+      recordClientSubmission('newsletter', 15);
       setStatus('success');
       setEmail('');
       setTimeout(() => setStatus('idle'), 4000);
