@@ -128,8 +128,8 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
     }
 
     const digitsOnly = (form.phone || '').replace(/[^\d]/g, '');
-    if (!form.phone || digitsOnly.length < 7) {
-      setSubmitError('Please enter a valid phone number with your country code.');
+    if (!form.phone || digitsOnly.length < 9) {
+      setSubmitError('Please enter a valid active phone or WhatsApp number with country code so we can connect ASAP.');
       return;
     }
 
@@ -383,7 +383,10 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#777] mb-1.5">Phone Number *</label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-[#777]">Direct Phone / WhatsApp Number *</label>
+                    <span className="text-[10px] text-emerald-700 font-semibold">To connect ASAP</span>
+                  </div>
                   <PhoneInput
                     required
                     variant="rounded"
@@ -402,6 +405,9 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
                       }
                     }}
                   />
+                  <p className="text-[11px] text-[#666] mt-1.5">
+                    Please provide an active mobile or WhatsApp number so Ar. Archana Gavas can reach out to discuss your estimate and project details directly.
+                  </p>
                 </div>
 
                 <div>

@@ -116,8 +116,8 @@ const Contact: React.FC = () => {
 
     // ── Phone validation ─────────────────────────────────────────────
     const digits = (formData.phone || '').replace(/[^\d]/g, '');
-    if (!formData.phone || digits.length < 7) {
-      setSubmitError('Please enter a valid phone number with your country code.');
+    if (!formData.phone || digits.length < 9) {
+      setSubmitError('Please enter a valid active phone or WhatsApp number with country code so Ar. Archana can connect ASAP.');
       setStatus('error');
       return;
     }
@@ -476,7 +476,10 @@ ${formData.message}`;
                     )}
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-[#111] ml-1">Phone Number *</label>
+                    <div className="flex items-center justify-between ml-1">
+                      <label className="text-xs font-semibold text-[#111]">Direct Phone / WhatsApp Number *</label>
+                      <span className="text-[11px] text-emerald-700 font-semibold">To connect ASAP</span>
+                    </div>
                     <PhoneInput 
                       required
                       variant="pill"
@@ -489,6 +492,9 @@ ${formData.message}`;
                         }));
                       }}
                     />
+                    <p className="text-[11px] text-gray-500 ml-1">
+                      Please enter your active mobile or WhatsApp number so Ar. Archana Gavas can connect with you ASAP regarding your project.
+                    </p>
                   </div>
                 </div>
 
