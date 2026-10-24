@@ -120,11 +120,10 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
       return;
     }
 
-    if (!otpVerified) {
-      setSubmitError('Please verify your email address with the 6-digit code to view your estimate.');
-      if (!otpSent) {
-        handleSendOtp();
-      }
+    // Email format validation (Mandatory)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!form.email || !emailRegex.test(form.email.trim())) {
+      setSubmitError('Please enter a valid email address.');
       return;
     }
 
@@ -138,7 +137,8 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
     const areaUnitLabel = AREA_UNITS.find(u => u.code === form.areaUnit)?.label || 'Sq. Ft.';
     const areaDisplay = form.area ? `${form.area} ${areaUnitLabel}` : 'Standard';
     const subList = selected.map(i => `${svc?.subs[i]} (${getFormattedPrice(svc?.baseINR[i] || 0)})`).filter(Boolean).join(' · ');
-    const msg = `[ESTIMATE REQUEST - VERIFIED CLIENT ✅]\nService: ${svc?.title}\nProject Area: ${areaDisplay}\nDeliverables: ${subList}\nTotal Estimate: ${formattedTotal}\nCountry: ${country.flag} ${country.name} (${form.country})\nPhone: ${form.phone}\nEmail Verified: YES`;
+    const isVerifiedClient = otpVerified;
+    const msg = `[ESTIMATE REQUEST${isVerifiedClient ? ' - VERIFIED CLIENT ✅' : ''}]\nService: ${svc?.title}\nProject Area: ${areaDisplay}\nDeliverables: ${subList}\nTotal Estimate: ${formattedTotal}\nCountry: ${country.flag} ${country.name} (${form.country})\nPhone: ${form.phone}\nEmail Verified: ${isVerifiedClient ? 'YES' : 'NO'}`;
     try {
       const res = await fetch('/api/messages', {
         method: 'POST',
@@ -349,7 +349,7 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
                           disabled={otpBusy || !form.email}
                           className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 underline transition disabled:opacity-50 cursor-pointer"
                         >
-                          {otpBusy && !otpSent ? 'Sending code…' : otpSent ? 'Resend 6-digit code' : 'Verify Email with 6-digit OTP →'}
+                          {otpBusy && !otpSent ? 'Sending code…' : otpSent ? 'Resend 6-digit code' : 'Verify Email with 6-digit OTP (Optional) →'}
                         </button>
                       </div>
 

@@ -108,18 +108,9 @@ const Contact: React.FC = () => {
 
     // ── Email format validation ──────────────────────────────────────
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.email || !emailRegex.test(formData.email)) {
+    if (!formData.email || !emailRegex.test(formData.email.trim())) {
       setSubmitError('Please enter a valid email address.');
       setStatus('error');
-      return;
-    }
-
-    if (!otpVerified) {
-      setSubmitError('Please verify your email address with the 6-digit code to submit your inquiry.');
-      setStatus('error');
-      if (!otpSent) {
-        handleSendOtp();
-      }
       return;
     }
 
@@ -134,13 +125,14 @@ const Contact: React.FC = () => {
     setStatus('submitting');
     setSubmitError(null);
 
-    const formattedMessage = `[DIRECT CONTACT INQUIRY - VERIFIED CLIENT ✅]
+    const isVerifiedClient = otpVerified;
+    const formattedMessage = `[DIRECT CONTACT INQUIRY${isVerifiedClient ? ' - VERIFIED CLIENT ✅' : ''}]
 Service Requested: ${formData.serviceType}
 Location/Country: ${formData.location || 'Not specified'}
 Project Area: ${formData.area || 'Standard'}
 Timeline: ${formData.timeline}
 Phone: ${formData.phone || 'Not provided'}
-Email Verified: YES
+Email Verified: ${isVerifiedClient ? 'YES' : 'NO'}
 
 Client Message:
 ${formData.message}`;
@@ -452,7 +444,7 @@ ${formData.message}`;
                             disabled={otpBusy || !formData.email}
                             className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 underline transition disabled:opacity-50 cursor-pointer"
                           >
-                            {otpBusy && !otpSent ? 'Sending verification code…' : otpSent ? 'Resend 6-digit code' : 'Verify Email with 6-digit OTP →'}
+                            {otpBusy && !otpSent ? 'Sending verification code…' : otpSent ? 'Resend 6-digit code' : 'Verify Email with 6-digit OTP (Optional) →'}
                           </button>
                         </div>
                         {otpSent && (
