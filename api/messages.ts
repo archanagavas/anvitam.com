@@ -136,7 +136,37 @@ async function sendOtpSms(phoneNumber: string, otp: string): Promise<{ success: 
     }
   }
 
-  // 3. Twilio SMS ($15.50 free trial balance on signup)
+  // 3. Brevo Worldwide SMS (US, UK, UAE, Europe, Australia, India, 190+ countries)
+  if (BREVO_API_KEY) {
+    const e164Phone = phoneNumber.startsWith('+') ? phoneNumber : `+${cleanDigits}`;
+    try {
+      const resp = await fetch('https://api.brevo.com/v3/transactionalSMS/send', {
+        method: 'POST',
+        headers: {
+          'api-key': BREVO_API_KEY,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          type: 'transactional',
+          unicodeEnabled: false,
+          sender: 'Anvitam',
+          recipient: e164Phone,
+          content: `Your Anvitam verification code is: ${otp}. Valid for 10 minutes.`
+        })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (resp.ok && (data.reference || data.messageId)) {
+        console.log('[Brevo SMS] Worldwide SMS sent successfully to', e164Phone);
+        return { success: true, provider: 'brevo' };
+      }
+      console.warn('[Brevo SMS Warning]', data);
+    } catch (err) {
+      console.warn('[Brevo SMS Error]', err);
+    }
+  }
+
+  // 4. Twilio Worldwide SMS ($15.50 free trial balance on signup)
   const twilioSid = process.env.TWILIO_ACCOUNT_SID;
   const twilioAuth = process.env.TWILIO_AUTH_TOKEN;
   const twilioFrom = process.env.TWILIO_PHONE_NUMBER;
@@ -169,7 +199,7 @@ async function sendOtpSms(phoneNumber: string, otp: string): Promise<{ success: 
   return {
     success: false,
     provider: 'none',
-    error: 'No SMS gateway configured. Add FAST2SMS_API_KEY or TWOFACTOR_API_KEY in your environment.'
+    error: 'No SMS gateway configured. Add BREVO_API_KEY, FAST2SMS_API_KEY, or TWILIO_ACCOUNT_SID.'
   };
 }
 
