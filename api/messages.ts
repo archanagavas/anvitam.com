@@ -5,12 +5,9 @@ import { verifyAdminToken, extractToken } from '../lib/auth.js';
 import crypto from 'crypto';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
 
 async function sendOtpEmail(email: string, otp: string, name?: string): Promise<boolean> {
-  if (!RESEND_API_KEY) {
-    console.warn('[Resend] RESEND_API_KEY not set for OTP.');
-    return false;
-  }
   const htmlBody = `
     <div style="font-family: Arial, -apple-system, BlinkMacSystemFont, sans-serif; padding: 32px; color: #111; max-width: 520px; margin: auto; border: 1px solid #e0e0e0; border-radius: 16px; background-color: #ffffff;">
       <div style="text-align: center; margin-bottom: 20px;">
@@ -29,19 +26,53 @@ async function sendOtpEmail(email: string, otp: string, name?: string): Promise<
       </p>
     </div>
   `;
-  const senders = ['Anvitam Verification <verify@anvitam.com>', 'Anvitam Verification <onboarding@resend.dev>'];
-  for (const sender of senders) {
+
+  // 1. Brevo Transactional Email (300 free emails/day forever, no credit card required)
+  // Keeps transactional OTPs completely separated from Resend marketing/outreach
+  if (BREVO_API_KEY) {
     try {
-      const resp = await fetch('https://api.resend.com/emails', {
+      const bResp = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: sender, to: [email], subject: `Your Anvitam Verification Code: ${otp}`, html: htmlBody })
+        headers: {
+          'api-key': BREVO_API_KEY,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: { name: 'Anvitam Architecture', email: 'verify@anvitam.com' },
+          to: [{ email, name: name || 'Valued Client' }],
+          subject: `Your Anvitam Verification Code: ${otp}`,
+          htmlContent: htmlBody
+        })
       });
-      const data = await resp.json();
-      if (resp.ok) { console.log(`[Resend] OTP email sent via ${sender}:`, data.id); return true; }
-      else console.warn(`[Resend OTP] ${sender} failed:`, data.message);
-    } catch (err) { console.error('[Resend OTP Error]', err); }
+      if (bResp.ok) {
+        console.log('[Brevo] OTP email sent successfully to', email);
+        return true;
+      }
+      const bData = await bResp.json().catch(() => ({}));
+      console.warn('[Brevo OTP Warning]', bData);
+    } catch (bErr) {
+      console.warn('[Brevo Network Error]', bErr);
+    }
   }
+
+  // 2. Resend Fallback (if configured and Brevo not present)
+  if (RESEND_API_KEY) {
+    const senders = ['Anvitam Verification <verify@anvitam.com>', 'Anvitam Verification <onboarding@resend.dev>'];
+    for (const sender of senders) {
+      try {
+        const resp = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from: sender, to: [email], subject: `Your Anvitam Verification Code: ${otp}`, html: htmlBody })
+        });
+        const data = await resp.json();
+        if (resp.ok) { console.log(`[Resend] OTP email sent via ${sender}:`, data.id); return true; }
+        else console.warn(`[Resend OTP] ${sender} failed:`, data.message);
+      } catch (err) { console.error('[Resend OTP Error]', err); }
+    }
+  }
+
   return false;
 }
 
@@ -133,10 +164,6 @@ async function sendOtpSms(phoneNumber: string, otp: string): Promise<{ success: 
 }
 
 async function sendLeadEmailNotification(name: string, email: string, message: string, date?: string, isVerified = false) {
-  if (!RESEND_API_KEY) {
-    console.warn('[Resend] RESEND_API_KEY not set.');
-    return;
-  }
   const targetEmails = ['ar.archanagavas@gmail.com', 'anvitamarchitects@gmail.com'];
   const verifiedBadgeHtml = isVerified
     ? '<span style="background-color: #2b5711; color: #CCFF00; padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-left: 8px;">✓ Verified Email</span>'
@@ -155,18 +182,68 @@ async function sendLeadEmailNotification(name: string, email: string, message: s
     </div>
   `;
   const subjectPrefix = isVerified ? '🔔 [VERIFIED CLIENT] New Anvitam Lead' : '🔔 New Anvitam Lead';
-  const senders = ['Anvitam Leads <leads@anvitam.com>', 'Anvitam Leads <onboarding@resend.dev>'];
-  for (const sender of senders) {
+
+  // 1. Worldwide Instant Push via Telegram Bot (100% Free, worldwide, zero SMS gateway needed)
+  const tgToken = process.env.TELEGRAM_BOT_TOKEN;
+  const tgChatId = process.env.TELEGRAM_CHAT_ID;
+  if (tgToken && tgChatId) {
     try {
-      const resp = await fetch('https://api.resend.com/emails', {
+      const tgText = `🌿 <b>New Anvitam Lead ${isVerified ? '✅ [VERIFIED]' : ''}</b>\n\n` +
+        `👤 <b>Name:</b> ${name}\n` +
+        `📧 <b>Email:</b> ${email}\n` +
+        `📅 <b>Date:</b> ${date ?? new Date().toLocaleString()}\n\n` +
+        `📝 <b>Details:</b>\n${message}`;
+      await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: sender, to: targetEmails, subject: `${subjectPrefix}: ${name} (${email})`, html: htmlBody })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: tgChatId, text: tgText, parse_mode: 'HTML' })
       });
-      const data = await resp.json();
-      if (resp.ok) { console.log(`[Resend] Email sent via ${sender}:`, data.id); break; }
-      else console.warn(`[Resend] ${sender} failed:`, data.message);
-    } catch (err) { console.error('[Resend Error]', err); }
+      console.log('[Telegram] Worldwide push notification sent to Archana');
+    } catch (tgErr) {
+      console.warn('[Telegram Alert Error]', tgErr);
+    }
+  }
+
+  // 2. Email Alert via Brevo (saves Resend outreach quota)
+  if (BREVO_API_KEY) {
+    try {
+      const bResp = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': BREVO_API_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: { name: 'Anvitam Leads', email: 'leads@anvitam.com' },
+          to: targetEmails.map(e => ({ email: e })),
+          subject: `${subjectPrefix}: ${name} (${email})`,
+          htmlContent: htmlBody
+        })
+      });
+      if (bResp.ok) {
+        console.log('[Brevo] Lead notification email sent');
+        return;
+      }
+    } catch (bErr) {
+      console.warn('[Brevo Lead Alert Error]', bErr);
+    }
+  }
+
+  // 3. Fallback: Resend Email Alert
+  if (RESEND_API_KEY) {
+    const senders = ['Anvitam Leads <leads@anvitam.com>', 'Anvitam Leads <onboarding@resend.dev>'];
+    for (const sender of senders) {
+      try {
+        const resp = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from: sender, to: targetEmails, subject: `${subjectPrefix}: ${name} (${email})`, html: htmlBody })
+        });
+        const data = await resp.json();
+        if (resp.ok) { console.log(`[Resend] Email sent via ${sender}:`, data.id); break; }
+        else console.warn(`[Resend] ${sender} failed:`, data.message);
+      } catch (err) { console.error('[Resend Error]', err); }
+    }
   }
 }
 

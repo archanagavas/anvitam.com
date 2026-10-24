@@ -48,11 +48,11 @@ const CLOUDFLARE_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN || '';
 
 export const HF_MODELS = {
   /** FLUX.1-schnell: Best quality, fastest, 0 cost on HF free tier */
-  flux_schnell: 'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell',
+  flux_schnell: 'https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell',
   /** SDXL: Reliable fallback, free tier */
-  sdxl: 'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',
+  sdxl: 'https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-xl-base-1.0',
   /** Realistic Vision for interior photorealism */
-  realistic: 'https://api-inference.huggingface.co/models/SG161222/Realistic_Vision_V6.0_B1_noVAE',
+  realistic: 'https://router.huggingface.co/hf-inference/models/SG161222/Realistic_Vision_V6.0_B1_noVAE',
 };
 
 // ── Prompt Builder ────────────────────────────────────────────────────────────
@@ -387,16 +387,47 @@ export async function generateWithControlNet(prompt: string, sourceImageB64: str
   }
 }
 
-// ── Google Gemini Imagen Fallback ─────────────────────────────────────────────
-
+// ── Google Gemini Image Generation Fallback ──────────────────────────────────
 export async function generateWithGeminiImage(prompt: string): Promise<string | null> {
   const geminiKey = process.env.GEMINI_API_KEY;
   if (!geminiKey) return null;
+
+  // 1. Try Gemini Image Generation via generateContent
+  for (const model of ['gemini-2.5-flash-image', 'gemini-3.1-flash-image']) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: `High quality architectural image: ${prompt.substring(0, 400)}` }] }]
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const parts = data?.candidates?.[0]?.content?.parts || [];
+        for (const part of parts) {
+          const inline = part.inlineData || part.inline_data;
+          if (inline?.data) {
+            const mime = inline.mimeType || inline.mime_type || 'image/jpeg';
+            return `data:${mime};base64,${inline.data}`;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn(`[hf-image-gen/gemini] ${model} call note:`, err);
+    }
+  }
+
+  // 2. Try Imagen 3 Predict endpoint with x-goog-api-key
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${geminiKey}`;
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict';
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': geminiKey
+      },
       body: JSON.stringify({
         instances: [{ prompt: prompt.substring(0, 400) }],
         parameters: { sampleCount: 1, aspectRatio: '1:1', outputMimeType: 'image/jpeg' }
@@ -410,13 +441,11 @@ export async function generateWithGeminiImage(prompt: string): Promise<string | 
       }
     }
   } catch (err) {
-    console.warn('[hf-image-gen/gemini] Gemini Imagen call failed:', err);
+    console.warn('[hf-image-gen/gemini] Imagen predict call note:', err);
   }
+
   return null;
 }
-
-// Backwards-compatibility alias so callers never crash
-export const generateWithPollinations = generateWithGeminiImage;
 
 // ── Main Handler ──────────────────────────────────────────────────────────────
 

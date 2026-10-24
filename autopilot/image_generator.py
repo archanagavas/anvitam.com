@@ -4,9 +4,11 @@ Generates and serves premium architectural, permaculture, and interior images.
 Strictly zero pollinator / zero Pollinations.ai references.
 
 Priority Sequence:
-1. Google Gemini Imagen API (via GEMINI_API_KEY)
-2. Local Curated Studio Architectural Sketch Asset Library (100+ bespoke assets)
-3. Permanent Cloudinary CDN Hosting (Cloud Name: voef9roi)
+1. Google Gemini Generative Image API (gemini-2.5-flash-image, gemini-3.1-flash-image, Imagen 3)
+2. Hugging Face Serverless FLUX.1 / SDXL (router.huggingface.co)
+3. Dynamic Architectural Engine (Wikimedia Commons API - high-res, authentic, CC/public domain)
+4. Curated Anvitam Studio Asset Library (autopilot/assets/studio_library/)
+5. Permanent Cloudinary CDN Hosting (Cloud Name: voef9roi)
 """
 
 import os
@@ -16,8 +18,9 @@ import time
 import base64
 import random
 import logging
+import re
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 import requests
 
 if sys.platform == "win32":
@@ -29,12 +32,16 @@ if sys.platform == "win32":
 
 from autopilot.config import (
     GEMINI_API_KEY,
+    HUGGINGFACE_API_KEY,
     WORKSPACE_ROOT,
     logger
 )
 
 IMAGE_DIR = WORKSPACE_ROOT / "autopilot" / "published_records" / "images"
 IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+
+STUDIO_LIBRARY_DIR = WORKSPACE_ROOT / "autopilot" / "assets" / "studio_library"
+STUDIO_LIBRARY_DIR.mkdir(parents=True, exist_ok=True)
 
 # Cloudinary CDN Configuration
 CLOUDINARY_CLOUD_NAME = os.getenv("CLOUDINARY_CLOUD_NAME", "voef9roi")
@@ -88,42 +95,22 @@ def generate_gemini_image(prompt: str, filename: str) -> Optional[str]:
     if not GEMINI_API_KEY:
         return None
 
-    # Try Imagen 3 Predict endpoint
-    predict_url = f"https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key={GEMINI_API_KEY}"
-    headers = {"Content-Type": "application/json"}
-    payload = {
-        "instances": [{"prompt": prompt}],
-        "parameters": {
-            "sampleCount": 1,
-            "aspectRatio": "16:9",
-            "outputMimeType": "image/jpeg"
-        }
-    }
-    try:
-        res = requests.post(predict_url, headers=headers, json=payload, timeout=45)
-        if res.status_code == 200:
-            data = res.json()
-            predictions = data.get("predictions", [])
-            if predictions and "bytesBase64Encoded" in predictions[0]:
-                img_data = base64.b64decode(predictions[0]["bytesBase64Encoded"])
-                local_path = IMAGE_DIR / filename
-                with open(local_path, "wb") as f:
-                    f.write(img_data)
-                logger.info(f"✔ Gemini Imagen 3 generated: {local_path.name}")
-                return str(local_path)
-    except Exception as e:
-        logger.debug(f"Gemini Imagen predict endpoint note: {e}")
-
-    # Try Gemini 2.5 Flash Image generateContent endpoint
-    for model_name in ["gemini-2.5-flash-image", "gemini-3.1-flash-image"]:
+    # 1. Try Gemini Image Generation via generateContent
+    for model_name in [
+        "gemini-2.5-flash-image",
+        "gemini-3.1-flash-image",
+        "gemini-3-pro-image",
+        "gemini-3.1-flash-lite-image"
+    ]:
         gen_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={GEMINI_API_KEY}"
+        headers = {"Content-Type": "application/json"}
         gen_payload = {
             "contents": [{
                 "parts": [{"text": f"Generate a high resolution architectural line sketch: {prompt}"}]
             }]
         }
         try:
-            res = requests.post(gen_url, headers=headers, json=gen_payload, timeout=45)
+            res = requests.post(gen_url, headers=headers, json=gen_payload, timeout=30)
             if res.status_code == 200:
                 data = res.json()
                 candidates = data.get("candidates", [])
@@ -141,39 +128,144 @@ def generate_gemini_image(prompt: str, filename: str) -> Optional[str]:
         except Exception as e:
             logger.debug(f"Gemini {model_name} call note: {e}")
 
+    # 2. Try Imagen 3 Predict endpoint with x-goog-api-key
+    predict_url = "https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict"
+    headers = {
+        "Content-Type": "application/json",
+        "x-goog-api-key": GEMINI_API_KEY
+    }
+    payload = {
+        "instances": [{"prompt": prompt}],
+        "parameters": {
+            "sampleCount": 1,
+            "aspectRatio": "16:9",
+            "outputMimeType": "image/jpeg"
+        }
+    }
+    try:
+        res = requests.post(predict_url, headers=headers, json=payload, timeout=30)
+        if res.status_code == 200:
+            data = res.json()
+            predictions = data.get("predictions", [])
+            if predictions and "bytesBase64Encoded" in predictions[0]:
+                img_data = base64.b64decode(predictions[0]["bytesBase64Encoded"])
+                local_path = IMAGE_DIR / filename
+                with open(local_path, "wb") as f:
+                    f.write(img_data)
+                logger.info(f"✔ Gemini Imagen 3 generated: {local_path.name}")
+                return str(local_path)
+    except Exception as e:
+        logger.debug(f"Gemini Imagen predict endpoint note: {e}")
+
+    return None
+
+
+def generate_hf_image(prompt: str, filename: str) -> Optional[str]:
+    """
+    Generates high-resolution architectural image via Hugging Face Serverless Inference API (FLUX.1 / SDXL).
+    Zero watermarks, high precision.
+    """
+    if not HUGGINGFACE_API_KEY:
+        return None
+
+    headers = {"Authorization": f"Bearer {HUGGINGFACE_API_KEY}"}
+    models = [
+        "black-forest-labs/FLUX.1-schnell",
+        "stabilityai/stable-diffusion-xl-base-1.0"
+    ]
+    for model in models:
+        url = f"https://router.huggingface.co/hf-inference/models/{model}"
+        payload = {"inputs": prompt}
+        try:
+            res = requests.post(url, headers=headers, json=payload, timeout=40)
+            if res.status_code == 200 and "image" in res.headers.get("content-type", "").lower():
+                local_path = IMAGE_DIR / filename
+                with open(local_path, "wb") as f:
+                    f.write(res.content)
+                logger.info(f"✔ HuggingFace ({model}) generated: {local_path.name}")
+                return str(local_path)
+        except Exception as e:
+            logger.debug(f"HuggingFace {model} call note: {e}")
+
+    return None
+
+
+def generate_dynamic_architectural_image(concept: str, filename: str) -> Optional[str]:
+    """
+    Fetches an authentic, high-resolution architectural/landscape photograph from
+    Wikimedia Commons matching the topic. Completely free, public domain / CC, ZERO watermark.
+    """
+    # Extract search terms from concept
+    words = [w for w in re.findall(r'[a-zA-Z]{3,}', concept.lower()) if w not in {
+        'the', 'and', 'for', 'with', 'from', 'best', 'real', 'how', 'what', 'when',
+        'talk', 'numbers', 'about', 'contractors', 'love', 'empirical', 'metrics'
+    }]
+    search_term = " ".join(words[:4]) or "courtyard garden architecture"
+
+    url = "https://commons.wikimedia.org/w/api.php"
+    params = {
+        "action": "query",
+        "format": "json",
+        "generator": "search",
+        "gsrsearch": search_term,
+        "gsrnamespace": 6,
+        "gsrlimit": 8,
+        "prop": "imageinfo",
+        "iiprop": "url|size|mime"
+    }
+    headers = {"User-Agent": "AnvitamArchitectureBot/1.0 (anvitamarchitect@gmail.com)"}
+
+    try:
+        res = requests.get(url, params=params, headers=headers, timeout=15)
+        if res.status_code == 200:
+            pages = res.json().get("query", {}).get("pages", {})
+            for pid, page in pages.items():
+                for info in page.get("imageinfo", []):
+                    raw_url = info.get("url", "")
+                    clean_url = raw_url.split("?")[0]
+                    size = info.get("size", 0)
+                    if clean_url.lower().endswith((".jpg", ".jpeg", ".png")) and size > 40000:
+                        img_res = requests.get(raw_url, headers=headers, timeout=20)
+                        if img_res.status_code == 200 and len(img_res.content) > 30000:
+                            local_path = IMAGE_DIR / filename
+                            with open(local_path, "wb") as f:
+                                f.write(img_res.content)
+                            logger.info(f"✔ Dynamic Architectural Media acquired: {local_path.name} ({size} bytes)")
+                            return str(local_path)
+    except Exception as e:
+        logger.debug(f"Dynamic Architectural Media query note: {e}")
+
     return None
 
 
 def get_curated_studio_image(concept: str, image_type: str) -> Optional[str]:
     """
-    Selects a matching high-resolution architectural sketch asset from Anvitam's
-    curated library of 100+ bespoke studio assets.
+    Selects a matching high-resolution architectural asset from Anvitam's
+    curated studio library. Whitelisted authentic assets with zero watermark.
     """
-    if not IMAGE_DIR.exists():
+    if not STUDIO_LIBRARY_DIR.exists():
         return None
 
-    # Check for direct matches
-    all_images = list(IMAGE_DIR.glob("*.jpg")) + list(IMAGE_DIR.glob("*.png"))
+    all_images = list(STUDIO_LIBRARY_DIR.glob("*.jpg")) + list(STUDIO_LIBRARY_DIR.glob("*.png"))
     if not all_images:
         return None
 
-    # Filter out empty or corrupted files
-    valid_images = [img for img in all_images if img.stat().st_size > 15000]
-    if not valid_images:
-        return None
-
-    # Try category or type specific match
     concept_lower = concept.lower()
-    for img in valid_images:
+    for img in all_images:
         name_lower = img.name.lower()
-        if any(term in name_lower for term in ["sketch", "permaculture", "villa", "retreat", "earthworks"]):
-            if any(term in concept_lower for term in ["water", "soil", "permaculture", "contour"]) and "earthworks" in name_lower:
-                return str(img)
-            if any(term in concept_lower for term in ["house", "villa", "resort", "retreat"]) and "sketch" in name_lower:
-                return str(img)
+        if "3d" in concept_lower and "3d" in name_lower:
+            return str(img)
+        if any(k in concept_lower for k in ["site", "context", "soil", "permaculture"]) and "site" in name_lower:
+            return str(img)
+        if any(k in concept_lower for k in ["climate", "sun", "wind", "passive"]) and "climate" in name_lower:
+            return str(img)
+        if any(k in concept_lower for k in ["sketch", "drawing", "concept", "plan"]) and "conceptual" in name_lower:
+            return str(img)
+        if any(k in concept_lower for k in ["build", "execution", "contractor", "supervision"]) and "execution" in name_lower:
+            return str(img)
 
     # Return a high quality architectural studio image
-    selected = random.choice(valid_images)
+    selected = random.choice(all_images)
     return str(selected)
 
 
@@ -232,7 +324,7 @@ def generate_architectural_image(
     # Transform visual concept into Archana's signature architectural sketching artist style
     prompt = build_sketch_artist_prompt(clean_concept)
 
-    # 1. Try Google Gemini Image Generation
+    # 1. Primary: Google Gemini Image Generation
     img_path = generate_gemini_image(prompt, filename)
     if img_path and os.path.exists(img_path):
         cdn_url = upload_to_cloudinary(img_path, public_id=f"anvitam_{image_type}_{timestamp}")
@@ -243,7 +335,29 @@ def generate_architectural_image(
             "source": "gemini_image"
         }
 
-    # 2. Select matching curated studio asset from Anvitam's bespoke architectural library
+    # 2. Secondary: Hugging Face Serverless FLUX.1 / SDXL
+    img_path = generate_hf_image(prompt, filename)
+    if img_path and os.path.exists(img_path):
+        cdn_url = upload_to_cloudinary(img_path, public_id=f"anvitam_{image_type}_{timestamp}")
+        return {
+            "local_path": img_path,
+            "direct_url": cdn_url or f"file:///{img_path}",
+            "prompt": prompt,
+            "source": "huggingface_flux"
+        }
+
+    # 3. Tertiary: Dynamic Architectural Engine (Wikimedia Commons API)
+    img_path = generate_dynamic_architectural_image(clean_concept, filename)
+    if img_path and os.path.exists(img_path):
+        cdn_url = upload_to_cloudinary(img_path, public_id=f"anvitam_{image_type}_{timestamp}")
+        return {
+            "local_path": img_path,
+            "direct_url": cdn_url or f"file:///{img_path}",
+            "prompt": prompt,
+            "source": "dynamic_architectural_engine"
+        }
+
+    # 4. Quaternary: Whitelisted Curated Studio Library Asset
     studio_img = get_curated_studio_image(clean_concept, image_type)
     if studio_img and os.path.exists(studio_img):
         cdn_url = upload_to_cloudinary(studio_img, public_id=f"anvitam_{image_type}_{timestamp}")
@@ -254,7 +368,7 @@ def generate_architectural_image(
             "source": "studio_architectural_asset"
         }
 
-    # Default fallback to permanent Anvitam CDN asset
+    # Fallback to verified permanent Cloudinary CDN asset
     fallback_cdn = "https://res.cloudinary.com/voef9roi/image/upload/v1792776406/test_cdn_verify.jpg"
     return {
         "local_path": str(IMAGE_DIR / filename),
