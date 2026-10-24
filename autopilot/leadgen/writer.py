@@ -63,40 +63,85 @@ def extract_terrain_context(lead: Dict[str, Any]) -> str:
     return "general"
 
 
+def craft_introduction_email(lead: Dict[str, Any], gender: str = "neutral") -> Dict[str, str]:
+    """
+    Archana's Authentic Human Voice — Warm, humble, professional peer introduction.
+    Subject: A quick introduction — Anvitam
+    """
+    contact_name = (lead.get("contact_name") or lead.get("name") or "").strip()
+    first_name = ""
+    if contact_name and contact_name.lower() not in [
+        "project lead", "head of development", "team", "inquiry", "partner", "general", "manager", "director"
+    ]:
+        first_name = contact_name.split()[0]
+
+    salutation = f"Hi {first_name}," if first_name else "Hi,"
+
+    company_name = (lead.get("company") or lead.get("organization") or lead.get("project_title") or "").strip()
+    target_mention = company_name if company_name and company_name.lower() not in ["direct opportunity", "company", "lead", "n/a"] else "your work"
+
+    subject = "A quick introduction — Anvitam"
+
+    body = f"""{salutation}
+
+I came across {target_mention} and wanted to reach out and introduce myself.
+
+I'm Archana, Founder and Principal Architect at Anvitam. We work across sustainable architecture, landscape planning, and regenerative design, with a focus on creating thoughtful spaces that respond to the land, nature, and the people who use them.
+
+Our work spans homes, farms, retreats, eco-homestays, hospitality spaces, and larger landscape and land-planning projects.
+
+I always enjoy connecting with people working on interesting projects, and I thought it would be lovely to get to know your work as well. Perhaps there's an opportunity to collaborate on a future project, exchange ideas, or support each other along the way.
+
+Would love to stay in touch and see where our work might align.
+
+You can explore our work here: https://anvitam.com
+
+Warm regards,
+Archana Gavas
+Founder & Principal Architect
+Anvitam"""
+
+    return {"subject": subject, "body": body.strip()}
+
+
 def craft_landowner_lead_email(lead: Dict[str, Any], gender: str = "neutral") -> Dict[str, str]:
     """
     Private Landowners, Farmstead Owners & Acreage Buyers.
     Tailored to custom residential space planning, villa/farmhouse concepts, budget control, and 3D visuals.
+    Tone: Warm, joyful, enthusiastic, and passionate about biophilic architecture.
     """
     contact_name = (lead.get("contact_name") or lead.get("name") or "").strip()
     first_name = contact_name.split()[0] if contact_name and contact_name.lower() not in ["project lead", "head of development", "team", "inquiry", "partner", "general", "manager"] else ""
-    salutation = f"Hi {first_name}," if first_name else "Hi,"
+    salutation = f"Hi {first_name}!" if first_name else "Hi!"
 
     location = lead.get("location") or "your area"
     city = location.split(",")[0].strip() if "," in location else location.strip()
 
-    subject = f"Architectural Design & Space Planning - {city}"
+    subject = f"Architectural Design & Space Planning for your land in {city} 🌱"
 
     body = f"""{salutation}
 
-I came across your land and building plans in {city}.
+Hope you're having a wonderful and creative week! 😊
 
-I'm an architect with 3.7+ years of experience across residential architecture, space planning, architectural drawings, detailing, materials, and 3D visualization.
+I came across your land and property plans in {city} — it sounds like such a beautiful canvas to build upon.
 
-I'd be happy to help develop a modern, practical design that works within your land, orientation, and budget while giving the home a distinctive look.
+I'm Archana, an architect specializing in sustainable residential architecture, biophilic villas, and climate-attuned farmhouses. I'm truly passionate about shaping homes that blend seamlessly into their natural surroundings while staying comfortable, practical, and light on budget.
 
-I can work remotely and take the project forward through video calls, drawings, and 3D visuals, so you can clearly review every space before implementation.
+I would love to help you bring your dream space to life! Through 3D walkthroughs, sun-path orientation studies, and detailed spatial drawings, we can explore and visualize every room together before a single stone is laid.
 
-I'd be happy to share some relevant villa and farmhouse work and understand a little more about your site and the concept you have in mind.
+I'd be thrilled to take a look at your land or sketches and share a few complimentary preliminary concept ideas tailored to your orientation and vision.
 
-If you'd like to discuss the concept or hop on a quick call, you can pick a time directly here:
+Here is a glimpse of some of our recent villa and farmstead projects:
+{PORTFOLIO_URL}
+
+Whenever you'd like to say hello, bounce some ideas around, or have an initial chat, feel free to pick a time that suits you best:
 {TOPMATE_BOOKING_URL}
 
-Would love to hear from you.
+Really looking forward to hearing all about your vision!
 
-Best,
+Warmest regards,
 {ARCHANA_NAME}
-Principal Architect | Anvitam
+Principal Architect | Anvitam Studio
 https://www.anvitam.com"""
 
     return {"subject": subject, "body": body.strip()}
@@ -106,37 +151,41 @@ def craft_developer_lead_email(lead: Dict[str, Any], gender: str = "neutral") ->
     """
     Estate Developers, Land Subdividers & Community Masterplanners.
     Tailored to masterplanning, spatial layouts, villa typologies, drawings, and 3D visuals.
+    Tone: Warm, joyful, visionary, and eager to collaborate.
     """
     contact_name = (lead.get("contact_name") or lead.get("name") or "").strip()
     first_name = contact_name.split()[0] if contact_name and contact_name.lower() not in ["project lead", "head of development", "team", "inquiry", "partner", "general", "manager"] else ""
-    salutation = f"Hi {first_name}," if first_name else "Hi,"
+    salutation = f"Hi {first_name}!" if first_name else "Hi!"
 
     org_name = lead.get("organization") or lead.get("company") or "your development"
     location = lead.get("location") or "your area"
     city = location.split(",")[0].strip() if "," in location else location.strip()
 
-    subject = f"Masterplanning & Architectural Concepts - {org_name}"
+    subject = f"Masterplanning & Architectural Concepts for {org_name} ✨"
 
     body = f"""{salutation}
 
-Reaching out regarding your development at {org_name} in {city}.
+Hope you're having a fantastic week! 😊
 
-I'm an architect with 3.7+ years of experience across residential masterplanning, space planning, architectural drawings, detailing, materials, and 3D visualization.
+I’ve been following the inspiring work you're doing with {org_name} in {city} — the scope and vision of your development is truly exciting.
 
-I'd be happy to help develop modern, practical spatial layouts and villa typologies that maximize your site value within budget while giving the development a distinctive look.
+I'm Archana, an architect and masterplanner specializing in ecological community layouts, nature-integrated villa typologies, and biophilic architectural design.
 
-I can work remotely and take the project forward through video calls, drawings, and 3D visuals, so your team can clearly review the design before implementation.
+I would love to explore collaborating with your team! Whether you're planning an upcoming phase, looking to maximize site value and view corridors, or need evocative 3D visualizations and drawing packages that captivate buyers, we bring fresh energy, rigorous spatial planning, and deep sustainable know-how.
 
-I'd be happy to share some relevant masterplanning and residential work and understand a little more about your upcoming phases.
+I'd be delighted to offer a complimentary masterplan feasibility review for any parcel or upcoming typology you're evaluating.
 
-If you'd like to explore how we can support your project or hop on a quick call, you can pick a time directly here:
+A few recent masterplanning and residential concepts:
+{PORTFOLIO_URL}
+
+If you'd like to connect for a quick introductory video call to brainstorm ideas, you can pick a time directly here:
 {TOPMATE_BOOKING_URL}
 
-Would love to hear from you.
+Wishing you tremendous success with your project, and really looking forward to connecting!
 
-Best,
+Warmest regards,
 {ARCHANA_NAME}
-Principal Architect | Anvitam
+Principal Architect | Anvitam Studio
 https://www.anvitam.com"""
 
     return {"subject": subject, "body": body.strip()}
@@ -177,7 +226,7 @@ def craft_realtor_lead_email(lead: Dict[str, Any], gender: str = "neutral") -> D
     """
     Week 1: Luxury Real Estate Brokers, Realtors & Land Agents.
     Anvitam Architecture & Ecological Design: Farm Retreats, Weekend Villas & Masterplanning.
-    Tone: Warm, human, peer-to-peer, zero sales pressure, generous perk, graceful exit.
+    Tone: Warm, human, friendly, helpful ally with a complimentary site feasibility perk.
     """
     org_name = lead.get("organization") or lead.get("company") or "your team"
     location = lead.get("location") or "your area"
@@ -199,23 +248,35 @@ def craft_realtor_lead_email(lead: Dict[str, Any], gender: str = "neutral") -> D
         parcel_type = "raw acreage and estate parcels"
         site_nuance = "passive cooling, water harvesting, and villa layouts that sit naturally on the landscape"
 
-    subject = f"Architectural & land masterplanning for {org_name}"
+    contact_name = (lead.get("contact_name") or lead.get("name") or "").strip()
+    first_name = contact_name.split()[0] if contact_name and contact_name.lower() not in ["project lead", "head of development", "team", "inquiry", "partner", "general", "manager"] else ""
+    salutation = f"Hi {first_name}!" if first_name else "Hi!"
 
-    body = f"""Hi,
+    subject = f"Architectural & land masterplanning collaboration for {org_name} 🏡"
 
-I'm Archana, an architect specializing in ecological farm retreats, weekend villas, and land masterplanning.
+    body = f"""{salutation}
 
-When your buyers or landowners are evaluating {parcel_type}, they often need an architect to see what's actually possible on the terrain: {site_nuance}.
+Hope you're having a wonderful and productive week! 😊
 
-If you or a client are ever sizing up a tricky parcel and want a quick second set of eyes on site orientation or building feasibility, I'm always happy to run a quick initial look for you, no strings attached.
+I’ve been admiring your beautiful property listings and land portfolios across {location}.
 
-A few recent retreat and villa projects: {PORTFOLIO_URL}
+I'm Archana, an architect specializing in ecological farm retreats, countryside villas, and site masterplanning.
 
-If you don't have anything on your desk right now, no worries at all. Keep us in mind.
+When your clients are evaluating {parcel_type}, one of the biggest hurdles before making an offer is often picturing what can actually be built: {site_nuance}. Having clear architectural guidance turns hesitation into confidence.
 
-Warmly,
+I would love to be a helpful creative ally for your team! If you ever have a buyer sizing up a unique or tricky parcel, I’d be delighted to run a quick, complimentary preliminary site feasibility and orientation review for you — completely on the house.
+
+A look at some of our recent retreat and residential projects:
+{PORTFOLIO_URL}
+
+Always glad to hop on a quick video chat to say hello and connect:
+{TOPMATE_BOOKING_URL}
+
+Wishing you many wonderful closings, and really looking forward to staying in touch!
+
+Warmest regards,
 {ARCHANA_NAME}
-Principal Architect, Anvitam Architecture & Ecological Design
+Principal Architect | Anvitam Studio
 https://www.anvitam.com"""
 
     return {"subject": subject, "body": body.strip()}
@@ -224,8 +285,7 @@ https://www.anvitam.com"""
 def craft_hospitality_lead_email(lead: Dict[str, Any], gender: str = "neutral") -> Dict[str, str]:
     """
     Week 2: Cafes, Restaurants & Boutique Hospitality.
-    Direct & Minimalist format: ultra-concise, client-centric, strictly no platforms mentioned.
-    Accurately synchronizes the Subject, Requirement, and Venue Type to what the client actually needs.
+    Tone: Warm, joyful, sensory, and passionate about vibrant dining atmospheres.
     """
     contact_name = (lead.get("contact_name") or lead.get("name") or "").strip()
     raw_first = contact_name.split()[0] if contact_name else ""
@@ -235,7 +295,7 @@ def craft_hospitality_lead_email(lead: Dict[str, Any], gender: str = "neutral") 
         "studio", "estate", "design", "office", "admin", "info"
     }
     first_name = raw_first if raw_first and raw_first.lower() not in invalid_names else ""
-    salutation = f"Hi {first_name}," if first_name else "Hi,"
+    salutation = f"Hi {first_name}!" if first_name else "Hi!"
 
     location = lead.get("location") or "your area"
     city = location.split(",")[0].strip() if "," in location else location.strip()
@@ -247,40 +307,43 @@ def craft_hospitality_lead_email(lead: Dict[str, Any], gender: str = "neutral") 
     if "cafe" in all_context or "coffee" in all_context or "roastery" in all_context:
         venue_noun = "cafe"
         clean_requirement = "cafe interior design"
-        subject = f"Cafe Interior Design - {city}"
+        subject = f"Creative Cafe Interior & Spatial Design - {city} ☕"
     elif "restaurant" in all_context or "brasserie" in all_context or "dining" in all_context or "kitchen" in all_context or "eatery" in all_context:
         venue_noun = "restaurant"
         clean_requirement = "restaurant interior design"
-        subject = f"Restaurant Interior Design - {city}"
+        subject = f"Boutique Restaurant Interior Design - {city} 🍽️"
     elif "bar" in all_context or "pub" in all_context or "bistro" in all_context:
         venue_noun = "bistro"
         clean_requirement = "interior design and space planning"
-        subject = f"Bistro Interior Design - {city}"
+        subject = f"Bistro Interior Design & Ambience - {city} ✨"
     else:
         venue_noun = "space"
         clean_requirement = project_title.lower() if project_title else "commercial interior design"
-        subject = f"Commercial Interior Design - {city}"
+        subject = f"Commercial Interior & Biophilic Design - {city} 🌿"
 
     body = f"""{salutation}
 
-I came across your requirement for the {clean_requirement} in {city}.
+Hope you're having a vibrant and wonderful week! 😊
 
-I'm an architect with 3.7+ years of experience across commercial interiors, space planning, architectural drawings, detailing, materials, and 3D visualization.
+I came across your plans for {clean_requirement} in {city} — such an exciting concept and a great addition to the area!
 
-I'd be happy to help develop a modern, practical interior that works within your space and budget while giving the {venue_noun} a distinctive look.
+I'm Archana, an architect and spatial designer. I have a huge passion for creating warm, sensory dining spaces, artisan cafes, and boutique hospitality interiors that make guests feel instantly welcome, linger longer, and keep coming back.
 
-I can work remotely and take the project forward through video calls, drawings, and 3D visuals, so you can clearly review the design before implementation.
+I would love to help you bring the space to life! From optimizing guest seating flow and barista/kitchen ergonomics to warm lighting, natural textures, and immersive 3D walkthroughs, we make sure every square foot works beautifully and stays within budget.
 
-I'd be happy to share some relevant interior work and understand a little more about the {venue_noun} and the concept you have in mind.
+I'd be delighted to take a look at your floor plan and share a complimentary initial layout concept with a few creative mood-boards.
 
-If you'd like to discuss the concept or hop on a quick call, you can pick a time directly here:
+You can explore some of our design aesthetics here:
+{PORTFOLIO_URL}
+
+If you'd like to chat or brainstorm ideas over a quick call, you can pick a time here:
 {TOPMATE_BOOKING_URL}
 
-Would love to hear from you.
+Eagerly wishing you all the best with the launch, and hope to connect soon!
 
-Best,
+Warmest regards,
 {ARCHANA_NAME}
-Principal Architect | Anvitam
+Principal Architect | Anvitam Studio
 https://www.anvitam.com"""
 
     return {"subject": subject, "body": body.strip()}
@@ -290,7 +353,12 @@ def craft_retreat_lead_email(lead: Dict[str, Any], gender: str = "neutral") -> D
     """
     Week 3: Eco-Resorts, Wellness Retreats & Agritourism Estates.
     Anvitam Architecture & Ecological Design: Passive-Cooled Cottages, Closed-Loop Water & Food Forests.
+    Tone: Warm, joyful, heartfelt, and deeply passionate about wellness sanctuaries.
     """
+    contact_name = (lead.get("contact_name") or lead.get("name") or "").strip()
+    first_name = contact_name.split()[0] if contact_name and contact_name.lower() not in ["project lead", "head of development", "team", "inquiry", "partner", "general", "manager"] else ""
+    salutation = f"Hi {first_name}!" if first_name else "Hi!"
+
     org_name = lead.get("organization") or lead.get("company") or "your retreat"
     terrain = extract_terrain_context(lead)
 
@@ -303,23 +371,29 @@ def craft_retreat_lead_email(lead: Dict[str, Any], gender: str = "neutral") -> D
     else:
         retreat_context = "regenerative farm retreats, wellness sanctuaries, and permaculture masterplanning"
 
-    subject = f"Ecological masterplanning & retreat design for {org_name}"
+    subject = f"Ecological masterplanning & retreat design for {org_name} 🌱"
 
-    body = f"""Hi,
+    body = f"""{salutation}
 
-I'm Archana, an architect specializing in {retreat_context}.
+Hope you're having a wonderful and peaceful day! 😊
 
-We design passive-cooled earth cottages, decentralized water recycling, and nature-integrated spaces that respect the soil and keep long-term operating costs low.
+I came across {org_name} and was immediately drawn to your vision. It is so inspiring to see sanctuaries dedicated to nature, well-being, and authentic hospitality.
 
-If you're ever planning a new phase, adding guest villas, or looking at land expansion, I'd be happy to take a quick look at your terrain and share a few masterplanning concepts for your site.
+I'm Archana, an architect and ecological planner with a deep heart for {retreat_context}. We craft earth-conscious cottages, natural swimming pools, passive cooling strategies, and biophilic spaces that embrace the landscape while keeping long-term maintenance wonderfully low.
 
-A few recent farm retreat projects: {PORTFOLIO_URL}
+I would absolutely love to collaborate with you! If you are ever dreaming up a new phase, adding guest villas, or refining your masterplan, I’d be thrilled to prepare a complimentary initial spatial & contour concept review for your grounds.
 
-If you're not building or expanding right now, completely understand. Keep our portfolio handy.
+Here is a look at a few of our recent farm retreats and wellness projects:
+{PORTFOLIO_URL}
 
-Warmly,
+I'd be so happy to hop on a quick call to say hello and exchange ideas:
+{TOPMATE_BOOKING_URL}
+
+Sending lots of warmth and wishing you continued joy with your sanctuary!
+
+Warmest regards,
 {ARCHANA_NAME}
-Principal Architect, Anvitam Architecture & Ecological Design
+Principal Architect | Anvitam Studio
 https://www.anvitam.com"""
 
     return {"subject": subject, "body": body.strip()}
@@ -329,27 +403,40 @@ def craft_architect_lead_email(lead: Dict[str, Any], gender: str = "neutral") ->
     """
     Week 4: Architectural Studios & Design-Build Practices.
     Anvitam Architecture & Ecological Design: Bioclimatic Collaboration, 3D Modeling & Drawing Support.
+    Tone: Warm, collegiate, supportive, and enthusiastic fellow architect.
     """
+    contact_name = (lead.get("contact_name") or lead.get("name") or "").strip()
+    first_name = contact_name.split()[0] if contact_name and contact_name.lower() not in ["project lead", "head of development", "team", "inquiry", "partner", "general", "manager"] else ""
+    salutation = f"Hi {first_name}!" if first_name else "Hi!"
+
     org_name = lead.get("organization") or lead.get("company") or "your studio"
 
-    subject = f"Design collaboration & 3D documentation with {org_name}"
+    subject = f"Design collaboration & 3D visual support for {org_name} ✨"
 
-    body = f"""Hi,
+    body = f"""{salutation}
 
-I'm Archana, principal architect at Anvitam. We specialize in bioclimatic architecture, ecological masterplanning, and detailed 3D design documentation.
+Hope you and your studio are having an inspiring and creative week! 😊
 
-When practices hit peak project cycles, complex site modeling and space planning can easily bottleneck client delivery. We often collaborate with fellow studios as a remote design and drafting extension.
+I've long admired the exceptional design standard and projects coming out of {org_name}.
 
-If your team ever needs a second pair of hands for 3D visual sets, sun-path modeling, or drawing packages during a rush, I'm always happy to hop on a quick call and see how we can assist.
+I'm Archana, principal architect at Anvitam Studio. We specialize in bioclimatic architecture, ecological masterplanning, and high-detail 3D visual sets and drawing packages.
 
-A few recent collaborative sets: {PORTFOLIO_URL}
+When studios hit peak deadlines or take on complex sites, having reliable, like-minded design support can be a lifesaver. We love collaborating with fellow architects as a dedicated remote design and modeling extension — taking care of sun-path simulations, 3D renderings, and spatial drawing sets with care and precision.
 
-If you're fully covered right now, no problem at all. Just glad to be on your radar.
+I would love to connect and see if we can support your practice when project surges arise! I'd be so happy to hop on a quick call just to say hello and share some of our drawing sets:
+{PORTFOLIO_URL}
 
-Best,
+Direct chat link:
+{TOPMATE_BOOKING_URL}
+
+Wishing your studio continued creative inspiration, and looking forward to connecting!
+
+Warmest regards,
 {ARCHANA_NAME}
-Principal Architect, Anvitam Architecture & Ecological Design
+Principal Architect | Anvitam Studio
 https://www.anvitam.com"""
+
+    return {"subject": subject, "body": body.strip()}
 
     return {"subject": subject, "body": body.strip()}
 
@@ -417,38 +504,6 @@ def draft_lead_email(lead: Dict[str, Any], use_llm: bool = False) -> Dict[str, s
     if lead_type == "public_procurement_rfp" or "tender" in lead.get("lead_id", "").lower() or ("heritage" in all_text and "trust" in all_text):
         return craft_procurement_rfp_email(lead)
 
-    # 3. Private Landowner / Farmstead Owner / Acreage Owner (NEVER send cafe design to a landowner!)
-    if any(k in all_text for k in ["landowner", "private land", "farmstead owner", "farm owner"]) or (
-        "acreage" in details and not any(k in all_text for k in ["broker", "realtor", "agency", "estate agent", "developer", "development marketing"])
-    ):
-        return craft_landowner_lead_email(lead, gender=gender)
-
-    # 4. Estate Developer / Community Masterplanner
-    if any(k in all_text for k in ["development marketing", "subdivision", "land developer", "estate developer", "masterplanned community"]):
-        return craft_developer_lead_email(lead, gender=gender)
-
-    # 5. Eco-Resort / Retreat / Wellness Sanctuary / Homestay
-    if any(k in all_text for k in ["resort", "retreat", "wellness", "hotel", "homestay", "glamping", "chalet", "guest house", "steep-slope", "farmstay"]) or cohort == "retreats":
-        return craft_retreat_lead_email(lead, gender=gender)
-
-    # 6. Cafe / Restaurant / Boutique Dining
-    if any(k in all_text for k in ["cafe", "coffee", "restaurant", "bistro", "dining", "eatery", "roastery", "brasserie"]) or cohort == "hospitality":
-        return craft_hospitality_lead_email(lead, gender=gender)
-
-    # 7. Real Estate Broker / Land Agent
-    if any(k in all_text for k in ["estate agent", "realtor", "broker", "property management", "land agent"]) or cohort == "realtors":
-        return craft_realtor_lead_email(lead, gender=gender)
-
-    # 8. Architecture Studio / Design Firm
-    if any(k in all_text for k in ["architect", "studio", "design practice", "design-build"]):
-        return craft_architect_lead_email(lead, gender=gender)
-
-    # Fallbacks based on active cohort
-    if cohort == "realtors":
-        return craft_realtor_lead_email(lead, gender=gender)
-    elif cohort == "hospitality":
-        return craft_hospitality_lead_email(lead, gender=gender)
-    elif cohort == "retreats":
-        return craft_retreat_lead_email(lead, gender=gender)
-    else:
-        return craft_architect_lead_email(lead, gender=gender)
+    # Standard & High-intent client / partner outreach:
+    # Uses Archana's signature warm, humble, peer-to-peer introduction:
+    return craft_introduction_email(lead, gender=gender)

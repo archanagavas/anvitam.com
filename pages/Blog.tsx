@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useContent } from '../context/ContentContext';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Blog: React.FC = () => {
   const { blogs } = useContent();
@@ -167,47 +167,49 @@ const Blog: React.FC = () => {
         {filteredBlogs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-16 lg:gap-x-14 lg:gap-y-20">
             {filteredBlogs.map(blog => (
-              <article
+              <Link
                 key={blog.id}
-                className="group cursor-pointer flex flex-col h-full"
-                onClick={() => navigate(`/blog/${blog.slug || blog.id}`)}
+                to={`/blog/${blog.slug || blog.id}`}
+                className="group cursor-pointer flex flex-col h-full block"
               >
-                <div className="w-full aspect-[16/9] mb-6 overflow-hidden rounded-sm bg-gray-50">
-                  <img
-                    src={blog.image}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    alt={blog.title}
-                    loading="lazy"
-                  />
-                </div>
-
-                {/* Tags chips */}
-                {blog.tags && blog.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {blog.tags.flatMap(t => t.split(',').map(s => s.trim())).filter(Boolean).slice(0, 5).map(t => (
-                      <span key={t} className="text-[10px] font-bold uppercase tracking-wider text-[#8bc34a] bg-green-50 border border-green-100 px-2.5 py-0.5 rounded-full font-semibold">
-                        {t}
-                      </span>
-                    ))}
+                <article className="flex flex-col h-full">
+                  <div className="w-full aspect-[16/9] mb-6 overflow-hidden rounded-sm bg-gray-50">
+                    <img
+                      src={blog.image}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      alt={blog.title}
+                      loading="lazy"
+                    />
                   </div>
-                )}
 
-                <h2 className="text-2xl md:text-[28px] font-bold mb-4 tracking-tight text-[#111] group-hover:text-[#8bc34a] transition-colors leading-tight">
-                  {blog.title}
-                </h2>
-                <p className="text-gray-500 text-sm leading-relaxed font-medium mb-8 flex-grow line-clamp-3">
-                  {blog.excerpt}
-                </p>
+                  {/* Tags chips */}
+                  {blog.tags && blog.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {blog.tags.flatMap(t => t.split(',').map(s => s.trim())).filter(Boolean).slice(0, 5).map(t => (
+                        <span key={t} className="text-[10px] font-bold uppercase tracking-wider text-[#8bc34a] bg-green-50 border border-green-100 px-2.5 py-0.5 rounded-full font-semibold">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
 
-                <div className="flex items-center justify-between pt-5 border-t border-gray-100 mt-auto">
-                  <span className="text-xs font-semibold text-gray-400 tracking-wider">
-                    {blog.date} · {blog.author}
-                  </span>
-                  <span className="inline-flex items-center text-[11px] font-bold uppercase tracking-wider text-[#111] border border-gray-200 rounded-full px-5 py-2 group-hover:border-gray-400 transition-colors">
-                    Read more <ArrowRight className="w-3 h-3 ml-2" />
-                  </span>
-                </div>
-              </article>
+                  <h2 className="text-2xl md:text-[28px] font-bold mb-4 tracking-tight text-[#111] group-hover:text-[#8bc34a] transition-colors leading-tight">
+                    {blog.title}
+                  </h2>
+                  <p className="text-gray-500 text-sm leading-relaxed font-medium mb-8 flex-grow line-clamp-3">
+                    {blog.excerpt}
+                  </p>
+
+                  <div className="flex items-center justify-between pt-5 border-t border-gray-100 mt-auto">
+                    <span className="text-xs font-semibold text-gray-400 tracking-wider">
+                      {blog.date} · {blog.author}
+                    </span>
+                    <span className="inline-flex items-center text-[11px] font-bold uppercase tracking-wider text-[#111] border border-gray-200 rounded-full px-5 py-2 group-hover:border-gray-400 transition-colors">
+                      Read more <ArrowRight className="w-3 h-3 ml-2" />
+                    </span>
+                  </div>
+                </article>
+              </Link>
             ))}
           </div>
         ) : (

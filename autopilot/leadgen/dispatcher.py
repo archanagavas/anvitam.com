@@ -439,17 +439,19 @@ def dispatch_staged_leads(
             try:
                 send_single_email_resend(
                     to_email=ARCHANA_EMAIL,
-                    subject="🚨 Anvitam Lead Pipeline Complete — Ready for New Lead Batch",
+                    subject="🌱 Anvitam Autopilot: Outreach Batch Dispatched with Care & Warmth ✨",
                     body=(
-                        f"Hi Archana,\n\n"
-                        f"All verified leads in the active queue have been successfully dispatched.\n\n"
-                        f"Total processed: {dispatched} prospects at 5-minute intervals.\n"
-                        f"Detailed audit log: {OUTREACH_AUDIT_LOG_FILE}\n\n"
-                        f"The queue is now empty. Please add or request a new batch of verified leads to continue outreach.\n\n"
-                        f"Best,\nAnvitam Autopilot Engine"
+                        f"Hi Archana! 😊\n\n"
+                        f"Hope you are having a wonderful, creative day!\n\n"
+                        f"Just wanted to share some happy news — all {dispatched} personalized outreach emails in this batch have been sent out to lovely landowners, resort visionaries, and fellow studios with our warm, collaborative voice.\n\n"
+                        f"Every email was crafted with genuine enthusiasm and eager joy to collaborate on sustainable, biophilic design.\n\n"
+                        f"You can view the full record and details anytime in: {OUTREACH_AUDIT_LOG_FILE}\n\n"
+                        f"Ready with the next batch of 100 verified leads whenever you'd like to continue connecting!\n\n"
+                        f"Sending lots of warmth and positive energy,\n"
+                        f"Your Anvitam Studio Assistant 🌿"
                     )
                 )
-                print(f"📧 Notification sent to {ARCHANA_EMAIL} alerting that the list is complete.")
+                print(f"📧 Notification sent to {ARCHANA_EMAIL} celebrating that the list is complete.")
             except Exception as ne:
                 logger.warning(f"Note sending pipeline complete notification: {ne}")
 

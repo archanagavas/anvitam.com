@@ -57,6 +57,37 @@ def record_sent_email(lead_record: Dict[str, Any]) -> None:
         logger.error(f"Failed to update sent history: {e}")
 
 
+_MX_CACHE: Dict[str, bool] = {}
+
+def check_domain_has_mx(domain: str) -> bool:
+    """Checks if the domain has active MX records via fast DNS-over-HTTPS lookup with caching."""
+    if domain in _MX_CACHE:
+        return _MX_CACHE[domain]
+    
+    # Fast check via Google DoH API (standard JSON, zero dependencies)
+    try:
+        import urllib.request
+        req = urllib.request.Request(
+            f"https://dns.google/resolve?name={domain}&type=MX",
+            headers={"User-Agent": "Anvitam-Verifier/2.0"}
+        )
+        with urllib.request.urlopen(req, timeout=2.0) as resp:
+            data = json.loads(resp.read().decode())
+            answers = data.get("Answer", [])
+            has_mx = len(answers) > 0
+            _MX_CACHE[domain] = has_mx
+            return has_mx
+    except Exception:
+        # Fallback to standard socket host resolution if network DoH is unreachable
+        try:
+            socket.gethostbyname(domain)
+            _MX_CACHE[domain] = True
+            return True
+        except Exception:
+            _MX_CACHE[domain] = False
+            return False
+
+
 def verify_lead_email(email: str) -> Tuple[bool, str]:
     """
     Validates email format, domain MX resolution, and deduplication.
@@ -85,15 +116,8 @@ def verify_lead_email(email: str) -> Tuple[bool, str]:
     if clean_email in sent_emails:
         return False, f"Already contacted previously: '{clean_email}'"
 
-    # 4. Domain DNS / Host Reachability (Zero-cost native socket lookup)
-    try:
-        socket.gethostbyname(domain_part)
-    except socket.gaierror:
-        try:
-            socket.getaddrinfo(domain_part, None)
-        except socket.gaierror:
-            return False, f"Unresolvable domain (DNS host not found): '{domain_part}'"
-    except Exception as e:
-        logger.debug(f"DNS lookup note for {domain_part}: {e}")
+    # 4. Domain MX Reachability Verification
+    if not check_domain_has_mx(domain_part):
+        return False, f"Domain has no valid MX mail exchange records: '{domain_part}'"
 
     return True, "Valid and reachable"

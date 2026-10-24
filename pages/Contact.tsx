@@ -5,7 +5,6 @@ import { ArrowRight, Plus, Minus, CheckCircle, Calendar, MapPin, Mail, Phone, Na
 import FlowButton from '../components/ui/flow-button';
 import PhoneInput from '../components/ui/PhoneInput';
 import { checkClientRateLimit, recordClientSubmission } from '../utils/rateLimiter';
-import OtpVerificationModal from '../components/OtpVerificationModal';
 
 const Contact: React.FC = () => {
   const { addMessage } = useContent();
@@ -26,16 +25,11 @@ const Contact: React.FC = () => {
   const [activeTab, setActiveTab] = useState('Getting started');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
-  // Mandatory Email OTP Verification popup modal state
-  const [showOtpModal, setShowOtpModal] = useState(false);
-  const [otpVerified, setOtpVerified] = useState(false);
-  const [verificationToken, setVerificationToken] = useState<string | null>(null);
-
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // ── Anti-bot Honeypot Trap (Spam Protection) ─────────────────────
@@ -80,24 +74,15 @@ const Contact: React.FC = () => {
       return;
     }
 
-    // Open mandatory OTP verification popup modal
-    setSubmitError(null);
-    setShowOtpModal(true);
-  };
-
-  const handleVerifiedAndSubmit = async (token: string) => {
-    setVerificationToken(token);
-    setOtpVerified(true);
     setStatus('submitting');
     setSubmitError(null);
 
-    const formattedMessage = `[DIRECT CONTACT INQUIRY - VERIFIED CLIENT ✅]
+    const formattedMessage = `[DIRECT CONTACT INQUIRY - CLIENT]
 Service Requested: ${formData.serviceType}
 Location/Country: ${formData.location || 'Not specified'}
 Project Area: ${formData.area || 'Standard'}
 Timeline: ${formData.timeline}
 Phone: ${formData.phone || 'Not provided'}
-Email Verified: YES
 
 Client Message:
 ${formData.message}`;
@@ -131,7 +116,6 @@ ${formData.message}`;
           email: formData.email.trim(),
           message: formattedMessage,
           date: new Date().toISOString(),
-          verificationToken: token
         }),
       });
 
@@ -145,7 +129,6 @@ ${formData.message}`;
 
       recordClientSubmission('contact', 10);
       setStatus('success');
-      setShowOtpModal(false);
       setFormData({
         firstName: '',
         lastName: '',
@@ -161,7 +144,6 @@ ${formData.message}`;
       console.error('[Contact] Submission error:', err);
       setSubmitError(err?.message || 'Failed to send message. Please check your connection and try again.');
       setStatus('error');
-      setShowOtpModal(false);
     }
   };
 
@@ -375,33 +357,15 @@ ${formData.message}`;
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
-                    <div className="flex items-center justify-between ml-1">
-                      <label className="text-xs font-semibold text-[#111]">Email Address *</label>
-                      {otpVerified && (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                          ✓ Verified
-                        </span>
-                      )}
-                    </div>
+                    <label className="text-xs font-semibold text-[#111] ml-1">Email Address *</label>
                     <input 
                       type="email" 
                       required
                       value={formData.email}
-                      onChange={e => {
-                        setFormData({...formData, email: e.target.value});
-                        if (otpVerified) {
-                          setOtpVerified(false);
-                          setVerificationToken(null);
-                        }
-                      }}
-                      className={`w-full bg-white border rounded-full px-5 py-3 focus:outline-none transition-all font-medium text-sm text-[#111] ${
-                        otpVerified ? 'border-emerald-400 bg-emerald-50/20' : 'border-gray-200 focus:border-gray-400 focus:ring-1 focus:ring-gray-400'
-                      }`}
+                      onChange={e => setFormData({...formData, email: e.target.value})}
+                      className="w-full bg-white border border-gray-200 rounded-full px-5 py-3 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-all font-medium text-sm text-[#111]"
                       placeholder="you@email.com"
                     />
-                    <p className="text-[11px] text-gray-400 ml-1">
-                      A quick 6-digit verification code will pop up to verify your email upon submitting.
-                    </p>
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between ml-1">
@@ -497,7 +461,7 @@ ${formData.message}`;
                 <FlowButton
                   type="submit" 
                   disabled={status === 'submitting'}
-                  text={status === 'submitting' ? 'Submitting Details...' : 'Verify Email & Submit Inquiry →'}
+                  text={status === 'submitting' ? 'Submitting Details...' : 'Submit Inquiry'}
                   variant="lime"
                   className="w-full py-4 mt-2"
                 />
@@ -687,20 +651,6 @@ ${formData.message}`;
           </div>
         </div>
       </div>
-
-      {showOtpModal && (
-        <OtpVerificationModal
-          isOpen={showOtpModal}
-          email={formData.email}
-          name={`${formData.firstName} ${formData.lastName}`.trim()}
-          phone={formData.phone}
-          title="Verify Email to Submit Inquiry"
-          purposeLabel="your architectural inquiry"
-          actionButtonText="Verify &amp; Submit Inquiry →"
-          onVerified={handleVerifiedAndSubmit}
-          onClose={() => setShowOtpModal(false)}
-        />
-      )}
 
     </div>
   );

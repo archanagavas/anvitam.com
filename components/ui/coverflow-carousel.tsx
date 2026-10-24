@@ -72,6 +72,7 @@ export function CoverflowCarousel({
     t: number;
     isDragging: boolean;
   } | null>(null);
+  const hasJustDraggedRef = React.useRef(false);
 
   const [selected, setSelected] = React.useState(0);
 
@@ -227,6 +228,10 @@ export function CoverflowCarousel({
     if (drag.isDragging) {
       const carried = Math.max(-2, Math.min(2, drag.v * 0.18));
       settle(clamp(Math.round(posRef.current + carried)));
+      hasJustDraggedRef.current = true;
+      setTimeout(() => {
+        hasJustDraggedRef.current = false;
+      }, 100);
     }
     dragRef.current = null;
   };
@@ -234,7 +239,7 @@ export function CoverflowCarousel({
   const handleCardClick = (slide: CoverflowSlide, index: number, event: React.MouseEvent) => {
     event.stopPropagation();
     // If user was dragging, don't trigger click navigation
-    if (dragRef.current && dragRef.current.isDragging) return;
+    if (hasJustDraggedRef.current || (dragRef.current && dragRef.current.isDragging)) return;
 
     // Direct click navigation with zero friction
     if (slide.onClick) {

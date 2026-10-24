@@ -173,8 +173,8 @@ def call_groq(
         messages.append({"role": "system", "content": system_instruction})
     messages.append({"role": "user", "content": prompt})
 
-    # Prioritize 120b and 20b which have high rate limits, then qwen
-    models_to_try = ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"]
+    # Prioritize active, fast Groq models
+    models_to_try = ["qwen/qwen3.8-27b", "openai/gpt-oss-120b", "openai/gpt-oss-20b"]
     for m in models_to_try:
         cur_messages = list(messages)
         payload = {
@@ -194,7 +194,14 @@ def call_groq(
                 data = res.json()
                 return data["choices"][0]["message"]["content"]
             elif res.status_code == 429:
-                logger.info(f"Groq ({m}) rate limited (429). Switching immediately to next fallback model...")
+                logger.info(f"Groq ({m}) rate limited (429). Waiting 3s and retrying...")
+                time.sleep(3)
+                try:
+                    retry_res = requests.post(url, headers=headers, json=payload, timeout=45)
+                    if retry_res.status_code == 200:
+                        return retry_res.json()["choices"][0]["message"]["content"]
+                except Exception:
+                    pass
                 continue
             else:
                 logger.debug(f"Groq ({m}) error {res.status_code}: {res.text[:120]}")

@@ -8,7 +8,6 @@ import { EstimatorService } from '../types';
 import { PPP_COUNTRIES, calculatePPPPrice, getCountryByCode, AREA_UNITS, getAreaMultiplier, AreaUnit } from '../utils/pppPricing';
 import PhoneInput from './ui/PhoneInput';
 import { checkClientRateLimit, recordClientSubmission } from '../utils/rateLimiter';
-import OtpVerificationModal from './OtpVerificationModal';
 
 const TOPMATE = 'https://topmate.io/archanagavas/1799075?utm_source=estimator&utm_campaign=estimate_lead';
 
@@ -40,11 +39,6 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
   const [busy, setBusy] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Mandatory Email OTP Verification popup modal state
-  const [showOtpModal, setShowOtpModal] = useState(false);
-  const [otpVerified, setOtpVerified] = useState(false);
-  const [verificationToken, setVerificationToken] = useState<string | null>(null);
-
   const country = getCountryByCode(form.country);
   const areaNum = Number(form.area) || 0;
   const areaMultiplier = getAreaMultiplier(areaNum, form.areaUnit);
@@ -55,7 +49,7 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
 
   const toggle = (i: number) => setSelected(p => p.includes(i) ? p.filter(x => x !== i) : [...p, i]);
 
-  const handleInitiateSubmit = (e: React.FormEvent) => {
+  const handleInitiateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError(null);
 
@@ -84,36 +78,25 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
       return;
     }
 
-    // Trigger mandatory OTP popup modal
-    setShowOtpModal(true);
-  };
-
-  const handleVerifiedAndSubmit = async (token: string) => {
-    setVerificationToken(token);
-    setOtpVerified(true);
     setBusy(true);
 
     const areaUnitLabel = AREA_UNITS.find(u => u.code === form.areaUnit)?.label || 'Sq. Ft.';
     const areaDisplay = form.area ? `${form.area} ${areaUnitLabel}` : 'Standard';
     const subList = selected.map(i => `${svc?.subs[i]} (${getFormattedPrice(svc?.baseINR[i] || 0)})`).filter(Boolean).join(' · ');
-    const msg = `[ESTIMATE REQUEST - VERIFIED CLIENT ✅]\nService: ${svc?.title}\nProject Area: ${areaDisplay}\nDeliverables: ${subList}\nTotal Estimate: ${formattedTotal}\nCountry: ${country.flag} ${country.name} (${form.country})\nPhone: ${form.phone}\nEmail Verified: YES`;
+    const msg = `[ESTIMATE REQUEST - CLIENT INQUIRY]\nService: ${svc?.title}\nProject Area: ${areaDisplay}\nDeliverables: ${subList}\nTotal Estimate: ${formattedTotal}\nCountry: ${country.flag} ${country.name} (${form.country})\nPhone: ${form.phone}`;
 
     try {
-      const res = await fetch('/api/messages', {
+      fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: form.name.trim(),
           email: form.email.trim(),
           message: msg,
-          date: new Date().toISOString(),
-          verificationToken: token
+          date: new Date().toISOString()
         }),
-      });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `Server returned HTTP ${res.status}`);
-      }
+      }).catch(() => {});
+
       if (contentCtx?.addMessage) {
         contentCtx.addMessage({
           id: crypto.randomUUID(),
@@ -125,13 +108,11 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
       }
       recordClientSubmission('estimator', 10);
       setBusy(false);
-      setShowOtpModal(false);
       setStep('result');
     } catch (err: any) {
       console.warn('[Estimator] Failed to submit lead:', err);
-      setSubmitError(err?.message || 'Failed to submit estimate. Please check your connection and try again.');
       setBusy(false);
-      setShowOtpModal(false);
+      setStep('result');
     }
   };
 
@@ -486,21 +467,5 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
     </div>
   );
 
-  return createPortal(
-    <>
-      {content}
-      <OtpVerificationModal
-        isOpen={showOtpModal}
-        email={form.email}
-        name={form.name}
-        phone={form.phone}
-        title="Verify Email to View Estimate"
-        purposeLabel="your architectural cost estimate"
-        actionButtonText="Verify &amp; View Estimate →"
-        onVerified={handleVerifiedAndSubmit}
-        onClose={() => setShowOtpModal(false)}
-      />
-    </>,
-    document.body
-  );
+  return createPortal(content, document.body);
 }

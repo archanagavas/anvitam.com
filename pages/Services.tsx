@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useContent } from '../context/ContentContext';
 import { ArrowRight, Plus, Minus, MoveUpRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'motion/react';
 import { TESTIMONIALS } from '../constants';
@@ -117,16 +117,16 @@ const Services: React.FC = () => {
               </div>
 
               {/* Column 2: Image */}
-              <div 
-                className="md:col-span-5 h-[300px] md:h-[450px] w-full cursor-pointer overflow-hidden rounded-xl bg-gray-100" 
-                onClick={() => navigate(`/services/${service.id}`)}
+              <Link 
+                to={`/services/${service.id}`}
+                className="md:col-span-5 h-[300px] md:h-[450px] w-full block cursor-pointer overflow-hidden rounded-xl bg-gray-100" 
               >
                 <img 
                   src={service.heroImage || 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=800&auto=format&fit=crop'} 
                   alt={service.title || 'Service Image'} 
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" 
                 />
-              </div>
+              </Link>
 
               {/* Column 3: Whats Included */}
               <div className="md:col-span-4 flex flex-col items-start bg-white z-10 w-full lg:w-11/12 mx-auto">
@@ -157,12 +157,12 @@ const Services: React.FC = () => {
                   >
                     <FlowButton text="Book a Design Consultation" variant="lime" />
                   </a>
-                  <button 
-                    onClick={() => navigate(`/services/${service.id}`)} 
-                    className="text-xs font-bold flex items-center gap-1 hover:text-[#5A5A40] transition-colors pl-4 text-[#0a0a0a]/60 hover:text-[#0a0a0a] cursor-pointer"
+                  <Link 
+                    to={`/services/${service.id}`} 
+                    className="text-xs font-bold inline-flex items-center gap-1 hover:text-[#5A5A40] transition-colors pl-4 text-[#0a0a0a]/60 hover:text-[#0a0a0a] cursor-pointer"
                   >
                     <MoveUpRight size={14} /> Full Details
-                  </button>
+                  </Link>
                 </div>
               </div>
             </motion.div>
@@ -232,10 +232,9 @@ const Services: React.FC = () => {
               If you have any further questions about our architectural services, please feel free to browse through our frequently asked questions.
             </p>
             <div className="bg-[#fcfcfc] border border-gray-100 p-6 rounded-2xl shadow-sm">
-              <h4 className="font-bold text-sm mb-2 text-[#0a0a0a]">Still have questions?</h4>
-              <button onClick={() => navigate('/contact')} className="bg-[#CCFF00] text-[#0a0a0a] px-6 py-2.5 rounded-full text-xs font-bold mt-2 hover:bg-[#bce600] transition-colors">
+              <Link to="/contact" className="inline-block bg-[#CCFF00] text-[#0a0a0a] px-6 py-2.5 rounded-full text-xs font-bold mt-2 hover:bg-[#bce600] transition-colors cursor-pointer">
                 Contact Us
-              </button>
+              </Link>
             </div>
           </div>
           <div className="lg:col-span-8">
