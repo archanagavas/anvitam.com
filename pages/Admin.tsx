@@ -2955,10 +2955,26 @@ const Admin: React.FC = () => {
               ) : messages.map(msg => {
                 const isNewsletter = msg.message === 'Newsletter subscription request';
                 const isWorkshopLead = msg.message?.includes('[WORKSHOP') || msg.message?.includes('WORKSHOP BOOKING');
+                const isEstimateLead = msg.message?.includes('[ESTIMATE REQUEST') || msg.message?.includes('Total Estimate:');
+                const isVerified = msg.email_verified || msg.message?.includes('VERIFIED CLIENT');
+
+                const replySubject = isEstimateLead
+                  ? 'Anvitam - Your Architectural Cost Estimate & Consultation'
+                  : isWorkshopLead
+                  ? 'Re: Nest N Nurture Workshop Inquiry - Anvitam'
+                  : 'Re: Architectural Consultation Inquiry - Anvitam';
+
+                const replyBody = isEstimateLead
+                  ? `Hi ${encodeURIComponent(msg.name.split(' ')[0])},%0A%0AThank you for using the Anvitam Cost Estimator. Principal Architect Ar. Archana Gavas has reviewed your project parameters and would love to discuss the details with you!%0A%0A`
+                  : isWorkshopLead
+                  ? `Hi ${encodeURIComponent(msg.name.split(' ')[0])},%0A%0AThank you for reaching out regarding Nest N Nurture Workshops for your campus!%0A%0A`
+                  : `Hi ${encodeURIComponent(msg.name.split(' ')[0])},%0A%0AThank you for reaching out to Anvitam! We have received your inquiry and Ar. Archana Gavas will get back to you shortly.%0A%0A`;
                 
                 return (
                   <div key={msg.id} className={`bg-white p-5 rounded-2xl border shadow-sm flex flex-col md:flex-row justify-between items-start gap-4 ${
-                    isWorkshopLead
+                    isEstimateLead
+                      ? 'border-emerald-300 bg-emerald-50/15'
+                      : isWorkshopLead
                       ? 'border-[#CCFF00] bg-emerald-50/20'
                       : isNewsletter
                       ? 'border-[#CCFF00]/50 bg-[#CCFF00]/5'
@@ -2970,6 +2986,10 @@ const Admin: React.FC = () => {
                           <span className="text-[10px] font-black uppercase tracking-widest bg-[#CCFF00] text-black px-3 py-1 rounded-full shadow-xs border border-black/10">
                             🌿 WORKSHOP LEAD
                           </span>
+                        ) : isEstimateLead ? (
+                          <span className="text-[10px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-800 border border-emerald-300 px-3 py-1 rounded-full shadow-xs">
+                            📐 ESTIMATE LEAD
+                          </span>
                         ) : isNewsletter ? (
                           <span className="text-[10px] font-bold uppercase tracking-widest bg-[#CCFF00] text-[#111] px-2.5 py-0.5 rounded-full">
                             Newsletter
@@ -2977,6 +2997,11 @@ const Admin: React.FC = () => {
                         ) : (
                           <span className="text-[10px] font-bold uppercase tracking-widest bg-blue-50 text-blue-600 border border-blue-200 px-2.5 py-0.5 rounded-full">
                             Inquiry
+                          </span>
+                        )}
+                        {isVerified && (
+                          <span className="text-[10px] font-black uppercase tracking-widest bg-green-600 text-white px-2.5 py-0.5 rounded-full shadow-xs">
+                            ✓ Verified Client
                           </span>
                         )}
                         <span className="font-bold text-gray-900 text-sm">{msg.name}</span>
@@ -2995,7 +3020,7 @@ const Admin: React.FC = () => {
                     <div className="flex items-center gap-2 shrink-0">
                       {!isNewsletter && (
                         <a
-                          href={`mailto:${msg.email}?subject=Re: Nest N Nurture Workshop Inquiry - Anvitam&body=Hi ${encodeURIComponent(msg.name.split(' ')[0])},%0A%0AThank you for reaching out regarding Nest N Nurture Workshops for your campus!%0A%0A`}
+                          href={`mailto:${msg.email}?subject=${encodeURIComponent(replySubject)}&body=${replyBody}`}
                           className="flex items-center gap-1.5 text-xs border border-emerald-300 bg-emerald-50 text-emerald-800 px-3.5 py-2 rounded-xl hover:bg-emerald-100 transition font-extrabold"
                         >
                           <Mail size={12} /> Reply Lead
