@@ -8,6 +8,7 @@ import { EstimatorService } from '../types';
 import { PPP_COUNTRIES, calculatePPPPrice, getCountryByCode, AREA_UNITS, getAreaMultiplier, AreaUnit } from '../utils/pppPricing';
 import PhoneInput from './ui/PhoneInput';
 import { checkClientRateLimit, recordClientSubmission } from '../utils/rateLimiter';
+import OtpVerificationModal from './OtpVerificationModal';
 
 const TOPMATE = 'https://topmate.io/archanagavas/1799075?utm_source=estimator&utm_campaign=estimate_lead';
 
@@ -39,12 +40,9 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
   const [busy, setBusy] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Email OTP Verification state to eliminate fake leads
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
+  // Mandatory Email OTP Verification popup modal state
+  const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
-  const [otpBusy, setOtpBusy] = useState(false);
-  const [otpMessage, setOtpMessage] = useState<string | null>(null);
   const [verificationToken, setVerificationToken] = useState<string | null>(null);
 
   const country = getCountryByCode(form.country);
@@ -57,59 +55,7 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
 
   const toggle = (i: number) => setSelected(p => p.includes(i) ? p.filter(x => x !== i) : [...p, i]);
 
-  const handleSendOtp = async () => {
-    setOtpMessage(null);
-    setSubmitError(null);
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!form.email || !emailRegex.test(form.email)) {
-      setOtpMessage('Please enter a valid email address first.');
-      return;
-    }
-    setOtpBusy(true);
-    try {
-      const res = await fetch('/api/messages?otp=send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: form.email, name: form.name }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to send verification code.');
-      setOtpSent(true);
-      setOtpMessage('A 6-digit verification code has been sent to your email.');
-    } catch (err: any) {
-      setOtpMessage(err?.message || 'Failed to send verification code. Please check your email.');
-    } finally {
-      setOtpBusy(false);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    setOtpMessage(null);
-    setSubmitError(null);
-    if (!otpCode || otpCode.trim().length < 6) {
-      setOtpMessage('Please enter the 6-digit verification code.');
-      return;
-    }
-    setOtpBusy(true);
-    try {
-      const res = await fetch('/api/messages?otp=verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: form.email, code: otpCode.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Invalid code.');
-      setOtpVerified(true);
-      setVerificationToken(data.token);
-      setOtpMessage('Email successfully verified!');
-    } catch (err: any) {
-      setOtpMessage(err?.message || 'Invalid code. Please try again.');
-    } finally {
-      setOtpBusy(false);
-    }
-  };
-
-  const submit = async (e: React.FormEvent) => {
+  const handleInitiateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError(null);
 
@@ -117,6 +63,11 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
     const rl = checkClientRateLimit({ key: 'estimator', cooldownSeconds: 30, maxAttempts: 2, windowMinutes: 15 });
     if (!rl.allowed) {
       setSubmitError(rl.message || 'Please wait a moment before submitting again.');
+      return;
+    }
+
+    if (!form.name || form.name.trim().length < 2) {
+      setSubmitError('Please enter your full name.');
       return;
     }
 
@@ -133,22 +84,30 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
       return;
     }
 
+    // Trigger mandatory OTP popup modal
+    setShowOtpModal(true);
+  };
+
+  const handleVerifiedAndSubmit = async (token: string) => {
+    setVerificationToken(token);
+    setOtpVerified(true);
     setBusy(true);
+
     const areaUnitLabel = AREA_UNITS.find(u => u.code === form.areaUnit)?.label || 'Sq. Ft.';
     const areaDisplay = form.area ? `${form.area} ${areaUnitLabel}` : 'Standard';
     const subList = selected.map(i => `${svc?.subs[i]} (${getFormattedPrice(svc?.baseINR[i] || 0)})`).filter(Boolean).join(' · ');
-    const isVerifiedClient = otpVerified;
-    const msg = `[ESTIMATE REQUEST${isVerifiedClient ? ' - VERIFIED CLIENT ✅' : ''}]\nService: ${svc?.title}\nProject Area: ${areaDisplay}\nDeliverables: ${subList}\nTotal Estimate: ${formattedTotal}\nCountry: ${country.flag} ${country.name} (${form.country})\nPhone: ${form.phone}\nEmail Verified: ${isVerifiedClient ? 'YES' : 'NO'}`;
+    const msg = `[ESTIMATE REQUEST - VERIFIED CLIENT ✅]\nService: ${svc?.title}\nProject Area: ${areaDisplay}\nDeliverables: ${subList}\nTotal Estimate: ${formattedTotal}\nCountry: ${country.flag} ${country.name} (${form.country})\nPhone: ${form.phone}\nEmail Verified: YES`;
+
     try {
       const res = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: form.name,
-          email: form.email,
+          name: form.name.trim(),
+          email: form.email.trim(),
           message: msg,
           date: new Date().toISOString(),
-          verificationToken
+          verificationToken: token
         }),
       });
       if (!res.ok) {
@@ -158,19 +117,21 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
       if (contentCtx?.addMessage) {
         contentCtx.addMessage({
           id: crypto.randomUUID(),
-          name: form.name,
-          email: form.email,
+          name: form.name.trim(),
+          email: form.email.trim(),
           message: msg,
           date: new Date().toISOString(),
         }).catch(() => {});
       }
       recordClientSubmission('estimator', 10);
       setBusy(false);
+      setShowOtpModal(false);
       setStep('result');
     } catch (err: any) {
       console.warn('[Estimator] Failed to submit lead:', err);
       setSubmitError(err?.message || 'Failed to submit estimate. Please check your connection and try again.');
       setBusy(false);
+      setShowOtpModal(false);
     }
   };
 
@@ -295,7 +256,7 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
 
           {/* STEP 3: Contact */}
           {step === 'contact' && (
-            <form onSubmit={submit}>
+            <form onSubmit={handleInitiateSubmit}>
               <div className="bg-white border border-black/8 rounded-xl p-4 mb-5">
                 <p className="text-[10px] font-bold text-[#888] uppercase tracking-widest mb-1">Your selection</p>
                 <p className="font-bold text-[#111] text-sm sm:text-base">{svc?.title}</p>
@@ -316,70 +277,18 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-[#777]">Email Address *</label>
-                    {otpVerified && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                        ✓ Verified
-                      </span>
-                    )}
-                  </div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#777] mb-1.5">Email Address *</label>
                   <input
                     required
                     type="email"
-                    disabled={otpVerified}
                     placeholder="you@email.com"
                     value={form.email}
-                    onChange={e => {
-                      setForm(p => ({ ...p, email: e.target.value }));
-                      setOtpSent(false);
-                      setOtpVerified(false);
-                      setVerificationToken(null);
-                    }}
-                    className={`w-full bg-white border rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-[#111] placeholder-[#aaa] outline-none transition-colors cursor-text ${
-                      otpVerified ? 'border-emerald-400 bg-emerald-50/20' : 'border-black/12 focus:border-[#111]'
-                    }`}
+                    onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
+                    className="w-full bg-white border border-black/12 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-[#111] placeholder-[#aaa] outline-none focus:border-[#111] transition-colors cursor-text"
                   />
-                  {!otpVerified && (
-                    <div className="mt-2 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <button
-                          type="button"
-                          onClick={handleSendOtp}
-                          disabled={otpBusy || !form.email}
-                          className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 underline transition disabled:opacity-50 cursor-pointer"
-                        >
-                          {otpBusy && !otpSent ? 'Sending code…' : otpSent ? 'Resend 6-digit code' : 'Verify Email with 6-digit OTP (Optional) →'}
-                        </button>
-                      </div>
-
-                      {otpSent && (
-                        <div className="flex items-center gap-2 pt-1">
-                          <input
-                            type="text"
-                            maxLength={6}
-                            placeholder="6-digit code"
-                            value={otpCode}
-                            onChange={e => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                            className="w-36 bg-white border border-emerald-300 rounded-xl px-3 py-2 text-xs font-mono tracking-widest text-[#111] placeholder-[#aaa] outline-none focus:border-emerald-600"
-                          />
-                          <button
-                            type="button"
-                            onClick={handleVerifyOtp}
-                            disabled={otpBusy || otpCode.length < 6}
-                            className="bg-[#111] text-[#CCFF00] px-4 py-2 rounded-xl text-xs font-bold hover:bg-[#222] transition disabled:opacity-50 cursor-pointer"
-                          >
-                            {otpBusy ? 'Verifying…' : 'Confirm'}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  {otpMessage && (
-                    <p className={`text-[11px] mt-1.5 ${otpVerified ? 'text-emerald-700 font-medium' : 'text-amber-700 font-medium'}`}>
-                      {otpMessage}
-                    </p>
-                  )}
+                  <p className="text-[11px] text-[#777] mt-1.5">
+                    We will send a 6-digit confirmation code to verify your estimate &amp; prevent spam.
+                  </p>
                 </div>
 
                 <div>
@@ -467,9 +376,9 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
                 <button
                   type="submit"
                   disabled={busy}
-                  className="flex-1 bg-[#CCFF00] text-[#111] py-3 rounded-full text-xs sm:text-sm font-bold hover:scale-[1.02] transition-transform disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                  className="flex-1 bg-[#CCFF00] text-[#111] py-3.5 rounded-full text-xs sm:text-sm font-bold hover:scale-[1.02] transition-transform disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer shadow-md"
                 >
-                  {busy ? 'Sending…' : <><span>View Estimate</span><ArrowRight size={14} /></>}
+                  {busy ? 'Processing…' : <><span>Verify Email &amp; View Estimate</span><ArrowRight size={14} /></>}
                 </button>
               </div>
             </form>
@@ -577,5 +486,21 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
     </div>
   );
 
-  return createPortal(content, document.body);
+  return createPortal(
+    <>
+      {content}
+      <OtpVerificationModal
+        isOpen={showOtpModal}
+        email={form.email}
+        name={form.name}
+        phone={form.phone}
+        title="Verify Email to View Estimate"
+        purposeLabel="your architectural cost estimate"
+        actionButtonText="Verify &amp; View Estimate →"
+        onVerified={handleVerifiedAndSubmit}
+        onClose={() => setShowOtpModal(false)}
+      />
+    </>,
+    document.body
+  );
 }

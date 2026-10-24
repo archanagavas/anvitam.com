@@ -5,6 +5,7 @@ import { ArrowRight, Plus, Minus, CheckCircle, Calendar, MapPin, Mail, Phone, Na
 import FlowButton from '../components/ui/flow-button';
 import PhoneInput from '../components/ui/PhoneInput';
 import { checkClientRateLimit, recordClientSubmission } from '../utils/rateLimiter';
+import OtpVerificationModal from '../components/OtpVerificationModal';
 
 const Contact: React.FC = () => {
   const { addMessage } = useContent();
@@ -25,71 +26,16 @@ const Contact: React.FC = () => {
   const [activeTab, setActiveTab] = useState('Getting started');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
-  // Email OTP Verification state to eliminate fake leads
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
+  // Mandatory Email OTP Verification popup modal state
+  const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
-  const [otpBusy, setOtpBusy] = useState(false);
-  const [otpMessage, setOtpMessage] = useState<string | null>(null);
   const [verificationToken, setVerificationToken] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  const handleSendOtp = async () => {
-    setOtpMessage(null);
-    setSubmitError(null);
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.email || !emailRegex.test(formData.email)) {
-      setOtpMessage('Please enter a valid email address first.');
-      return;
-    }
-    setOtpBusy(true);
-    try {
-      const res = await fetch('/api/messages?otp=send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email, name: `${formData.firstName} ${formData.lastName}`.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to send verification code.');
-      setOtpSent(true);
-      setOtpMessage('A 6-digit verification code has been sent to your email.');
-    } catch (err: any) {
-      setOtpMessage(err?.message || 'Failed to send verification code. Please check your email.');
-    } finally {
-      setOtpBusy(false);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    setOtpMessage(null);
-    setSubmitError(null);
-    if (!otpCode || otpCode.trim().length < 6) {
-      setOtpMessage('Please enter the 6-digit verification code.');
-      return;
-    }
-    setOtpBusy(true);
-    try {
-      const res = await fetch('/api/messages?otp=verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email, code: otpCode.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Invalid code.');
-      setOtpVerified(true);
-      setVerificationToken(data.token);
-      setOtpMessage('Email successfully verified!');
-    } catch (err: any) {
-      setOtpMessage(err?.message || 'Invalid code. Please try again.');
-    } finally {
-      setOtpBusy(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     // ── Anti-bot Honeypot Trap (Spam Protection) ─────────────────────
@@ -102,6 +48,12 @@ const Contact: React.FC = () => {
     const rl = checkClientRateLimit({ key: 'contact', cooldownSeconds: 30, maxAttempts: 2, windowMinutes: 15 });
     if (!rl.allowed) {
       setSubmitError(rl.message || 'Please wait a moment before sending another message.');
+      setStatus('error');
+      return;
+    }
+
+    if (!formData.firstName.trim()) {
+      setSubmitError('Please enter your first name.');
       setStatus('error');
       return;
     }
@@ -122,17 +74,30 @@ const Contact: React.FC = () => {
       return;
     }
 
+    if (!formData.message.trim()) {
+      setSubmitError('Please describe your project vision or key requirements.');
+      setStatus('error');
+      return;
+    }
+
+    // Open mandatory OTP verification popup modal
+    setSubmitError(null);
+    setShowOtpModal(true);
+  };
+
+  const handleVerifiedAndSubmit = async (token: string) => {
+    setVerificationToken(token);
+    setOtpVerified(true);
     setStatus('submitting');
     setSubmitError(null);
 
-    const isVerifiedClient = otpVerified;
-    const formattedMessage = `[DIRECT CONTACT INQUIRY${isVerifiedClient ? ' - VERIFIED CLIENT ✅' : ''}]
+    const formattedMessage = `[DIRECT CONTACT INQUIRY - VERIFIED CLIENT ✅]
 Service Requested: ${formData.serviceType}
 Location/Country: ${formData.location || 'Not specified'}
 Project Area: ${formData.area || 'Standard'}
 Timeline: ${formData.timeline}
 Phone: ${formData.phone || 'Not provided'}
-Email Verified: ${isVerifiedClient ? 'YES' : 'NO'}
+Email Verified: YES
 
 Client Message:
 ${formData.message}`;
@@ -146,7 +111,7 @@ ${formData.message}`;
           headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
           body: JSON.stringify({
             name: `${formData.firstName} ${formData.lastName}`.trim(),
-            email: formData.email,
+            email: formData.email.trim(),
             phone: formData.phone || 'Not provided',
             message: formattedMessage,
           }),
@@ -163,23 +128,24 @@ ${formData.message}`;
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: `${formData.firstName} ${formData.lastName}`.trim(),
-          email: formData.email,
+          email: formData.email.trim(),
           message: formattedMessage,
           date: new Date().toISOString(),
-          verificationToken
+          verificationToken: token
         }),
       });
 
       await addMessage({
         id: crypto.randomUUID(),
         name: `${formData.firstName} ${formData.lastName}`.trim(),
-        email: formData.email,
+        email: formData.email.trim(),
         message: formattedMessage,
         date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
       });
 
       recordClientSubmission('contact', 10);
       setStatus('success');
+      setShowOtpModal(false);
       setFormData({
         firstName: '',
         lastName: '',
@@ -191,13 +157,11 @@ ${formData.message}`;
         timeline: '1-3 Months (Immediate)',
         message: ''
       });
-      setOtpSent(false);
-      setOtpVerified(false);
-      setVerificationToken(null);
     } catch (err: any) {
       console.error('[Contact] Submission error:', err);
       setSubmitError(err?.message || 'Failed to send message. Please check your connection and try again.');
       setStatus('error');
+      setShowOtpModal(false);
     }
   };
 
@@ -415,65 +379,29 @@ ${formData.message}`;
                       <label className="text-xs font-semibold text-[#111]">Email Address *</label>
                       {otpVerified && (
                         <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                          ✓ Email Verified
+                          ✓ Verified
                         </span>
                       )}
                     </div>
                     <input 
                       type="email" 
                       required
-                      disabled={otpVerified}
                       value={formData.email}
                       onChange={e => {
                         setFormData({...formData, email: e.target.value});
-                        setOtpSent(false);
-                        setOtpVerified(false);
-                        setVerificationToken(null);
+                        if (otpVerified) {
+                          setOtpVerified(false);
+                          setVerificationToken(null);
+                        }
                       }}
                       className={`w-full bg-white border rounded-full px-5 py-3 focus:outline-none transition-all font-medium text-sm text-[#111] ${
                         otpVerified ? 'border-emerald-400 bg-emerald-50/20' : 'border-gray-200 focus:border-gray-400 focus:ring-1 focus:ring-gray-400'
                       }`}
                       placeholder="you@email.com"
                     />
-                    {!otpVerified && (
-                      <div className="pt-1 ml-1 space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <button
-                            type="button"
-                            onClick={handleSendOtp}
-                            disabled={otpBusy || !formData.email}
-                            className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 underline transition disabled:opacity-50 cursor-pointer"
-                          >
-                            {otpBusy && !otpSent ? 'Sending verification code…' : otpSent ? 'Resend 6-digit code' : 'Verify Email with 6-digit OTP (Optional) →'}
-                          </button>
-                        </div>
-                        {otpSent && (
-                          <div className="flex items-center gap-2 pt-1">
-                            <input
-                              type="text"
-                              maxLength={6}
-                              placeholder="6-digit code"
-                              value={otpCode}
-                              onChange={e => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                              className="w-36 bg-white border border-emerald-300 rounded-full px-4 py-2 text-xs font-mono tracking-widest text-[#111] placeholder-[#aaa] outline-none focus:border-emerald-600"
-                            />
-                            <button
-                              type="button"
-                              onClick={handleVerifyOtp}
-                              disabled={otpBusy || otpCode.length < 6}
-                              className="bg-[#111] text-[#CCFF00] px-4 py-2 rounded-full text-xs font-bold hover:bg-[#222] transition disabled:opacity-50 cursor-pointer"
-                            >
-                              {otpBusy ? 'Verifying…' : 'Confirm'}
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    {otpMessage && (
-                      <p className={`text-[11px] ml-1 pt-0.5 ${otpVerified ? 'text-emerald-700 font-medium' : 'text-amber-700 font-medium'}`}>
-                        {otpMessage}
-                      </p>
-                    )}
+                    <p className="text-[11px] text-gray-400 ml-1">
+                      A quick 6-digit verification code will pop up to verify your email upon submitting.
+                    </p>
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between ml-1">
@@ -569,7 +497,7 @@ ${formData.message}`;
                 <FlowButton
                   type="submit" 
                   disabled={status === 'submitting'}
-                  text={status === 'submitting' ? 'Submitting Details...' : 'Submit Inquiry'}
+                  text={status === 'submitting' ? 'Submitting Details...' : 'Verify Email & Submit Inquiry →'}
                   variant="lime"
                   className="w-full py-4 mt-2"
                 />
@@ -631,19 +559,39 @@ ${formData.message}`;
               </div>
             </div>
 
-            {/* Right Embedded Interactive Map */}
-            <div className="lg:col-span-7 h-[350px] md:h-[420px] w-full rounded-2xl overflow-hidden border border-white/10 shadow-lg bg-gray-900 relative">
-              <iframe
-                title="Anvitam Studio Location Map"
-                src="https://maps.google.com/maps?q=22.6913212,72.8614304+(Anvitam+Sustainable+Architecture)&t=&z=16&ie=UTF8&iwloc=B&output=embed"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen
+            {/* Right: Google Business Verified Studio Visual Card */}
+            <div className="lg:col-span-7 h-[360px] md:h-[430px] w-full rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-stone-900 relative group">
+              <img
+                src="/images/studio-locator.jpg"
+                alt="Anvitam Sustainable Architecture Studio Nadiad"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                className="w-full h-full"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/30 pointer-events-none" />
+
+              {/* Floating Verified Badge */}
+              <div className="absolute top-4 left-4 flex items-center gap-2 bg-black/75 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 shadow-lg">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[11px] font-semibold tracking-wide text-white">Google Business Verified Studio</span>
+                <span className="text-[#CCFF00] font-bold text-xs ml-1">★ 5.0</span>
+              </div>
+
+              {/* Bottom Card Overlay */}
+              <div className="absolute bottom-5 left-5 right-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-black/80 backdrop-blur-md p-4 rounded-xl border border-white/10">
+                <div>
+                  <p className="text-[11px] text-[#CCFF00] font-bold uppercase tracking-wider">Anvitam Architecture Studio</p>
+                  <p className="text-xs text-white/90 font-medium">Santram Mandir Road, Nadiad, Gujarat</p>
+                </div>
+                <a
+                  href="https://www.google.com/maps/search/?api=1&query=22.6913212,72.8614304"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-1.5 bg-[#CCFF00] text-black px-4 py-2 rounded-full text-xs font-bold hover:bg-[#b8e600] transition-colors shrink-0 shadow"
+                >
+                  <Navigation size={13} />
+                  <span>Open Directions</span>
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -739,6 +687,20 @@ ${formData.message}`;
           </div>
         </div>
       </div>
+
+      {showOtpModal && (
+        <OtpVerificationModal
+          isOpen={showOtpModal}
+          email={formData.email}
+          name={`${formData.firstName} ${formData.lastName}`.trim()}
+          phone={formData.phone}
+          title="Verify Email to Submit Inquiry"
+          purposeLabel="your architectural inquiry"
+          actionButtonText="Verify &amp; Submit Inquiry →"
+          onVerified={handleVerifiedAndSubmit}
+          onClose={() => setShowOtpModal(false)}
+        />
+      )}
 
     </div>
   );
