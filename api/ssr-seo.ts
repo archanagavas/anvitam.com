@@ -5,6 +5,14 @@ import path from 'path';
 import { isDbConfigured, getCollection, getDoc, findWhere } from '../lib/db.js';
 import { INITIAL_BLOGS, INITIAL_PROJECTS, SERVICES, PROCESS_STEPS, TESTIMONIALS, INITIAL_WORKSHOPS } from '../constants.js';
 
+// In-memory collection cache for warm container instances (10-minute TTL)
+let ssrCache: {
+  projects: any[];
+  services: any[];
+  blogs: any[];
+  expiresAt: number;
+} | null = null;
+
 // --- Helper Functions for HTML and Schema Generation ---
 
 function generateBreadcrumbSchema(section: string, idOrSlug: string, itemName?: string) {
@@ -1319,9 +1327,28 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
   if (isDbConfigured && (!section || section === 'projects' || section === 'services' || section === 'blog')) {
     try {
-      const rawProjects = await getCollection('projects', 'desc');
-      const rawServices = await getCollection('services', 'asc');
-      const rawBlogs = await getCollection('blogs', 'desc');
+      let rawProjects: any[] = [];
+      let rawServices: any[] = [];
+      let rawBlogs: any[] = [];
+
+      if (ssrCache && Date.now() < ssrCache.expiresAt) {
+        rawProjects = ssrCache.projects;
+        rawServices = ssrCache.services;
+        rawBlogs = ssrCache.blogs;
+      } else {
+        [rawProjects, rawServices, rawBlogs] = await Promise.all([
+          getCollection('projects', 'desc').catch(() => []),
+          getCollection('services', 'asc').catch(() => []),
+          getCollection('blogs', 'desc').catch(() => []),
+        ]);
+        ssrCache = {
+          projects: rawProjects,
+          services: rawServices,
+          blogs: rawBlogs,
+          expiresAt: Date.now() + 10 * 60 * 1000,
+        };
+      }
+
       // Homepage: limit to display-needed items to reduce payload size and Firestore read cost
       if (!section) {
         allProjects = rawProjects.slice(0, 6);
@@ -1337,7 +1364,10 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
   // Fetch data depending on the section
   if (section === 'blog' && idOrSlug) {
-    if (isDbConfigured) {
+    if (ssrCache?.blogs) {
+      blog = ssrCache.blogs.find((b: any) => b.slug === idOrSlug || b.id === idOrSlug);
+    }
+    if (!blog && isDbConfigured) {
       try {
         let row = await getDoc('blogs', idOrSlug);
         if (!row) {
@@ -1378,7 +1408,10 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       robots = 'index, follow, max-image-preview:large';
     }
   } else if (section === 'projects' && idOrSlug) {
-    if (isDbConfigured) {
+    if (ssrCache?.projects) {
+      project = ssrCache.projects.find((p: any) => p.slug === idOrSlug || p.id === idOrSlug);
+    }
+    if (!project && isDbConfigured) {
       try {
         let row = await getDoc('projects', idOrSlug);
         if (!row) {
@@ -1442,7 +1475,10 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       robots = 'index, follow, max-image-preview:large';
     }
   } else if (section === 'services' && idOrSlug) {
-    if (isDbConfigured) {
+    if (ssrCache?.services) {
+      service = ssrCache.services.find((s: any) => s.slug === idOrSlug || s.id === idOrSlug);
+    }
+    if (!service && isDbConfigured) {
       try {
         const row = await getDoc('services', idOrSlug);
         if (row) service = row;
@@ -1742,17 +1778,17 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
   let cacheControl: string;
 
   if (section === 'blog' && idOrSlug) {
-    // Individual blog posts: 30 min cache, serve stale 12h while revalidating
-    cacheControl = 'public, max-age=0, s-maxage=1800, stale-while-revalidate=43200';
+    // Individual blog posts: 4h edge cache, serve stale 48h while revalidating
+    cacheControl = 'public, max-age=0, s-maxage=14400, stale-while-revalidate=172800';
   } else if (section === 'projects' && idOrSlug) {
-    // Individual project pages: 1h cache, serve stale 24h
-    cacheControl = 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400';
+    // Individual project pages: 12h edge cache, serve stale 7d
+    cacheControl = 'public, max-age=0, s-maxage=43200, stale-while-revalidate=604800';
   } else if (section === 'workshops' && idOrSlug) {
-    // Individual workshop pages: 1h cache, serve stale 24h
-    cacheControl = 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400';
+    // Individual workshop pages: 12h edge cache, serve stale 7d
+    cacheControl = 'public, max-age=0, s-maxage=43200, stale-while-revalidate=604800';
   } else if (section === 'blog' || section === 'workshops') {
-    // Blog/workshop listing pages: 30 min cache (new content appears here)
-    cacheControl = 'public, max-age=0, s-maxage=1800, stale-while-revalidate=43200';
+    // Blog/workshop listing pages: 2h edge cache
+    cacheControl = 'public, max-age=0, s-maxage=7200, stale-while-revalidate=86400';
   } else if (
     !section ||
     section === 'why' ||
@@ -1765,17 +1801,19 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     section === 'privacy' ||
     section === 'terms'
   ) {
-    // Static marketing pages: 2h cache, serve stale 24h
-    cacheControl = 'public, max-age=0, s-maxage=7200, stale-while-revalidate=86400';
+    // Static marketing pages: 24h edge cache, serve stale 7 days
+    cacheControl = 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800';
   } else if (section === 'services' || section === 'projects') {
-    // Listing pages: 1h cache
-    cacheControl = 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400';
+    // Listing pages: 6h edge cache
+    cacheControl = 'public, max-age=0, s-maxage=21600, stale-while-revalidate=172800';
   } else {
-    // Fallback for any other public section: 1h cache
-    cacheControl = 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400';
+    // Fallback for any other public section: 6h edge cache
+    cacheControl = 'public, max-age=0, s-maxage=21600, stale-while-revalidate=172800';
   }
 
   res.setHeader('Cache-Control', cacheControl);
+  res.setHeader('CDN-Cache-Control', cacheControl);
+  res.setHeader('Cloudflare-CDN-Cache-Control', cacheControl);
   res.setHeader('Vary', 'Accept-Encoding');
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('X-Robots-Tag', robots);

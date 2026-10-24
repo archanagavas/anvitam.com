@@ -25,9 +25,69 @@ const Contact: React.FC = () => {
   const [activeTab, setActiveTab] = useState('Getting started');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
+  // Email OTP Verification state to eliminate fake leads
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otpBusy, setOtpBusy] = useState(false);
+  const [otpMessage, setOtpMessage] = useState<string | null>(null);
+  const [verificationToken, setVerificationToken] = useState<string | null>(null);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  const handleSendOtp = async () => {
+    setOtpMessage(null);
+    setSubmitError(null);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email || !emailRegex.test(formData.email)) {
+      setOtpMessage('Please enter a valid email address first.');
+      return;
+    }
+    setOtpBusy(true);
+    try {
+      const res = await fetch('/api/messages?otp=send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, name: `${formData.firstName} ${formData.lastName}`.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to send verification code.');
+      setOtpSent(true);
+      setOtpMessage('A 6-digit verification code has been sent to your email.');
+    } catch (err: any) {
+      setOtpMessage(err?.message || 'Failed to send verification code. Please check your email.');
+    } finally {
+      setOtpBusy(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    setOtpMessage(null);
+    setSubmitError(null);
+    if (!otpCode || otpCode.trim().length < 6) {
+      setOtpMessage('Please enter the 6-digit verification code.');
+      return;
+    }
+    setOtpBusy(true);
+    try {
+      const res = await fetch('/api/messages?otp=verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, code: otpCode.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Invalid code.');
+      setOtpVerified(true);
+      setVerificationToken(data.token);
+      setOtpMessage('Email successfully verified!');
+    } catch (err: any) {
+      setOtpMessage(err?.message || 'Invalid code. Please try again.');
+    } finally {
+      setOtpBusy(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +114,15 @@ const Contact: React.FC = () => {
       return;
     }
 
+    if (!otpVerified) {
+      setSubmitError('Please verify your email address with the 6-digit code to submit your inquiry.');
+      setStatus('error');
+      if (!otpSent) {
+        handleSendOtp();
+      }
+      return;
+    }
+
     // ── Phone validation ─────────────────────────────────────────────
     const digits = (formData.phone || '').replace(/[^\d]/g, '');
     if (!formData.phone || digits.length < 7) {
@@ -65,12 +134,13 @@ const Contact: React.FC = () => {
     setStatus('submitting');
     setSubmitError(null);
 
-    const formattedMessage = `[DIRECT CONTACT INQUIRY]
+    const formattedMessage = `[DIRECT CONTACT INQUIRY - VERIFIED CLIENT ✅]
 Service Requested: ${formData.serviceType}
 Location/Country: ${formData.location || 'Not specified'}
 Project Area: ${formData.area || 'Standard'}
 Timeline: ${formData.timeline}
 Phone: ${formData.phone || 'Not provided'}
+Email Verified: YES
 
 Client Message:
 ${formData.message}`;
@@ -96,6 +166,18 @@ ${formData.message}`;
 
     // ── Always save to local admin panel & trigger email alert ───────
     try {
+      await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: `${formData.firstName} ${formData.lastName}`.trim(),
+          email: formData.email,
+          message: formattedMessage,
+          date: new Date().toISOString(),
+          verificationToken
+        }),
+      });
+
       await addMessage({
         id: crypto.randomUUID(),
         name: `${formData.firstName} ${formData.lastName}`.trim(),
@@ -103,6 +185,7 @@ ${formData.message}`;
         message: formattedMessage,
         date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
       });
+
       recordClientSubmission('contact', 10);
       setStatus('success');
       setFormData({
@@ -116,6 +199,9 @@ ${formData.message}`;
         timeline: '1-3 Months (Immediate)',
         message: ''
       });
+      setOtpSent(false);
+      setOtpVerified(false);
+      setVerificationToken(null);
     } catch (err: any) {
       console.error('[Contact] Submission error:', err);
       setSubmitError(err?.message || 'Failed to send message. Please check your connection and try again.');
@@ -333,15 +419,69 @@ ${formData.message}`;
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-[#111] ml-1">Email Address *</label>
+                    <div className="flex items-center justify-between ml-1">
+                      <label className="text-xs font-semibold text-[#111]">Email Address *</label>
+                      {otpVerified && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                          ✓ Email Verified
+                        </span>
+                      )}
+                    </div>
                     <input 
                       type="email" 
                       required
+                      disabled={otpVerified}
                       value={formData.email}
-                      onChange={e => setFormData({...formData, email: e.target.value})}
-                      className="w-full bg-white border border-gray-200 rounded-full px-5 py-3 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-all font-medium text-sm text-[#111]" 
+                      onChange={e => {
+                        setFormData({...formData, email: e.target.value});
+                        setOtpSent(false);
+                        setOtpVerified(false);
+                        setVerificationToken(null);
+                      }}
+                      className={`w-full bg-white border rounded-full px-5 py-3 focus:outline-none transition-all font-medium text-sm text-[#111] ${
+                        otpVerified ? 'border-emerald-400 bg-emerald-50/20' : 'border-gray-200 focus:border-gray-400 focus:ring-1 focus:ring-gray-400'
+                      }`}
                       placeholder="you@email.com"
                     />
+                    {!otpVerified && (
+                      <div className="pt-1 ml-1 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <button
+                            type="button"
+                            onClick={handleSendOtp}
+                            disabled={otpBusy || !formData.email}
+                            className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 underline transition disabled:opacity-50 cursor-pointer"
+                          >
+                            {otpBusy && !otpSent ? 'Sending verification code…' : otpSent ? 'Resend 6-digit code' : 'Verify Email with 6-digit OTP →'}
+                          </button>
+                        </div>
+                        {otpSent && (
+                          <div className="flex items-center gap-2 pt-1">
+                            <input
+                              type="text"
+                              maxLength={6}
+                              placeholder="6-digit code"
+                              value={otpCode}
+                              onChange={e => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                              className="w-36 bg-white border border-emerald-300 rounded-full px-4 py-2 text-xs font-mono tracking-widest text-[#111] placeholder-[#aaa] outline-none focus:border-emerald-600"
+                            />
+                            <button
+                              type="button"
+                              onClick={handleVerifyOtp}
+                              disabled={otpBusy || otpCode.length < 6}
+                              className="bg-[#111] text-[#CCFF00] px-4 py-2 rounded-full text-xs font-bold hover:bg-[#222] transition disabled:opacity-50 cursor-pointer"
+                            >
+                              {otpBusy ? 'Verifying…' : 'Confirm'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {otpMessage && (
+                      <p className={`text-[11px] ml-1 pt-0.5 ${otpVerified ? 'text-emerald-700 font-medium' : 'text-amber-700 font-medium'}`}>
+                        {otpMessage}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-[#111] ml-1">Phone Number *</label>

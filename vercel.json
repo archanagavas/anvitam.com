@@ -3,8 +3,12 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "functions": {
+    "api/ssr-seo.ts": {
+      "includeFiles": "dist/index.html",
+      "maxDuration": 15
+    },
     "api/*.ts": {
-      "includeFiles": "{tools/**,dist/index.html,index.html}"
+      "maxDuration": 15
     }
   },
   "redirects": [

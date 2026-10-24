@@ -2,20 +2,63 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createHandler } from '../lib/adapter.js';
 import { isDbConfigured, getCollection, getDoc, upsertDoc, deleteDoc } from '../lib/db.js';
 import { verifyAdminToken, extractToken } from '../lib/auth.js';
+import crypto from 'crypto';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
-async function sendLeadEmailNotification(name: string, email: string, message: string, date?: string) {
+async function sendOtpEmail(email: string, otp: string, name?: string): Promise<boolean> {
+  if (!RESEND_API_KEY) {
+    console.warn('[Resend] RESEND_API_KEY not set for OTP.');
+    return false;
+  }
+  const htmlBody = `
+    <div style="font-family: Arial, -apple-system, BlinkMacSystemFont, sans-serif; padding: 32px; color: #111; max-width: 520px; margin: auto; border: 1px solid #e0e0e0; border-radius: 16px; background-color: #ffffff;">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <span style="font-size: 13px; font-weight: 700; letter-spacing: 2px; color: #2b5711; text-transform: uppercase;">ANVITAM ARCHITECTURE</span>
+      </div>
+      <h2 style="color: #111; margin-top: 0; text-align: center; font-size: 22px;">Confirm Your Email</h2>
+      <p style="font-size: 15px; color: #444; line-height: 1.5; text-align: center;">
+        ${name ? `Hello <strong>${name}</strong>, ` : 'Hello, '}use the 6-digit verification code below to confirm your inquiry &amp; architectural consultation request:
+      </p>
+      <div style="background-color: #f4f8f0; padding: 18px; border: 2px dashed #8bc34a; border-radius: 12px; margin: 24px 0; text-align: center;">
+        <span style="font-size: 34px; font-weight: 800; letter-spacing: 8px; color: #2b5711; font-family: monospace;">${otp}</span>
+      </div>
+      <p style="font-size: 13px; color: #666; text-align: center; margin: 0 0 16px 0;">This code is valid for 10 minutes. Do not share it with anyone.</p>
+      <p style="font-size: 11px; color: #999; border-top: 1px solid #eee; padding-top: 14px; text-align: center; margin: 0;">
+        Anvitam Sustainable Architecture · anvitam.com
+      </p>
+    </div>
+  `;
+  const senders = ['Anvitam Verification <verify@anvitam.com>', 'Anvitam Verification <onboarding@resend.dev>'];
+  for (const sender of senders) {
+    try {
+      const resp = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: sender, to: [email], subject: `Your Anvitam Verification Code: ${otp}`, html: htmlBody })
+      });
+      const data = await resp.json();
+      if (resp.ok) { console.log(`[Resend] OTP email sent via ${sender}:`, data.id); return true; }
+      else console.warn(`[Resend OTP] ${sender} failed:`, data.message);
+    } catch (err) { console.error('[Resend OTP Error]', err); }
+  }
+  return false;
+}
+
+async function sendLeadEmailNotification(name: string, email: string, message: string, date?: string, isVerified = false) {
   if (!RESEND_API_KEY) {
     console.warn('[Resend] RESEND_API_KEY not set.');
     return;
   }
   const targetEmails = ['ar.archanagavas@gmail.com', 'anvitamarchitects@gmail.com'];
+  const verifiedBadgeHtml = isVerified
+    ? '<span style="background-color: #2b5711; color: #CCFF00; padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-left: 8px;">✓ Verified Email</span>'
+    : '<span style="background-color: #f59e0b; color: #ffffff; padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-left: 8px;">Unverified</span>';
   const htmlBody = `
     <div style="font-family: Arial, sans-serif; padding: 24px; color: #111; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 16px; background-color: #ffffff;">
-      <h2 style="color: #2b5711; margin-top: 0;">🌿 New Anvitam Website Lead</h2>
+      <h2 style="color: #2b5711; margin-top: 0;">🌿 New Anvitam Website Lead ${verifiedBadgeHtml}</h2>
       <p style="font-size: 15px;"><strong>Client Name:</strong> ${name}</p>
-      <p style="font-size: 15px;"><strong>Client Email:</strong> <a href="mailto:${email}" style="color: #0070f3;">${email}</a></p>
+      <p style="font-size: 15px;"><strong>Client Email:</strong> <a href="mailto:${email}" style="color: #0070f3;">${email}</a> ${isVerified ? '<strong>(Confirmed Genuine Client)</strong>' : ''}</p>
       <p style="font-size: 15px;"><strong>Date:</strong> ${date ?? new Date().toLocaleString()}</p>
       <div style="background-color: #f9f9f5; padding: 16px; border-left: 4px solid #8bc34a; border-radius: 8px; margin: 20px 0;">
         <h4 style="margin-top:0; color: #333; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Inquiry & Project Details:</h4>
@@ -24,13 +67,14 @@ async function sendLeadEmailNotification(name: string, email: string, message: s
       <p style="font-size: 12px; color: #999; border-top: 1px solid #eee; padding-top: 12px;">Automated lead notification sent from anvitam.com via Firebase</p>
     </div>
   `;
+  const subjectPrefix = isVerified ? '🔔 [VERIFIED CLIENT] New Anvitam Lead' : '🔔 New Anvitam Lead';
   const senders = ['Anvitam Leads <leads@anvitam.com>', 'Anvitam Leads <onboarding@resend.dev>'];
   for (const sender of senders) {
     try {
       const resp = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: sender, to: targetEmails, subject: `🔔 New Anvitam Lead: ${name} (${email})`, html: htmlBody })
+        body: JSON.stringify({ from: sender, to: targetEmails, subject: `${subjectPrefix}: ${name} (${email})`, html: htmlBody })
       });
       const data = await resp.json();
       if (resp.ok) { console.log(`[Resend] Email sent via ${sender}:`, data.id); break; }
@@ -151,10 +195,18 @@ GOLDEN RULE: Every conversation should end with the visitor feeling: "I need to 
 interface RateLimitRecord {
   timestamps: number[];
 }
+interface OtpRecord {
+  codeHash: string;
+  expiresAt: number;
+  attempts: number;
+  verified: boolean;
+}
 const leadRateLimitMap = new Map<string, RateLimitRecord>();
 const chatRateLimitMap = new Map<string, RateLimitRecord>();
+const otpRateLimitMap = new Map<string, RateLimitRecord>();
+const otpStore = new Map<string, OtpRecord>();
 
-// Cleanup stale IP entries every 15 minutes
+// Cleanup stale IP and OTP entries every 15 minutes
 setInterval(() => {
   const now = Date.now();
   const maxAge = 15 * 60 * 1000;
@@ -165,6 +217,13 @@ setInterval(() => {
   for (const [ip, record] of chatRateLimitMap.entries()) {
     record.timestamps = record.timestamps.filter(ts => now - ts < maxAge);
     if (record.timestamps.length === 0) chatRateLimitMap.delete(ip);
+  }
+  for (const [ip, record] of otpRateLimitMap.entries()) {
+    record.timestamps = record.timestamps.filter(ts => now - ts < maxAge);
+    if (record.timestamps.length === 0) otpRateLimitMap.delete(ip);
+  }
+  for (const [email, record] of otpStore.entries()) {
+    if (now > record.expiresAt) otpStore.delete(email);
   }
 }, 15 * 60 * 1000);
 
@@ -350,6 +409,114 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
 
   // ──────────────────────────────────────────────────────────
+  // CLIENT EMAIL OTP VERIFICATION
+  // POST /api/messages?otp=send
+  // POST /api/messages?otp=verify
+  // ──────────────────────────────────────────────────────────
+  const otpAction = req.query.otp as string | undefined;
+
+  if (otpAction === 'send' && req.method === 'POST') {
+    const otpLimit = checkRateLimit(otpRateLimitMap, clientIp, 4, 10 * 60 * 1000);
+    res.setHeader('X-RateLimit-Limit', '4');
+    res.setHeader('X-RateLimit-Remaining', String(otpLimit.remaining));
+    if (!otpLimit.allowed) {
+      return res.status(429).json({ error: `Too many verification requests. Please wait ${otpLimit.resetTime} seconds.` });
+    }
+
+    const body = typeof req.body === 'string' ? (req.body ? JSON.parse(req.body) : {}) : (req.body ?? {});
+    const { email, name } = body;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || typeof email !== 'string' || !emailRegex.test(email)) {
+      return res.status(400).json({ error: 'A valid email address is required.' });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+    const codeHash = crypto.createHmac('sha256', process.env.JWT_SECRET || 'anvitam-secure-otp-secret').update(`${normalizedEmail}:${otp}`).digest('hex');
+
+    otpStore.set(normalizedEmail, { codeHash, expiresAt, attempts: 0, verified: false });
+
+    if (isDbConfigured) {
+      try {
+        await upsertDoc('otp_verifications', normalizedEmail.replace(/[^a-zA-Z0-9_-]/g, '_'), {
+          email: normalizedEmail,
+          codeHash,
+          expiresAt,
+          attempts: 0,
+          verified: false,
+          updatedAt: new Date().toISOString()
+        });
+      } catch (err) {
+        console.warn('[OTP] Firestore upsert warning:', err);
+      }
+    }
+
+    const emailSent = await sendOtpEmail(normalizedEmail, otp, name);
+    return res.status(200).json({
+      success: true,
+      emailSent,
+      message: 'Verification code sent to your email.'
+    });
+  }
+
+  if (otpAction === 'verify' && req.method === 'POST') {
+    const body = typeof req.body === 'string' ? (req.body ? JSON.parse(req.body) : {}) : (req.body ?? {});
+    const { email, code } = body;
+    if (!email || !code || typeof code !== 'string') {
+      return res.status(400).json({ error: 'Email and 6-digit code are required.' });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const cleanCode = code.trim();
+    let record = otpStore.get(normalizedEmail);
+
+    if (!record && isDbConfigured) {
+      try {
+        const doc = await getDoc('otp_verifications', normalizedEmail.replace(/[^a-zA-Z0-9_-]/g, '_'));
+        if (doc) {
+          record = doc as unknown as OtpRecord;
+        }
+      } catch (err) {
+        console.warn('[OTP] Firestore get warning:', err);
+      }
+    }
+
+    if (!record) {
+      return res.status(400).json({ error: 'No verification code found for this email. Please request a new code.' });
+    }
+
+    if (Date.now() > record.expiresAt) {
+      otpStore.delete(normalizedEmail);
+      return res.status(400).json({ error: 'Verification code has expired. Please request a new code.' });
+    }
+
+    if (record.attempts >= 5) {
+      return res.status(429).json({ error: 'Too many incorrect attempts. Please request a new code.' });
+    }
+
+    const expectedHash = crypto.createHmac('sha256', process.env.JWT_SECRET || 'anvitam-secure-otp-secret').update(`${normalizedEmail}:${cleanCode}`).digest('hex');
+
+    if (record.codeHash !== expectedHash) {
+      record.attempts += 1;
+      otpStore.set(normalizedEmail, record);
+      return res.status(400).json({ error: 'Incorrect verification code. Please try again.' });
+    }
+
+    record.verified = true;
+    otpStore.set(normalizedEmail, record);
+
+    const verificationToken = crypto.createHmac('sha256', process.env.JWT_SECRET || 'anvitam-secure-otp-secret').update(`verified:${normalizedEmail}`).digest('hex');
+
+    return res.status(200).json({
+      success: true,
+      verified: true,
+      token: verificationToken,
+      email: normalizedEmail
+    });
+  }
+
+  // ──────────────────────────────────────────────────────────
   // STANDARD MESSAGES / LEAD HANDLING (RATE LIMITED)
   // ──────────────────────────────────────────────────────────
 
@@ -373,10 +540,18 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     }
     if (req.method === 'POST') {
       const body = typeof req.body === 'string' ? (req.body ? JSON.parse(req.body) : {}) : (req.body ?? {});
-      const { name, email, message, date } = body;
+      const { name, email, message, date, verificationToken } = body;
       if (!name || !email || !message) return res.status(400).json({ error: 'name, email and message are required.' });
-      await sendLeadEmailNotification(name, email, message, date);
-      return res.status(201).json({ success: true, mocked: true });
+      
+      const normalizedEmail = (email as string).toLowerCase().trim();
+      let isVerified = false;
+      if (verificationToken) {
+        const expectedToken = crypto.createHmac('sha256', process.env.JWT_SECRET || 'anvitam-secure-otp-secret').update(`verified:${normalizedEmail}`).digest('hex');
+        if (verificationToken === expectedToken) isVerified = true;
+      }
+
+      await sendLeadEmailNotification(name, email, message, date, isVerified);
+      return res.status(201).json({ success: true, mocked: true, isVerified });
     }
     if (req.method === 'DELETE') {
       const token = extractToken(req.headers.authorization);
@@ -405,21 +580,30 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
   if (req.method === 'POST') {
     const body = typeof req.body === 'string' ? (req.body ? JSON.parse(req.body) : {}) : (req.body ?? {});
-    const { id: bodyId, name, email, message, date } = body;
+    const { id: bodyId, name, email, message, date, verificationToken } = body;
     if (!name || !email || !message) return res.status(400).json({ error: 'name, email and message are required.' });
+    
+    const normalizedEmail = (email as string).toLowerCase().trim();
+    let isVerified = false;
+    if (verificationToken) {
+      const expectedToken = crypto.createHmac('sha256', process.env.JWT_SECRET || 'anvitam-secure-otp-secret').update(`verified:${normalizedEmail}`).digest('hex');
+      if (verificationToken === expectedToken) isVerified = true;
+    }
+
     const msgId = id || bodyId || crypto.randomUUID();
     let dbSaved = false;
     try {
       await upsertDoc('messages', msgId, {
         id: msgId, name, email, message,
+        email_verified: isVerified,
         date: date ?? new Date().toISOString(),
       });
       dbSaved = true;
     } catch (err) {
       console.warn('[messages API] Failed to save to Firestore, proceeding with email:', err);
     }
-    await sendLeadEmailNotification(name, email, message, date);
-    return res.status(201).json({ success: true, dbSaved });
+    await sendLeadEmailNotification(name, email, message, date, isVerified);
+    return res.status(201).json({ success: true, dbSaved, isVerified });
   }
 
   if (req.method === 'DELETE') {

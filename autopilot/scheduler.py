@@ -69,11 +69,16 @@ def save_autopilot_state(state: dict) -> None:
     except Exception as e:
         logger.error(f"Failed to save state.json: {e}")
 
-def auto_git_sync(cycle_num: int, day_num: int) -> None:
+def auto_git_sync(cycle_num: int, day_num: int, enabled: bool = False) -> None:
     """
-    Automatically stages generated records, link registry updates, and state,
-    commits with an informative message, and pushes to origin/main.
+    Optional git sync. Disabled by default in automated scheduler loops
+    to prevent infinite Vercel build loops and resource exhaustion.
+    Only runs if explicitly enabled via --git-sync CLI flag.
     """
+    if not enabled:
+        logger.debug("Git auto-sync disabled for background scheduler. Local records & Firestore updated directly.")
+        return
+
     try:
         targets = [
             "autopilot/published_records",
@@ -93,13 +98,14 @@ def auto_git_sync(cycle_num: int, day_num: int) -> None:
         print("\n🌿 Auto-Sync: Staging new content & records to Git...")
         subprocess.run(["git", "add"] + targets, check=True)
 
-        commit_msg = f"🌿 Autopilot: Cycle #{cycle_num} (Day {day_num}) generated records & registry sync [skip ci]"
+        # STRICT VERCEL SKIP: [skip vercel] [vercel skip] [skip ci] guarantees Vercel ignores the webhook
+        commit_msg = f"🌿 Autopilot: Cycle #{cycle_num} (Day {day_num}) records & registry sync [skip vercel] [vercel skip] [skip ci]"
         subprocess.run(["git", "commit", "-m", commit_msg], check=True)
 
         print("🌿 Auto-Sync: Pushing updates to GitHub (origin/main)...")
         push_proc = subprocess.run(["git", "push", "origin", "main"], capture_output=True, text=True, check=False)
         if push_proc.returncode == 0:
-            print(f"✔ GitHub Push Success: Committed and pushed cycle #{cycle_num} to origin/main!")
+            print(f"✔ GitHub Push Success: Committed and pushed cycle #{cycle_num} to origin/main [skip vercel]!")
         else:
             print(f"⚠ Git push notice: {push_proc.stderr.strip()[:200]}")
     except Exception as e:
@@ -136,7 +142,8 @@ def run_scheduler(
     interval_minutes: int = 180,
     max_blogs_per_day: int = 2,
     dry_run: bool = False,
-    max_runs: int = 0
+    max_runs: int = 0,
+    git_sync: bool = False
 ):
     """
     Continuous local runner executing the autonomous multi-agent and syndication loop.
@@ -211,8 +218,8 @@ def run_scheduler(
                     state["last_article_title"] = title
                 save_autopilot_state(state)
 
-                # Automatically push new records to GitHub
-                auto_git_sync(cycle_num=run_count, day_num=current_day)
+                # Optional Git sync (disabled by default in automated loops)
+                auto_git_sync(cycle_num=run_count, day_num=current_day, enabled=git_sync)
 
             except Exception as e:
                 logger.error(f"Error during cycle #{run_count}: {e}")
@@ -243,6 +250,7 @@ def main():
     parser.add_argument("--interval", type=int, default=180, help="Cycle interval in minutes (default: 180 / 3 hours)")
     parser.add_argument("--max-blogs", type=int, default=2, help="Max blogs to publish per 24 hours (default: 2)")
     parser.add_argument("--dry-run", action="store_true", help="Simulate without publishing live")
+    parser.add_argument("--git-sync", action="store_true", help="Sync generated records to Git origin/main [skip vercel] (default: False)")
     parser.add_argument("--test-connections", action="store_true", help="Inspect credentials for all social platforms")
     parser.add_argument("--max-runs", type=int, default=0, help="Exit after N runs (default: 0 = continuous)")
 
@@ -256,7 +264,8 @@ def main():
         interval_minutes=args.interval,
         max_blogs_per_day=args.max_blogs,
         dry_run=args.dry_run,
-        max_runs=args.max_runs
+        max_runs=args.max_runs,
+        git_sync=args.git_sync
     )
 
 

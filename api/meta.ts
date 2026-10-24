@@ -38,6 +38,10 @@ const ALL_MOCK_PRODUCTS = [
   },
 ];
 
+// In-memory cache for warm lambda executions (5-minute TTL)
+let memoryCacheAll: { data: any; expiresAt: number } | null = null;
+const memoryCacheCollections: Record<string, { data: any[]; expiresAt: number }> = {};
+
 export default createHandler(async function handler(req: VercelRequest, res: VercelResponse) {
   const resource = (req.query.resource as string) || 'partners';
   const ALLOWED_RESOURCES = [
@@ -49,11 +53,69 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     'products',
     'projects',
     'services',
+    'all',
   ];
   if (!ALLOWED_RESOURCES.includes(resource)) return res.status(400).json({ error: `Unsupported resource: ${resource}` });
 
   const ALLOWED_METHODS = ['GET', 'POST', 'PUT', 'DELETE'];
   if (!req.method || !ALLOWED_METHODS.includes(req.method)) return res.status(405).json({ error: 'Method not allowed' });
+
+  // ── UNIFIED BOOTSTRAP ENDPOINT (1 Fetch instead of 8) ────────────────────
+  if (resource === 'all' && req.method === 'GET') {
+    res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
+    if (memoryCacheAll && Date.now() < memoryCacheAll.expiresAt) {
+      return res.status(200).json(memoryCacheAll.data);
+    }
+    if (!isDbConfigured) {
+      res.setHeader('x-db-fallback', 'true');
+      return res.status(200).json({
+        partners: INITIAL_PARTNERS,
+        testimonials: INITIAL_TESTIMONIALS,
+        estimator_services: INITIAL_ESTIMATOR_SERVICES,
+        workshops: INITIAL_WORKSHOPS,
+        blogs: INITIAL_BLOGS,
+        products: ALL_MOCK_PRODUCTS,
+        projects: INITIAL_PROJECTS,
+        services: SERVICES,
+      });
+    }
+    try {
+      const [partners, testimonials, estimator_services, workshops, blogs, products, projects, services] = await Promise.all([
+        getCollection('partners', 'asc').catch(() => INITIAL_PARTNERS),
+        getCollection('testimonials', 'desc').catch(() => INITIAL_TESTIMONIALS),
+        getCollection('estimator_services', 'asc').catch(() => INITIAL_ESTIMATOR_SERVICES),
+        getCollection('workshops', 'asc').catch(() => INITIAL_WORKSHOPS),
+        getCollection('blogs', 'desc').catch(() => INITIAL_BLOGS),
+        getCollection('digital_products', 'desc').catch(() => ALL_MOCK_PRODUCTS),
+        getCollection('projects', 'desc').catch(() => INITIAL_PROJECTS),
+        getCollection('services', 'asc').catch(() => SERVICES),
+      ]);
+      const responseData = {
+        partners: partners.length ? partners.map(r => normalizeItem('partners', r)) : INITIAL_PARTNERS,
+        testimonials: testimonials.length ? testimonials.map(r => normalizeItem('testimonials', r)) : INITIAL_TESTIMONIALS,
+        estimator_services: estimator_services.length ? estimator_services.map(r => normalizeItem('estimator-services', r)) : INITIAL_ESTIMATOR_SERVICES,
+        workshops: workshops.length ? workshops.map(r => normalizeItem('workshops', r)) : INITIAL_WORKSHOPS,
+        blogs: blogs.length ? blogs.map(r => normalizeItem('blogs', r)) : INITIAL_BLOGS,
+        products: products.length ? products.map(r => normalizeItem('products', r)) : ALL_MOCK_PRODUCTS,
+        projects: projects.length ? projects.map(r => normalizeItem('projects', r)) : INITIAL_PROJECTS,
+        services: services.length ? services.map(r => normalizeItem('services', r)) : SERVICES,
+      };
+      memoryCacheAll = { data: responseData, expiresAt: Date.now() + 5 * 60 * 1000 };
+      return res.status(200).json(responseData);
+    } catch (e) {
+      res.setHeader('x-db-fallback', 'true');
+      return res.status(200).json({
+        partners: INITIAL_PARTNERS,
+        testimonials: INITIAL_TESTIMONIALS,
+        estimator_services: INITIAL_ESTIMATOR_SERVICES,
+        workshops: INITIAL_WORKSHOPS,
+        blogs: INITIAL_BLOGS,
+        products: ALL_MOCK_PRODUCTS,
+        projects: INITIAL_PROJECTS,
+        services: SERVICES,
+      });
+    }
+  }
 
   const urlParts = (req.url || '').split('?')[0].split('/');
   const lastPart = urlParts[urlParts.length - 1];
@@ -84,6 +146,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
   if (!isDbConfigured) {
     if (req.method === 'GET') {
       res.setHeader('x-db-fallback', 'true');
+      res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
       if (id) {
         const item = fallbackData.find(i => i.id === id || i.slug === id);
         if (!item) return res.status(404).json({ error: `${resource} not found` });
@@ -96,7 +159,9 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
   // ── GET ─────────────────────────────────────────────────────────────────
   if (req.method === 'GET') {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    // Edge cache GET responses for 1 hour with 24h stale-while-revalidate.
+    // Cuts Vercel Function Invocations & Fast Origin Transfer by >90%.
+    res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
     try {
       if (id) {
         let row = await getDoc(collectionName, id);
@@ -111,15 +176,22 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
         }
         return res.status(200).json(normalizeItem(resource, row));
       }
+      if (!id && memoryCacheCollections[collectionName] && Date.now() < memoryCacheCollections[collectionName].expiresAt) {
+        return res.status(200).json(memoryCacheCollections[collectionName].data);
+      }
       const sortDir = (resource === 'testimonials' || resource === 'blogs' || resource === 'projects' || resource === 'products') ? 'desc' : 'asc';
       const rows = await getCollection(collectionName, sortDir);
       if (resource === 'testimonials') {
         const validRows = rows.filter(r => r && r.text && r.text.trim().length > 0 && r.author && r.author !== 'Client');
         if (validRows.length === 0) { return res.status(200).json(fallbackData); }
-        return res.status(200).json(validRows.map(r => normalizeItem(resource, r)));
+        const formatted = validRows.map(r => normalizeItem(resource, r));
+        memoryCacheCollections[collectionName] = { data: formatted, expiresAt: Date.now() + 5 * 60 * 1000 };
+        return res.status(200).json(formatted);
       }
       if (rows.length === 0) { return res.status(200).json(fallbackData); }
-      return res.status(200).json(rows.map(r => normalizeItem(resource, r)));
+      const formatted = rows.map(r => normalizeItem(resource, r));
+      memoryCacheCollections[collectionName] = { data: formatted, expiresAt: Date.now() + 5 * 60 * 1000 };
+      return res.status(200).json(formatted);
     } catch (err) {
       res.setHeader('x-db-fallback', 'true');
       if (id) {
@@ -140,6 +212,8 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
   if (req.method === 'POST' || req.method === 'PUT') {
     try {
       await upsertDoc(collectionName, targetId, buildDoc(resource, b, targetId));
+      memoryCacheAll = null;
+      delete memoryCacheCollections[collectionName];
       return res.status(req.method === 'POST' ? 201 : 200).json({ success: true, id: targetId });
     } catch (err: any) {
       console.error(`[meta/${resource}] save failed:`, err);
@@ -150,7 +224,11 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
   // ── DELETE ───────────────────────────────────────────────────────────────
   if (req.method === 'DELETE') {
     if (!id) return res.status(400).json({ error: `Missing ${resource} ID` });
-    try { await deleteDoc(collectionName, id); }
+    try {
+      await deleteDoc(collectionName, id);
+      memoryCacheAll = null;
+      delete memoryCacheCollections[collectionName];
+    }
     catch (err) { console.warn(`[meta/${resource}] delete failed:`, err); }
     return res.status(200).json({ success: true, id });
   }

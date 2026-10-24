@@ -13,6 +13,15 @@ function stripHtml(html: string): string {
     .trim();
 }
 
+// In-memory cache for SEO feeds (15-minute TTL)
+let seoCache: {
+  blogs: any[];
+  projects: any[];
+  services: any[];
+  workshops: any[];
+  expiresAt: number;
+} | null = null;
+
 export default createHandler(async function handler(req: VercelRequest, res: VercelResponse) {
   const action = (req.query.action as string) || '';
   const url = req.url || '';
@@ -89,42 +98,42 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     }
   }
 
-  // Fetch live content for Sitemap and LLMs
+  // Fetch live content for Sitemap and LLMs (using in-memory cache)
   let blogs: any[] = [];
   let projects: any[] = [];
   let services: any[] = [];
   let workshops: any[] = [];
 
-  if (isDbConfigured) {
+  if (seoCache && Date.now() < seoCache.expiresAt) {
+    blogs = seoCache.blogs;
+    projects = seoCache.projects;
+    services = seoCache.services;
+    workshops = seoCache.workshops;
+  } else if (isDbConfigured) {
     try {
-      const dbBlogs = await getCollection('blogs', 'desc');
-      blogs = Array.isArray(dbBlogs) ? dbBlogs.filter((b: any) => b.status !== 'draft') : [];
+      const [rawBlogs, rawProjects, rawServices, rawWorkshops] = await Promise.all([
+        getCollection('blogs', 'desc').catch(() => []),
+        getCollection('projects', 'desc').catch(() => []),
+        getCollection('services', 'asc').catch(() => []),
+        getCollection('workshops', 'desc').catch(() => []),
+      ]);
+      blogs = Array.isArray(rawBlogs) ? rawBlogs.filter((b: any) => b.status !== 'draft') : [];
+      projects = rawProjects.length > 0 ? rawProjects : INITIAL_PROJECTS;
+      services = rawServices.length > 0 ? rawServices : SERVICES;
+      workshops = Array.isArray(rawWorkshops) ? rawWorkshops.filter((w: any) => w.status !== 'draft') : [];
+      seoCache = {
+        blogs,
+        projects,
+        services,
+        workshops,
+        expiresAt: Date.now() + 15 * 60 * 1000,
+      };
     } catch (e) {
-      console.warn('[seo API] DB error fetching blogs:', e);
+      console.warn('[seo API] DB error fetching collections:', e);
       blogs = [];
-    }
-
-    try {
-      const dbProjects = await getCollection('projects', 'desc');
-      projects = dbProjects.length > 0 ? dbProjects : INITIAL_PROJECTS;
-    } catch (e) {
-      console.warn('[seo API] DB error fetching projects:', e);
       projects = INITIAL_PROJECTS;
-    }
-
-    try {
-      const dbServices = await getCollection('services', 'asc');
-      services = dbServices.length > 0 ? dbServices : SERVICES;
-    } catch (e) {
-      console.warn('[seo API] DB error fetching services:', e);
       services = SERVICES;
-    }
-
-    try {
-      const dbWorkshops = await getCollection('workshops', 'desc');
-      workshops = dbWorkshops.filter((w: any) => w.status !== 'draft');
-    } catch (e) {
-      console.warn('[seo API] DB error fetching workshops:', e);
+      workshops = [];
     }
   } else {
     blogs = [];

@@ -39,6 +39,14 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
   const [busy, setBusy] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // Email OTP Verification state to eliminate fake leads
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otpBusy, setOtpBusy] = useState(false);
+  const [otpMessage, setOtpMessage] = useState<string | null>(null);
+  const [verificationToken, setVerificationToken] = useState<string | null>(null);
+
   const country = getCountryByCode(form.country);
   const areaNum = Number(form.area) || 0;
   const areaMultiplier = getAreaMultiplier(areaNum, form.areaUnit);
@@ -49,6 +57,58 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
 
   const toggle = (i: number) => setSelected(p => p.includes(i) ? p.filter(x => x !== i) : [...p, i]);
 
+  const handleSendOtp = async () => {
+    setOtpMessage(null);
+    setSubmitError(null);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!form.email || !emailRegex.test(form.email)) {
+      setOtpMessage('Please enter a valid email address first.');
+      return;
+    }
+    setOtpBusy(true);
+    try {
+      const res = await fetch('/api/messages?otp=send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: form.email, name: form.name }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to send verification code.');
+      setOtpSent(true);
+      setOtpMessage('A 6-digit verification code has been sent to your email.');
+    } catch (err: any) {
+      setOtpMessage(err?.message || 'Failed to send verification code. Please check your email.');
+    } finally {
+      setOtpBusy(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    setOtpMessage(null);
+    setSubmitError(null);
+    if (!otpCode || otpCode.trim().length < 6) {
+      setOtpMessage('Please enter the 6-digit verification code.');
+      return;
+    }
+    setOtpBusy(true);
+    try {
+      const res = await fetch('/api/messages?otp=verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: form.email, code: otpCode.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Invalid code.');
+      setOtpVerified(true);
+      setVerificationToken(data.token);
+      setOtpMessage('Email successfully verified!');
+    } catch (err: any) {
+      setOtpMessage(err?.message || 'Invalid code. Please try again.');
+    } finally {
+      setOtpBusy(false);
+    }
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError(null);
@@ -57,6 +117,14 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
     const rl = checkClientRateLimit({ key: 'estimator', cooldownSeconds: 15, maxAttempts: 4, windowMinutes: 10 });
     if (!rl.allowed) {
       setSubmitError(rl.message || 'Please wait a moment before submitting again.');
+      return;
+    }
+
+    if (!otpVerified) {
+      setSubmitError('Please verify your email address with the 6-digit code to view your estimate.');
+      if (!otpSent) {
+        handleSendOtp();
+      }
       return;
     }
 
@@ -70,25 +138,31 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
     const areaUnitLabel = AREA_UNITS.find(u => u.code === form.areaUnit)?.label || 'Sq. Ft.';
     const areaDisplay = form.area ? `${form.area} ${areaUnitLabel}` : 'Standard';
     const subList = selected.map(i => `${svc?.subs[i]} (${getFormattedPrice(svc?.baseINR[i] || 0)})`).filter(Boolean).join(' · ');
-    const msg = `[ESTIMATE REQUEST]\nService: ${svc?.title}\nProject Area: ${areaDisplay}\nDeliverables: ${subList}\nTotal Estimate: ${formattedTotal}\nCountry: ${country.flag} ${country.name} (${form.country})\nPhone: ${form.phone}`;
+    const msg = `[ESTIMATE REQUEST - VERIFIED CLIENT ✅]\nService: ${svc?.title}\nProject Area: ${areaDisplay}\nDeliverables: ${subList}\nTotal Estimate: ${formattedTotal}\nCountry: ${country.flag} ${country.name} (${form.country})\nPhone: ${form.phone}\nEmail Verified: YES`;
     try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          message: msg,
+          date: new Date().toISOString(),
+          verificationToken
+        }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Server returned HTTP ${res.status}`);
+      }
       if (contentCtx?.addMessage) {
-        await contentCtx.addMessage({
+        contentCtx.addMessage({
           id: crypto.randomUUID(),
           name: form.name,
           email: form.email,
           message: msg,
           date: new Date().toISOString(),
-        });
-      } else {
-        const res = await fetch('/api/messages', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: form.name, email: form.email, message: msg, date: new Date().toISOString() }),
-        });
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.error || `Server returned HTTP ${res.status}`);
-        }
+        }).catch(() => {});
       }
       recordClientSubmission('estimator', 10);
       setBusy(false);
@@ -242,15 +316,70 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#777] mb-1.5">Email Address *</label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-[#777]">Email Address *</label>
+                    {otpVerified && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                        ✓ Verified
+                      </span>
+                    )}
+                  </div>
                   <input
                     required
                     type="email"
+                    disabled={otpVerified}
                     placeholder="you@email.com"
                     value={form.email}
-                    onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-                    className="w-full bg-white border border-black/12 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-[#111] placeholder-[#aaa] outline-none focus:border-[#111] transition-colors cursor-text"
+                    onChange={e => {
+                      setForm(p => ({ ...p, email: e.target.value }));
+                      setOtpSent(false);
+                      setOtpVerified(false);
+                      setVerificationToken(null);
+                    }}
+                    className={`w-full bg-white border rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-[#111] placeholder-[#aaa] outline-none transition-colors cursor-text ${
+                      otpVerified ? 'border-emerald-400 bg-emerald-50/20' : 'border-black/12 focus:border-[#111]'
+                    }`}
                   />
+                  {!otpVerified && (
+                    <div className="mt-2 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <button
+                          type="button"
+                          onClick={handleSendOtp}
+                          disabled={otpBusy || !form.email}
+                          className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 underline transition disabled:opacity-50 cursor-pointer"
+                        >
+                          {otpBusy && !otpSent ? 'Sending code…' : otpSent ? 'Resend 6-digit code' : 'Verify Email with 6-digit OTP →'}
+                        </button>
+                      </div>
+
+                      {otpSent && (
+                        <div className="flex items-center gap-2 pt-1">
+                          <input
+                            type="text"
+                            maxLength={6}
+                            placeholder="6-digit code"
+                            value={otpCode}
+                            onChange={e => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                            className="w-36 bg-white border border-emerald-300 rounded-xl px-3 py-2 text-xs font-mono tracking-widest text-[#111] placeholder-[#aaa] outline-none focus:border-emerald-600"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleVerifyOtp}
+                            disabled={otpBusy || otpCode.length < 6}
+                            className="bg-[#111] text-[#CCFF00] px-4 py-2 rounded-xl text-xs font-bold hover:bg-[#222] transition disabled:opacity-50 cursor-pointer"
+                          >
+                            {otpBusy ? 'Verifying…' : 'Confirm'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {otpMessage && (
+                    <p className={`text-[11px] mt-1.5 ${otpVerified ? 'text-emerald-700 font-medium' : 'text-amber-700 font-medium'}`}>
+                      {otpMessage}
+                    </p>
+                  )}
                 </div>
 
                 <div>

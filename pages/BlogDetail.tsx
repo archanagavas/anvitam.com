@@ -144,7 +144,7 @@ const BlogDetail: React.FC = () => {
 
   const related = [prevBlog, nextBlog].filter(Boolean).filter(b => b.id !== blog.id);
 
-  const mockAvatar = "/archana.png";
+  const mockAvatar = "/archana-avatar.webp";
 
   const rawFaqs = blog.faqs;
   let parsedFaqs: Array<{ question: string; answer: string }> = [];

@@ -69,11 +69,19 @@ export const StickyConsultationBar: React.FC<StickyConsultationBarProps> = ({
             <div className="relative shrink-0">
               <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden ring-1 ring-white/20 bg-emerald-950/60 shadow-md">
                 <img
-                  src="/archana.png"
+                  src="/archana-avatar.webp"
                   alt="Ar. Archana Gavas"
                   className="w-full h-full object-cover object-top"
+                  loading="lazy"
+                  width={48}
+                  height={48}
                   onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
+                    const target = e.target as HTMLImageElement;
+                    if (target.src.indexOf('archana.webp') === -1) {
+                      target.src = '/archana.webp';
+                    } else {
+                      target.style.display = 'none';
+                    }
                   }}
                 />
               </div>
@@ -104,7 +112,7 @@ export const StickyConsultationBar: React.FC<StickyConsultationBarProps> = ({
           {/* CTA & Close */}
           <div className="flex items-center gap-2 shrink-0">
             <a
-              href={bookingUrl}
+              href={targetUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="group bg-[#CCFF00] hover:bg-[#bbf000] text-[#05110A] font-bold text-xs px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-all duration-200 shadow-md flex items-center gap-1.5 hover:shadow-lg hover:shadow-[#CCFF00]/20 active:scale-[0.98] whitespace-nowrap"

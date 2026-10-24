@@ -121,8 +121,8 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
         requires_otp: true,
         user_id: newUser.id,
         email_sent: emailSent,
-        dev_otp: otp, // Provided for instant zero-block testing if Resend domain is unverified
-        message: emailSent ? 'OTP sent to email' : 'Account created. Use code to verify.',
+        ...(process.env.NODE_ENV === 'development' && !emailSent ? { dev_otp: otp } : {}),
+        message: emailSent ? 'Verification OTP sent to your email.' : 'Account created. Please verify your email.',
       });
     } catch (err) {
       console.error('[tools/register]', err);
@@ -510,6 +510,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
   // 7. SoilGrids Proxy (/api/tools/soil or action=soil)
   if (action === 'soil' || urlPath.endsWith('/soil')) {
     if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+    res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=2592000');
     const { lat, lon } = req.query as { lat?: string; lon?: string };
     const latitude = parseFloat(lat || '');
     const longitude = parseFloat(lon || '');
