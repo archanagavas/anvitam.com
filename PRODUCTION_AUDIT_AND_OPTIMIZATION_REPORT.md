@@ -78,24 +78,60 @@ To permanently stop fake leads from spamming Archana's inbox and Firebase databa
 
 ---
 
-## 5. Free Mobile SMS OTP Provider Recommendation (100–500 SMS/mo)
+## 5. Mobile SMS & WhatsApp OTP: Truly Free Zero-Blaze Alternatives (100–500 OTP/mo)
 
-For mobile phone SMS OTP verification with zero monthly costs:
+> [!NOTE]
+> **Why Firebase Phone Auth is not ideal for your zero-spend setup:**  
+> Google Cloud / Firebase Phone Authentication now mandates upgrading to the **Blaze (Pay-As-You-Go)** plan with an active credit card attached. To guarantee **$0.00 spent** without risk of accidental billing or entering a credit card, use one of the three zero-card alternatives below.
 
-### Recommended: Firebase Phone Authentication (Google Cloud Identity Platform)
-- **Free Quota:** **10,000 phone number verifications per month** on the Spark (Free) plan.
-- **Cost:** **$0.00** forever (well exceeds the 100–500 SMS/month requirement).
-- **Global Coverage:** 200+ countries supported (including +91 India).
-- **Abuse Prevention:** Built-in invisible reCAPTCHA prevents SMS quota abuse by bots.
-- **Existing Integration:** Anvitam already uses Firebase (`lib/db.ts`). Firebase Phone Auth requires no additional third-party contracts.
+### The Top 3 Free Zero-Blaze Providers:
 
-### Alternative Options Comparison:
-| Provider | Free Monthly Quota | Pricing after Quota | Notes |
-| :--- | :--- | :--- | :--- |
-| **Firebase Phone Auth** (Recommended) | **10,000 SMS / month** | $0.01 / verification | Built-in bot protection; directly integrates with existing Firebase project. |
-| **Fast2SMS** | Free trial wallet (~50 SMS) | ₹0.20 / SMS | Fast delivery in India, but requires prepaid balance after trial. |
-| **MSG91** | Free trial wallet | ₹0.18 / SMS | Requires DLT registration in India for transactional SMS templates. |
-| **Twilio** | $15 trial credit | ~$0.04 / SMS | Requires credit card; charges per SMS after trial is exhausted. |
+| Provider | Free Allowance | Credit Card / Blaze Plan Needed? | DLT Approval Needed? | Best For |
+| :--- | :--- | :--- | :--- | :--- |
+| **Fast2SMS** (Recommended for India) | Free trial signup wallet (Instant 50–100 free OTP SMS) | **NO** (Zero credit card) | **NO** (Quick OTP route is pre-approved) | Fast Indian mobile numbers (+91) |
+| **Meta WhatsApp Business Cloud API** | **1,000 free Service conversations every month** | **NO** (Free tier on Meta for Developers) | **NO** | WhatsApp OTP delivered to client phone globally |
+| **2Factor.in** | Free trial test credits on signup | **NO** (Zero credit card) | **NO** (Auto-generated OTP sandbox) | Indian mobile OTP verification |
+
+---
+
+### Step-by-Step Setup: Fast2SMS (2-Minute Zero-Cost Integration)
+
+We have already integrated Fast2SMS into [api/messages.ts](file:///g:/CODE/anvitam/api/messages.ts). When `FAST2SMS_API_KEY` is present, mobile OTPs dispatch instantly with zero code changes required.
+
+1. **Sign Up for Free:**
+   - Visit [fast2sms.com](https://www.fast2sms.com) and click **Register / Sign Up**.
+   - Enter your email and phone. **No credit card is required.**
+2. **Copy your Free API Authorization Key:**
+   - Go to your Fast2SMS Dashboard -> **Dev API** (in left sidebar).
+   - Copy your **Authorization Key**.
+3. **Add to Environment Variables:**
+   - In your `.env` or Vercel Project Settings (`Vercel Dashboard` -> `anvitam` -> `Settings` -> `Environment Variables`):
+     ```env
+     FAST2SMS_API_KEY=your_copied_authorization_key_here
+     ```
+4. **How It Works Automatically:**
+   - When a user enters their Indian mobile number, [api/messages.ts](file:///g:/CODE/anvitam/api/messages.ts) calls Fast2SMS Quick OTP route (`POST https://www.fast2sms.com/dev/bulkV2`).
+   - The user receives the 6-digit code via SMS on their phone in 2–5 seconds.
+   - The user inputs the code on [EstimatorModal.tsx](file:///g:/CODE/anvitam/components/EstimatorModal.tsx) or [Contact.tsx](file:///g:/CODE/anvitam/pages/Contact.tsx), confirming their identity!
+
+---
+
+### Step-by-Step Setup: 1,000 Free WhatsApp OTPs / Month via Meta
+
+If you prefer sending OTPs directly to clients on **WhatsApp** (free for 1,000 messages every month forever):
+
+1. **Create Free Meta Developer App:**
+   - Go to [developers.facebook.com](https://developers.facebook.com).
+   - Click **My Apps** -> **Create App** -> Select **Other** -> Select **Business**.
+2. **Activate WhatsApp Product:**
+   - In the App Dashboard, click **Set up** next to **WhatsApp**.
+   - You receive a free test sandbox phone number and **1,000 free Service conversations per month**.
+3. **Copy Temporary Access Token & Phone Number ID:**
+   - Add to Vercel environment variables:
+     ```env
+     WHATSAPP_API_TOKEN=your_token
+     WHATSAPP_PHONE_ID=your_phone_id
+     ```
 
 ---
 

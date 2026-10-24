@@ -45,6 +45,93 @@ async function sendOtpEmail(email: string, otp: string, name?: string): Promise<
   return false;
 }
 
+async function sendOtpSms(phoneNumber: string, otp: string): Promise<{ success: boolean; provider: string; error?: string }> {
+  const cleanDigits = phoneNumber.replace(/[^\d]/g, '');
+  if (!cleanDigits || cleanDigits.length < 10) {
+    return { success: false, provider: 'none', error: 'Invalid phone number format.' };
+  }
+
+  // 1. Fast2SMS (India domestic: free signup, zero credit card, 1-click Quick OTP route)
+  const fast2smsKey = process.env.FAST2SMS_API_KEY;
+  if (fast2smsKey) {
+    const indianMobile = cleanDigits.slice(-10);
+    try {
+      const resp = await fetch('https://www.fast2sms.com/dev/bulkV2', {
+        method: 'POST',
+        headers: {
+          'authorization': fast2smsKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          route: 'otp',
+          variables_values: otp,
+          numbers: indianMobile
+        })
+      });
+      const data = await resp.json();
+      if (data && data.return) {
+        console.log('[Fast2SMS] SMS sent successfully to', indianMobile);
+        return { success: true, provider: 'fast2sms' };
+      }
+      console.warn('[Fast2SMS] API response:', data);
+    } catch (err) {
+      console.error('[Fast2SMS] Network error:', err);
+    }
+  }
+
+  // 2. 2Factor.in (India OTP SMS: free test credits on signup)
+  const twoFactorKey = process.env.TWOFACTOR_API_KEY;
+  if (twoFactorKey) {
+    try {
+      const resp = await fetch(`https://2factor.in/v2/SMS/${twoFactorKey}/SMS/${cleanDigits}/${otp}/OTP1`);
+      const data = await resp.json();
+      if (data && data.Status === 'Success') {
+        console.log('[2Factor] SMS sent successfully to', cleanDigits);
+        return { success: true, provider: '2factor' };
+      }
+      console.warn('[2Factor] API response:', data);
+    } catch (err) {
+      console.error('[2Factor] Network error:', err);
+    }
+  }
+
+  // 3. Twilio SMS ($15.50 free trial balance on signup)
+  const twilioSid = process.env.TWILIO_ACCOUNT_SID;
+  const twilioAuth = process.env.TWILIO_AUTH_TOKEN;
+  const twilioFrom = process.env.TWILIO_PHONE_NUMBER;
+  if (twilioSid && twilioAuth && twilioFrom) {
+    try {
+      const e164Phone = phoneNumber.startsWith('+') ? phoneNumber : `+${cleanDigits}`;
+      const authHeader = 'Basic ' + Buffer.from(`${twilioSid}:${twilioAuth}`).toString('base64');
+      const body = new URLSearchParams({
+        To: e164Phone,
+        From: twilioFrom,
+        Body: `Your Anvitam verification code is: ${otp}. Valid for 10 minutes.`
+      });
+      const resp = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`, {
+        method: 'POST',
+        headers: {
+          'Authorization': authHeader,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: body.toString()
+      });
+      if (resp.ok) {
+        console.log('[Twilio] SMS sent successfully to', e164Phone);
+        return { success: true, provider: 'twilio' };
+      }
+    } catch (err) {
+      console.error('[Twilio] Network error:', err);
+    }
+  }
+
+  return {
+    success: false,
+    provider: 'none',
+    error: 'No SMS gateway configured. Add FAST2SMS_API_KEY or TWOFACTOR_API_KEY in your environment.'
+  };
+}
+
 async function sendLeadEmailNotification(name: string, email: string, message: string, date?: string, isVerified = false) {
   if (!RESEND_API_KEY) {
     console.warn('[Resend] RESEND_API_KEY not set.');
@@ -409,38 +496,60 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
 
   // ──────────────────────────────────────────────────────────
-  // CLIENT EMAIL OTP VERIFICATION
+  // CLIENT EMAIL & MOBILE OTP VERIFICATION
   // POST /api/messages?otp=send
   // POST /api/messages?otp=verify
   // ──────────────────────────────────────────────────────────
   const otpAction = req.query.otp as string | undefined;
 
   if (otpAction === 'send' && req.method === 'POST') {
-    const otpLimit = checkRateLimit(otpRateLimitMap, clientIp, 4, 10 * 60 * 1000);
-    res.setHeader('X-RateLimit-Limit', '4');
+    const otpLimit = checkRateLimit(otpRateLimitMap, clientIp, 5, 10 * 60 * 1000);
+    res.setHeader('X-RateLimit-Limit', '5');
     res.setHeader('X-RateLimit-Remaining', String(otpLimit.remaining));
     if (!otpLimit.allowed) {
       return res.status(429).json({ error: `Too many verification requests. Please wait ${otpLimit.resetTime} seconds.` });
     }
 
     const body = typeof req.body === 'string' ? (req.body ? JSON.parse(req.body) : {}) : (req.body ?? {});
-    const { email, name } = body;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email || typeof email !== 'string' || !emailRegex.test(email)) {
-      return res.status(400).json({ error: 'A valid email address is required.' });
-    }
+    const { email, phone, name, channel = 'email' } = body;
+    const isPhoneChannel = channel === 'phone' || (Boolean(phone) && !email);
 
-    const normalizedEmail = email.toLowerCase().trim();
+    let identifier = '';
+    let otpSent = false;
+    let channelUsed = 'email';
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
-    const codeHash = crypto.createHmac('sha256', process.env.JWT_SECRET || 'anvitam-secure-otp-secret').update(`${normalizedEmail}:${otp}`).digest('hex');
 
-    otpStore.set(normalizedEmail, { codeHash, expiresAt, attempts: 0, verified: false });
+    if (isPhoneChannel) {
+      if (!phone || typeof phone !== 'string' || phone.replace(/[^\d]/g, '').length < 10) {
+        return res.status(400).json({ error: 'A valid phone number with country code is required.' });
+      }
+      identifier = phone.trim();
+      channelUsed = 'phone';
+      const smsRes = await sendOtpSms(identifier, otp);
+      otpSent = smsRes.success;
+      if (!otpSent && smsRes.error) {
+        return res.status(400).json({ error: smsRes.error });
+      }
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || typeof email !== 'string' || !emailRegex.test(email)) {
+        return res.status(400).json({ error: 'A valid email address is required.' });
+      }
+      identifier = email.toLowerCase().trim();
+      channelUsed = 'email';
+      otpSent = await sendOtpEmail(identifier, otp, name);
+    }
+
+    const codeHash = crypto.createHmac('sha256', process.env.JWT_SECRET || 'anvitam-secure-otp-secret').update(`${identifier}:${otp}`).digest('hex');
+    otpStore.set(identifier, { codeHash, expiresAt, attempts: 0, verified: false });
 
     if (isDbConfigured) {
       try {
-        await upsertDoc('otp_verifications', normalizedEmail.replace(/[^a-zA-Z0-9_-]/g, '_'), {
-          email: normalizedEmail,
+        await upsertDoc('otp_verifications', identifier.replace(/[^a-zA-Z0-9_-]/g, '_'), {
+          target: identifier,
+          channel: channelUsed,
           codeHash,
           expiresAt,
           attempts: 0,
@@ -452,28 +561,28 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       }
     }
 
-    const emailSent = await sendOtpEmail(normalizedEmail, otp, name);
     return res.status(200).json({
       success: true,
-      emailSent,
-      message: 'Verification code sent to your email.'
+      sent: otpSent,
+      channel: channelUsed,
+      message: `Verification code sent to your ${channelUsed === 'phone' ? 'phone via SMS' : 'email'}.`
     });
   }
 
   if (otpAction === 'verify' && req.method === 'POST') {
     const body = typeof req.body === 'string' ? (req.body ? JSON.parse(req.body) : {}) : (req.body ?? {});
-    const { email, code } = body;
-    if (!email || !code || typeof code !== 'string') {
-      return res.status(400).json({ error: 'Email and 6-digit code are required.' });
+    const { email, phone, code } = body;
+    if ((!email && !phone) || !code || typeof code !== 'string') {
+      return res.status(400).json({ error: 'Email/Phone and 6-digit code are required.' });
     }
 
-    const normalizedEmail = email.toLowerCase().trim();
+    const identifier = phone ? (phone as string).trim() : (email as string).toLowerCase().trim();
     const cleanCode = code.trim();
-    let record = otpStore.get(normalizedEmail);
+    let record = otpStore.get(identifier);
 
     if (!record && isDbConfigured) {
       try {
-        const doc = await getDoc('otp_verifications', normalizedEmail.replace(/[^a-zA-Z0-9_-]/g, '_'));
+        const doc = await getDoc('otp_verifications', identifier.replace(/[^a-zA-Z0-9_-]/g, '_'));
         if (doc) {
           record = doc as unknown as OtpRecord;
         }
@@ -483,11 +592,11 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     }
 
     if (!record) {
-      return res.status(400).json({ error: 'No verification code found for this email. Please request a new code.' });
+      return res.status(400).json({ error: 'No verification code found. Please request a new code.' });
     }
 
     if (Date.now() > record.expiresAt) {
-      otpStore.delete(normalizedEmail);
+      otpStore.delete(identifier);
       return res.status(400).json({ error: 'Verification code has expired. Please request a new code.' });
     }
 
@@ -495,24 +604,24 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       return res.status(429).json({ error: 'Too many incorrect attempts. Please request a new code.' });
     }
 
-    const expectedHash = crypto.createHmac('sha256', process.env.JWT_SECRET || 'anvitam-secure-otp-secret').update(`${normalizedEmail}:${cleanCode}`).digest('hex');
+    const expectedHash = crypto.createHmac('sha256', process.env.JWT_SECRET || 'anvitam-secure-otp-secret').update(`${identifier}:${cleanCode}`).digest('hex');
 
     if (record.codeHash !== expectedHash) {
       record.attempts += 1;
-      otpStore.set(normalizedEmail, record);
+      otpStore.set(identifier, record);
       return res.status(400).json({ error: 'Incorrect verification code. Please try again.' });
     }
 
     record.verified = true;
-    otpStore.set(normalizedEmail, record);
+    otpStore.set(identifier, record);
 
-    const verificationToken = crypto.createHmac('sha256', process.env.JWT_SECRET || 'anvitam-secure-otp-secret').update(`verified:${normalizedEmail}`).digest('hex');
+    const verificationToken = crypto.createHmac('sha256', process.env.JWT_SECRET || 'anvitam-secure-otp-secret').update(`verified:${identifier}`).digest('hex');
 
     return res.status(200).json({
       success: true,
       verified: true,
       token: verificationToken,
-      email: normalizedEmail
+      target: identifier
     });
   }
 
