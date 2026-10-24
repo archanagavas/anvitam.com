@@ -113,8 +113,8 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
     e.preventDefault();
     setSubmitError(null);
 
-    // Rate limit check: max 4 attempts per 10 minutes, 15s cooldown
-    const rl = checkClientRateLimit({ key: 'estimator', cooldownSeconds: 15, maxAttempts: 4, windowMinutes: 10 });
+    // Strict SaaS Rate limit: max 2 attempts per 15 minutes, 30s cooldown
+    const rl = checkClientRateLimit({ key: 'estimator', cooldownSeconds: 30, maxAttempts: 2, windowMinutes: 15 });
     if (!rl.allowed) {
       setSubmitError(rl.message || 'Please wait a moment before submitting again.');
       return;

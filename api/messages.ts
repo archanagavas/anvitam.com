@@ -630,11 +630,12 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
   const otpAction = req.query.otp as string | undefined;
 
   if (otpAction === 'send' && req.method === 'POST') {
-    const otpLimit = checkRateLimit(otpRateLimitMap, clientIp, 5, 10 * 60 * 1000);
-    res.setHeader('X-RateLimit-Limit', '5');
+    // Strict SaaS Rate Limit: Max 2 OTP requests per 10 minutes per IP address to protect email & SMS APIs
+    const otpLimit = checkRateLimit(otpRateLimitMap, clientIp, 2, 10 * 60 * 1000);
+    res.setHeader('X-RateLimit-Limit', '2');
     res.setHeader('X-RateLimit-Remaining', String(otpLimit.remaining));
     if (!otpLimit.allowed) {
-      return res.status(429).json({ error: `Too many verification requests. Please wait ${otpLimit.resetTime} seconds.` });
+      return res.status(429).json({ error: `Verification request limit reached (max 2 per 10 minutes). Please wait ${otpLimit.resetTime} seconds.` });
     }
 
     const body = typeof req.body === 'string' ? (req.body ? JSON.parse(req.body) : {}) : (req.body ?? {});
@@ -757,13 +758,13 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
   // ──────────────────────────────────────────────────────────
 
   if (req.method === 'POST') {
-    // Rate limit lead, contact, estimator, and newsletter submissions: max 5 per 10 minutes per IP
-    const leadLimit = checkRateLimit(leadRateLimitMap, clientIp, 5, 10 * 60 * 1000);
-    res.setHeader('X-RateLimit-Limit', '5');
+    // Strict SaaS Rate Limit: Max 2 submissions per 15 minutes per IP address to block bot scrapers & spam
+    const leadLimit = checkRateLimit(leadRateLimitMap, clientIp, 2, 15 * 60 * 1000);
+    res.setHeader('X-RateLimit-Limit', '2');
     res.setHeader('X-RateLimit-Remaining', String(leadLimit.remaining));
     if (!leadLimit.allowed) {
       return res.status(429).json({
-        error: `Submission rate limit reached. Please wait ${leadLimit.resetTime} seconds before sending another message.`
+        error: `Submission rate limit reached (max 2 per 15 minutes). Please wait ${leadLimit.resetTime} seconds before sending another message.`
       });
     }
   }
