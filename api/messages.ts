@@ -30,29 +30,39 @@ async function sendOtpEmail(email: string, otp: string, name?: string): Promise<
   // 1. Brevo Transactional Email (300 free emails/day forever, no credit card required)
   // Keeps transactional OTPs completely separated from Resend marketing/outreach
   if (BREVO_API_KEY) {
-    try {
-      const bResp = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          'api-key': BREVO_API_KEY,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          sender: { name: 'Anvitam Architecture', email: 'verify@anvitam.com' },
-          to: [{ email, name: name || 'Valued Client' }],
-          subject: `Your Anvitam Verification Code: ${otp}`,
-          htmlContent: htmlBody
-        })
-      });
-      if (bResp.ok) {
-        console.log('[Brevo] OTP email sent successfully to', email);
-        return true;
+    const brevoSenders = [
+      process.env.BREVO_SENDER_EMAIL,
+      process.env.ARCHANA_NOTIFICATION_EMAIL,
+      'ar.archanagavas@gmail.com',
+      'anvitamarchitects@gmail.com',
+      'verify@anvitam.com'
+    ].filter(Boolean) as string[];
+
+    for (const senderEmail of brevoSenders) {
+      try {
+        const bResp = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'api-key': BREVO_API_KEY,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            sender: { name: 'Anvitam Architecture', email: senderEmail },
+            to: [{ email, name: name || 'Valued Client' }],
+            subject: `Your Anvitam Verification Code: ${otp}`,
+            htmlContent: htmlBody
+          })
+        });
+        if (bResp.ok) {
+          console.log(`[Brevo] OTP email sent successfully to ${email} via ${senderEmail}`);
+          return true;
+        }
+        const bData = await bResp.json().catch(() => ({}));
+        console.warn(`[Brevo OTP Warning via ${senderEmail}]`, bData);
+      } catch (bErr) {
+        console.warn(`[Brevo Network Error via ${senderEmail}]`, bErr);
       }
-      const bData = await bResp.json().catch(() => ({}));
-      console.warn('[Brevo OTP Warning]', bData);
-    } catch (bErr) {
-      console.warn('[Brevo Network Error]', bErr);
     }
   }
 
@@ -206,26 +216,36 @@ async function sendLeadEmailNotification(name: string, email: string, message: s
 
   // 2. Email Alert via Brevo (saves Resend outreach quota)
   if (BREVO_API_KEY) {
-    try {
-      const bResp = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          'api-key': BREVO_API_KEY,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          sender: { name: 'Anvitam Leads', email: 'leads@anvitam.com' },
-          to: targetEmails.map(e => ({ email: e })),
-          subject: `${subjectPrefix}: ${name} (${email})`,
-          htmlContent: htmlBody
-        })
-      });
-      if (bResp.ok) {
-        console.log('[Brevo] Lead notification email sent');
-        return;
+    const brevoSenders = [
+      process.env.BREVO_SENDER_EMAIL,
+      process.env.ARCHANA_NOTIFICATION_EMAIL,
+      'ar.archanagavas@gmail.com',
+      'anvitamarchitects@gmail.com',
+      'leads@anvitam.com'
+    ].filter(Boolean) as string[];
+
+    for (const senderEmail of brevoSenders) {
+      try {
+        const bResp = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'api-key': BREVO_API_KEY,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            sender: { name: 'Anvitam Leads', email: senderEmail },
+            to: targetEmails.map(e => ({ email: e })),
+            subject: `${subjectPrefix}: ${name} (${email})`,
+            htmlContent: htmlBody
+          })
+        });
+        if (bResp.ok) {
+          console.log(`[Brevo] Lead notification email sent via ${senderEmail}`);
+          return;
+        }
+      } catch (bErr) {
+        console.warn(`[Brevo Lead Alert Error via ${senderEmail}]`, bErr);
       }
-    } catch (bErr) {
-      console.warn('[Brevo Lead Alert Error]', bErr);
     }
   }
 
