@@ -75,6 +75,35 @@ function generateSchemas(section: string, idOrSlug: string, data: { blog?: any, 
   };
   schemas.push(personSchema);
 
+  // Homepage: Organization + WebSite (facts must match lib/site.ts, llms.txt and ai.txt)
+  if (!section) {
+    schemas.push({
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "@id": "https://www.anvitam.com/#organization",
+      "name": "Anvitam",
+      "url": "https://www.anvitam.com/",
+      "logo": "https://www.anvitam.com/logo.png",
+      "email": "anvitamarchitects@gmail.com",
+      "telephone": "+917990657190",
+      "founder": { "@type": "Person", "@id": "https://www.anvitam.com/#founder" },
+      "sameAs": [
+        "https://www.linkedin.com/in/archana-gavas/",
+        "https://www.instagram.com/anvitam_archit/",
+        "https://www.youtube.com/@designbyarchana",
+        "https://topmate.io/archanagavas"
+      ]
+    });
+    schemas.push({
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "@id": "https://www.anvitam.com/#website",
+      "name": "Anvitam",
+      "url": "https://www.anvitam.com/",
+      "publisher": { "@type": "Organization", "@id": "https://www.anvitam.com/#organization" }
+    });
+  }
+
   // LocalBusiness schema for brand geographical anchoring & local SEO
   if (!section || section === 'contact') {
     const localBusinessSchema = {
@@ -1743,6 +1772,13 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
   // Inject the single canonical link
   const canonicalTag = `<link rel="canonical" href="${canonicalUrl}" data-rh="true" id="canonical-url" />`;
   template = template.replace('</head>', `  ${canonicalTag}\n</head>`);
+
+  // AI-agent signals: markdown alternate + ai-summary (same summary as meta description)
+  const mdHref = canonicalUrl === 'https://www.anvitam.com/' || canonicalUrl === 'https://www.anvitam.com'
+    ? 'https://www.anvitam.com/index.md'
+    : `${canonicalUrl}.md`;
+  template = template.replace('</head>', `  <link rel="alternate" type="text/markdown" href="${mdHref}" />\n</head>`);
+  template = replaceOrInjectMeta(template, 'name', 'ai-summary', desc);
 
   // --- Inject JSON-LD Schema Marks ---
   const schemas = generateSchemas(section, idOrSlug, { blog, project, service, workshop });

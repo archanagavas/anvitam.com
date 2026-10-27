@@ -203,6 +203,31 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       mainCanonical.href = canonicalUrl;
       mainCanonical.setAttribute('data-rh', 'true');
       mainCanonical.id = 'canonical-url';
+
+      // AI-agent signals: one markdown alternate + one ai-summary per page.
+      const mdHref = cleanPath === '/' ? 'https://www.anvitam.com/index.md' : `${canonicalUrl}.md`;
+      let mdLink = document.querySelector('link[rel="alternate"][type="text/markdown"]') as HTMLLinkElement | null;
+      if (!mdLink) {
+        mdLink = document.createElement('link');
+        mdLink.rel = 'alternate';
+        mdLink.type = 'text/markdown';
+        document.head.appendChild(mdLink);
+      }
+      mdLink.href = mdHref;
+
+      const summaries: Record<string, string> = {
+        '/': 'Anvitam is a sustainable architecture and ecological design studio led by Ar. Archana Gavas, designing eco resorts, farm retreats, food forests and permaculture masterplans worldwide from Vadodara, Gujarat.',
+        '/services': 'Anvitam services: architecture consultation, eco resorts, farm retreats, homestays, weekend villas, wellness retreats, permaculture masterplanning, food forests, landscape and terrace garden design.',
+        '/blog': 'The Anvitam journal: research and guides on natural building materials, permaculture, food forests, passive cooling and sustainable architecture costs in India.',
+        '/projects': 'Anvitam project portfolio: natural homes, eco resorts, farm retreats, terrace gardens and heritage and hospitality projects built with local natural materials.',
+      };
+      let aiMeta = document.querySelector('meta[name="ai-summary"]') as HTMLMetaElement | null;
+      if (!aiMeta) {
+        aiMeta = document.createElement('meta');
+        aiMeta.name = 'ai-summary';
+        document.head.appendChild(aiMeta);
+      }
+      aiMeta.content = summaries[cleanPath] || 'Anvitam is a sustainable architecture and ecological design studio led by Ar. Archana Gavas, designing eco resorts, farm retreats, food forests and permaculture masterplans worldwide from Vadodara, Gujarat.';
     } catch (e) {
       console.warn('[Layout] Canonical sync error:', e);
     }
@@ -432,6 +457,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </Link>
                 <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
                 <Link to="/terms" className="hover:text-white transition-colors">Terms &amp; Conditions</Link>
+                <a href={cleanPath === '/' ? '/index.md' : `${cleanPath}.md`} className="hover:text-white transition-colors">View as Markdown</a>
               </div>
             </div>
 

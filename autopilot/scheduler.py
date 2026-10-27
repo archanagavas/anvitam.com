@@ -184,6 +184,16 @@ def run_scheduler(
 
             print(f"\n▶ [{now_str}] Launching Cycle #{run_count} (Day {current_day})...")
 
+            # Publish Dispatch: fire staged socials for any draft blog that
+            # Archana has since Published in Admin (with the live blog URL).
+            try:
+                from autopilot.publish_dispatch import dispatch_staged_once
+                dispatched = [o for o in dispatch_staged_once(dry_run=dry_run) if o.get("status") in ("dispatched", "dry_run_simulated")]
+                if dispatched:
+                    print(f"📣 Publish Dispatch: socials sent for {len(dispatched)} newly-published blog(s): {[o['slug'] for o in dispatched]}")
+            except Exception as e:
+                logger.debug(f"Publish dispatch check note: {e}")
+
             # Auto-Housekeeping: Purge local records & logs older than 24h
             try:
                 from autopilot.cleanup import run_full_purge

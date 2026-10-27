@@ -58,9 +58,9 @@ def generate_social_posts_for_topic(topic: Dict[str, Any]) -> List[Dict[str, Any
             "slot": "02:30 PM",
             "type": "Horror Story Averted",
             "concept": f"The expensive shortcut to avoid in {title.lower()}",
-            "text": f"A client came to me after losing ₹15 Lakhs on a poorly planned site.\n\nThey wanted to save money upfront.\nThey skipped site analysis and hired a local crew to start digging.\n\nThree months in:\nWater pooled against the foundation.\nThe soil subsided.\nThe entire installation had to be demolished and rebuilt.\n\nPlanning isn't a luxury.\nIt's the cheapest insurance policy you will ever buy.",
-            "twitter_text": f"The easiest way to lose ₹15 Lakhs: skip pre-construction site analysis.\n\nFixing mistakes after construction costs 4x more than designing properly from Day 1.\n\nPlan before you dig.",
-            "threads_text": f"A client lost ₹15 Lakhs by skipping pre-construction feasibility on {title.lower()}.\n\nThree months in, water pooling destroyed the foundation.\n\nAlways analyze slope and soil before hiring a contractor.",
+            "text": f"The most expensive shortcut in {title.lower()}? Skipping site analysis to save money upfront.\n\nHere is the sequence that goes wrong:\nWater pools against the foundation.\nThe soil subsides.\nWork has to be demolished and rebuilt.\n\nPlanning isn't a luxury.\nIt's the cheapest insurance policy you will ever buy.",
+            "twitter_text": f"The easiest way to burn money on a build: skip pre-construction site analysis.\n\nFixing mistakes after construction costs far more than designing properly from Day 1.\n\nPlan before you dig.",
+            "threads_text": f"Skipping pre-construction feasibility on {title.lower()} is how foundations end up with water pooling against them.\n\nAlways analyze slope and soil before hiring a contractor.",
             "cta": "What was the most expensive lesson you learned during a build?"
         },
         {
@@ -83,16 +83,29 @@ def generate_social_posts_for_topic(topic: Dict[str, Any]) -> List[Dict[str, Any
         }
     ]
 
+# ICP-first rotation: high-ticket landowner/developer topics (the studio's
+# actual buyers) run before consumer garden/interior topics, which otherwise
+# dilute the calendar for months. All 706 topics stay reachable.
+ICP_PRIORITY_CATEGORIES = [
+    "ecological_architecture", "architect_hiring", "farmhouse_design",
+    "resort_design", "villa_architecture", "wellness_retreat",
+    "airbnb_design", "agritourism", "permaculture_roi", "food_forest",
+]
+ICP_ORDERED_TOPICS = (
+    [t for t in APPROVED_TOPICS if t.get("category") in ICP_PRIORITY_CATEGORIES]
+    + [t for t in APPROVED_TOPICS if t.get("category") not in ICP_PRIORITY_CATEGORIES]
+)
+
 def get_blueprint_day(day_number: int) -> Dict[str, Any]:
     """
     Retrieves the strategic blueprint for any day number.
-    Strictly cycles through APPROVED_TOPICS from topic_catalog.py.
+    Cycles through APPROVED_TOPICS in ICP-priority order (see above).
     """
-    total_topics = len(APPROVED_TOPICS)
+    total_topics = len(ICP_ORDERED_TOPICS)
     idx = (day_number - 1) % total_topics
     cycle_num = ((day_number - 1) // total_topics) + 1
-    
-    selected_topic = APPROVED_TOPICS[idx]
+
+    selected_topic = ICP_ORDERED_TOPICS[idx]
     
     return {
         "day": day_number,

@@ -13,9 +13,10 @@ Enforces:
 - Scannable TL;DR block (5-7 bullets).
 - 10 FAQs (3-4 lines each).
 - 3-5 Infographic ideas.
-- Keyword count table.
 - Sign off: "- Archana ❤️" followed by a P.S.
 - Internal 10-question self-interview grounded in Anvitam projects and services before drafting.
+- TRUTH RULE: never invent costs, metrics, dates, client stories or savings figures. Use only facts supplied in the brief/interview; if a number is not supplied, write qualitatively ("measure X on your site") instead of fabricating one.
+- Internal links: copy URLs EXACTLY from the supplied link taxonomy. Never invent an anvitam.com URL.
 """
 
 import json
@@ -53,7 +54,6 @@ NON-NEGOTIABLE STRUCTURE & READABILITY:
    - Concise TL;DR / Key Takeaways block (5-7 bullets for Google Featured Snippets).
    - 10 FAQs (each answer strictly 3-4 lines, addressing real search queries).
    - 3-5 Infographic ideas (process flows, comparison charts, before vs after).
-   - Keyword Count Table.
    - Warm sign-off: "- Archana ❤️" followed by a P.S. to drive engagement.
 """
 
@@ -88,7 +88,7 @@ Simulate the internal expert self-interview by answering:
 "I’m writing a blog post answering this question: {topic}.
 Ask me anything you’d need to know the answer to in order to write a blog post that is truly helpful and unique. It should include my experience, expertise, case studies, examples, opinions, etc. Keep it limited to 10 questions."
 
-Formulate 10 insightful, penetrating architectural and practical questions, and provide Archana's honest, direct, empirical answers for each based on Anvitam's actual field work, real costs, and contrarian perspectives.
+Formulate 10 insightful, penetrating architectural and practical questions, and answer each ONLY from the projects/services listed above. Do NOT invent specific costs, savings, percentages, timelines or client outcomes that are not stated above — if a figure is not given, answer with the method/test used to establish it on a real site instead of a made-up number.
 
 Format as:
 Q1: [Question]
@@ -161,7 +161,6 @@ MANDATORY DELIVERABLE REQUIREMENTS:
    - TL;DR / Key Takeaways block: 5-7 concise bullet points for Google Featured Snippets.
    - 10 FAQs: 3-4 line answers for each, answering real search questions with unique value.
    - 3-5 Infographic ideas: process flows, comparison charts, framework diagrams.
-   - Keyword Count Table.
    - Sign off warmly: "- Archana ❤️" followed by an engaging P.S.
 
 Output strictly a valid JSON object matching this schema:
@@ -175,7 +174,7 @@ Output strictly a valid JSON object matching this schema:
   "slug": "url-friendly-slug-for-blog",
   "meta_description": "150-160 char compelling meta description",
   "excerpt": "Short 2-sentence summary of the article",
-  "cover_image_prompt": "Cinematic architectural photograph of [specific scene] with golden hour light, 8k",
+  "cover_image_prompt": "Architectural line sketch with subtle earthy watercolor washes of [specific scene], annotated elements, scale bar, off-white paper background",
   "content_html": "<h2>...</h2><p>...</p>",
   "tldr_bullets": [
     "Bullet 1",

@@ -183,8 +183,8 @@ LINK_TAXONOMY = {
             "suggested_anchors": ["biophilic interior design", "natural lime plaster interior styling"]
         },
         {
-            "title": "Architecture & Land Feasibility Consultation Report",
-            "url": "https://www.anvitam.com/services/architecture-design-consultation-report",
+            "title": "Architecture & Design Consultation",
+            "url": "https://www.anvitam.com/services/architecture-consultation",
             "topics": ["architecture consultation", "land feasibility report", "pre-purchase site review", "topographical audit"],
             "suggested_anchors": ["our comprehensive Architectural Land Feasibility Report", "booking a pre-construction site feasibility audit"]
         }
@@ -241,20 +241,48 @@ LINK_TAXONOMY = {
     ]
 }
 
+EXTRA_BLOGS_FILE = Path(__file__).resolve().parent / "published_records" / "link_registry_extra.json"
+
+def _load_extra_blogs() -> None:
+    """Load blogs registered by previous runs (register_new_blog persists them here)."""
+    try:
+        if EXTRA_BLOGS_FILE.exists():
+            extras = json.loads(EXTRA_BLOGS_FILE.read_text(encoding="utf-8"))
+            existing = {i["url"] for i in LINK_TAXONOMY.get("approved_existing_blogs", [])}
+            for item in extras:
+                if item.get("url") and item["url"] not in existing:
+                    LINK_TAXONOMY.setdefault("approved_existing_blogs", []).append(item)
+    except Exception as e:
+        logger.warning(f"Could not load extra link registry blogs: {e}")
+
+_load_extra_blogs()
+
 def register_new_blog(title: str, slug: str, meta_description: str = "", auto_save: bool = True) -> bool:
-    """Registers a newly published blog into LINK_TAXONOMY."""
+    """Registers a newly published blog into LINK_TAXONOMY and persists it to
+    link_registry_extra.json so future processes actually see it."""
     url = f"https://www.anvitam.com/blog/{slug}"
     existing_urls = {item["url"] for item in LINK_TAXONOMY.get("approved_existing_blogs", [])}
     if url in existing_urls:
         return False
-    
+
     words = [w.lower() for w in re.findall(r"\b[A-Za-z]{3,}\b", title) if w.lower() not in {"the", "and", "for", "with", "from", "how", "what", "why"}]
-    LINK_TAXONOMY.setdefault("approved_existing_blogs", []).append({
+    item = {
         "title": title,
         "url": url,
         "topics": words[:5],
         "suggested_anchors": [title, f"our comprehensive guide on {title.lower()}"]
-    })
+    }
+    LINK_TAXONOMY.setdefault("approved_existing_blogs", []).append(item)
+    if auto_save:
+        try:
+            EXTRA_BLOGS_FILE.parent.mkdir(parents=True, exist_ok=True)
+            extras = []
+            if EXTRA_BLOGS_FILE.exists():
+                extras = json.loads(EXTRA_BLOGS_FILE.read_text(encoding="utf-8"))
+            extras.append(item)
+            EXTRA_BLOGS_FILE.write_text(json.dumps(extras, indent=2), encoding="utf-8")
+        except Exception as e:
+            logger.warning(f"Could not persist new blog to link registry: {e}")
     logger.info(f"Registered new blog in LINK_TAXONOMY: {title} ({url})")
     return True
 

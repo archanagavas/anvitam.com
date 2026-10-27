@@ -100,18 +100,36 @@ def scrape_live_serp_intel(query: str) -> Dict[str, Any]:
         res = requests.get(url, headers=headers, timeout=12)
         if res.status_code == 200:
             soup = BeautifulSoup(res.text, "html.parser")
-            results = soup.find_all("div", class_="result__body")[:5]
+            results = soup.find_all("div", class_="result")[:5]
+            result_urls = []
             for r in results:
-                title_elem = r.find("a", class_="result__url") or r.find("a", class_="result__snippet") or r.find("h2")
+                title_elem = r.find("a", class_="result__a")
                 snippet_elem = r.find("a", class_="result__snippet")
                 if title_elem:
-                    serp_data["competitor_headlines"].append(title_elem.text.strip()[:100])
+                    serp_data["competitor_headlines"].append(title_elem.text.strip()[:120])
+                    href = title_elem.get("href", "")
+                    if href.startswith("http"):
+                        result_urls.append(href)
                 if snippet_elem:
-                    serp_data["competitor_h2s"].append(snippet_elem.text.strip()[:150])
+                    serp_data["competitor_snippets"] = serp_data.get("competitor_snippets", [])
+                    serp_data["competitor_snippets"].append(snippet_elem.text.strip()[:180])
+            # Fetch real H1/H2 headings from the top competitor pages (best effort).
+            for page_url in result_urls[:3]:
+                try:
+                    page = requests.get(page_url, headers=headers, timeout=10)
+                    if page.status_code == 200:
+                        psoup = BeautifulSoup(page.text, "html.parser")
+                        for h in psoup.find_all(["h1", "h2"])[:8]:
+                            txt = h.get_text(" ", strip=True)
+                            if txt:
+                                serp_data["competitor_h2s"].append(txt[:150])
+                except Exception:
+                    pass
     except Exception as e:
         logger.warning(f"Live SERP fetch notice (will augment with LLM intent modeling): {e}")
 
-    # Fallback or synthetic intent augmentation if SERP returned minimal text
+    # Honest fallback: marked synthetic, never presented as live SERP data.
+    serp_data["serp_source"] = "duckduckgo_html" if serp_data["competitor_headlines"] else "synthetic_fallback_no_live_results"
     if not serp_data["competitor_headlines"]:
         serp_data["competitor_headlines"] = [
             f"Cost breakdown for {query}",
@@ -119,7 +137,8 @@ def scrape_live_serp_intel(query: str) -> Dict[str, Any]:
             f"Common mistakes when planning {query}"
         ]
 
-    # Model People Also Ask based on intent
+    # NOTE: these are modeled from query intent, NOT scraped live PAA data.
+    serp_data["people_also_ask_source"] = "modeled_from_query_intent"
     serp_data["people_also_ask"] = [
         f"How much does {query} cost in 2026?",
         f"What are the biggest mistakes landowners make when starting {query}?",

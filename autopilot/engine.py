@@ -93,6 +93,10 @@ class AutopilotEngine:
             effective_topic = topic_override or (day_plan.get("master_blog", {}).get("title") if day_plan.get("master_blog") else None)
             if effective_topic:
                 self.logger.info(f"Blueprint / Target topic directive: '{effective_topic}'")
+                # Still run the live SERP scrape for this topic — a blueprint
+                # title is not research. Writer/strategist get real (or honestly
+                # marked synthetic) competitor intel either way.
+                from autopilot.agents.researcher import scrape_live_serp_intel
                 candidate_gaps = [{
                     "gap_id": 1,
                     "target_query": effective_topic,
@@ -100,7 +104,8 @@ class AutopilotEngine:
                     "competitor_reference": "Pre-vetted 30-Day Architectural Blueprint",
                     "customer_pain_point": "Decision paralysis on costs, water hydrology, and sequencing after buying land",
                     "buyer_persona": "Tech Founder / Merchant Navy / Developer / HNW Landowner ($100k+ capital)",
-                    "search_intent": "Commercial Investigation & Actionable Blueprint"
+                    "search_intent": "Commercial Investigation & Actionable Blueprint",
+                    "serp_intel": scrape_live_serp_intel(effective_topic)
                 }]
             else:
                 candidate_gaps = self.researcher.run(region_override=region_override)
@@ -146,8 +151,12 @@ class AutopilotEngine:
             self.logger.info("🎨 Image Generator: Creating publication-grade visual asset...")
             img_concept = approved_draft.get("cover_image_prompt") or approved_draft.get("title") or winning_topic
             img_result = generate_architectural_image(concept=img_concept, aspect_ratio="16:9", image_type="hero")
-            approved_draft["cover_image"] = img_result.get("local_path")
-            self.logger.info(f"✔ Blog Cover Image Ready ({img_result.get('source')}): {img_result.get('local_path')}")
+            # Firestore must never store a local filesystem path as the cover.
+            direct_url = img_result.get("direct_url") or ""
+            approved_draft["cover_image"] = direct_url if direct_url.startswith("http") else ""
+            approved_draft["cover_image_source"] = img_result.get("source")
+            approved_draft["cover_image_local"] = img_result.get("local_path")
+            self.logger.info(f"✔ Blog Cover Image Ready ({img_result.get('source')}): {approved_draft['cover_image'] or img_result.get('local_path')}")
 
             # ── Step 6: Publishing & Review Staging ──────────────────────────────
             pub_result = self.publisher.publish_article(draft=approved_draft, dry_run=dry_run)
@@ -160,8 +169,55 @@ class AutopilotEngine:
         syndication_results = {}
         social_dispatches = []
 
-        if not skip_syndication:
-            # A. Article overview to social channels (Protected by DRAFT safety)
+        # Draft-hold rule (owner decision): while the blog is a DRAFT awaiting
+        # Archana's review, socials are STAGED locally, never dispatched live.
+        hold_socials = bool(pub_result.get("isDraft", True)) if approved_draft else False
+        if hold_socials and not skip_syndication:
+            self.logger.info("⏸ Draft-hold: blog is a draft — staging social posts locally, dispatching NOTHING live.")
+            daily_posts = day_plan.get("social_posts", [])
+            records_markdown = [
+                f"# 🌿 Anvitam Social Assets — Day {active_day} (STAGED, pending blog approval)",
+                f"**Theme:** {day_theme}  ",
+                f"**Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}  ",
+                "**Status:** Held until the draft blog is published in Admin. Then dispatch with the live blog URL.\n",
+                "---\n"
+            ]
+            for idx, post in enumerate(daily_posts, 1):
+                social_dispatches.append({
+                    "slot": post.get("slot"), "type": post.get("type"),
+                    "concept": post.get("concept"), "image": None,
+                    "results": {"staged": True, "reason": "blog_draft_pending_review"}
+                })
+                records_markdown.append(
+                    f"## Asset {idx}: [{post.get('slot')}] {post.get('type')} — {post.get('concept')}\n\n"
+                    f"```\n{post.get('text', '')}\n\n{post.get('cta', '')}\n```\n\n"
+                    f"**Image prompt (generate on publish):** `{post.get('image_prompt') or post.get('concept')}`\n\n---\n"
+                )
+            import os
+            social_records_dir = os.path.join(os.path.dirname(__file__), "published_records", "socials")
+            os.makedirs(social_records_dir, exist_ok=True)
+            staged_file = os.path.join(social_records_dir, f"day_{active_day}_{datetime.now().strftime('%Y-%m-%d')}_STAGED.md")
+            with open(staged_file, "w", encoding="utf-8") as f:
+                f.write("\n".join(records_markdown))
+            # Machine-readable staging file: autopilot.publish_dispatch watches
+            # Firestore for this slug going live, then dispatches these posts
+            # with the LIVE blog URL. Do not dispatch from here.
+            staged_json = os.path.join(social_records_dir, f"day_{active_day}_{datetime.now().strftime('%Y-%m-%d')}_STAGED.json")
+            with open(staged_json, "w", encoding="utf-8") as jf:
+                json.dump({
+                    "slug": pub_result.get("slug"),
+                    "title": approved_draft.get("title") if approved_draft else None,
+                    "live_url": pub_result.get("url"),
+                    "cover_image": approved_draft.get("cover_image") if approved_draft else None,
+                    "excerpt": (approved_draft.get("excerpt") or approved_draft.get("meta_description")) if approved_draft else None,
+                    "posts": daily_posts,
+                    "staged_at": datetime.now().isoformat()
+                }, jf, indent=2, ensure_ascii=False)
+            print(f"📁 Staged Social Archive Saved (not dispatched): {staged_file}")
+            print(f"📁 Staged Dispatch Queue: {staged_json} — fires automatically once the blog is Published in Admin.")
+
+        if not skip_syndication and not hold_socials:
+            # A. Article overview to social channels (blog is LIVE here)
             if approved_draft:
                 article_payload = {
                     "title": approved_draft.get("title"),
@@ -224,7 +280,7 @@ class AutopilotEngine:
                 res = self.syndicator.syndicate_social_post(
                     post_data=post,
                     title=f"Anvitam: {concept}",
-                    link_url="https://topmate.io/archanagavas",
+                    link_url=(pub_result.get("url") or "https://topmate.io/archanagavas"),
                     image_url=post_img_url,
                     dry_run=dry_run
                 )

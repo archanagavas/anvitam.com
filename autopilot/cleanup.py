@@ -56,6 +56,11 @@ def purge_old_published_records(max_age_hours: int = 24) -> int:
             continue
         for file_path in folder.glob("*.*"):
             if file_path.is_file():
+                # NEVER purge pending staged socials: they must survive until
+                # Archana publishes the draft blog, however long review takes.
+                # (publish_dispatch.py consumes *_STAGED.json on publish.)
+                if "_STAGED." in file_path.name:
+                    continue
                 file_age = now - file_path.stat().st_mtime
                 if file_age > cutoff_seconds:
                     try:

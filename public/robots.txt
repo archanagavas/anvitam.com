@@ -1,58 +1,101 @@
-# ─── Trusted Search & AI Crawlers ─────────────────────────────────────────────
+# Anvitam robots.txt
+# Keep in sync with /llms.txt and /ai.txt (generated in api/seo.ts).
+# AI/agent discovery: https://www.anvitam.com/llms.txt | https://www.anvitam.com/ai.txt
+# Markdown versions of pages: append .md to any public URL (e.g. /pricing.md -> /services.md).
 
-# Google Search
+# ─── AI search & user-fetch crawlers (decide citations — always allowed) ─────
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: Claude-User
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: Perplexity-User
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+
+# ─── Training crawlers (owner decision: do not block) ────────────────────────
+# Blocking these would NOT stop citations from the search/user-fetch bots above.
+User-agent: GPTBot
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: CCBot
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: Bytespider
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+Crawl-delay: 10
+
+# ─── Search engines ───────────────────────────────────────────────────────────
 User-agent: Googlebot
 Allow: /
 Disallow: /admin
+Disallow: /dashboard
 Disallow: /api/
 Disallow: /*?tool=*
 Disallow: /*?module=*
 Disallow: /*?ref=*
-Crawl-delay: 2
 
-# Google AI Training
-User-agent: Google-Extended
-Allow: /
-Disallow: /admin
-Disallow: /api/
-
-# ChatGPT Search
-User-agent: OAI-SearchBot
-Allow: /
-Disallow: /admin
-Disallow: /api/
-
-# ChatGPT Training
-User-agent: GPTBot
-Allow: /
-Disallow: /admin
-Disallow: /api/
-Crawl-delay: 5
-
-# Claude (Anthropic)
-User-agent: ClaudeBot
-Allow: /
-Disallow: /admin
-Disallow: /api/
-Crawl-delay: 5
-
-# Perplexity AI
-User-agent: PerplexityBot
-Allow: /
-Disallow: /admin
-Disallow: /api/
-Crawl-delay: 5
-
-# Bing Search
 User-agent: bingbot
 Allow: /
 Disallow: /admin
+Disallow: /dashboard
 Disallow: /api/
-Crawl-delay: 5
 
-# ─── High-Volume Scrapers — Throttled ─────────────────────────────────────────
-# These crawlers generate significant Vercel FOT without meaningful SEO benefit.
-
+# ─── High-volume SEO scrapers — throttled ────────────────────────────────────
 User-agent: AhrefsBot
 Crawl-delay: 10
 Disallow: /api/
@@ -71,24 +114,14 @@ User-agent: DotBot
 Crawl-delay: 30
 Disallow: /
 
-# ─── Aggressive AI Scrapers — Disallowed ──────────────────────────────────────
-# ByteDance (TikTok) crawler — known for high-volume aggressive crawling
-User-agent: Bytespider
-Disallow: /
-
-# PetalBot (Huawei) — high volume, limited SEO value for this site
-User-agent: PetalBot
-Disallow: /
-
 # ─── General fallback ─────────────────────────────────────────────────────────
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /dashboard
 Disallow: /api/
 Disallow: /*?tool=*
 Disallow: /*?module=*
 Disallow: /*?ref=*
-Crawl-delay: 5
 
-# ─── Sitemap ──────────────────────────────────────────────────────────────────
 Sitemap: https://www.anvitam.com/sitemap.xml

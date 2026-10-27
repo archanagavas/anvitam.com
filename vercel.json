@@ -73,11 +73,20 @@
         {
           "key": "Referrer-Policy",
           "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Link",
+          "value": "</llms.txt>; rel=\"describedby\", </llms-full.txt>; rel=\"describedby\", </ai.txt>; rel=\"describedby\""
         }
       ]
     }
   ],
   "rewrites": [
+
+    { "source": "/ai.txt", "destination": "/api/seo?action=ai" },
+    { "source": "/api/md/:splat*", "destination": "/api/md?path=:splat*" },
+    { "source": "/api/md", "destination": "/api/md" },
+    { "source": "/(.*)\\.md", "destination": "/api/md?path=$1" },
 
     { "source": "/sitemap.xml", "destination": "/api/seo?action=sitemap" },
     { "source": "/rss.xml", "destination": "/api/seo?action=rss" },

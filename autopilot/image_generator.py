@@ -1,7 +1,7 @@
 """
 Autonomous Architectural Image Generator for Anvitam Autopilot.
 Generates and serves premium architectural, permaculture, and interior images.
-Strictly zero pollinator / zero Pollinations.ai references.
+No third-party watermark image services are used anywhere in this pipeline.
 
 Priority Sequence:
 1. Google Gemini Generative Image API (gemini-2.5-flash-image, gemini-3.1-flash-image, Imagen 3)
@@ -106,11 +106,20 @@ def generate_gemini_image(prompt: str, filename: str) -> Optional[str]:
         headers = {"Content-Type": "application/json"}
         gen_payload = {
             "contents": [{
-                "parts": [{"text": f"Generate a high resolution architectural line sketch: {prompt}"}]
-            }]
+                "parts": [{"text": f"Generate an image: {prompt}"}]
+            }],
+            "generationConfig": {"responseModalities": ["TEXT", "IMAGE"]}
         }
         try:
             res = requests.post(gen_url, headers=headers, json=gen_payload, timeout=30)
+            if res.status_code == 429:
+                logger.warning(
+                    f"⚠ Gemini image quota exceeded (429) on {model_name}. "
+                    "Image generation needs Gemini API billing/quota: check https://ai.dev/rate-limit "
+                    "and enable billing for this API key, or the pipeline will use fallback imagery."
+                )
+            elif res.status_code != 200:
+                logger.warning(f"Gemini image {model_name} returned HTTP {res.status_code}: {res.text[:160]}")
             if res.status_code == 200:
                 data = res.json()
                 candidates = data.get("candidates", [])
@@ -178,6 +187,8 @@ def generate_hf_image(prompt: str, filename: str) -> Optional[str]:
         payload = {"inputs": prompt}
         try:
             res = requests.post(url, headers=headers, json=payload, timeout=40)
+            if res.status_code != 200:
+                logger.warning(f"HuggingFace image {model} returned HTTP {res.status_code}: {res.text[:160]}")
             if res.status_code == 200 and "image" in res.headers.get("content-type", "").lower():
                 local_path = IMAGE_DIR / filename
                 with open(local_path, "wb") as f:
@@ -264,9 +275,9 @@ def get_curated_studio_image(concept: str, image_type: str) -> Optional[str]:
         if any(k in concept_lower for k in ["build", "execution", "contractor", "supervision"]) and "execution" in name_lower:
             return str(img)
 
-    # Return a high quality architectural studio image
-    selected = random.choice(all_images)
-    return str(selected)
+    # No keyword match -> no image. A random unrelated studio photo is worse
+    # than none (it misrepresents the topic on socials and the blog cover).
+    return None
 
 
 def build_sketch_artist_prompt(concept: str) -> str:
@@ -315,7 +326,8 @@ def generate_architectural_image(
     Master entrypoint to generate high-end architectural imagery for Archana Gavas.
     Enforces clean architectural linework, annotations, soil section cuts, scale bar, and personal text attribution.
     Guarantees permanent Cloudinary CDN URLs for seamless social syndication.
-    STRICTLY ZERO Pollinations.ai fallback.
+    Returns direct_url=None when every generator fails — callers must not
+    substitute placeholder/test images.
     """
     clean_concept = concept.replace('"', '').replace("'", "").strip()
     timestamp = int(time.time())
@@ -363,16 +375,17 @@ def generate_architectural_image(
         cdn_url = upload_to_cloudinary(studio_img, public_id=f"anvitam_{image_type}_{timestamp}")
         return {
             "local_path": studio_img,
-            "direct_url": cdn_url or f"https://res.cloudinary.com/voef9roi/image/upload/v1792776406/test_cdn_verify.jpg",
+            "direct_url": cdn_url or f"file:///{studio_img}",
             "prompt": prompt,
             "source": "studio_architectural_asset"
         }
 
-    # Fallback to verified permanent Cloudinary CDN asset
-    fallback_cdn = "https://res.cloudinary.com/voef9roi/image/upload/v1792776406/test_cdn_verify.jpg"
+    # Every generator failed: report failure honestly instead of serving a
+    # placeholder/test image as if it were the article's visual.
+    logger.error("Image generation failed on all providers (Gemini, HF, Wikimedia, studio library).")
     return {
         "local_path": str(IMAGE_DIR / filename),
-        "direct_url": fallback_cdn,
+        "direct_url": None,
         "prompt": prompt,
-        "source": "anvitam_studio_cdn"
+        "source": "failed_no_image"
     }

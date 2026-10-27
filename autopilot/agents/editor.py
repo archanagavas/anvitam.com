@@ -46,9 +46,21 @@ class EditorAgent:
         words = text_only.split()
         word_count = len(words)
 
-        # Check internal links count
-        internal_links = re.findall(r'href=[\'"]https://www\.anvitam\.com/[^\'"]+[\'"]', content)
+        # Check internal links count (absolute + relative) and validate every
+        # anvitam.com URL against the approved link registry — invented or
+        # stale slugs are a hard fail, not something an LLM score can wave past.
+        internal_links = re.findall(r'href=[\'"](?:https://www\.anvitam\.com)?(/[^\'"]+)[\'"]', content)
         link_count = len(internal_links)
+        try:
+            from autopilot.link_registry import LINK_TAXONOMY
+            approved_urls = set()
+            for group in LINK_TAXONOMY.values():
+                for item in group:
+                    approved_urls.add(item["url"].replace("https://www.anvitam.com", "").rstrip("/"))
+            approved_urls |= {"/contact", "/services", "/projects", "/blog", "/why", "/shop", "/workshops", "/tools", "/site-analysis"}
+        except Exception:
+            approved_urls = set()
+        invalid_links = [u for u in internal_links if u.rstrip("/") not in approved_urls] if approved_urls else []
 
         faq_count = len(draft.get("faqs", []))
         tldr_count = len(draft.get("tldr_bullets", []))
@@ -118,13 +130,34 @@ Return strictly a valid JSON object matching this schema:
             if cleaned.endswith("```"):
                 cleaned = cleaned[:-3]
             audit_result = json.loads(cleaned.strip())
+            # Deterministic hard gate layered over the LLM score.
+            hard_issues = []
+            if word_count < 1500 or word_count > 2500:
+                hard_issues.append(f"Word count {word_count} outside 1500-2500")
+            if link_count < 4:
+                hard_issues.append(f"Only {link_count} internal links (need >=4)")
+            if invalid_links:
+                hard_issues.append(f"Unapproved/invented internal links: {invalid_links}")
+            if faq_count != 10:
+                hard_issues.append(f"FAQ count {faq_count} (need exactly 10)")
+            if slop_found:
+                hard_issues.append(f"Banned AI slop words: {slop_found}")
+            if hard_issues:
+                audit_result["overall_score"] = min(int(audit_result.get("overall_score", 0)), 79)
+                audit_result["passed"] = False
+                audit_result["issues_to_fix"] = list(audit_result.get("issues_to_fix", [])) + hard_issues
+                audit_result["revision_instructions_for_writer"] = (
+                    str(audit_result.get("revision_instructions_for_writer", "")) +
+                    " HARD GATE FAILURES (fix exactly): " + "; ".join(hard_issues) +
+                    ". Copy internal-link URLs exactly from the link taxonomy."
+                )
             return audit_result
         except Exception as e:
             self.logger.warning(f"Failed to parse editor audit JSON: {e}")
-            passed = (word_count >= 1300 and len(slop_found) == 0 and link_count >= 3)
+            # LLM audit unparseable: never auto-pass. Force a revision loop.
             return {
-                "overall_score": 92 if passed else 80,
-                "passed": passed,
+                "overall_score": 70,
+                "passed": False,
                 "issues_to_fix": ["Ensure paragraphs are 1-3 sentences", "Verify 10 FAQs and 4 internal links"],
                 "revision_instructions_for_writer": "Keep paragraphs short and ensure all 10 FAQs and 4 internal links are present."
             }

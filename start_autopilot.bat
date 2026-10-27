@@ -46,10 +46,11 @@ echo ======================================================================
 echo.
 echo   [Window 1] Content + Social Syndication Engine (Paced 3-Hour Cadence, Max 2 Blogs/Day)
 echo              - Live SERP scraper & competitor H1/H2 research
-echo              - Automated Gemini / FLUX.1 architectural image generation
-echo              - Publishes architectural master guides + 5 tailored posts
+echo              - Architectural image generation (Gemini image API; needs billing/quota)
+echo              - Stages master guides as DRAFTS for Archana's review (never auto-publishes)
+echo              - Socials are STAGED with the draft; they dispatch automatically with the
+echo                LIVE blog URL only after the blog is Published in Admin (publish_dispatch)
 echo              - Syndicates to Bluesky, Mastodon, Threads, Buffer, Twitter, Medium
-echo              - Updates link registry and auto-syncs to GitHub
 echo.
 echo   [Window 2] Global Lead Generation + Live Outreach Engine (1 Email Every 5 Mins)
 echo              - Dispatches to 100+ verified leads (Restaurants, Landowners/NRIs, Retreats, Realtors, Architects)

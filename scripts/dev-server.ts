@@ -13,6 +13,7 @@ import adminHandler from '../api/admin';
 import metaHandler from '../api/meta';
 import messagesHandler from '../api/messages';
 import seoHandler from '../api/seo';
+import mdHandler from '../api/md';
 import toolsHandler from '../api/tools';
 import blogAgentHandler from '../api/blog-agent';
 
@@ -80,7 +81,15 @@ const server = createServer(async (req, res) => {
     const partnersIdMatch = pathname.match(/^\/api\/partners\/([^/]+)$/);
     const estimatorIdMatch = pathname.match(/^\/api\/estimator-services\/([^/]+)$/);
 
-    if (pathname.startsWith('/api/admin') || pathname === '/api/db-init' || pathname === '/api/upload' || pathname === '/api/analytics') {
+    if (pathname === '/ai.txt') {
+      vercelReq.query.action = 'ai';
+      await seoHandler(vercelReq, vercelRes);
+    } else if (pathname.startsWith('/api/md')) {
+      await mdHandler(vercelReq, vercelRes);
+    } else if (pathname.endsWith('.md')) {
+      vercelReq.query.path = pathname.slice(0, -3) || '/';
+      await mdHandler(vercelReq, vercelRes);
+    } else if (pathname.startsWith('/api/admin') || pathname === '/api/db-init' || pathname === '/api/upload' || pathname === '/api/analytics') {
       await adminHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/blog-agent' || pathname === '/api/blog-agent/') {
       await blogAgentHandler(vercelReq, vercelRes);

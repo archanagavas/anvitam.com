@@ -78,7 +78,7 @@ class PublishingAgent:
             "date": today_str,
             "excerpt": draft.get("excerpt") or draft.get("meta_description"),
             "content": draft.get("content_html"),
-            "image": draft.get("cover_image", "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80"),
+            "image": (draft.get("cover_image") if str(draft.get("cover_image", "")).startswith("http") else "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80"),
             "author": "Ar. Archana Gavas",
             "authorBio": "Senior Architect, Permaculture & Ecological Design Specialist. Founder of Anvitam.",
             "metaDescription": draft.get("meta_description"),

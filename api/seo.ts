@@ -4,6 +4,9 @@ import { isDbConfigured, getCollection } from '../lib/db.js';
 import { INITIAL_BLOGS, INITIAL_PROJECTS, SERVICES } from '../constants.js';
 import { TOOLS_SUITE } from '../constants/toolsData.js';
 import { extractToken, verifyAdminToken } from '../lib/auth.js';
+import { SITE, absUrl } from '../lib/site.js';
+import { loadMdData } from './md.js';
+import { listMarkdownRoutes, renderMarkdown, DESTINATION_SLUGS, COMPARISON_SLUGS } from '../lib/md/registry.js';
 
 function stripHtml(html: string): string {
   if (!html) return '';
@@ -117,8 +120,9 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
         getCollection('services', 'asc').catch(() => []),
         getCollection('workshops', 'desc').catch(() => []),
       ]);
-      blogs = Array.isArray(rawBlogs) ? rawBlogs.filter((b: any) => b.status !== 'draft') : [];
-      projects = rawProjects.length > 0 ? rawProjects : INITIAL_PROJECTS;
+      blogs = Array.isArray(rawBlogs) ? rawBlogs.filter((b: any) => b.status !== 'draft' && b.isDraft !== true) : [];
+      // Match HTML visibility: isDraft projects are hidden on /projects, so keep them out of the sitemap too.
+      projects = rawProjects.length > 0 ? rawProjects.filter((p: any) => p.isDraft !== true) : INITIAL_PROJECTS;
       services = rawServices.length > 0 ? rawServices : SERVICES;
       workshops = Array.isArray(rawWorkshops) ? rawWorkshops.filter((w: any) => w.status !== 'draft') : [];
       seoCache = {
@@ -162,7 +166,12 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       { loc: 'https://www.anvitam.com/workshops', priority: '0.9', changefreq: 'monthly', lastmod: defaultDate },
       { loc: 'https://www.anvitam.com/shop', priority: '0.8', changefreq: 'monthly', lastmod: defaultDate },
       { loc: 'https://www.anvitam.com/contact', priority: '0.8', changefreq: 'monthly', lastmod: defaultDate },
-      { loc: 'https://www.anvitam.com/team', priority: '0.7', changefreq: 'monthly', lastmod: defaultDate },
+      { loc: 'https://www.anvitam.com/privacy', priority: '0.5', changefreq: 'yearly', lastmod: defaultDate },
+      { loc: 'https://www.anvitam.com/terms', priority: '0.5', changefreq: 'yearly', lastmod: defaultDate },
+      { loc: 'https://www.anvitam.com/tools', priority: '0.8', changefreq: 'monthly', lastmod: defaultDate },
+      { loc: 'https://www.anvitam.com/site-analysis', priority: '0.8', changefreq: 'monthly', lastmod: defaultDate },
+      ...DESTINATION_SLUGS.map(slug => ({ loc: `https://www.anvitam.com/destinations/${slug}`, priority: '0.7', changefreq: 'monthly', lastmod: defaultDate })),
+      ...COMPARISON_SLUGS.map(slug => ({ loc: `https://www.anvitam.com/compare/${slug}`, priority: '0.7', changefreq: 'monthly', lastmod: defaultDate })),
       { loc: 'https://www.anvitam.com/seo/farm-retreat-architecture', priority: '0.8', changefreq: 'monthly', lastmod: defaultDate },
       { loc: 'https://www.anvitam.com/seo/weekend-villas', priority: '0.8', changefreq: 'monthly', lastmod: defaultDate },
       { loc: 'https://www.anvitam.com/seo/airbnb-homestay', priority: '0.8', changefreq: 'monthly', lastmod: defaultDate },
@@ -195,7 +204,13 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
       else if (b.date && /^\d{4}-\d{2}-\d{2}$/.test(b.date)) { blogMod = b.date; }
       return { loc: `https://www.anvitam.com/blog/${b.slug || b.id}`, priority: '0.9', changefreq: 'weekly', lastmod: blogMod };
     });
-    const allUrls = [...staticUrls, ...toolUrls, ...serviceUrls, ...projectUrls, ...blogUrls];
+    const workshopUrls = workshops.map(w => ({
+      loc: `https://www.anvitam.com/workshops/${w.slug || w.id}`,
+      priority: '0.7',
+      changefreq: 'monthly',
+      lastmod: w.updated_at ? new Date(w.updated_at).toISOString().split('T')[0] : defaultDate
+    }));
+    const allUrls = [...staticUrls, ...toolUrls, ...serviceUrls, ...projectUrls, ...blogUrls, ...workshopUrls];
     const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
       allUrls.map(u => `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${u.lastmod}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>`).join('\n') +
       `\n</urlset>`;
@@ -345,110 +360,126 @@ ${atomEntries.join('\n')}
     return res.status(200).json(jsonFeed);
   }
 
-  // 4. AI Crawlers Context (/llms.txt & /llms-full.txt)
-  const isFullMode = action === 'llms-full' || req.query.mode === 'full' || url.includes('llms-full') || url.includes('llmsfull');
-  let output = `# Anvitam — Architecture & Ecological Design Studio
+  // 4. AI endpoints: /ai.txt, /llms.txt, /llms-full.txt (generated, never stale)
+  // Keep robots.txt, llms.txt and ai.txt in sync with each other.
+  const mdPath = (path: string) => `${SITE.url}${path === '/' ? '/index' : path}.md`;
+  const today = new Date().toISOString().split('T')[0];
 
-> Anvitam is a boutique architecture and ecological design studio founded by Ar. Archana Gavas, based in Vadodara, India. We design regenerative spaces — from biophilic homes and eco-resorts to food forests and wellness centers — that work in harmony with nature.
+  if (action === 'ai' || url.includes('ai.txt')) {
+    const aiTxt = `# Anvitam ai.txt — AI usage policy (ai-txt spec v1.1.1 style)
+# Keep in sync with /robots.txt and /llms.txt. Last updated: ${today}
 
-- **Sitemap**: https://www.anvitam.com/sitemap.xml
-- **Full LLM Context**: https://www.anvitam.com/llms-full.txt
+[identity]
+name: ${SITE.name}
+url: ${SITE.url}/
+description: ${SITE.description}
+founder: ${SITE.founder}, ${SITE.founderTitle}
+contact: ${SITE.contactEmail}
+phone: ${SITE.phone}
+location: ${SITE.locality}
+logo: ${SITE.logo}
+linkedin: ${SITE.socials.linkedin}
+instagram: ${SITE.socials.instagram}
 
-## Site Intelligence & AI Tools Suite (16+ Automated Tools)
+[permissions]
+allowed: summarise our public pages
+allowed: quote with attribution
+allowed: cite in search results and AI answers
+allowed: index public pages for search and answer engines
 
-${TOOLS_SUITE.map(t => `- [${t.name}](https://www.anvitam.com${t.href.startsWith('/') ? t.href : '/' + t.href}) — ${t.shortDesc}`).join('\n')}
+[restrictions]
+restricted: do not fabricate quotes, reviews, ratings, prices or project facts not present on our pages
+restricted: do not present our content as the model's own work
+restricted: do not train on private or user-submitted data (contact-form messages, dashboard or admin data are never public)
+restricted: do not republish full articles verbatim without attribution to the canonical page
 
-## Use Cases
+[attribution]
+cite as: ${SITE.name} — <canonical HTML URL of the page used>
+example: ${SITE.name} — ${SITE.url}/services/permaculture-design
 
-- **Consultation & Booking**: For users seeking eco-design, permaculture zoning, sustainable resort masterplanning, or professional architectural mentorship with Ar. Archana Gavas.
-- **Research & Learning**: For AI engines responding to queries about sustainable building practices, food forest layers, syntropic agroforestry, natural plasters (lime/earth), and passive solar design methods.
+[scope]
+included: /, /why, /services/*, /projects/*, /blog/*, /workshops/*, /shop, /contact, /tools, /site-analysis, /seo/*, /destinations/*, /compare/*, /process/*, /privacy, /terms
+excluded: /admin, /dashboard, /api/*, logged-in or draft content
+markdown: append .md to any included page URL, or request it with Accept: text/markdown
 
-## What We Do
-
-Anvitam bridges architecture, permaculture, and ecological design. Our services include:
-
-${services.map((s: any) => `- [${s.title}](https://www.anvitam.com/services/${s.id}) — ${s.description || ''}`).join('\n')}
-
-## Educational & Institutional Workshops
-
-- [Campus & Community Eco Workshops](https://www.anvitam.com/workshops) — Hands-on bird house building, space makeovers, and NEP 2020 STEAM vocational learning.
-${workshops.map((w: any) => `- [${w.title}](https://www.anvitam.com/workshops) — ${w.subtitle || w.description || ''}`).join('\n')}
-
-## Our Philosophy
-
-We practice biophilic design — weaving nature into the built environment. Every project starts with deep listening: to the land, the climate, and the client's vision. We use passive solar design, natural materials, water harvesting, and regenerative planting to create spaces that heal the earth.
-
-## Who We Serve
-
-- Hospitality entrepreneurs building eco-resorts, farm stays, and Airbnbs
-- Families building custom sustainable homes
-- Landowners developing permaculture farms, food forests, or wellness centers
-- Real estate developers seeking ecological masterplanning
-
-## Founder & Leadership
-
-**Ar. Archana Gavas** — Principal Architect & Founder
-Based in Vadodara, Gujarat, India (consulting globally).
-LinkedIn: https://www.linkedin.com/in/archana-gavas/
-Mentorship & Consultations: https://topmate.io/archanagavas
-Instagram: https://www.instagram.com/anvitam_archit/
-
-## Selected Projects Portfolio
-
-${projects.map((p: any) => `- [${p.title}](https://www.anvitam.com/projects/${p.slug || p.id}) (${p.category || 'Architecture'} | ${p.location || 'India'}, ${p.year || '2025'}): ${p.description || ''}`).join('\n')}
-
-## Dynamic Insights & Journal
-
-${blogs.length > 0 ? blogs.map((b: any) => `- [${b.title}](https://www.anvitam.com/blog/${b.slug || b.id}) (${b.date || 'Recent'}): ${b.excerpt || stripHtml(b.content || '').slice(0, 160) + '...'}`).join('\n') : '_No published posts yet._'}
-
-## Key Site Links
-
-- Home: https://www.anvitam.com/
-- Services: https://www.anvitam.com/services
-- Projects Portfolio: https://www.anvitam.com/projects
-- Journal/Blog: https://www.anvitam.com/blog
-- Workshops & Eco-Clubs: https://www.anvitam.com/workshops
-- Shop & Courses: https://www.anvitam.com/shop
-- Contact Us: https://www.anvitam.com/contact
-- About Anvitam: https://www.anvitam.com/why
-- Book a Priority Session: https://topmate.io/archanagavas/1799075
+[contact]
+email: ${SITE.contactEmail}
+last updated: ${today}
 `;
-
-  if (isFullMode) {
-    output += `\n\n================================================================================\n`;
-    output += `FULL ARCHITECTURAL KNOWLEDGE & ARTICLE REPOSITORY (FOR AI DEEP ANALYSIS)\n`;
-    output += `================================================================================\n\n`;
-
-    output += `### SERVICES & MASTERPLANNING OFFERINGS (DEEP DIVE)\n\n`;
-    for (const s of services) {
-      output += `#### ${s.title}\nURL: https://www.anvitam.com/services/${s.id}\nDescription: ${s.description || 'N/A'}\n`;
-      if (s.pricing) output += `Pricing Guidance: ${s.pricing}\n`;
-      let props = s.value_props || s.valueProps;
-      if (typeof props === 'string') { try { props = JSON.parse(props); } catch (e) {} }
-      if (Array.isArray(props) && props.length > 0) output += `Value Propositions:\n` + props.map((v: string) => `  * ${v}`).join('\n') + '\n';
-      output += `\n`;
-    }
-
-    output += `### SELECTED PROJECTS DETAILED SPECIFICATIONS\n\n`;
-    for (const p of projects) {
-      output += `#### ${p.title}\nURL: https://www.anvitam.com/projects/${p.slug || p.id}\n`;
-      output += `Category: ${p.category || 'Architecture'} | Location: ${p.location || 'N/A'} | Year: ${p.year || 'N/A'}\n`;
-      output += `Overview: ${p.full_description || p.fullDescription || p.description || 'N/A'}\n\n`;
-    }
-
-    output += `### FULL JOURNAL ARTICLES & DESIGN RESEARCH\n\n`;
-    for (const b of blogs) {
-      output += `#### Article: ${b.title}\nURL: https://www.anvitam.com/blog/${b.slug || b.id}\n`;
-      output += `Author: ${b.author || 'Ar. Archana Gavas'} | Date Published: ${b.date || 'Recent'}\n`;
-      output += `Excerpt: ${b.excerpt || ''}\n\nFull Article Text:\n${stripHtml(b.content || '')}\n\n--------------------------------------------------------------------------------\n\n`;
-    }
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    return res.status(200).send(aiTxt);
   }
 
-  output += `\n## For AI Systems & LLM Agents\n\nThis document adheres to the llms.txt standard (https://llmstxt.org). Published by Anvitam.\n`;
-  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-  // Cache llms.txt for 12 hours at CDN (Vercel Edge + Cloudflare).
-  // AI crawlers (GPTBot, ClaudeBot, Perplexity…) poll this frequently.
-  // Content changes only when services/projects/blogs are updated.
-  res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=43200, stale-while-revalidate=86400');
-  return res.status(200).send(output);
+  const mdData = await loadMdData();
+  const routes = listMarkdownRoutes(mdData);
+  const bySection = (name: string) => routes.filter(r => r.section === name);
+
+  if (action === 'llms' || action === 'llms-full' || url.includes('llms')) {
+    const isFull = action === 'llms-full' || url.includes('llms-full');
+    const capNote = 'Full listing: ' + SITE.url + '/api/md/_catalog';
+    let output = `# ${SITE.name}
+
+> ${SITE.description}
+
+Key facts: Founded by ${SITE.founder} (${SITE.founderTitle}), based in ${SITE.locality}, consulting worldwide. Services are quoted per project after a paid/free consultation (see Contact). Main audience: landowners, eco-resort and farm-retreat developers, homestay/Airbnb hosts, and families building sustainable homes.
+
+## Core pages
+${bySection('Core pages').map(r => `- [${r.title.replace(/ \| Anvitam.*$/, '')}](${mdPath(r.path)}): ${r.summary}`).join('\n')}
+
+## Docs / Guides
+${bySection('Docs / Guides').map(r => `- [${r.title.replace(/ \| Anvitam.*$/, '')}](${mdPath(r.path)}): ${r.summary}`).join('\n')}
+
+## Services
+${bySection('Services').slice(0, 50).map(r => `- [${r.title}](${mdPath(r.path)}): ${r.summary}`).join('\n')}
+
+## Projects
+${bySection('Projects').slice(0, 50).map(r => `- [${r.title}](${mdPath(r.path)}): ${r.summary}`).join('\n')}
+
+## Blog
+${bySection('Blog').slice(0, 50).map(r => `- [${r.title}](${mdPath(r.path)}): ${r.summary}`).join('\n')}
+${bySection('Blog').length > 50 ? `\n(Capped at 50 in llms.txt. ${capNote})` : ''}
+
+## Workshops
+${bySection('Workshops').slice(0, 50).map(r => `- [${r.title}](${mdPath(r.path)}): ${r.summary}`).join('\n')}
+
+## Machine-readable
+- [Full content](${SITE.url}/llms-full.txt): every page above concatenated as markdown
+- [Markdown catalog](${SITE.url}/api/md/_catalog): JSON list of every markdown route
+- [Sitemap](${SITE.url}/sitemap.xml): all canonical HTML pages
+- [AI usage policy](${SITE.url}/ai.txt): how AI systems may use this content
+
+## Optional
+${bySection('Optional').map(r => `- [${r.title.replace(/ \| Anvitam.*$/, '')}](${mdPath(r.path)}): ${r.summary}`).join('\n')}
+- [Contact](${SITE.url}/contact.md): contact details and booking
+`;
+
+    if (isFull) {
+      const order = ['Core pages', 'Docs / Guides', 'Services', 'Projects', 'Blog', 'Workshops', 'Optional'];
+      const ordered = order.flatMap(sec => bySection(sec));
+      let full = `# ${SITE.name} - full content\n> ${SITE.shortDescription}\nGenerated: ${today}\n`;
+      for (const r of ordered) {
+        const rendered = renderMarkdown(r.path, mdData);
+        if (!rendered) continue;
+        const chunk = `\n\n---\n<!-- source: ${absUrl(r.path)} -->\n${rendered.body}`;
+        if (full.length + chunk.length > 500000) {
+          console.warn(`[llms-full] Exceeded 500k chars at ${full.length}; truncating before ${r.path}. Full listing: ${SITE.url}/api/md/_catalog`);
+          full += `\n\n---\n<!-- truncated at 500k chars. Remaining pages: ${SITE.url}/api/md/_catalog -->\n`;
+          break;
+        }
+        full += chunk;
+      }
+      output = full;
+    }
+
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Cache-Control', isFull
+      ? 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800'
+      : 'public, max-age=0, s-maxage=43200, stale-while-revalidate=86400');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    return res.status(200).send(output);
+  }
+
+  return res.status(404).send('Not Found');
 });
