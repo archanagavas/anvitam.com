@@ -4,7 +4,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createHandler } from '../lib/adapter.js';
 import { isDbConfigured, getCollection } from '../lib/db.js';
-import { INITIAL_PROJECTS, SERVICES, INITIAL_WORKSHOPS, DIGITAL_PRODUCTS } from '../constants.js';
+import { INITIAL_BLOGS, INITIAL_PROJECTS, SERVICES, INITIAL_WORKSHOPS, DIGITAL_PRODUCTS } from '../constants.js';
 import { renderMarkdown, listMarkdownRoutes, type MdData } from '../lib/md/registry.js';
 import { sendMarkdown, markdown404, prefersMarkdown } from '../lib/md/http.js';
 import { SITE } from '../lib/site.js';
@@ -13,7 +13,7 @@ let cache: { data: MdData; expiresAt: number } | null = null;
 
 export async function loadMdData(): Promise<MdData> {
   if (cache && Date.now() < cache.expiresAt) return cache.data;
-  let data: MdData = { blogs: [], projects: INITIAL_PROJECTS, services: SERVICES, workshops: INITIAL_WORKSHOPS, products: DIGITAL_PRODUCTS };
+  let data: MdData = { blogs: INITIAL_BLOGS, projects: INITIAL_PROJECTS, services: SERVICES, workshops: INITIAL_WORKSHOPS, products: DIGITAL_PRODUCTS };
   if (isDbConfigured) {
     try {
       const [blogs, projects, services, workshops, products] = await Promise.all([
@@ -31,7 +31,7 @@ export async function loadMdData(): Promise<MdData> {
         return [...dbItems, ...seed.filter((x) => !keys.has(x.slug || x.id) && !keys.has(x.id))];
       };
       data = {
-        blogs: Array.isArray(blogs) ? blogs : [],
+        blogs: merge(blogs, INITIAL_BLOGS as any[]),
         projects: merge(projects, INITIAL_PROJECTS as any[]),
         services: merge(services, SERVICES as any[]),
         workshops: merge(workshops, INITIAL_WORKSHOPS as any[]),
