@@ -144,6 +144,9 @@
     { "source": "/api/ai-design/:splat*", "destination": "/api/ai-design?action=:splat*" },
     { "source": "/api/ai-design", "destination": "/api/ai-design" },
 
+    { "source": "/api/tools/:splat*", "destination": "/api/tools?action=:splat*" },
+    { "source": "/api/tools", "destination": "/api/tools" },
+
     { "source": "/", "destination": "/api/ssr-seo?path=/" },
     { "source": "/blog/:splat*", "destination": "/api/ssr-seo?path=/blog/:splat*" },
     { "source": "/blog", "destination": "/api/ssr-seo?path=/blog" },

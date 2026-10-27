@@ -96,11 +96,25 @@ export default function SiteAnalysis() {
   // Studio UI Navigation & Auth State
   const [showToolsDrawer, setShowToolsDrawer] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [user, setUser] = useState<ToolUser | null>(null);
+  const [user, setUser] = useState<ToolUser | null>(() => getToolUser());
   const [showAuth, setShowAuth] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [showPaywall, setShowPaywall] = useState(false);
   const [showDashboardModal, setShowDashboardModal] = useState(false);
+
+  // Sync session and admin state in real time
+  useEffect(() => {
+    setUser(getToolUser());
+    const handleAuthSync = () => {
+      setUser(getToolUser());
+    };
+    window.addEventListener('storage', handleAuthSync);
+    window.addEventListener('anvitam_user_sync', handleAuthSync);
+    return () => {
+      window.removeEventListener('storage', handleAuthSync);
+      window.removeEventListener('anvitam_user_sync', handleAuthSync);
+    };
+  }, []);
 
   // Mobile, Fullscreen & Card State
   const [isFullscreenMap, setIsFullscreenMap] = useState(false);

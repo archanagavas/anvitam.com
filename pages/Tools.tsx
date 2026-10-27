@@ -9,7 +9,7 @@ import {
   Sparkles, CheckCircle2, Globe, FileText, Layers, Compass, Sliders
 } from 'lucide-react';
 import { TOOLS_SUITE, SHOW_GENERATIVE_AI_STUDIOS, type ToolItem } from '../constants/toolsData';
-import { getToolUser } from '../utils/userAuth';
+import { getToolUser, isUserAdmin } from '../utils/userAuth';
 import { ToolsAuthModal } from '../components/tools/ToolsAuthModal';
 import { DODO_PRODUCTS } from '../constants/dodoConfig';
 import StickyConsultationBar from '../components/StickyConsultationBar';
@@ -50,7 +50,27 @@ export default function Tools() {
   });
 
   const handleLaunchTool = (tool: ToolItem) => {
-    navigate(tool.href);
+    const user = getToolUser();
+    const isAdmin = isUserAdmin() || user?.is_admin || user?.role === 'admin';
+    // If admin or logged in user with access, open studio right away!
+    if (isAdmin || (user && !user.is_guest && user.has_access && (user.credits_remaining > 0 || user.is_subscribed))) {
+      navigate(tool.href);
+      return;
+    }
+    // Otherwise open auth popup to login / create account with OTP
+    setPendingToolRedirect(tool.href);
+    setShowAuthModal(true);
+  };
+
+  const handleLaunchHref = (href: string) => {
+    const user = getToolUser();
+    const isAdmin = isUserAdmin() || user?.is_admin || user?.role === 'admin';
+    if (isAdmin || (user && !user.is_guest && user.has_access && (user.credits_remaining > 0 || user.is_subscribed))) {
+      navigate(href);
+      return;
+    }
+    setPendingToolRedirect(href);
+    setShowAuthModal(true);
   };
 
   return (
@@ -210,7 +230,7 @@ export default function Tools() {
                           {tool.subModules.map((sub) => (
                             <button
                               key={sub.id}
-                              onClick={() => navigate(sub.href)}
+                              onClick={() => handleLaunchHref(sub.href)}
                               className="px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-black hover:text-[#CCFF00] text-gray-800 text-[11px] font-medium transition cursor-pointer flex items-center gap-1.5 border border-gray-200/80"
                             >
                               <span>{sub.icon}</span>

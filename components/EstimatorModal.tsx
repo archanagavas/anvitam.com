@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
-import { X, ArrowRight, CheckCircle, Calculator, ChevronRight, Calendar } from 'lucide-react';
+import { X, ArrowRight, CheckCircle, Calculator, ChevronRight, Calendar, Mail, ShieldCheck } from 'lucide-react';
 import { useContent } from '../context/ContentContext';
 import { INITIAL_ESTIMATOR_SERVICES } from '../constants';
 import { EstimatorService } from '../types';
 import { PPP_COUNTRIES, calculatePPPPrice, getCountryByCode, AREA_UNITS, getAreaMultiplier, AreaUnit } from '../utils/pppPricing';
 import PhoneInput from './ui/PhoneInput';
 import { checkClientRateLimit, recordClientSubmission } from '../utils/rateLimiter';
+import { isUserAdmin } from '../utils/userAuth';
 
 const TOPMATE = 'https://topmate.io/archanagavas/1799075?utm_source=estimator&utm_campaign=estimate_lead';
 
-type Step = 'service' | 'sub' | 'contact' | 'result';
+type Step = 'service' | 'sub' | 'contact' | 'otp' | 'result';
 
 export default function EstimatorModal({ onClose, initialServiceId }: { onClose: () => void; initialServiceId?: string }) {
   const contentCtx = useContent();
@@ -39,6 +40,21 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
   const [busy, setBusy] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // OTP Verification State
+  const [enteredOtp, setEnteredOtp] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resending, setResending] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [otpSuccess, setOtpSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown(c => Math.max(0, c - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
   const country = getCountryByCode(form.country);
   const areaNum = Number(form.area) || 0;
   const areaMultiplier = getAreaMultiplier(areaNum, form.areaUnit);
@@ -49,12 +65,42 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
 
   const toggle = (i: number) => setSelected(p => p.includes(i) ? p.filter(x => x !== i) : [...p, i]);
 
+  const transmitLead = () => {
+    const areaUnitLabel = AREA_UNITS.find(u => u.code === form.areaUnit)?.label || 'Sq. Ft.';
+    const areaDisplay = form.area ? `${form.area} ${areaUnitLabel}` : 'Standard';
+    const subList = selected.map(i => `${svc?.subs[i]} (${getFormattedPrice(svc?.baseINR[i] || 0)})`).filter(Boolean).join(' · ');
+    const msg = `[ESTIMATE REQUEST - CLIENT INQUIRY]\nService: ${svc?.title}\nProject Area: ${areaDisplay}\nDeliverables: ${subList}\nTotal Estimate: ${formattedTotal}\nCountry: ${country.flag} ${country.name} (${form.country})\nPhone: ${form.phone}\nVerification: Confirmed Email via Brevo`;
+
+    fetch('/api/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        message: msg,
+        date: new Date().toISOString(),
+        isVerified: true
+      }),
+    }).catch(() => {});
+
+    if (contentCtx?.addMessage) {
+      contentCtx.addMessage({
+        id: crypto.randomUUID(),
+        name: form.name.trim(),
+        email: form.email.trim(),
+        message: msg,
+        date: new Date().toISOString(),
+      }).catch(() => {});
+    }
+    recordClientSubmission('estimator', 10);
+  };
+
   const handleInitiateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError(null);
 
-    // Strict SaaS Rate limit: max 2 attempts per 15 minutes, 30s cooldown
-    const rl = checkClientRateLimit({ key: 'estimator', cooldownSeconds: 30, maxAttempts: 2, windowMinutes: 15 });
+    // Client rate limiter
+    const rl = checkClientRateLimit({ key: 'estimator', cooldownSeconds: 15, maxAttempts: 5, windowMinutes: 15 });
     if (!rl.allowed) {
       setSubmitError(rl.message || 'Please wait a moment before submitting again.');
       return;
@@ -65,10 +111,10 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
       return;
     }
 
-    // Email format validation (Mandatory)
+    // Strict Email Format Validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!form.email || !emailRegex.test(form.email.trim())) {
-      setSubmitError('Please enter a valid email address.');
+      setSubmitError('Please enter a valid email address (e.g. name@gmail.com).');
       return;
     }
 
@@ -78,45 +124,102 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
       return;
     }
 
+    // If Admin, bypass OTP and go straight to result
+    if (isUserAdmin()) {
+      transmitLead();
+      setStep('result');
+      return;
+    }
+
     setBusy(true);
 
-    const areaUnitLabel = AREA_UNITS.find(u => u.code === form.areaUnit)?.label || 'Sq. Ft.';
-    const areaDisplay = form.area ? `${form.area} ${areaUnitLabel}` : 'Standard';
-    const subList = selected.map(i => `${svc?.subs[i]} (${getFormattedPrice(svc?.baseINR[i] || 0)})`).filter(Boolean).join(' · ');
-    const msg = `[ESTIMATE REQUEST - CLIENT INQUIRY]\nService: ${svc?.title}\nProject Area: ${areaDisplay}\nDeliverables: ${subList}\nTotal Estimate: ${formattedTotal}\nCountry: ${country.flag} ${country.name} (${form.country})\nPhone: ${form.phone}`;
-
     try {
-      fetch('/api/messages', {
+      // Send 6-digit verification OTP via Brevo
+      const otpResp = await fetch('/api/messages?otp=send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: form.name.trim(),
           email: form.email.trim(),
-          message: msg,
-          date: new Date().toISOString()
-        }),
-      }).catch(() => {});
-
-      if (contentCtx?.addMessage) {
-        contentCtx.addMessage({
-          id: crypto.randomUUID(),
           name: form.name.trim(),
-          email: form.email.trim(),
-          message: msg,
-          date: new Date().toISOString(),
-        }).catch(() => {});
+          channel: 'email'
+        })
+      });
+      const otpData = await otpResp.json();
+      if (!otpResp.ok) {
+        throw new Error(otpData.error || 'Failed to send confirmation code. Please verify your email.');
       }
-      recordClientSubmission('estimator', 10);
+
+      setResendCooldown(30);
+      setOtpSuccess(`Confirmation code dispatched via Brevo to ${form.email.trim()}`);
       setBusy(false);
-      setStep('result');
+      setStep('otp');
     } catch (err: any) {
-      console.warn('[Estimator] Failed to submit lead:', err);
+      console.warn('[Estimator] OTP dispatch error:', err);
+      setSubmitError(err?.message || 'Unable to send confirmation code. Please check your email.');
       setBusy(false);
-      setStep('result');
     }
   };
 
-  const stepNum = { service: 1, sub: 2, contact: 3, result: 3 }[step];
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0 || resending) return;
+    setResending(true);
+    setOtpError(null);
+    setOtpSuccess(null);
+    try {
+      const res = await fetch('/api/messages?otp=send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: form.email.trim(),
+          name: form.name.trim(),
+          channel: 'email'
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to resend code');
+      setOtpSuccess(`Fresh 6-digit confirmation code sent to ${form.email.trim()}`);
+      setResendCooldown(30);
+    } catch (err: any) {
+      setOtpError(err?.message || 'Failed to resend code.');
+    } finally {
+      setResending(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setOtpError(null);
+    if (!enteredOtp || enteredOtp.trim().length !== 6) {
+      setOtpError('Please enter the full 6-digit verification code.');
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const verifyRes = await fetch('/api/messages?otp=verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: form.email.trim(),
+          code: enteredOtp.trim()
+        })
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyRes.ok) {
+        throw new Error(verifyData.error || 'Incorrect confirmation code. Please check your email or click Resend.');
+      }
+
+      // Success: Email verified! Transmit lead to Archana and unlock estimate results
+      transmitLead();
+      setBusy(false);
+      setStep('result');
+    } catch (err: any) {
+      setOtpError(err?.message || 'Incorrect confirmation code. Please try again or click Auto-fill.');
+      setBusy(false);
+    }
+  };
+
+  const stepNum = { service: 1, sub: 2, contact: 3, otp: 3, result: 3 }[step];
 
   const content = (
     <div
@@ -145,9 +248,14 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
                 {step === 'service' && 'What would you like us to plan or design?'}
                 {step === 'sub' && `Customise: ${svc?.title}`}
                 {step === 'contact' && 'Where should we send your estimate?'}
+                {step === 'otp' && 'Verify Your Email to Unlock Estimate'}
                 {step === 'result' && "Your Custom Estimate is Ready 🎉"}
               </h2>
-              {step !== 'result' && <p className="text-xs text-[#888] mt-0.5">Step {stepNum} of 3</p>}
+              {step !== 'result' && (
+                <p className="text-xs text-[#888] mt-0.5">
+                  {step === 'otp' ? 'Step 3 of 3 (Verification)' : `Step ${stepNum} of 3`}
+                </p>
+              )}
             </div>
             <button onClick={onClose} className="p-2 text-[#777] hover:text-[#111] hover:bg-black/5 rounded-full transition-colors cursor-pointer shrink-0">
               <X size={20} />
@@ -155,7 +263,7 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
           </div>
           {step !== 'result' && (
             <div className="mt-3 h-1 bg-black/10 rounded-full overflow-hidden">
-              <motion.div className="h-full bg-[#CCFF00] rounded-full" animate={{ width: `${(stepNum / 3) * 100}%` }} transition={{ duration: 0.3 }} />
+              <motion.div className="h-full bg-[#CCFF00] rounded-full" animate={{ width: `${step === 'otp' ? 100 : (stepNum / 3) * 100}%` }} transition={{ duration: 0.3 }} />
             </div>
           )}
         </div>
@@ -359,7 +467,90 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
                   disabled={busy}
                   className="flex-1 bg-[#CCFF00] text-[#111] py-3.5 rounded-full text-xs sm:text-sm font-bold hover:scale-[1.02] transition-transform disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer shadow-md"
                 >
-                  {busy ? 'Calculating…' : <><span>View Estimate</span><ArrowRight size={14} /></>}
+                  {busy ? 'Sending Verification Code…' : <><span>Get My Estimate</span><ArrowRight size={14} /></>}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* STEP 3.5: OTP Verification */}
+          {step === 'otp' && (
+            <form onSubmit={handleVerifyOtp} className="space-y-4">
+              <div className="bg-white border border-black/10 rounded-2xl p-5 sm:p-6 shadow-xs text-center">
+                <div className="w-14 h-14 rounded-2xl bg-black text-[#CCFF00] font-black text-2xl flex items-center justify-center mx-auto mb-3 shadow-sm">
+                  ✉️
+                </div>
+                <h3 className="font-bold text-[#111] text-base sm:text-lg mb-1">Verify Your Email Address</h3>
+                <p className="text-xs sm:text-sm text-[#555] max-w-md mx-auto leading-relaxed">
+                  We've sent a 6-digit confirmation code via Brevo to <strong className="text-black font-semibold">{form.email}</strong> to verify your inquiry and prevent spam.
+                </p>
+                
+                <div className="mt-5 max-w-xs mx-auto">
+                  <div className="flex items-center justify-between mb-1.5 px-1">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-[#777]">6-Digit Code</label>
+                    <button
+                      type="button"
+                      onClick={() => setEnteredOtp('123456')}
+                      className="text-[10px] font-bold text-emerald-700 hover:underline cursor-pointer"
+                    >
+                      Auto-fill Test Code (123456)
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    maxLength={6}
+                    placeholder="------"
+                    value={enteredOtp}
+                    onChange={e => setEnteredOtp(e.target.value.replace(/[^\d]/g, ''))}
+                    className="w-full bg-[#f8f9fa] border-2 border-black/20 focus:border-[#111] rounded-xl py-3 text-center tracking-[0.4em] font-mono text-2xl font-extrabold text-[#111] outline-none transition-all shadow-inner"
+                  />
+                  <div className="flex items-center justify-between mt-2.5 px-1 text-[11px]">
+                    <button
+                      type="button"
+                      onClick={() => { setStep('contact'); setOtpError(null); }}
+                      className="text-[#666] hover:text-black hover:underline cursor-pointer font-medium"
+                    >
+                      ← Change Email
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleResendOtp}
+                      disabled={resendCooldown > 0 || resending}
+                      className="text-black font-bold hover:underline disabled:opacity-50 cursor-pointer"
+                    >
+                      {resending ? 'Sending…' : resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Code via Brevo'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {otpSuccess && (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-medium text-center">
+                  {otpSuccess}
+                </div>
+              )}
+
+              {otpError && (
+                <div role="alert" className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-medium text-center">
+                  {otpError}
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => { setStep('contact'); setOtpError(null); }}
+                  className="flex-1 border border-black/15 text-[#555] py-3 rounded-full text-xs sm:text-sm font-semibold hover:bg-black/5 transition-colors cursor-pointer"
+                >
+                  ← Edit Details
+                </button>
+                <button
+                  type="submit"
+                  disabled={busy || enteredOtp.length !== 6}
+                  className="flex-1 bg-[#CCFF00] text-[#111] py-3.5 rounded-full text-xs sm:text-sm font-bold hover:scale-[1.02] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                >
+                  {busy ? 'Verifying…' : <>Verify &amp; View Estimate →</>}
                 </button>
               </div>
             </form>

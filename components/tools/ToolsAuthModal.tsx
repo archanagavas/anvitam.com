@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { setToolUser, DEFAULT_TRIAL_CREDITS } from '../../utils/userAuth';
+import { setToolUser, DEFAULT_TRIAL_CREDITS, isUserAdmin, getToolUser } from '../../utils/userAuth';
 
 export interface ToolUser {
   id: string | number;
@@ -39,6 +39,50 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
   const [requiresOtp, setRequiresOtp] = useState(false);
   const [otp, setOtp] = useState('');
   const [pendingUserId, setPendingUserId] = useState('');
+  const [resending, setResending] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendSuccess, setResendSuccess] = useState('');
+
+  // If already logged in as Admin, allow instant access
+  useEffect(() => {
+    if (isOpen && isUserAdmin()) {
+      const admin = getToolUser();
+      if (admin && typeof onSuccess === 'function') {
+        onSuccess(admin as any, 'admin_auto_token');
+        onClose();
+      }
+    }
+  }, [isOpen, onSuccess, onClose]);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown(c => Math.max(0, c - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0 || resending) return;
+    setResending(true);
+    setResendSuccess('');
+    setError('');
+    try {
+      const res = await fetch('/api/tools/resend-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: pendingUserId, email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to resend code');
+      setResendSuccess('New 6-digit verification code sent to your email.');
+      setResendCooldown(30);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to resend code. Please try again.');
+    } finally {
+      setResending(false);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -264,13 +308,27 @@ export const ToolsAuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, in
                       <button
                         type="button"
                         onClick={() => setOtp('123456')}
-                        className="text-[11px] text-[#059669] hover:underline font-bold"
+                        className="text-[11px] text-[#059669] hover:underline font-bold cursor-pointer"
                       >
                         Auto-fill Test Code (123456)
                       </button>
                     </div>
                     <input className="auth-input text-gray-900 bg-white placeholder-gray-400 text-center tracking-widest text-lg font-mono font-bold" type="text" placeholder="------" value={otp} onChange={e => setOtp(e.target.value)} required maxLength={6} />
-                    <p className="text-[10px] text-gray-500 mt-1">Please check your email inbox for the code, or click Auto-fill above for instant testing.</p>
+                    <div className="flex items-center justify-between mt-1 text-[11px]">
+                      <span className="text-gray-500">Didn't receive email?</span>
+                      <button
+                        type="button"
+                        onClick={handleResendOtp}
+                        disabled={resendCooldown > 0 || resending}
+                        className="text-black font-bold hover:underline disabled:opacity-50 cursor-pointer"
+                      >
+                        {resending ? 'Sending…' : resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Code via Brevo'}
+                      </button>
+                    </div>
+                    {resendSuccess && (
+                      <p className="text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 p-2 rounded-lg mt-1 font-medium">{resendSuccess}</p>
+                    )}
+                    <p className="text-[10px] text-gray-500 mt-1">Please check your email inbox (including spam folder) for the code, or click Auto-fill above.</p>
                   </div>
                 )}
 

@@ -204,7 +204,13 @@ const server = createServer(async (req, res) => {
     ) {
       vercelReq.query.action = 'feed-json';
       await seoHandler(vercelReq, vercelRes);
-    } else if (pathname.startsWith('/api/tools/')) {
+    } else if (pathname === '/api/tools' || pathname.startsWith('/api/tools/')) {
+      if (pathname.startsWith('/api/tools/')) {
+        const actionPart = pathname.replace('/api/tools/', '');
+        if (!vercelReq.query.action) {
+          vercelReq.query.action = actionPart;
+        }
+      }
       await toolsHandler(vercelReq, vercelRes);
     } else if (pathname === '/api/seo' || pathname.startsWith('/api/seo/')) {
       await seoHandler(vercelReq, vercelRes);
