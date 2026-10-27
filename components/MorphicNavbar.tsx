@@ -38,9 +38,9 @@ export const MorphicNavbar: React.FC<MorphicNavbarProps> = ({ items, className =
             <Link
               key={path}
               to={path}
-              className={`flex items-center justify-center py-2 px-3.5 text-xs transition-all duration-300 font-medium select-none ${
+              className={`flex items-center justify-center py-2 px-3.5 text-xs transition-colors duration-200 font-medium select-none ${
                 isActive
-                  ? 'mx-1 rounded-full font-extrabold bg-[#111] text-white shadow-md scale-[1.03]'
+                  ? 'rounded-full font-bold bg-[#111] text-white shadow-sm'
                   : `text-gray-700 hover:text-black hover:bg-white/80 rounded-full ${
                       isPrevActive || isFirst ? 'rounded-l-full' : ''
                     } ${

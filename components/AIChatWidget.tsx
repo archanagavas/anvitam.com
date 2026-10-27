@@ -378,10 +378,8 @@ Timestamp: ${new Date().toLocaleString()}`;
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.95 }}
             onClick={() => setIsOpen(true)}
-            className="flex items-center gap-2.5 px-4 py-3 rounded-full bg-stone-900 text-white shadow-2xl border border-emerald-500/30 cursor-pointer group hover:bg-emerald-950 transition-all duration-300"
+            className="flex items-center gap-2.5 px-4 py-3 rounded-full bg-stone-900 text-white shadow-2xl border border-emerald-500/30 cursor-pointer group hover:bg-emerald-950 hover:scale-105 active:scale-95 transition-all duration-200"
             aria-label="Open AI Assistant Chat"
           >
             <div className="relative">
