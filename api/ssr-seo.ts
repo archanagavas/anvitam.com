@@ -555,16 +555,18 @@ function generateSchemas(section: string, idOrSlug: string, data: { blog?: any, 
 
 function generateSsrHtml(section: string, idOrSlug: string, data: { blog?: any, project?: any, service?: any, workshop?: any, allProjects?: any[], allServices?: any[], allBlogs?: any[] }): string {
   const headerHtml = `
-    <header style="padding: 20px; background-color: #03160E; color: #FAFAFA; display: flex; justify-content: space-between; align-items: center; font-family: 'Playfair Display', serif;">
-      <div style="font-size: 24px; font-weight: bold;"><a href="/" style="color: #CCFF00; text-decoration: none;">Anvitam</a></div>
-      <nav style="display: flex; gap: 20px;">
-        <a href="/" style="color: #FAFAFA; text-decoration: none;">Home</a>
-        <a href="/why" style="color: #FAFAFA; text-decoration: none;">Why Sustainable</a>
-        <a href="/services" style="color: #FAFAFA; text-decoration: none;">Services</a>
-        <a href="/projects" style="color: #FAFAFA; text-decoration: none;">Projects</a>
-        <a href="/blog" style="color: #FAFAFA; text-decoration: none;">Blog</a>
-        <a href="/contact" style="color: #FAFAFA; text-decoration: none;">Contact</a>
-        <a href="/shop" style="color: #FAFAFA; text-decoration: none;">Shop</a>
+    <header style="padding: 16px 24px; background-color: #FFFFFF; color: #111111; display: flex; justify-content: space-between; align-items: center; font-family: sans-serif; border-bottom: 1px solid #E5E7EB;">
+      <div style="font-size: 20px; font-weight: bold;"><a href="/" style="color: #111111; text-decoration: none;">Anvitam</a></div>
+      <nav style="display: flex; gap: 16px; font-size: 13px;">
+        <a href="/" style="color: #4B5563; text-decoration: none;">Home</a>
+        <a href="/why" style="color: #4B5563; text-decoration: none;">About</a>
+        <a href="/services" style="color: #4B5563; text-decoration: none;">Services</a>
+        <a href="/tools" style="color: #4B5563; text-decoration: none;">Tools</a>
+        <a href="/workshops" style="color: #4B5563; text-decoration: none;">Workshops</a>
+        <a href="/projects" style="color: #4B5563; text-decoration: none;">Projects</a>
+        <a href="/shop" style="color: #4B5563; text-decoration: none;">Shop</a>
+        <a href="/blog" style="color: #4B5563; text-decoration: none;">Blog</a>
+        <a href="/contact" style="color: #4B5563; text-decoration: none;">Contact</a>
       </nav>
     </header>
   `;
@@ -1792,39 +1794,33 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     template = template.replace('</head>', `${schemaTags}\n</head>`);
   }
 
-  // --- Inject Semantic Pre-Rendered HTML inside <div id="root"> ---
+  // --- Inject Semantic Pre-Rendered HTML inside <div id="root"> (wrapped in <noscript> so bots index content, but React mounts cleanly without FOUC) ---
   const ssrHtml = generateSsrHtml(section, idOrSlug, { blog, project, service, workshop, allProjects, allServices, allBlogs });
   template = template.replace(
     /<div id="root">(?:[\s\S]*?<\/noscript>\s*)?<\/div>/i,
-    `<div id="root">${ssrHtml}</div>`
+    `<div id="root"><noscript>${ssrHtml}</noscript></div>`
   );
 
   // ──────────────────────────────────────────────────────────────────────────
-  // Route-aware CDN caching (Vercel Edge + Cloudflare).
+  // Route-aware CDN caching (Vercel Edge vs Cloudflare).
   //
-  // WHY: s-maxage=0 was causing every bot/user request to hit the serverless
-  // function with no caching, burning 417K ISR writes and 10GB Fast Origin
-  // Transfer per month. Most pages are public marketing content that changes
-  // rarely — they are safe to cache at the CDN edge.
-  //
-  // SECURITY: Authenticated routes (/api/admin, /api/messages, etc.) are
-  // handled by separate API functions with no-cache headers. This function
-  // only serves public marketing HTML — never private user data.
+  // Cloudflare MUST NEVER cache HTML pages because:
+  // 1. Every new Vercel deployment hashes assets (e.g. index-XXXX.js). If Cloudflare
+  //    caches HTML with old hashes, visitors get 404 on JS assets, breaking React.
+  // 2. Cloudflare default cache keys ignore `Vary: Accept`, which risks caching
+  //    markdown twins onto HTML browser visits.
+  // Vercel Edge caching is safe because Vercel automatically invalidates on deploy.
   // ──────────────────────────────────────────────────────────────────────────
-  let cacheControl: string;
+  let vercelEdgeCache: string;
 
   if (section === 'blog' && idOrSlug) {
-    // Individual blog posts: 4h edge cache, serve stale 48h while revalidating
-    cacheControl = 'public, max-age=0, s-maxage=14400, stale-while-revalidate=172800';
+    vercelEdgeCache = 'public, max-age=0, s-maxage=14400, stale-while-revalidate=172800';
   } else if (section === 'projects' && idOrSlug) {
-    // Individual project pages: 12h edge cache, serve stale 7d
-    cacheControl = 'public, max-age=0, s-maxage=43200, stale-while-revalidate=604800';
+    vercelEdgeCache = 'public, max-age=0, s-maxage=43200, stale-while-revalidate=604800';
   } else if (section === 'workshops' && idOrSlug) {
-    // Individual workshop pages: 12h edge cache, serve stale 7d
-    cacheControl = 'public, max-age=0, s-maxage=43200, stale-while-revalidate=604800';
+    vercelEdgeCache = 'public, max-age=0, s-maxage=43200, stale-while-revalidate=604800';
   } else if (section === 'blog' || section === 'workshops') {
-    // Blog/workshop listing pages: 2h edge cache
-    cacheControl = 'public, max-age=0, s-maxage=7200, stale-while-revalidate=86400';
+    vercelEdgeCache = 'public, max-age=0, s-maxage=7200, stale-while-revalidate=86400';
   } else if (
     !section ||
     section === 'why' ||
@@ -1837,24 +1833,17 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     section === 'privacy' ||
     section === 'terms'
   ) {
-    // Static marketing pages: 24h edge cache, serve stale 7 days
-    cacheControl = 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800';
+    vercelEdgeCache = 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800';
   } else if (section === 'services' || section === 'projects') {
-    // Listing pages: 6h edge cache
-    cacheControl = 'public, max-age=0, s-maxage=21600, stale-while-revalidate=172800';
+    vercelEdgeCache = 'public, max-age=0, s-maxage=21600, stale-while-revalidate=172800';
   } else {
-    // Fallback for any other public section: 6h edge cache
-    cacheControl = 'public, max-age=0, s-maxage=21600, stale-while-revalidate=172800';
+    vercelEdgeCache = 'public, max-age=0, s-maxage=21600, stale-while-revalidate=172800';
   }
 
-  res.setHeader('Cache-Control', cacheControl);
-  res.setHeader('CDN-Cache-Control', cacheControl);
-  // Every SSR page also has a markdown twin negotiable at the SAME URL via
-  // `Accept: text/markdown`. Cloudflare ignores `Vary: Accept` when caching,
-  // so Cloudflare must never shared-cache the HTML variant (it would serve
-  // HTML to AI crawlers asking for markdown, and vice versa). Vercel's edge
-  // cache — the cost shield described above — keys on Vary and is unaffected.
-  res.setHeader('Cloudflare-CDN-Cache-Control', 'private, no-store');
+  res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+  res.setHeader('Vercel-CDN-Cache-Control', vercelEdgeCache);
+  res.setHeader('CDN-Cache-Control', 'no-cache, no-store, max-age=0');
+  res.setHeader('Cloudflare-CDN-Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate');
   res.setHeader('Vary', 'Accept, Accept-Encoding');
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('X-Robots-Tag', robots);

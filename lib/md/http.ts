@@ -17,6 +17,8 @@ export function sendMarkdown(
   // site (Cloudflare) ignore `Vary: Accept` when caching, so a shared-cached
   // markdown body would be served to browsers. Negotiated = never shared-cache.
   res.setHeader('Cache-Control', opts.cache || (opts.negotiated ? 'private, no-store' : 'public, s-maxage=3600, stale-while-revalidate=86400'));
+  res.setHeader('CDN-Cache-Control', opts.negotiated ? 'no-cache, no-store, max-age=0' : 'public, s-maxage=3600');
+  res.setHeader('Cloudflare-CDN-Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate');
   if (opts.canonicalPath) {
     const canonical = absUrl(opts.canonicalPath);
     res.setHeader('Content-Location', canonical);
