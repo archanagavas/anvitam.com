@@ -168,6 +168,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     return <>{children}</>;
   }
 
+  const isStudioRoute = 
+    location.pathname.startsWith('/site-analysis') || 
+    location.pathname.startsWith('/site-intelligence') ||
+    location.pathname.startsWith('/site_intelligence') ||
+    location.pathname.startsWith('/tools/site-intelligence') ||
+    location.pathname.startsWith('/tools/site-analysis') ||
+    location.pathname.startsWith('/dashboard') ||
+    location.pathname.startsWith('/rachnacad');
+
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'About', path: '/why' },
@@ -239,108 +248,112 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <link rel="canonical" href={canonicalUrl} data-rh="true" id="canonical-url" />
       </Helmet>
 
-      {/* ── FLOATING MINIMAL NAVBAR ── */}
-      <header className="fixed top-4 inset-x-0 z-50 max-w-6xl mx-3 sm:mx-4 md:mx-auto transition-all duration-300">
-        <nav className={`relative w-full rounded-full border transition-all duration-300 px-4 sm:px-6 py-2.5 flex items-center justify-between ${
-          scrolled 
-            ? 'bg-white/95 border-gray-300/80 shadow-xl shadow-black/[0.06] backdrop-blur-xl' 
-            : 'bg-white/85 border-gray-200/80 shadow-lg shadow-black/[0.04] backdrop-blur-xl'
-        }`}>
-          {/* Logo — Left */}
-          <div className="flex items-center gap-2">
-            <Link to="/" className="flex items-center gap-2.5 text-lg md:text-xl font-bold tracking-tight text-[#111] hover:opacity-85 transition-opacity group">
-              <img src="/logo.png" alt="Anvitam Logo" className="h-8 w-8 sm:h-9 sm:w-9 object-contain" />
-              <span>Anvitam</span>
-            </Link>
-          </div>
-
-          {/* Desktop Morphic Navbar — Center */}
-          <MorphicNavbar items={navLinks} className="hidden md:flex" />
-
-          {/* Action Buttons — Right */}
-          <div className="hidden md:flex items-center gap-2">
-            <Link
-              to="/admin"
-              className="text-xs font-semibold text-gray-500 hover:text-black transition-colors px-2.5 py-1.5"
-            >
-              Admin
-            </Link>
-            <button
-              onClick={() => setEstimatorOpen(true)}
-              className="inline-flex items-center gap-1.5 border border-gray-300 text-[#111] px-3.5 py-1.5 rounded-full text-xs font-semibold hover:border-black hover:bg-gray-50 transition-all duration-200"
-            >
-              <Calculator size={13} /> Get Estimate
-            </button>
-            <a
-              href={TOPMATE}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 bg-[#CCFF00] text-[#111] px-4 py-1.5 rounded-full text-xs font-bold hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shadow-xs"
-            >
-              Consultation →
-            </a>
-          </div>
-
-          {/* Mobile Toggle */}
-          <button
-            className="md:hidden relative z-[60] p-1.5 text-gray-800 rounded-full hover:bg-gray-100 transition-colors"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-        </nav>
-      </header>
-
-      {/* Mobile overlay */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-0 bg-white z-40 flex flex-col items-center justify-center md:hidden pt-20 pb-8 px-6 overflow-y-auto"
-          >
-            <div className="flex flex-col items-center space-y-3.5 w-full max-w-xs">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.path}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="text-xl font-bold text-[#111] hover:text-[#5A5A40] transition-colors py-1"
-                >
-                  {link.name}
+      {/* ── FLOATING MINIMAL NAVBAR (Hidden on Full-Screen Studio Application Canvases) ── */}
+      {!isStudioRoute && (
+        <>
+          <header className="fixed top-4 inset-x-0 z-50 max-w-6xl mx-3 sm:mx-4 md:mx-auto transition-all duration-300">
+            <nav className={`relative w-full rounded-full border transition-all duration-300 px-4 sm:px-6 py-2.5 flex items-center justify-between ${
+              scrolled 
+                ? 'bg-white/95 border-gray-300/80 shadow-xl shadow-black/[0.06] backdrop-blur-xl' 
+                : 'bg-white/85 border-gray-200/80 shadow-lg shadow-black/[0.04] backdrop-blur-xl'
+            }`}>
+              {/* Logo — Left */}
+              <div className="flex items-center gap-2">
+                <Link to="/" className="flex items-center gap-2.5 text-lg md:text-xl font-bold tracking-tight text-[#111] hover:opacity-85 transition-opacity group">
+                  <img src="/logo.png" alt="Anvitam Logo" className="h-8 w-8 sm:h-9 sm:w-9 object-contain" />
+                  <span>Anvitam</span>
                 </Link>
-              ))}
-              
-              <div className="w-12 h-px bg-black/10 my-1" />
+              </div>
 
+              {/* Desktop Morphic Navbar — Center */}
+              <MorphicNavbar items={navLinks} className="hidden md:flex" />
+
+              {/* Action Buttons — Right */}
+              <div className="hidden md:flex items-center gap-2">
+                <Link
+                  to="/admin"
+                  className="text-xs font-semibold text-gray-500 hover:text-black transition-colors px-2.5 py-1.5"
+                >
+                  Admin
+                </Link>
+                <button
+                  onClick={() => setEstimatorOpen(true)}
+                  className="inline-flex items-center gap-1.5 border border-gray-300 text-[#111] px-3.5 py-1.5 rounded-full text-xs font-semibold hover:border-black hover:bg-gray-50 transition-all duration-200"
+                >
+                  <Calculator size={13} /> Get Estimate
+                </button>
+                <a
+                  href={TOPMATE}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 bg-[#CCFF00] text-[#111] px-4 py-1.5 rounded-full text-xs font-bold hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shadow-xs"
+                >
+                  Consultation →
+                </a>
+              </div>
+
+              {/* Mobile Toggle */}
               <button
-                onClick={() => { setIsMenuOpen(false); setEstimatorOpen(true); }}
-                className="w-full inline-flex items-center justify-center gap-2 border border-[#111] text-[#111] py-2.5 rounded-full text-sm font-semibold hover:bg-[#111] hover:text-white transition-all"
+                className="md:hidden relative z-[60] p-1.5 text-gray-800 rounded-full hover:bg-gray-100 transition-colors"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                aria-label="Toggle menu"
               >
-                <Calculator size={16} /> Get Estimate
+                {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
-              <a
-                href={TOPMATE}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 bg-[#CCFF00] text-[#111] py-2.5 rounded-full text-sm font-bold shadow-sm"
+            </nav>
+          </header>
+
+          {/* Mobile overlay */}
+          <AnimatePresence>
+            {isMenuOpen && (
+              <motion.div
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className="fixed inset-0 bg-white z-40 flex flex-col items-center justify-center md:hidden pt-20 pb-8 px-6 overflow-y-auto"
               >
-                Free Consultation →
-              </a>
-              <Link
-                to="/admin"
-                onClick={() => setIsMenuOpen(false)}
-                className="text-xs text-gray-400 hover:text-gray-600 font-semibold pt-2"
-              >
-                Staff Login
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                <div className="flex flex-col items-center space-y-3.5 w-full max-w-xs">
+                  {navLinks.map((link) => (
+                    <Link
+                      key={link.name}
+                      to={link.path}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="text-xl font-bold text-[#111] hover:text-[#5A5A40] transition-colors py-1"
+                    >
+                      {link.name}
+                    </Link>
+                  ))}
+                  
+                  <div className="w-12 h-px bg-black/10 my-1" />
+
+                  <button
+                    onClick={() => { setIsMenuOpen(false); setEstimatorOpen(true); }}
+                    className="w-full inline-flex items-center justify-center gap-2 border border-[#111] text-[#111] py-2.5 rounded-full text-sm font-semibold hover:bg-[#111] hover:text-white transition-all"
+                  >
+                    <Calculator size={16} /> Get Estimate
+                  </button>
+                  <a
+                    href={TOPMATE}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full inline-flex items-center justify-center gap-2 bg-[#CCFF00] text-[#111] py-2.5 rounded-full text-sm font-bold shadow-sm"
+                  >
+                    Free Consultation →
+                  </a>
+                  <Link
+                    to="/admin"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="text-xs text-gray-400 hover:text-gray-600 font-semibold pt-2"
+                  >
+                    Staff Login
+                  </Link>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </>
+      )}
 
       {/* Estimator Modal — createPortal renders into document.body */}
       {estimatorOpen && (
@@ -354,10 +367,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <main className="flex-grow">{children}</main>
 
       {/* Floating AI Chatbot Assistant */}
-      <AIChatWidget />
+      {!isStudioRoute && <AIChatWidget />}
 
       {/* ── BIOGAX-STYLE DARK FOOTER (Hidden on Studio Application Routes) ── */}
-      {!(location.pathname.startsWith('/site-analysis') || location.pathname.startsWith('/dashboard')) && (
+      {!isStudioRoute && (
         <footer className="bg-[#0D0D0D] text-white pt-20 pb-10">
           <div className="max-w-screen-xl mx-auto px-6 md:px-16">
 
