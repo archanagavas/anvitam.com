@@ -67,18 +67,9 @@ export default function middleware(request: Request): Response | undefined {
     return rewriteTo(request, `/api/md?path=${encodeURIComponent(path)}&negotiated=1`);
   }
 
-  // HTML variant of a negotiable URL must not sit in a shared CDN cache:
-  // Cloudflare ignores `Vary: Accept`, so a cached HTML body would otherwise
-  // be served to AI crawlers asking for markdown (and vice versa).
-  if (isContentRoute(path)) {
-    return new Response(null, {
-      headers: {
-        'x-middleware-next': '1',
-        'Cache-Control': 'private, no-cache',
-        'Vary': 'Accept',
-      },
-    });
-  }
+  // HTML-variant cache protection lives at the origin (api/ssr-seo.ts sets
+  // `Cloudflare-CDN-Cache-Control: private, no-store`, since Cloudflare
+  // ignores `Vary: Accept`). Nothing to do here.
   return undefined;
 }
 

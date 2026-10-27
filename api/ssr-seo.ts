@@ -1849,8 +1849,13 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
   res.setHeader('Cache-Control', cacheControl);
   res.setHeader('CDN-Cache-Control', cacheControl);
-  res.setHeader('Cloudflare-CDN-Cache-Control', cacheControl);
-  res.setHeader('Vary', 'Accept-Encoding');
+  // Every SSR page also has a markdown twin negotiable at the SAME URL via
+  // `Accept: text/markdown`. Cloudflare ignores `Vary: Accept` when caching,
+  // so Cloudflare must never shared-cache the HTML variant (it would serve
+  // HTML to AI crawlers asking for markdown, and vice versa). Vercel's edge
+  // cache — the cost shield described above — keys on Vary and is unaffected.
+  res.setHeader('Cloudflare-CDN-Cache-Control', 'private, no-store');
+  res.setHeader('Vary', 'Accept, Accept-Encoding');
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('X-Robots-Tag', robots);
   res.setHeader(
