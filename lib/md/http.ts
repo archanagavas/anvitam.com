@@ -13,7 +13,10 @@ export function sendMarkdown(
   res.setHeader('X-Robots-Tag', 'noindex, follow');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-  res.setHeader('Cache-Control', opts.cache || 'public, s-maxage=3600, stale-while-revalidate=86400');
+  // Negotiated responses share the page URL with HTML. CDNs in front of this
+  // site (Cloudflare) ignore `Vary: Accept` when caching, so a shared-cached
+  // markdown body would be served to browsers. Negotiated = never shared-cache.
+  res.setHeader('Cache-Control', opts.cache || (opts.negotiated ? 'private, no-store' : 'public, s-maxage=3600, stale-while-revalidate=86400'));
   if (opts.canonicalPath) {
     const canonical = absUrl(opts.canonicalPath);
     res.setHeader('Content-Location', canonical);

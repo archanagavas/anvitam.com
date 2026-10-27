@@ -73,8 +73,11 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
   const data = await loadMdData();
 
   if (raw === '/_catalog' || raw === '_catalog') {
-    const routes = listMarkdownRoutes(data);
-    const body = routes.map((r) => JSON.stringify({ path: r.path, markdown: `${SITE.url}${r.path === '/' ? '/index' : r.path}.md`, title: r.title, section: r.section })).join('\n') + '\n';
+    const routes = listMarkdownRoutes(data).map((r) => {
+      const rendered = renderMarkdown(r.path, data);
+      return { path: r.path, markdown: `${SITE.url}${r.path === '/' ? '/index' : r.path}.md`, title: r.title, section: r.section, estimatedTokens: rendered ? Math.ceil(rendered.body.length / 4) : 0 };
+    });
+    const body = JSON.stringify({ routes, totalEstimatedTokens: routes.reduce((a, r) => a + r.estimatedTokens, 0) }, null, 2);
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.setHeader('X-Robots-Tag', 'noindex, follow');
     res.setHeader('Access-Control-Allow-Origin', '*');

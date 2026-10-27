@@ -66,6 +66,19 @@ export default function middleware(request: Request): Response | undefined {
   if (isContentRoute(path) && prefersMarkdown(request.headers.get('accept'))) {
     return rewriteTo(request, `/api/md?path=${encodeURIComponent(path)}&negotiated=1`);
   }
+
+  // HTML variant of a negotiable URL must not sit in a shared CDN cache:
+  // Cloudflare ignores `Vary: Accept`, so a cached HTML body would otherwise
+  // be served to AI crawlers asking for markdown (and vice versa).
+  if (isContentRoute(path)) {
+    return new Response(null, {
+      headers: {
+        'x-middleware-next': '1',
+        'Cache-Control': 'private, no-cache',
+        'Vary': 'Accept',
+      },
+    });
+  }
   return undefined;
 }
 
