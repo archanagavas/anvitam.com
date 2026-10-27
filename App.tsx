@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate, Outlet } from 'react-router-dom';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 import Layout from './components/Layout';
 import Home from './pages/Home';
@@ -141,54 +141,55 @@ const App: React.FC = () => {
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/rachnacad" element={canAccessGenerativeAi ? <RachnaCAD /> : <Navigate to="/tools" replace />} />
                 <Route path="/tools/rachnacad" element={canAccessGenerativeAi ? <RachnaCAD /> : <Navigate to="/tools" replace />} />
-                <Route path="*" element={
+                {/* Unified single routing tree — Layout wraps Outlet directly so all links navigate on first click */}
+                <Route element={
                   <Layout>
                     <PageTransition>
-                      <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/why" element={<Why />} />
-                        <Route path="/projects" element={<Projects />} />
-                        <Route path="/projects/:id" element={<ProjectDetail />} />
-                        <Route path="/process/:phase" element={<Process />} />
-                        <Route path="/team" element={<Navigate to="/why" replace />} />
-                        <Route path="/services" element={<Services />} />
-                        <Route path="/services/:id" element={<ServiceDetail />} />
-                        <Route path="/workshops" element={<Workshops />} />
-                        <Route path="/workshops/:id" element={<WorkshopDetail />} />
-                        <Route path="/shop" element={<Shop />} />
-                        <Route path="/blog" element={<Blog />} />
-                        <Route path="/blog/:id" element={<BlogDetail />} />
-                        <Route path="/contact" element={<Contact />} />
-                        <Route path="/tools" element={<Tools />} />
-                        <Route path="/tools/ai-home-design" element={canAccessGenerativeAi ? <AIHomeDesign /> : <Navigate to="/tools" replace />} />
-                        <Route path="/tools/ai-interior" element={canAccessGenerativeAi ? <AIHomeDesign /> : <Navigate to="/tools" replace />} />
-                        <Route path="/tools/ai-exterior" element={canAccessGenerativeAi ? <AIHomeDesign /> : <Navigate to="/tools" replace />} />
-                        <Route path="/tools/ai-garden" element={canAccessGenerativeAi ? <AIHomeDesign /> : <Navigate to="/tools" replace />} />
-                        <Route path="/tools/ai-replace" element={canAccessGenerativeAi ? <AIHomeDesign /> : <Navigate to="/tools" replace />} />
-                        <Route path="/tools/ai-removal" element={canAccessGenerativeAi ? <AIHomeDesign /> : <Navigate to="/tools" replace />} />
-                        <Route path="/site-analysis" element={<SiteAnalysis />} />
-                        <Route path="/site-intelligence" element={<SiteAnalysis />} />
-                        <Route path="/site_intelligence" element={<SiteAnalysis />} />
-                        <Route path="/tools/site-intelligence" element={<SiteAnalysis />} />
-                        <Route path="/tools/site-analysis" element={<SiteAnalysis />} />
-                        <Route path="/dashboard" element={<UserDashboard />} />
-                        <Route path="/privacy" element={<Privacy />} />
-                        <Route path="/terms" element={<Terms />} />
-                        <Route path="/seo/farm-retreat-architecture" element={<FarmRetreats />} />
-                        <Route path="/seo/weekend-villas" element={<WeekendVillas />} />
-                        <Route path="/seo/airbnb-homestay" element={<AirbnbHomestay />} />
-                        <Route path="/seo/wellness-retreat" element={<WellnessRetreat />} />
-                        <Route path="/seo/permaculture" element={<Permaculture />} />
-                        <Route path="/seo/terrace-garden" element={<TerraceGarden />} />
-                        <Route path="/seo/yard-landscape" element={<YardLandscape />} />
-                        <Route path="/seo/community-centre" element={<CommunityCentre />} />
-                        <Route path="/destinations/:destination" element={<DestinationDetail />} />
-                        <Route path="/compare/:slug" element={<ComparisonDetail />} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
+                      <Outlet />
                     </PageTransition>
                   </Layout>
-                } />
+                }>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/why" element={<Why />} />
+                  <Route path="/projects" element={<Projects />} />
+                  <Route path="/projects/:id" element={<ProjectDetail />} />
+                  <Route path="/process/:phase" element={<Process />} />
+                  <Route path="/team" element={<Navigate to="/why" replace />} />
+                  <Route path="/services" element={<Services />} />
+                  <Route path="/services/:id" element={<ServiceDetail />} />
+                  <Route path="/workshops" element={<Workshops />} />
+                  <Route path="/workshops/:id" element={<WorkshopDetail />} />
+                  <Route path="/shop" element={<Shop />} />
+                  <Route path="/blog" element={<Blog />} />
+                  <Route path="/blog/:id" element={<BlogDetail />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/tools" element={<Tools />} />
+                  <Route path="/tools/ai-home-design" element={canAccessGenerativeAi ? <AIHomeDesign /> : <Navigate to="/tools" replace />} />
+                  <Route path="/tools/ai-interior" element={canAccessGenerativeAi ? <AIHomeDesign /> : <Navigate to="/tools" replace />} />
+                  <Route path="/tools/ai-exterior" element={canAccessGenerativeAi ? <AIHomeDesign /> : <Navigate to="/tools" replace />} />
+                  <Route path="/tools/ai-garden" element={canAccessGenerativeAi ? <AIHomeDesign /> : <Navigate to="/tools" replace />} />
+                  <Route path="/tools/ai-replace" element={canAccessGenerativeAi ? <AIHomeDesign /> : <Navigate to="/tools" replace />} />
+                  <Route path="/tools/ai-removal" element={canAccessGenerativeAi ? <AIHomeDesign /> : <Navigate to="/tools" replace />} />
+                  <Route path="/site-analysis" element={<SiteAnalysis />} />
+                  <Route path="/site-intelligence" element={<SiteAnalysis />} />
+                  <Route path="/site_intelligence" element={<SiteAnalysis />} />
+                  <Route path="/tools/site-intelligence" element={<SiteAnalysis />} />
+                  <Route path="/tools/site-analysis" element={<SiteAnalysis />} />
+                  <Route path="/dashboard" element={<UserDashboard />} />
+                  <Route path="/privacy" element={<Privacy />} />
+                  <Route path="/terms" element={<Terms />} />
+                  <Route path="/seo/farm-retreat-architecture" element={<FarmRetreats />} />
+                  <Route path="/seo/weekend-villas" element={<WeekendVillas />} />
+                  <Route path="/seo/airbnb-homestay" element={<AirbnbHomestay />} />
+                  <Route path="/seo/wellness-retreat" element={<WellnessRetreat />} />
+                  <Route path="/seo/permaculture" element={<Permaculture />} />
+                  <Route path="/seo/terrace-garden" element={<TerraceGarden />} />
+                  <Route path="/seo/yard-landscape" element={<YardLandscape />} />
+                  <Route path="/seo/community-centre" element={<CommunityCentre />} />
+                  <Route path="/destinations/:destination" element={<DestinationDetail />} />
+                  <Route path="/compare/:slug" element={<ComparisonDetail />} />
+                  <Route path="*" element={<NotFound />} />
+                </Route>
               </Routes>
             </BrowserRouter>
           )}

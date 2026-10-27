@@ -162,18 +162,20 @@ function mergePreservingLocal<T extends { id: string }>(
       }
     }
   } else {
-    // Initial load before server fetch: populate default items + local storage edits
-    for (const def of defaultItems) {
-      if (def?.id && !deletedIds.has(def.id)) {
-        itemMap.set(def.id, repairFn(def, def));
-      }
-    }
-    if (Array.isArray(localItems)) {
+    // Initial load before server fetch:
+    // If local cached storage exists, use it directly without injecting outdated default fallbacks
+    if (Array.isArray(localItems) && localItems.length > 0) {
       for (const loc of localItems) {
         if (!loc || !loc.id || deletedIds.has(loc.id)) continue;
         const def = defaultItems.find(d => d.id === loc.id);
-        const existing = itemMap.get(loc.id);
-        itemMap.set(loc.id, repairFn({ ...(existing || {}), ...loc }, def));
+        itemMap.set(loc.id, repairFn(loc, def));
+      }
+    } else {
+      // First-time visit fallback only if storage is completely empty
+      for (const def of defaultItems) {
+        if (def?.id && !deletedIds.has(def.id)) {
+          itemMap.set(def.id, repairFn(def, def));
+        }
       }
     }
   }

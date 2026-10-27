@@ -1794,11 +1794,10 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
     template = template.replace('</head>', `${schemaTags}\n</head>`);
   }
 
-  // --- Inject Semantic Pre-Rendered HTML inside <div id="root"> (wrapped in <noscript> so bots index content, but React mounts cleanly without FOUC) ---
-  const ssrHtml = generateSsrHtml(section, idOrSlug, { blog, project, service, workshop, allProjects, allServices, allBlogs });
+  // Keep <div id="root"></div> clean to prevent any HTML skeleton flash or flickering
   template = template.replace(
     /<div id="root">(?:[\s\S]*?<\/noscript>\s*)?<\/div>/i,
-    `<div id="root"><noscript>${ssrHtml}</noscript></div>`
+    `<div id="root"></div>`
   );
 
   // ──────────────────────────────────────────────────────────────────────────

@@ -68,14 +68,11 @@ const BlogDetail: React.FC = () => {
     window.scrollTo(0, 0);
   }, [id]);
 
-  // Match by id OR slug, with immediate fallback to INITIAL_BLOGS
+  // Match by id OR slug from live CMS context
   let blogIndex = blogs.findIndex(b => b.id === id || b.slug === id);
   let blog = blogs[blogIndex];
-  if (!blog) {
-    const initBlog = INITIAL_BLOGS.find(b => b.id === id || b.slug === id);
-    if (initBlog) {
-      blog = initBlog;
-    }
+  if (!blog && isInitialSyncDone && blogs.length === 0) {
+    blog = INITIAL_BLOGS.find(b => b.id === id || b.slug === id);
   }
 
   if (!isInitialSyncDone && !blog) {

@@ -65,16 +65,10 @@ const ProjectDetail: React.FC = () => {
   };
   const targetId = (id && projectAliases[id]) || id;
 
-  // Combine projects from DB/state and INITIAL_PROJECTS so we have the full catalog
-  const allProjects = Array.isArray(projects) && projects.length > 0 ? projects : INITIAL_PROJECTS;
-
-  // Find project by slug or ID, falling back to INITIAL_PROJECTS
-  let project = allProjects.find(p => p.id === targetId || p.slug === targetId || p.id === id || p.slug === id);
-  if (!project) {
-    const initProj = INITIAL_PROJECTS.find(p => p.id === targetId || p.slug === targetId || p.id === id || p.slug === id);
-    if (initProj) {
-      project = initProj;
-    }
+  // Find project by slug or ID from live CMS context
+  let project = projects.find(p => p.id === targetId || p.slug === targetId || p.id === id || p.slug === id);
+  if (!project && isInitialSyncDone && projects.length === 0) {
+    project = INITIAL_PROJECTS.find(p => p.id === targetId || p.slug === targetId || p.id === id || p.slug === id);
   }
 
   if (!isInitialSyncDone && !project) {
@@ -113,7 +107,7 @@ const ProjectDetail: React.FC = () => {
   }
 
   // Safe navigation calculation
-  const validProjects = (allProjects && allProjects.length > 0 ? allProjects : INITIAL_PROJECTS).filter(p => Boolean(p && (p.slug || p.id)));
+  const validProjects = (projects && projects.length > 0 ? projects : INITIAL_PROJECTS).filter(p => Boolean(p && (p.slug || p.id)));
   const currentProjectIdx = validProjects.findIndex(p => p.id === project.id || (p.slug && p.slug === project.slug));
   const prevProject = validProjects.length > 1 && currentProjectIdx > 0 
     ? validProjects[currentProjectIdx - 1] 
