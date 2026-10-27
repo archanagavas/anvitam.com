@@ -457,7 +457,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </Link>
                 <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
                 <Link to="/terms" className="hover:text-white transition-colors">Terms &amp; Conditions</Link>
-                <a href={cleanPath === '/' ? '/index.md' : `${cleanPath}.md`} className="hover:text-white transition-colors">View as Markdown</a>
               </div>
             </div>
 

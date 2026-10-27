@@ -2191,7 +2191,7 @@ const Admin: React.FC = () => {
         </div>
         <nav className="p-3 space-y-1 flex-1 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <NavButton id="analytics" icon={ChartIcon} label="Dashboard" />
-          {/* Hidden (redundant while Generative AI Studios are disabled): API Usage & Billing Ledger, Tool Users & Credits, AI Design Catalog. Code kept below; restore these NavButtons when the studios launch. */}
+          <NavButton id="api-ledger" icon={Zap} label="API Usage & Billing Ledger" />
           <NavButton id="messages" icon={MessageSquare} label="Inquiries" />
           <NavButton id="estimator" icon={Calculator} label="Estimate Leads" />
           <NavButton id="estimator-pricing" icon={Calculator} label="Estimator Services & Pricing" />
@@ -2202,6 +2202,8 @@ const Admin: React.FC = () => {
           <NavButton id="workshops" icon={Sparkles} label="Nest N Nurture Workshops" />
           <NavButton id="testimonials" icon={MessageCircle} label="Testimonials" />
           <NavButton id="partners" icon={Building2} label="Partner Brands" />
+          <NavButton id="tool-users" icon={Shield} label="Tool Users & Credits" />
+          <NavButton id="catalog-products" icon={ShoppingBag} label="AI Design Catalog" />
           <NavButton id="seo" icon={Globe} label="SEO Files" />
         </nav>
         <div className="p-3 border-t border-gray-100 space-y-1">
