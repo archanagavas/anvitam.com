@@ -359,7 +359,7 @@ export default function EstimatorModal({ onClose, initialServiceId }: { onClose:
                   disabled={busy}
                   className="flex-1 bg-[#CCFF00] text-[#111] py-3.5 rounded-full text-xs sm:text-sm font-bold hover:scale-[1.02] transition-transform disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer shadow-md"
                 >
-                  {busy ? 'Processing…' : <><span>Verify Email &amp; View Estimate</span><ArrowRight size={14} /></>}
+                  {busy ? 'Calculating…' : <><span>View Estimate</span><ArrowRight size={14} /></>}
                 </button>
               </div>
             </form>

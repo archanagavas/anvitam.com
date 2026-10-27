@@ -891,14 +891,8 @@ export default function SiteAnalysis() {
                 {user ? (
                   <button
                     type="button"
-                    onClick={() => {
-                      if (user.is_admin || isUserAdmin()) {
-                        setShowDashboardModal(true);
-                      } else {
-                        setShowPaywall(true);
-                      }
-                    }}
-                    aria-label="View or top up available studio credits"
+                    onClick={() => setShowDashboardModal(true)}
+                    aria-label="View or manage studio credits"
                     className="px-2.5 sm:px-3.5 py-1.5 rounded-full bg-[#111111] text-[#CCFF00] border border-black text-xs font-semibold flex items-center gap-1 hover:bg-black transition cursor-pointer shadow-2xs"
                   >
                     {user.is_admin || isUserAdmin() ? (
@@ -916,6 +910,17 @@ export default function SiteAnalysis() {
                     onClick={() => setShowAuth(true)}
                     aria-label="Sign in to Anvitam Studio"
                     className="px-2.5 sm:px-3.5 py-1.5 rounded-full bg-[#CCFF00] text-black border border-black/10 text-xs font-semibold hover:bg-black hover:text-[#CCFF00] transition cursor-pointer shadow-2xs"
+                  >
+                    Sign In
+                  </button>
+                )}
+
+                {user && user.is_guest && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAuth(true)}
+                    aria-label="Sign in to save analysis"
+                    className="hidden sm:inline-flex px-2.5 sm:px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-medium transition cursor-pointer border border-gray-200/80"
                   >
                     Sign In
                   </button>

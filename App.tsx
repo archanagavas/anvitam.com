@@ -125,13 +125,7 @@ const App: React.FC = () => {
   // Render main layout immediately to maximize Web Vitals (FCP, LCP, CLS)
   const [isLoading, setIsLoading] = useState(false);
 
-  // Generative AI Studios (RachnaCAD & AI Home/Space Design) are safely kept in the codebase
-  // for future development, but strictly disabled on live deployment until fully finalized.
-  const canAccessGenerativeAi = SHOW_GENERATIVE_AI_STUDIOS &&
-    (typeof window !== 'undefined' && (
-      window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1'
-    ));
+  const canAccessGenerativeAi = SHOW_GENERATIVE_AI_STUDIOS;
 
   return (
     <ErrorBoundary>

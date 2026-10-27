@@ -29,9 +29,8 @@ export interface ToolItem {
   previewImage: string;
 }
 
-// Set to true whenever you are ready to publish Generative AI Studios to the live website.
-// Kept false so unfinished studios are NOT visible to visitors on the website or deployment.
-export const SHOW_GENERATIVE_AI_STUDIOS = false;
+// Set to true to publish all architectural powerhouse studios to the website
+export const SHOW_GENERATIVE_AI_STUDIOS = true;
 
 export const RACHNA_CAD_TOOL: ToolItem = {
   id: 'rachnacad',

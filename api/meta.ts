@@ -62,7 +62,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
   // ── UNIFIED BOOTSTRAP ENDPOINT (1 Fetch instead of 8) ────────────────────
   if (resource === 'all' && req.method === 'GET') {
-    res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
+    res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=30, stale-while-revalidate=60');
     if (memoryCacheAll && Date.now() < memoryCacheAll.expiresAt) {
       return res.status(200).json(memoryCacheAll.data);
     }
@@ -146,7 +146,7 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
   if (!isDbConfigured) {
     if (req.method === 'GET') {
       res.setHeader('x-db-fallback', 'true');
-      res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
+      res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=30, stale-while-revalidate=60');
       if (id) {
         const item = fallbackData.find(i => i.id === id || i.slug === id);
         if (!item) return res.status(404).json({ error: `${resource} not found` });
@@ -159,9 +159,8 @@ export default createHandler(async function handler(req: VercelRequest, res: Ver
 
   // ── GET ─────────────────────────────────────────────────────────────────
   if (req.method === 'GET') {
-    // Edge cache GET responses for 1 hour with 24h stale-while-revalidate.
-    // Cuts Vercel Function Invocations & Fast Origin Transfer by >90%.
-    res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
+    // Dynamic cache GET responses (30s edge cache with fast revalidation)
+    res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=30, stale-while-revalidate=60');
     try {
       if (id) {
         let row = await getDoc(collectionName, id);

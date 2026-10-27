@@ -1427,7 +1427,7 @@ const Admin: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const [activeTab, setActiveTab] = useState<'projects' | 'blog' | 'analytics' | 'shop' | 'services' | 'messages' | 'seo' | 'testimonials' | 'partners' | 'estimator' | 'estimator-pricing' | 'workshops' | 'tool-users' | 'catalog-products'>('analytics');
+  const [activeTab, setActiveTab] = useState<'projects' | 'blog' | 'analytics' | 'shop' | 'services' | 'messages' | 'seo' | 'testimonials' | 'partners' | 'estimator' | 'estimator-pricing' | 'workshops' | 'tool-users' | 'catalog-products' | 'api-ledger'>('analytics');
   const [toolUsers, setToolUsers] = useState<any[]>([]);
   const [loadingToolUsers, setLoadingToolUsers] = useState(false);
   const [seoStatus, setSeoStatus] = useState<null | 'generating' | 'done'>(null);

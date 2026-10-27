@@ -370,130 +370,146 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   // ── Fetch from Firebase Firestore DB ──────────────────────────────────
   const refreshFromDb = async () => {
-    // 1. Client cache check: If no admin session and local cache is younger than 15 mins, skip network call
-    const token = getAuthToken();
-    if (!token) {
-      try {
-        const lastSync = localStorage.getItem('anvitam_content_cache_ts');
-        if (lastSync && Date.now() - Number(lastSync) < 15 * 60 * 1000) {
-          setIsDbConnected(true);
-          setIsInitialSyncDone(true);
-          return;
-        }
-      } catch (_) {}
-    }
-
     try {
-      // 2. Fetch single unified bootstrap endpoint (/api/meta?resource=all)
-      const allRes = await fetch('/api/meta?resource=all').catch(e => {
-        console.warn('[ContentContext] Fetch failed for /api/meta?resource=all:', e);
-        return null;
+      const endpoints = [
+        { key: 'blogs', url: '/api/blogs' },
+        { key: 'projects', url: '/api/projects' },
+        { key: 'services', url: '/api/services' },
+        { key: 'products', url: '/api/products' },
+        { key: 'testimonials', url: '/api/testimonials' },
+        { key: 'partners', url: '/api/partners' },
+        { key: 'workshops', url: '/api/workshops' },
+        { key: 'estimator', url: '/api/estimator-services' },
+      ];
+
+      const responses = await Promise.allSettled(
+        endpoints.map(ep => fetch(ep.url).catch(e => {
+          console.warn(`[ContentContext] Fetch failed for ${ep.key}:`, e);
+          return null;
+        }))
+      );
+
+      const resMap: Record<string, Response | null> = {};
+      endpoints.forEach((ep, i) => {
+        const item = responses[i];
+        resMap[ep.key] = item.status === 'fulfilled' ? item.value : null;
       });
 
-      if (allRes && allRes.ok) {
-        const data = await allRes.json();
-        const isFallback = allRes.headers.get('x-db-fallback') === 'true';
+      const blogsRes = resMap['blogs'];
+      const projectsRes = resMap['projects'];
+      const servicesRes = resMap['services'];
+      const productsRes = resMap['products'];
+      const testimonialsRes = resMap['testimonials'];
+      const partnersRes = resMap['partners'];
+      const workshopsRes = resMap['workshops'];
+      const estimatorRes = resMap['estimator'];
 
-        if (Array.isArray(data.workshops)) {
+      // Database is connected if primary collections respond ok without explicit x-db-fallback=true
+      const isConfigured = 
+        (blogsRes?.ok && blogsRes.headers.get('x-db-fallback') !== 'true') ||
+        (projectsRes?.ok && projectsRes.headers.get('x-db-fallback') !== 'true') ||
+        (servicesRes?.ok && servicesRes.headers.get('x-db-fallback') !== 'true');
+
+      if (workshopsRes?.ok) {
+        try {
+          const rawWorkshops: Workshop[] = await workshopsRes.json();
           setWorkshops(prev => {
-            const merged = mergePreservingLocal(prev, data.workshops, INITIAL_WORKSHOPS, repairWorkshop);
+            const merged = mergePreservingLocal(prev, rawWorkshops, INITIAL_WORKSHOPS, repairWorkshop);
             saveToStorage('anvitam_workshops_v2', merged);
             return merged;
           });
-        }
+        } catch (_) {}
+      }
 
-        if (Array.isArray(data.estimator_services)) {
+      if (estimatorRes?.ok) {
+        try {
+          const rawEstimator: EstimatorService[] = await estimatorRes.json();
           setEstimatorServices(prev => {
-            const merged = mergePreservingLocal(prev, data.estimator_services, INITIAL_ESTIMATOR_SERVICES, repairEstimatorService);
+            const merged = mergePreservingLocal(prev, rawEstimator, INITIAL_ESTIMATOR_SERVICES, repairEstimatorService);
             saveToStorage('anvitam_estimator_services_v1', merged);
             return merged;
           });
-        }
+        } catch (_) {}
+      }
 
-        if (Array.isArray(data.blogs)) {
+      if (blogsRes?.ok) {
+        try {
+          const dbBlogs: BlogPost[] = await blogsRes.json();
           setBlogs(prev => {
-            const merged = mergePreservingLocal(prev, data.blogs, INITIAL_BLOGS, repairBlog);
+            const merged = mergePreservingLocal(prev, dbBlogs, INITIAL_BLOGS, repairBlog);
             saveToStorage('anvitam_blogs_v2', merged);
             return merged;
           });
-        }
+        } catch (_) {}
+      }
 
-        if (Array.isArray(data.projects)) {
+      if (projectsRes?.ok) {
+        try {
+          const rawProjects: Project[] = await projectsRes.json();
           setProjects(prev => {
-            const merged = mergePreservingLocal(prev, data.projects, INITIAL_PROJECTS, repairProject);
+            const merged = mergePreservingLocal(prev, rawProjects, INITIAL_PROJECTS, repairProject);
             saveToStorage('anvitam_projects_v2', merged);
             return merged;
           });
-        }
+        } catch (_) {}
+      }
 
-        if (Array.isArray(data.services)) {
+      if (servicesRes?.ok) {
+        try {
+          const rawServices: Service[] = await servicesRes.json();
           setServices(prev => {
-            const merged = mergePreservingLocal(prev, data.services, SERVICES, repairService);
+            const merged = mergePreservingLocal(prev, rawServices, SERVICES, repairService);
             saveToStorage('anvitam_services_v7', merged);
             return merged;
           });
-        }
+        } catch (_) {}
+      }
 
-        if (Array.isArray(data.products)) {
+      if (productsRes?.ok) {
+        try {
+          const rawProducts: DigitalProduct[] = await productsRes.json();
           setDigitalProducts(prev => {
-            const merged = mergePreservingLocal(prev, data.products, DIGITAL_PRODUCTS, repairProduct);
+            const merged = mergePreservingLocal(prev, rawProducts, DIGITAL_PRODUCTS, repairProduct);
             saveToStorage('anvitam_products', merged);
             return merged;
           });
-        }
+        } catch (_) {}
+      }
 
-        if (Array.isArray(data.testimonials)) {
+      if (testimonialsRes?.ok) {
+        try {
+          const dbTestimonials: Testimonial[] = await testimonialsRes.json();
+          const isFallback = testimonialsRes.headers.get('x-db-fallback') === 'true';
           setTestimonials(prev => {
             let merged: Testimonial[];
-            if (!isFallback) {
-              merged = data.testimonials.filter((t: any) => t && t.author?.trim() && t.text?.trim());
+            if (!isFallback && Array.isArray(dbTestimonials)) {
+              merged = dbTestimonials.filter((t: any) => t && t.author?.trim() && t.text?.trim());
             } else {
-              merged = mergePreservingLocal(prev, data.testimonials, INITIAL_TESTIMONIALS, (t, def) => ({
+              merged = mergePreservingLocal(prev, dbTestimonials, INITIAL_TESTIMONIALS, (t, def) => ({
                 ...def, ...t, image: t.image || def?.image || ''
               })).filter((t: any) => t && t.author?.trim() && t.text?.trim());
             }
             saveToStorage('anvitam_testimonials', merged);
             return merged;
           });
-        }
+        } catch (_) {}
+      }
 
-        if (Array.isArray(data.partners)) {
+      if (partnersRes?.ok) {
+        try {
+          const dbPartners: PartnerBrand[] = await partnersRes.json();
           setPartners(prev => {
-            const merged = mergePreservingLocal(prev, data.partners, INITIAL_PARTNERS, (p, def) => ({
+            const merged = mergePreservingLocal(prev, dbPartners, INITIAL_PARTNERS, (p, def) => ({
               ...def, ...p, logo: p.logo || def?.logo || ''
             }));
             saveToStorage('anvitam_partners_v3', merged);
             return merged;
           });
-        }
-
-        setIsDbConnected(!isFallback);
-        try {
-          localStorage.setItem('anvitam_content_cache_ts', Date.now().toString());
         } catch (_) {}
-      } else {
-        // Fallback for resilient offline/legacy operation: fetch individual only if unified endpoint was unreachable
-        const endpoints = [
-          { key: 'blogs', url: '/api/blogs' },
-          { key: 'projects', url: '/api/projects' },
-          { key: 'services', url: '/api/services' },
-        ];
-        const responses = await Promise.allSettled(
-          endpoints.map(ep => fetch(ep.url).catch(() => null))
-        );
-        const resMap: Record<string, Response | null> = {};
-        endpoints.forEach((ep, i) => {
-          const item = responses[i];
-          resMap[ep.key] = item.status === 'fulfilled' ? item.value : null;
-        });
-        const isConfigured = 
-          (resMap['blogs']?.ok && resMap['blogs'].headers.get('x-db-fallback') !== 'true') ||
-          (resMap['projects']?.ok && resMap['projects'].headers.get('x-db-fallback') !== 'true') ||
-          (resMap['services']?.ok && resMap['services'].headers.get('x-db-fallback') !== 'true');
-        setIsDbConnected(Boolean(isConfigured));
       }
 
-      // Fetch messages only if admin token exists
+      // Fetch messages if admin token exists
+      const token = getAuthToken();
       if (token) {
         try {
           const msgRes = await fetch('/api/messages', {
@@ -506,6 +522,8 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
           }
         } catch (_) {}
       }
+
+      setIsDbConnected(Boolean(isConfigured));
     } catch (err) {
       console.warn('[ContentContext] DB sync failed — using local data:', err);
       setIsDbConnected(false);
@@ -514,10 +532,21 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
-  // Fetch on mount
+  // Fetch on mount — always sync from DB (DB is the source of truth)
   useEffect(() => {
     refreshFromDb();
   }, []);
+
+  // Auto-reconnect if DB is offline
+  useEffect(() => {
+    let interval: any;
+    if (!isDbConnected && isInitialSyncDone) {
+      interval = setInterval(() => {
+        refreshFromDb();
+      }, 15000); // Auto-retry every 15 seconds if disconnected
+    }
+    return () => clearInterval(interval);
+  }, [isDbConnected, isInitialSyncDone]);
 
   // Persist items to localStorage
   useEffect(() => { saveToStorage('anvitam_services_v7', services); }, [services]);

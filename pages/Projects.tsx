@@ -65,9 +65,9 @@ const Projects: React.FC = () => {
         className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 lg:gap-24 items-center bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
       >
         {/* Image */}
-        <Link 
-          to={`/projects/${project.slug || project.id}`}
-          className="w-full aspect-square bg-gray-100 rounded-2xl cursor-pointer overflow-hidden relative group block" 
+        <div 
+          className="w-full aspect-square bg-gray-100 rounded-2xl cursor-pointer overflow-hidden relative group" 
+          onClick={() => navigate(`/projects/${project.slug || project.id}`)}
         >
           <img 
             src={project.image} 
@@ -91,7 +91,7 @@ const Projects: React.FC = () => {
               )}
             </span>
           </div>
-        </Link>
+        </div>
         
         {/* Text Block */}
         <div className="flex flex-col">
@@ -106,11 +106,12 @@ const Projects: React.FC = () => {
             )}
           </div>
 
-          <Link to={`/projects/${project.slug || project.id}`}>
-            <h3 className="text-2xl md:text-3xl font-bold text-[#0a0a0a] leading-tight cursor-pointer hover:text-emerald-900 transition-colors mb-3">
-              {project.title}
-            </h3>
-          </Link>
+          <h3 
+            onClick={() => navigate(`/projects/${project.slug || project.id}`)}
+            className="text-2xl md:text-3xl font-bold text-[#0a0a0a] leading-tight cursor-pointer hover:text-emerald-900 transition-colors mb-3"
+          >
+            {project.title}
+          </h3>
 
           <p className="text-[#0a0a0a]/70 text-sm md:text-base leading-relaxed mb-8 pb-4 border-b border-gray-100">
             {project.description}
@@ -171,12 +172,11 @@ const Projects: React.FC = () => {
           </div>
 
           <div>
-            <Link to={`/projects/${project.slug || project.id}`}>
-              <FlowButton 
-                text="Explore Project Study"
-                variant="lime"
-              />
-            </Link>
+            <FlowButton 
+              text="Explore Project Study"
+              variant="lime"
+              onClick={() => navigate(`/projects/${project.slug || project.id}`)}
+            />
           </div>
         </div>
       </motion.div>

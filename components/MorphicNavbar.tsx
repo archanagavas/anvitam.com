@@ -22,19 +22,30 @@ export const MorphicNavbar: React.FC<MorphicNavbarProps> = ({ items, className =
   };
 
   return (
-    <div className={`flex items-center justify-center ${className}`}>
-      <div className="flex items-center justify-center gap-1 p-1 bg-gray-100/80 rounded-full border border-gray-200/60 shadow-inner">
-        {items.map(({ name, path }) => {
+    <nav className={`flex items-center justify-center ${className}`}>
+      <div className="flex items-center justify-between p-1 bg-gray-100/90 rounded-full border border-gray-200/60 shadow-inner">
+        {items.map(({ name, path }, index, array) => {
           const isActive = isActiveLink(path);
+          const isFirst = index === 0;
+          const isLast = index === array.length - 1;
+          const prevPath = index > 0 ? array[index - 1].path : null;
+          const nextPath = index < array.length - 1 ? array[index + 1].path : null;
+
+          const isPrevActive = prevPath ? isActiveLink(prevPath) : false;
+          const isNextActive = nextPath ? isActiveLink(nextPath) : false;
 
           return (
             <Link
               key={path}
               to={path}
-              className={`flex items-center justify-center py-1.5 px-3.5 text-xs rounded-full transition-all duration-200 select-none ${
+              className={`flex items-center justify-center py-2 px-3.5 text-xs transition-all duration-300 font-medium select-none ${
                 isActive
-                  ? 'bg-[#111] text-white font-bold shadow-sm'
-                  : 'text-gray-700 hover:text-black hover:bg-white/80 font-medium'
+                  ? 'mx-1 rounded-full font-extrabold bg-[#111] text-white shadow-md scale-[1.03]'
+                  : `text-gray-700 hover:text-black hover:bg-white/80 rounded-full ${
+                      isPrevActive || isFirst ? 'rounded-l-full' : ''
+                    } ${
+                      isNextActive || isLast ? 'rounded-r-full' : ''
+                    }`
               }`}
             >
               {name}
@@ -42,7 +53,7 @@ export const MorphicNavbar: React.FC<MorphicNavbarProps> = ({ items, className =
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 };
 
