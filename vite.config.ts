@@ -43,6 +43,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, '.'),
+      'react-helmet-async': path.resolve(__dirname, 'lib/helmet.tsx'),
     },
   },
   build: {

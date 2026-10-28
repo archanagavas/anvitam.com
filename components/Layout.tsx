@@ -195,34 +195,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     : location.pathname;
   const canonicalUrl = `https://www.anvitam.com${cleanPath}`;
 
-  // Robust client-side canonical sync: eliminates duplicate tags & guarantees self-referencing canonical
+  // Robust client-side metadata attribute sync without destructive DOM removals
   useEffect(() => {
     try {
-      const allCanonicals = document.querySelectorAll('link[rel="canonical"]');
-      allCanonicals.forEach((el, index) => {
-        if (index > 0) el.remove();
-      });
-
-      let mainCanonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-      if (!mainCanonical) {
-        mainCanonical = document.createElement('link');
-        mainCanonical.rel = 'canonical';
-        document.head.appendChild(mainCanonical);
+      const canonicalTag = document.querySelector('link[rel="canonical"]');
+      if (canonicalTag) {
+        canonicalTag.setAttribute('href', canonicalUrl);
       }
-      mainCanonical.href = canonicalUrl;
-      mainCanonical.setAttribute('data-rh', 'true');
-      mainCanonical.id = 'canonical-url';
 
       // AI-agent signals: one markdown alternate + one ai-summary per page.
       const mdHref = cleanPath === '/' ? 'https://www.anvitam.com/index.md' : `${canonicalUrl}.md`;
-      let mdLink = document.querySelector('link[rel="alternate"][type="text/markdown"]') as HTMLLinkElement | null;
-      if (!mdLink) {
-        mdLink = document.createElement('link');
-        mdLink.rel = 'alternate';
-        mdLink.type = 'text/markdown';
-        document.head.appendChild(mdLink);
+      const mdLink = document.querySelector('link[rel="alternate"][type="text/markdown"]');
+      if (mdLink) {
+        mdLink.setAttribute('href', mdHref);
       }
-      mdLink.href = mdHref;
 
       const summaries: Record<string, string> = {
         '/': 'Anvitam is a sustainable architecture and ecological design studio led by Ar. Archana Gavas, designing eco resorts, farm retreats, food forests and permaculture masterplans worldwide from Vadodara, Gujarat.',
@@ -230,23 +216,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         '/blog': 'The Anvitam journal: research and guides on natural building materials, permaculture, food forests, passive cooling and sustainable architecture costs in India.',
         '/projects': 'Anvitam project portfolio: natural homes, eco resorts, farm retreats, terrace gardens and heritage and hospitality projects built with local natural materials.',
       };
-      let aiMeta = document.querySelector('meta[name="ai-summary"]') as HTMLMetaElement | null;
-      if (!aiMeta) {
-        aiMeta = document.createElement('meta');
-        aiMeta.name = 'ai-summary';
-        document.head.appendChild(aiMeta);
+      const aiMeta = document.querySelector('meta[name="ai-summary"]');
+      if (aiMeta) {
+        aiMeta.setAttribute('content', summaries[cleanPath] || 'Anvitam is a sustainable architecture and ecological design studio led by Ar. Archana Gavas, designing eco resorts, farm retreats, food forests and permaculture masterplans worldwide from Vadodara, Gujarat.');
       }
-      aiMeta.content = summaries[cleanPath] || 'Anvitam is a sustainable architecture and ecological design studio led by Ar. Archana Gavas, designing eco resorts, farm retreats, food forests and permaculture masterplans worldwide from Vadodara, Gujarat.';
     } catch (e) {
       console.warn('[Layout] Canonical sync error:', e);
     }
-  }, [canonicalUrl]);
+  }, [canonicalUrl, cleanPath]);
 
   return (
     <div className="flex flex-col min-h-screen font-sans bg-[#EFEFEB] text-[#111] relative z-10">
-      <Helmet>
-        <link rel="canonical" href={canonicalUrl} data-rh="true" id="canonical-url" />
-      </Helmet>
+
 
       {/* ── FLOATING MINIMAL NAVBAR ── */}
       <header className="fixed top-4 inset-x-0 z-50 max-w-6xl mx-3 sm:mx-4 md:mx-auto transition-all duration-300">
